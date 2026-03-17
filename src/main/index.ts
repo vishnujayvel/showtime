@@ -670,7 +670,7 @@ ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
 
     if (!whisperBin) {
       return {
-        error: 'Whisper not found. Install with: brew install whisper-cpp',
+        error: 'Whisper not found. Install with: brew install whisper-cli',
         transcript: null,
       }
     }
@@ -679,15 +679,15 @@ ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
 
     // Find model file — prefer multilingual (auto-detect language) over .en (English-only)
     const modelCandidates = [
-      join(homedir(), '.local/share/whisper/ggml-tiny.bin'),
       join(homedir(), '.local/share/whisper/ggml-base.bin'),
-      '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.bin',
+      join(homedir(), '.local/share/whisper/ggml-tiny.bin'),
       '/opt/homebrew/share/whisper-cpp/models/ggml-base.bin',
+      '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.bin',
       // Fall back to English-only models if multilingual not available
-      join(homedir(), '.local/share/whisper/ggml-tiny.en.bin'),
       join(homedir(), '.local/share/whisper/ggml-base.en.bin'),
-      '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.en.bin',
+      join(homedir(), '.local/share/whisper/ggml-tiny.en.bin'),
       '/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin',
+      '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.en.bin',
     ]
 
     let modelPath = ''
@@ -727,13 +727,23 @@ ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
         try { unlinkSync(txtPath) } catch {}
         return { error: null, transcript }
       }
+      // File not created — Python whisper failed silently
+      return {
+        error: `Whisper output file not found at ${txtPath}. Check disk space and permissions.`,
+        transcript: null,
+      }
     }
 
     // whisper-cpp prints to stdout directly
-    // Strip any leading [timestamp] patterns and whitespace
+    // Strip timestamp patterns and known hallucination outputs
+    const HALLUCINATIONS = /^\s*(\[BLANK_AUDIO\]|you\.?|thank you\.?|thanks\.?)\s*$/i
     const transcript = output
       .replace(/\[[\d:.]+\s*-->\s*[\d:.]+\]\s*/g, '')
       .trim()
+
+    if (HALLUCINATIONS.test(transcript)) {
+      return { error: null, transcript: '' }
+    }
 
     return { error: null, transcript: transcript || '' }
   } catch (err: any) {
