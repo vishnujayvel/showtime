@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, screen, globalShortcut, Tray, Menu, nativeImage, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, screen, globalShortcut, Tray, Menu, nativeImage, nativeTheme, shell, systemPreferences } from 'electron'
 import { join } from 'path'
 import { existsSync, readdirSync, statSync, createReadStream } from 'fs'
 import { createInterface } from 'readline'
@@ -7,6 +7,7 @@ import { ControlPlane } from './claude/control-plane'
 import { ensureSkills, type SkillStatus } from './skills/installer'
 import { fetchCatalog, listInstalled, installPlugin, uninstallPlugin } from './marketplace/catalog'
 import { log as _log, LOG_FILE, flushLogs } from './logger'
+import { getCliEnv } from './cli-env'
 import { IPC } from '../shared/types'
 import type { RunOptions, NormalizedEvent, EnrichedError } from '../shared/types'
 
@@ -156,6 +157,39 @@ function createWindow(): void {
   }
 }
 
+function showWindow(source = 'unknown'): void {
+  if (!mainWindow) return
+  const toggleId = ++toggleSequence
+
+  // Position on the display where the cursor currently is (not always primary)
+  const cursor = screen.getCursorScreenPoint()
+  const display = screen.getDisplayNearestPoint(cursor)
+  const { width: sw, height: sh } = display.workAreaSize
+  const { x: dx, y: dy } = display.workArea
+  mainWindow.setBounds({
+    x: dx + Math.round((sw - BAR_WIDTH) / 2),
+    y: dy + sh - PILL_HEIGHT - PILL_BOTTOM_MARGIN,
+    width: BAR_WIDTH,
+    height: PILL_HEIGHT,
+  })
+
+  // Always re-assert space membership — the flag can be lost after hide/show cycles
+  // and must be set before show() so the window joins the active Space, not its
+  // last-known Space.
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+
+  if (SPACES_DEBUG) {
+    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${display.id}`)
+    snapshotWindowState(`showWindow#${toggleId} pre-show`)
+  }
+  // As an accessory app (app.dock.hide), show() + focus gives keyboard
+  // without deactivating the active app — hover preserved everywhere.
+  mainWindow.show()
+  mainWindow.webContents.focus()
+  broadcast(IPC.WINDOW_SHOWN)
+  if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'show')
+}
+
 function toggleWindow(source = 'unknown'): void {
   if (!mainWindow) return
   const toggleId = ++toggleSequence
@@ -164,32 +198,11 @@ function toggleWindow(source = 'unknown'): void {
     snapshotWindowState(`toggle#${toggleId} pre`)
   }
 
-  // Pure toggle: visible → hide, not visible → show. No focus-based branching.
   if (mainWindow.isVisible()) {
     mainWindow.hide()
     if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'hide')
   } else {
-    // Position on the display where the cursor currently is (not always primary)
-    const cursor = screen.getCursorScreenPoint()
-    const display = screen.getDisplayNearestPoint(cursor)
-    const { width: sw, height: sh } = display.workAreaSize
-    const { x: dx, y: dy } = display.workArea
-    mainWindow.setBounds({
-      x: dx + Math.round((sw - BAR_WIDTH) / 2),
-      y: dy + sh - PILL_HEIGHT - PILL_BOTTOM_MARGIN,
-      width: BAR_WIDTH,
-      height: PILL_HEIGHT,
-    })
-    if (SPACES_DEBUG) {
-      log(`[spaces] toggle#${toggleId} move-to-display id=${display.id}`)
-      snapshotWindowState(`toggle#${toggleId} pre-show`)
-    }
-    // As an accessory app (app.dock.hide), show() + focus gives keyboard
-    // without deactivating the active app — hover preserved everywhere.
-    mainWindow.show()
-    mainWindow.webContents.focus()
-    broadcast(IPC.WINDOW_SHOWN)
-    if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'show')
+    showWindow(source)
   }
 }
 
@@ -234,18 +247,18 @@ ipcMain.handle(IPC.START, async () => {
 
   let version = 'unknown'
   try {
-    version = execSync('claude -v', { encoding: 'utf-8', timeout: 5000 }).trim()
+    version = execSync('claude -v', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
   } catch {}
 
   let auth: { email?: string; subscriptionType?: string; authMethod?: string } = {}
   try {
-    const raw = execSync('claude auth status', { encoding: 'utf-8', timeout: 5000 }).trim()
+    const raw = execSync('claude auth status', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
     auth = JSON.parse(raw)
   } catch {}
 
   let mcpServers: string[] = []
   try {
-    const raw = execSync('claude mcp list', { encoding: 'utf-8', timeout: 5000 }).trim()
+    const raw = execSync('claude mcp list', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
     if (raw) mcpServers = raw.split('\n').filter(Boolean)
   } catch {}
 
@@ -855,15 +868,42 @@ nativeTheme.on('updated', () => {
   broadcast(IPC.THEME_CHANGED, nativeTheme.shouldUseDarkColors)
 })
 
+// ─── Permission Preflight ───
+// Request all required macOS permissions upfront on first launch so the user
+// is never interrupted mid-session by a permission prompt.
+
+async function requestPermissions(): Promise<void> {
+  if (process.platform !== 'darwin') return
+
+  // ── Microphone (for voice input via Whisper) ──
+  try {
+    const micStatus = systemPreferences.getMediaAccessStatus('microphone')
+    if (micStatus === 'not-determined') {
+      await systemPreferences.askForMediaAccess('microphone')
+    }
+  } catch (err: any) {
+    log(`Permission preflight: microphone check failed — ${err.message}`)
+  }
+
+  // ── Accessibility (for global ⌥+Space shortcut) ──
+  // globalShortcut works without it on modern macOS; Cmd+Shift+K is always the fallback.
+  // Screen Recording: not requested upfront — macOS 15 Sequoia shows an alarming
+  // "bypass private window picker" dialog. Let the OS prompt naturally if/when
+  // the screenshot feature is actually used.
+}
+
 // ─── App Lifecycle ───
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // macOS: become an accessory app. Accessory apps can have key windows (keyboard works)
   // without deactivating the currently active app (hover preserved in browsers).
   // This is how Spotlight, Alfred, Raycast work.
   if (process.platform === 'darwin' && app.dock) {
     app.dock.hide()
   }
+
+  // Request permissions upfront so the user is never interrupted mid-session.
+  await requestPermissions()
 
   // Skill provisioning — non-blocking, streams status to renderer
   ensureSkills((status: SkillStatus) => {
@@ -916,12 +956,16 @@ app.whenReady().then(() => {
   tray.on('click', () => toggleWindow('tray click'))
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Show Clui CC', click: () => toggleWindow('tray menu Show Clui CC') },
+      { label: 'Show Clui CC', click: () => showWindow('tray menu') },
       { label: 'Quit', click: () => { app.quit() } },
     ])
   )
 
-  app.on('activate', () => toggleWindow('app activate'))
+  // app 'activate' fires when macOS brings the app to the foreground (e.g. after
+  // webContents.focus() triggers applicationDidBecomeActive on some macOS versions).
+  // Using showWindow here instead of toggleWindow prevents the re-entry race where
+  // a summon immediately hides itself because activate fires mid-show.
+  app.on('activate', () => showWindow('app activate'))
 })
 
 app.on('will-quit', () => {
