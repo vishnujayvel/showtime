@@ -155,7 +155,10 @@ If not, install it:
 2. Install Whisper manually:
 
 ```bash
-brew install whisper-cli
+# Apple Silicon (M1/M2/M3/M4) — preferred:
+brew install whisperkit-cli
+# Apple Silicon fallback, or Intel Mac:
+brew install whisper-cpp
 ```
 
 3. Rerun the installer:

@@ -656,8 +656,10 @@ ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
     const buf = Buffer.from(audioBase64, 'base64')
     writeFileSync(tmpWav, buf)
 
-    // Find whisper-cli (whisper-cpp homebrew) or whisper (python)
+    // Find whisper backend in priority order: whisperkit-cli (Apple Silicon CoreML) → whisper-cli (whisper-cpp) → whisper (python)
     const candidates = [
+      '/opt/homebrew/bin/whisperkit-cli',
+      '/usr/local/bin/whisperkit-cli',
       '/opt/homebrew/bin/whisper-cli',
       '/usr/local/bin/whisper-cli',
       '/opt/homebrew/bin/whisper',
@@ -671,66 +673,96 @@ ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
     }
 
     if (!whisperBin) {
-      try {
-        whisperBin = execSync('/bin/zsh -lc "whence -p whisper-cli"', { encoding: 'utf-8' }).trim()
-      } catch {}
-    }
-    if (!whisperBin) {
-      try {
-        whisperBin = execSync('/bin/zsh -lc "whence -p whisper"', { encoding: 'utf-8' }).trim()
-      } catch {}
+      for (const name of ['whisperkit-cli', 'whisper-cli', 'whisper']) {
+        try {
+          whisperBin = execSync(`/bin/zsh -lc "whence -p ${name}"`, { encoding: 'utf-8' }).trim()
+          if (whisperBin) break
+        } catch {}
+      }
     }
 
     if (!whisperBin) {
+      const hint = process.arch === 'arm64'
+        ? 'brew install whisperkit-cli   (or: brew install whisper-cpp)'
+        : 'brew install whisper-cpp'
       return {
-        error: 'Whisper not found. Install with: brew install whisper-cli',
+        error: `Whisper not found. Install with:\n  ${hint}`,
         transcript: null,
       }
     }
 
-    const isWhisperCpp = whisperBin.includes('whisper-cli')
+    const isWhisperKit = whisperBin.includes('whisperkit-cli')
+    const isWhisperCpp = !isWhisperKit && whisperBin.includes('whisper-cli')
 
-    // Find model file — prefer multilingual (auto-detect language) over .en (English-only)
-    const modelCandidates = [
-      join(homedir(), '.local/share/whisper/ggml-base.bin'),
-      join(homedir(), '.local/share/whisper/ggml-tiny.bin'),
-      '/opt/homebrew/share/whisper-cpp/models/ggml-base.bin',
-      '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.bin',
-      // Fall back to English-only models if multilingual not available
-      join(homedir(), '.local/share/whisper/ggml-base.en.bin'),
-      join(homedir(), '.local/share/whisper/ggml-tiny.en.bin'),
-      '/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin',
-      '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.en.bin',
-    ]
-
-    let modelPath = ''
-    for (const m of modelCandidates) {
-      if (existsSync(m)) { modelPath = m; break }
-    }
-
-    // Detect if using an English-only model (.en suffix) — force English if so
-    const isEnglishOnly = modelPath.includes('.en.')
-    log(`Transcribing with: ${whisperBin} (model: ${modelPath || 'default'}, lang: ${isEnglishOnly ? 'en' : 'auto'})`)
+    log(`Transcribing with: ${whisperBin} (backend: ${isWhisperKit ? 'WhisperKit' : isWhisperCpp ? 'whisper-cpp' : 'Python whisper'})`)
 
     let output: string
-    if (isWhisperCpp) {
+    if (isWhisperKit) {
+      // WhisperKit (Apple Silicon CoreML) — auto-downloads models on first run
+      // Use --report to produce a JSON file with a top-level "text" field for deterministic parsing
+      const reportDir = tmpdir()
+      execSync(
+        `"${whisperBin}" transcribe --audio-path "${tmpWav}" --model tiny --without-timestamps --skip-special-tokens --report --report-path "${reportDir}"`,
+        { encoding: 'utf-8', timeout: 60000 }
+      )
+      // WhisperKit writes <audioFileName>.json (filename without extension)
+      const wavBasename = require('path').basename(tmpWav, '.wav')
+      const reportPath = join(reportDir, `${wavBasename}.json`)
+      if (existsSync(reportPath)) {
+        try {
+          const report = JSON.parse(readFileSync(reportPath, 'utf-8'))
+          const transcript = (report.text || '').trim()
+          try { unlinkSync(reportPath) } catch {}
+          // Also clean up .srt that --report creates
+          const srtPath = join(reportDir, `${wavBasename}.srt`)
+          try { unlinkSync(srtPath) } catch {}
+          return { error: null, transcript }
+        } catch (parseErr: any) {
+          log(`WhisperKit JSON parse failed: ${parseErr.message}, falling back to stdout`)
+          try { unlinkSync(reportPath) } catch {}
+        }
+      }
+      // Fallback: re-run without --report, stdout is plain text when --verbose is not set
+      output = execSync(
+        `"${whisperBin}" transcribe --audio-path "${tmpWav}" --model tiny --without-timestamps --skip-special-tokens`,
+        { encoding: 'utf-8', timeout: 60000 }
+      )
+    } else if (isWhisperCpp) {
       // whisper-cpp: whisper-cli -m model -f file --no-timestamps
+      // Find model file — prefer multilingual (auto-detect language) over .en (English-only)
+      const modelCandidates = [
+        join(homedir(), '.local/share/whisper/ggml-base.bin'),
+        join(homedir(), '.local/share/whisper/ggml-tiny.bin'),
+        '/opt/homebrew/share/whisper-cpp/models/ggml-base.bin',
+        '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.bin',
+        join(homedir(), '.local/share/whisper/ggml-base.en.bin'),
+        join(homedir(), '.local/share/whisper/ggml-tiny.en.bin'),
+        '/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin',
+        '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.en.bin',
+      ]
+
+      let modelPath = ''
+      for (const m of modelCandidates) {
+        if (existsSync(m)) { modelPath = m; break }
+      }
+
       if (!modelPath) {
         return {
-          error: 'Whisper model not found. Download with:\nmkdir -p ~/.local/share/whisper && curl -L -o ~/.local/share/whisper/ggml-tiny.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin',
+          error: 'Whisper model not found. Download with:\n  mkdir -p ~/.local/share/whisper && curl -L -o ~/.local/share/whisper/ggml-tiny.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin',
           transcript: null,
         }
       }
+
+      const isEnglishOnly = modelPath.includes('.en.')
       const langFlag = isEnglishOnly ? '-l en' : '-l auto'
       output = execSync(
         `"${whisperBin}" -m "${modelPath}" -f "${tmpWav}" --no-timestamps ${langFlag}`,
         { encoding: 'utf-8', timeout: 30000 }
       )
     } else {
-      // Python whisper: auto-detect language unless English-only model
-      const langFlag = isEnglishOnly ? '--language en' : ''
+      // Python whisper
       output = execSync(
-        `"${whisperBin}" "${tmpWav}" --model tiny ${langFlag} --output_format txt --output_dir "${tmpdir()}"`,
+        `"${whisperBin}" "${tmpWav}" --model tiny --output_format txt --output_dir "${tmpdir()}"`,
         { encoding: 'utf-8', timeout: 30000 }
       )
       // Python whisper writes .txt file
@@ -747,7 +779,7 @@ ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
       }
     }
 
-    // whisper-cpp prints to stdout directly
+    // WhisperKit (stdout fallback) and whisper-cpp print to stdout directly
     // Strip timestamp patterns and known hallucination outputs
     const HALLUCINATIONS = /^\s*(\[BLANK_AUDIO\]|you\.?|thank you\.?|thanks\.?)\s*$/i
     const transcript = output

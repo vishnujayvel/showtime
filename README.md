@@ -156,7 +156,10 @@ claude
 **Step 6.** Install Whisper for voice input:
 
 ```bash
-brew install whisper-cli
+# Apple Silicon (M1/M2/M3/M4) — preferred:
+brew install whisperkit-cli
+# Apple Silicon fallback, or Intel Mac:
+brew install whisper-cpp
 ```
 
 > **No API keys or `.env` file required.** Clui CC uses your existing Claude Code CLI authentication (Pro/Team/Enterprise subscription).
