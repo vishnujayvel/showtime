@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
 import { useSessionStore } from './stores/sessionStore'
 import { useShowStore } from './stores/showStore'
 import { useThemeStore } from './theme'
+import { DarkStudioView } from './views/DarkStudioView'
+import { WritersRoomView } from './views/WritersRoomView'
+import { GoingLiveTransition } from './views/GoingLiveTransition'
 import { PillView } from './views/PillView'
 import { ExpandedView } from './views/ExpandedView'
-import { WritersRoomView } from './views/WritersRoomView'
 import { StrikeView } from './views/StrikeView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 
@@ -17,6 +19,8 @@ export default function App() {
 
   const phase = useShowStore((s) => s.phase)
   const isExpanded = useShowStore((s) => s.isExpanded)
+  const goingLiveActive = useShowStore((s) => s.goingLiveActive)
+  const completeGoingLive = useShowStore((s) => s.completeGoingLive)
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
 
   // ─── Theme initialization ───
@@ -86,12 +90,20 @@ export default function App() {
 
   // ─── View routing ───
   const renderView = () => {
+    // Going Live transition takes priority
+    if (goingLiveActive) {
+      return <GoingLiveTransition key="going-live" onComplete={completeGoingLive} />
+    }
+
+    // Pill view when collapsed
     if (!isExpanded) {
       return <PillView key="pill" />
     }
 
+    // Phase-based routing
     switch (phase) {
       case 'no_show':
+        return <DarkStudioView key="dark-studio" />
       case 'writers_room':
         return <WritersRoomView key="writers-room" />
       case 'strike':
@@ -101,12 +113,12 @@ export default function App() {
       case 'director':
         return <ExpandedView key="expanded" />
       default:
-        return <WritersRoomView key="writers-room-default" />
+        return <DarkStudioView key="dark-studio-default" />
     }
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', background: 'transparent' }}>
+    <div className="w-full h-full relative bg-transparent">
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>
