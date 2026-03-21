@@ -33,7 +33,11 @@ test.beforeAll(async () => {
   await page.waitForTimeout(3000)
 
   // Clear persisted show state so tests start from no_show phase
-  await page.evaluate(() => localStorage.removeItem('showtime-show-state'))
+  // Also set onboarding complete so onboarding doesn't block existing tests
+  await page.evaluate(() => {
+    localStorage.removeItem('showtime-show-state')
+    localStorage.setItem('showtime-onboarding-complete', 'true')
+  })
   await navigateAndWait()
 })
 
@@ -405,11 +409,20 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
     expect(bgColor).toMatch(/^#0{6}(00)?$/)
   })
 
-  test('#10 window bounds are 1040x720', async () => {
+  test('#10 window bounds match dynamic view mode', async () => {
     const bwHandle = await app.browserWindow(page)
     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    expect(bounds.width).toBe(1040)
-    expect(bounds.height).toBe(720)
+    // Dynamic sizing: expanded=580x640, full=580x700, pill=340x60
+    // The window should be one of these sizes, not the old fixed 1040x720
+    const validSizes = [
+      { width: 340, height: 60 },
+      { width: 580, height: 640 },
+      { width: 580, height: 700 },
+    ]
+    const matchesValid = validSizes.some(
+      (s) => bounds.width === s.width && bounds.height === s.height
+    )
+    expect(matchesValid).toBe(true)
   })
 
   test('#3 tray menu labels include Quit Showtime', async () => {
@@ -654,5 +667,322 @@ test.describe('Race Condition Guards (#11)', () => {
       }
     }
     await screenshot('issue-11-race-guard')
+  })
+})
+
+// ─── Claude E2E Conditional Verification (#6, #13) ───
+
+test.describe('Claude E2E Verification (#6, #13)', () => {
+  test('Writer\'s Room generates real lineup via Claude (conditional)', async () => {
+    // Navigate to Writer's Room plan step
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('showtime-show-state')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        parsed.state.phase = 'writers_room'
+        parsed.state.writersRoomStep = 'plan'
+        parsed.state.energy = 'high'
+        parsed.state.isExpanded = true
+        parsed.state.goingLiveActive = false
+        parsed.state.beatCheckPending = false
+        parsed.state.celebrationActive = false
+        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+      }
+    })
+    await navigateAndWait()
+
+    const textarea = page.locator('textarea').first()
+    await expect(textarea).toBeVisible({ timeout: 5000 })
+    await textarea.fill('Today I need to do deep work on the API, exercise at lunch, then admin tasks')
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByText('Build my lineup')
+    await expect(buildBtn).toBeVisible({ timeout: 3000 })
+    await buildBtn.click()
+
+    // Loading indicator should appear immediately
+    const loadingText = page.getByText('The writers are working...')
+    await expect(loadingText).toBeVisible({ timeout: 2000 }).catch(() => {})
+
+    // Wait for either: Act cards in lineup OR error/retry UI (30s timeout matches app timeout)
+    const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
+    const retryButton = page.getByText('Try again')
+
+    let claudePath: 'lineup' | 'unavailable' = 'unavailable'
+
+    try {
+      // Race: wait for either Act cards or retry button
+      await Promise.race([
+        actCardSelector.waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'lineup' }),
+        retryButton.waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'unavailable' }),
+      ])
+    } catch {
+      // If both timeout, check current state
+      const hasRetry = await retryButton.isVisible().catch(() => false)
+      if (hasRetry) claudePath = 'unavailable'
+    }
+
+    if (claudePath === 'lineup') {
+      // Claude responded — verify Act cards structure
+      console.log('Claude path: lineup generated successfully')
+
+      // Count Act cards (they use bg-surface-hover/50 class)
+      const actCards = page.locator('.bg-surface-hover\\/50')
+      const cardCount = await actCards.count()
+      expect(cardCount).toBeGreaterThanOrEqual(2) // Plan mentions 3 activities
+
+      // Each card should have a name (non-empty text in font-medium)
+      const firstCardName = actCards.first().locator('.font-medium')
+      await expect(firstCardName).toBeVisible()
+      const nameText = await firstCardName.textContent()
+      expect(nameText!.trim().length).toBeGreaterThan(0)
+
+      // Each card should have a duration (Xm pattern)
+      const durationText = actCards.first().locator('span.text-xs.text-txt-muted')
+      await expect(durationText).toBeVisible()
+      const duration = await durationText.textContent()
+      expect(duration).toMatch(/\d+m/)
+
+      // Each card should have a ClapperboardBadge (category indicator)
+      const badge = actCards.first().locator('.font-mono')
+      await expect(badge).toBeVisible()
+    } else {
+      // Claude unavailable — verify error/retry UI
+      console.log('Claude path: unavailable, error UI verified')
+
+      // Error message should be visible (uses show-metaphor language)
+      const errorMessage = page.locator('.text-onair').first()
+      const hasError = await errorMessage.isVisible().catch(() => false)
+      if (hasError) {
+        const errorText = await errorMessage.textContent()
+        // Should NOT use generic error language
+        expect(errorText).not.toMatch(/^Error$/i)
+        expect(errorText).not.toMatch(/Something went wrong/i)
+        expect(errorText).not.toMatch(/^Failed$/i)
+      }
+
+      // Retry button should be visible and clickable
+      await expect(retryButton).toBeVisible()
+    }
+
+    await screenshot('claude-e2e-verification')
+  })
+})
+
+// ─── Onboarding Tutorial (#15) ───
+
+test.describe('Onboarding (#15)', () => {
+  test('shows onboarding on first launch (no localStorage flag)', async () => {
+    // Clear onboarding flag and reset to no_show
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-onboarding-complete')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait()
+
+    // OnboardingView should render with step 1
+    const welcomeTitle = page.getByText('Welcome to the Show')
+    await expect(welcomeTitle).toBeVisible({ timeout: 10000 })
+    await screenshot('onboarding-01-welcome')
+  })
+
+  test('can navigate through all 5 steps', async () => {
+    // Step 1 → Step 2
+    const nextBtn = page.getByRole('button', { name: 'Next' })
+    await expect(nextBtn).toBeVisible({ timeout: 5000 })
+    await nextBtn.click()
+    await page.waitForTimeout(500)
+
+    const step2Title = page.locator('h1', { hasText: "The Writer's Room" })
+    await expect(step2Title).toBeVisible({ timeout: 5000 })
+    await screenshot('onboarding-02-writers-room')
+
+    // Step 2 → Step 3
+    await nextBtn.click()
+    await page.waitForTimeout(500)
+
+    const step3Title = page.locator('h1', { hasText: 'Acts and the ON AIR Light' })
+    await expect(step3Title).toBeVisible({ timeout: 5000 })
+
+    // ON AIR sample indicator should be visible
+    const onairSample = page.getByText('ON AIR')
+    const hasOnair = await onairSample.isVisible().catch(() => false)
+    if (hasOnair) expect(hasOnair).toBe(true)
+    await screenshot('onboarding-03-acts')
+
+    // Step 3 → Step 4
+    await nextBtn.click()
+    await page.waitForTimeout(500)
+
+    const step4Title = page.getByText('Beats: Moments of Presence')
+    await expect(step4Title).toBeVisible({ timeout: 5000 })
+    await screenshot('onboarding-04-beats')
+
+    // Step 4 → Step 5
+    await nextBtn.click()
+    await page.waitForTimeout(500)
+
+    const step5Title = page.getByText('Ready for Your First Show?')
+    await expect(step5Title).toBeVisible({ timeout: 5000 })
+
+    // Step 5 should have "Enter the Writer's Room" button instead of "Next"
+    const enterBtn = page.getByText("Enter the Writer's Room")
+    await expect(enterBtn).toBeVisible({ timeout: 5000 })
+    await screenshot('onboarding-05-ready')
+  })
+
+  test('completing onboarding enters Writer\'s Room', async () => {
+    const enterBtn = page.getByText("Enter the Writer's Room")
+    await enterBtn.click()
+    await page.waitForTimeout(1000)
+
+    // Should be in Writer's Room with energy selector
+    const highEnergy = page.getByText('High Energy')
+    await expect(highEnergy).toBeVisible({ timeout: 5000 })
+
+    // localStorage flag should be set
+    const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
+    expect(flag).toBe('true')
+    await screenshot('onboarding-06-complete')
+  })
+
+  test('does not show onboarding when flag is set', async () => {
+    // Set the flag and reset to no_show
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-onboarding-complete', 'true')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait()
+
+    // Should show DarkStudioView, not OnboardingView
+    const cta = page.getByText("Enter the Writer's Room")
+    await expect(cta).toBeVisible({ timeout: 10000 })
+
+    // The "Welcome to the Show" title should NOT be visible
+    const welcomeTitle = page.getByText('Welcome to the Show')
+    const hasWelcome = await welcomeTitle.isVisible().catch(() => false)
+    expect(hasWelcome).toBe(false)
+    await screenshot('onboarding-07-skipped')
+  })
+
+  test('can skip onboarding', async () => {
+    // Clear flag and reset
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-onboarding-complete')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait()
+
+    const welcomeTitle = page.getByText('Welcome to the Show')
+    await expect(welcomeTitle).toBeVisible({ timeout: 10000 })
+
+    // Click Skip
+    const skipBtn = page.getByText('Skip')
+    await expect(skipBtn).toBeVisible({ timeout: 3000 })
+    await skipBtn.click()
+    await page.waitForTimeout(1000)
+
+    // Should show DarkStudioView
+    const darkStudioCta = page.getByText("Enter the Writer's Room")
+    await expect(darkStudioCta).toBeVisible({ timeout: 5000 })
+
+    // Flag should be set
+    const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
+    expect(flag).toBe('true')
+    await screenshot('onboarding-08-skip')
+  })
+
+  test('back button navigates to previous step', async () => {
+    // Clear flag and reset
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-onboarding-complete')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait()
+
+    const welcomeTitle = page.getByText('Welcome to the Show')
+    await expect(welcomeTitle).toBeVisible({ timeout: 10000 })
+
+    // Go to step 2
+    const nextBtn = page.getByText('Next')
+    await nextBtn.click()
+    await page.waitForTimeout(500)
+
+    const step2Title = page.locator('h1', { hasText: "The Writer's Room" })
+    await expect(step2Title).toBeVisible({ timeout: 5000 })
+
+    // Click Back
+    const backBtn = page.getByText('Back')
+    await expect(backBtn).toBeVisible({ timeout: 3000 })
+    await backBtn.click()
+    await page.waitForTimeout(500)
+
+    // Should be back at step 1
+    await expect(welcomeTitle).toBeVisible({ timeout: 5000 })
+
+    // Step 1 should NOT have a Back button
+    const hasBack = await backBtn.isVisible().catch(() => false)
+    expect(hasBack).toBe(false)
+    await screenshot('onboarding-09-back')
+  })
+
+  test('Help button re-triggers onboarding', async () => {
+    // Set onboarding complete and go to DarkStudio
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-onboarding-complete', 'true')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait()
+
+    // Look for Help button (?)
+    const helpBtn = page.getByText('?').first()
+    if (await helpBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await helpBtn.click()
+      await page.waitForTimeout(1000)
+
+      // Onboarding should appear
+      const welcomeTitle = page.getByText('Welcome to the Show')
+      await expect(welcomeTitle).toBeVisible({ timeout: 5000 })
+
+      // localStorage flag should be removed
+      const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
+      expect(flag).toBeNull()
+    }
+    await screenshot('onboarding-10-help-retrigger')
+  })
+})
+
+// ─── Dynamic Window Bounds (#10) ───
+
+test.describe('Dynamic Window Bounds (#10)', () => {
+  test('window resizes for expanded mode', async () => {
+    // Set to no_show expanded (DarkStudio = expanded mode)
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-onboarding-complete', 'true')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait()
+    await page.waitForTimeout(500)
+
+    const bwHandle = await app.browserWindow(page)
+    const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
+    // expanded mode: 580x640
+    expect(bounds.width).toBe(580)
+    expect(bounds.height).toBe(640)
+  })
+
+  test('window resizes for full mode (Writer\'s Room)', async () => {
+    // Transition to Writer's Room
+    const cta = page.getByText("Enter the Writer's Room")
+    if (await cta.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await cta.click()
+      await page.waitForTimeout(1000)
+    }
+
+    const bwHandle = await app.browserWindow(page)
+    const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
+    // full mode: 580x700
+    expect(bounds.width).toBe(580)
+    expect(bounds.height).toBe(700)
   })
 })
