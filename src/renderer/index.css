@@ -1,205 +1,215 @@
 @import "tailwindcss";
+@source "../renderer";
 
-/*
- * ─── Theme CSS Variables ───
- * Generated at runtime by syncTokensToCss() in theme.ts.
- * Do NOT define --clui-* vars here — JS tokens are the single source of truth.
- */
+/* ─── Design Tokens (@theme) ─── */
+@theme {
+  /* Backgrounds */
+  --color-studio-bg: #0d0d0f;
+  --color-surface: #1a1a1e;
+  --color-surface-hover: #242428;
+  --color-titlebar: #151517;
+  --color-notepad-bg: #13130f;
+  --color-notepad-header: #1a1a14;
+  --color-notepad-border: #2a2a24;
+  --color-intermission-warm: #1e1c1a;
+
+  /* Text */
+  --color-txt-primary: #e8e6e0;
+  --color-txt-secondary: #9a9890;
+  --color-txt-muted: #5a5855;
+  --color-notepad-text: #c8c6b8;
+
+  /* Accents */
+  --color-accent: #d97757;
+  --color-accent-dark: #c4613e;
+  --color-onair: #ef4444;
+  --color-beat: #f59e0b;
+  --color-beat-light: #fbbf24;
+
+  /* Status */
+  --color-off: #3a3a3e;
+  --color-border-default: #333333;
+  --color-divider: #242428;
+  --color-card-border: #2a2a2e;
+
+  /* Category colors */
+  --color-cat-deep: #8b5cf6;
+  --color-cat-exercise: #22c55e;
+  --color-cat-admin: #60a5fa;
+  --color-cat-creative: #f59e0b;
+  --color-cat-social: #ec4899;
+
+  /* Typography */
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Animation tokens */
+  --animate-tally-pulse: tallyPulse 2s ease-in-out infinite;
+  --animate-onair-glow: onairGlow 2s ease-in-out infinite;
+  --animate-breathe: breathe 4s ease-in-out infinite;
+  --animate-beat-ignite: beatIgnite 0.6s ease-out forwards;
+  --animate-warm-pulse: warmPulse 2s ease-in-out infinite;
+  --animate-golden-glow: goldenGlow 3s ease-in-out infinite;
+  --animate-slide-up: slideUp 0.5s ease-out forwards;
+}
+
+/* ─── Keyframes ─── */
+
+@keyframes tallyPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px rgba(239,68,68,0.6); }
+  50%      { opacity: 0.4; box-shadow: 0 0 2px 1px rgba(239,68,68,0.2); }
+}
+
+@keyframes onairGlow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.5), inset 0 0 4px rgba(239,68,68,0.2); }
+  50%      { box-shadow: 0 0 16px 4px rgba(239,68,68,0.8), inset 0 0 8px rgba(239,68,68,0.3); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+@keyframes beatIgnite {
+  0%   { color: #5a5855; text-shadow: none; }
+  50%  { color: #fbbf24; text-shadow: 0 0 20px rgba(245,158,11,0.8); }
+  100% { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+}
+
+@keyframes warmPulse {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 1; }
+}
+
+@keyframes goldenGlow {
+  0%, 100% { text-shadow: 0 0 30px rgba(245,158,11,0.3); }
+  50%      { text-shadow: 0 0 60px rgba(245,158,11,0.6), 0 0 100px rgba(245,158,11,0.2); }
+}
+
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animation Utility Classes ─── */
+
+.tally-live {
+  animation: tallyPulse 2s ease-in-out infinite;
+}
+
+.onair-glow {
+  animation: onairGlow 2s ease-in-out infinite;
+}
+
+.spotlight-in {
+  animation: spotlightFadeIn 2s ease-out forwards;
+}
+
+.breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.beat-ignite {
+  animation: beatIgnite 0.6s ease-out forwards;
+}
+
+.beat-lit {
+  color: #f59e0b;
+  text-shadow: 0 0 8px rgba(245,158,11,0.4);
+}
+
+.beat-dim {
+  color: #5a5855;
+}
+
+.warm-pulse {
+  animation: warmPulse 2s ease-in-out infinite;
+}
+
+.golden-glow {
+  animation: goldenGlow 3s ease-in-out infinite;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+/* ─── shadcn/ui CSS Variable Overrides ─── */
+
+:root {
+  --background: var(--color-studio-bg);
+  --foreground: var(--color-txt-primary);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-txt-primary);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-txt-primary);
+  --primary: var(--color-accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-surface-hover);
+  --secondary-foreground: var(--color-txt-secondary);
+  --muted: var(--color-surface-hover);
+  --muted-foreground: var(--color-txt-muted);
+  --accent: var(--color-accent);
+  --accent-foreground: #ffffff;
+  --destructive: var(--color-onair);
+  --destructive-foreground: #ffffff;
+  --border: var(--color-border-default);
+  --input: var(--color-border-default);
+  --ring: var(--color-accent);
+  --radius: 0.5rem;
+}
+
+/* ─── Global Styles ─── */
 
 html, body, #root {
   height: 100%;
   margin: 0;
-  background: transparent !important;
+  padding: 0;
+  background-color: transparent;
   overflow: hidden;
-  user-select: none;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-body);
+  color: var(--color-txt-primary);
   -webkit-font-smoothing: antialiased;
+  user-select: none;
 }
 
-/* ─── Scrollbar — thin & subtle ─── */
+/* ─── Custom Scrollbar ─── */
+
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: var(--clui-scroll-thumb);
-  border-radius: 4px;
+  background: #333;
+  border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--clui-scroll-thumb-hover);
+  background: #444;
 }
 
-/* ─── Glass surface — shared card/pill style ─── */
-.glass-surface {
-  background: var(--clui-container-bg);
-  border: 1px solid var(--clui-container-border);
-  box-shadow: var(--clui-card-shadow);
-}
+/* ─── Textarea Reset ─── */
 
-/* ─── Textarea reset ─── */
 textarea {
   font-family: inherit;
   font-size: inherit;
   cursor: text;
 }
+
 textarea:focus {
   outline: none;
 }
-textarea::placeholder,
-input::placeholder {
-  color: var(--clui-placeholder);
-}
 
-/* ─── Allow text selection in conversation content ─── */
-.prose-cloud,
-.conversation-selectable {
-  user-select: text;
-  -webkit-user-select: text;
-}
+/* ─── Drag Region for Frameless Window ─── */
 
-/* ─── Prose overrides for markdown ─── */
-.prose-cloud {
-  color: var(--clui-text-primary);
-  line-height: 1.6;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-.prose-cloud p {
-  margin: 0.25em 0;
-}
-.prose-cloud pre {
-  background: var(--clui-code-bg);
-  border: 1px solid var(--clui-container-border);
-  border-radius: 10px;
-  padding: 0.75em 1em;
-  font-size: 12px;
-  overflow-x: auto;
-}
-.prose-cloud code {
-  background: var(--clui-accent-light);
-  color: var(--clui-accent);
-  padding: 0.15em 0.35em;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-.prose-cloud pre code {
-  background: none;
-  color: inherit;
-  padding: 0;
-}
-.prose-cloud a {
-  color: var(--clui-accent);
-  text-decoration: none;
-}
-.prose-cloud a:hover {
-  text-decoration: underline;
-}
-.prose-cloud ul, .prose-cloud ol {
-  padding-left: 1.2em;
-  margin: 0.25em 0;
-}
-.prose-cloud li {
-  margin: 0.1em 0;
-}
-.prose-cloud h1, .prose-cloud h2, .prose-cloud h3, .prose-cloud h4 {
-  margin: 0.5em 0 0.25em;
-  font-weight: 600;
-  color: var(--clui-text-primary);
-}
-.prose-cloud blockquote {
-  border-left: 3px solid var(--clui-tool-running-border);
-  padding-left: 0.75em;
-  color: var(--clui-text-secondary);
-  margin: 0.5em 0;
-}
-.prose-cloud table {
-  border-collapse: collapse;
-  width: max-content;
-  min-width: 100%;
-  font-size: 12px;
-}
-.prose-cloud th, .prose-cloud td {
-  border: 1px solid var(--clui-container-border);
-  padding: 0.4em 0.6em;
-  overflow-wrap: anywhere;
-}
-.prose-cloud th:first-child, .prose-cloud td:first-child {
-  white-space: nowrap;
-}
-.prose-cloud th {
-  background: var(--clui-surface-primary);
-  font-weight: 600;
-}
-
-/* ─── Pulsing dot animation ─── */
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-.animate-pulse-dot {
-  animation: pulse-dot 1.5s ease-in-out infinite;
-}
-
-/* ─── Bouncing dots for thinking ─── */
-@keyframes bounce-dot {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-4px); }
-}
-.animate-bounce-dot {
-  animation: bounce-dot 1.2s ease-in-out infinite;
-}
-
-/* ─── Stacking circle buttons ─── */
-.circles-out {
-  position: absolute;
-  right: calc(100% + 10px);
-  bottom: 0;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.btn-stack {
-  position: relative;
-  width: 160px;
-  height: 46px;
-  overflow: visible;
-}
-
-.stack-btn {
-  position: absolute;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--clui-text-tertiary);
-  cursor: pointer;
-  transition: right 0.4s cubic-bezier(0.34, 1.3, 0.64, 1),
-              color 0.15s ease,
-              background 0.15s ease;
-}
-.stack-btn:hover:not(:disabled) { color: var(--clui-btn-hover-color); background: var(--clui-btn-hover-bg); }
-.stack-btn:disabled { color: var(--clui-btn-disabled); cursor: default; }
-
-/* Collapsed: stacked on the right, overlapping */
-.stack-btn-1 { right: 0;    z-index: 3; }
-.stack-btn-2 { right: 28px; z-index: 2; }
-.stack-btn-3 { right: 56px; z-index: 1; }
-
-/* Expanded on hover: spread evenly */
-.btn-stack:hover .stack-btn-1 { right: 0; }
-.btn-stack:hover .stack-btn-2 { right: 56px; }
-.btn-stack:hover .stack-btn-3 { right: 112px; }
-
-/* ─── Drag region for frameless window ─── */
 .drag-region {
   -webkit-app-region: drag;
 }
+
 .no-drag {
   -webkit-app-region: no-drag;
 }

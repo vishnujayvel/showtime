@@ -51,9 +51,14 @@ export interface CluiAPI {
   onWindowShown(callback: () => void): () => void
 
   // ─── Showtime notifications ───
-  notifyActComplete(actName: string): void
-  notifyBeatCheck(): void
-  notifyVerdict(verdict: string): void
+  notifyActComplete(actName: string, sketch: string): void
+  notifyBeatCheck(actName: string): void
+  notifyVerdict(verdict: string, message: string): void
+
+  // ─── Showtime window management ───
+  setViewMode(mode: 'pill' | 'expanded' | 'full'): void
+  onDayBoundary(callback: () => void): () => void
+  onToggleExpanded(callback: () => void): () => void
 }
 
 const api: CluiAPI = {
@@ -145,9 +150,24 @@ const api: CluiAPI = {
   },
 
   // ─── Showtime notifications ───
-  notifyActComplete: (actName: string) => ipcRenderer.send(IPC.NOTIFY_ACT_COMPLETE, actName),
-  notifyBeatCheck: () => ipcRenderer.send(IPC.NOTIFY_BEAT_CHECK),
-  notifyVerdict: (verdict: string) => ipcRenderer.send(IPC.NOTIFY_VERDICT, verdict),
+  notifyActComplete: (actName: string, sketch: string) => ipcRenderer.send(IPC.NOTIFY_ACT_COMPLETE, actName, sketch),
+  notifyBeatCheck: (actName: string) => ipcRenderer.send(IPC.NOTIFY_BEAT_CHECK, actName),
+  notifyVerdict: (verdict: string, message: string) => ipcRenderer.send(IPC.NOTIFY_VERDICT, verdict, message),
+
+  // ─── Showtime window management ───
+  setViewMode: (mode) => ipcRenderer.send(IPC.SET_VIEW_MODE, mode),
+
+  onDayBoundary: (callback) => {
+    const handler = () => callback()
+    ipcRenderer.on(IPC.DAY_BOUNDARY, handler)
+    return () => ipcRenderer.removeListener(IPC.DAY_BOUNDARY, handler)
+  },
+
+  onToggleExpanded: (callback) => {
+    const handler = () => callback()
+    ipcRenderer.on(IPC.TOGGLE_EXPANDED, handler)
+    return () => ipcRenderer.removeListener(IPC.TOGGLE_EXPANDED, handler)
+  },
 }
 
 contextBridge.exposeInMainWorld('clui', api)
