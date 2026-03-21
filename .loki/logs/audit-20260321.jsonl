@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-03-21T16:44:56Z",
+  "event": "SESSION_START",
+  "data": "prd=.loki/openspec-prd-normalized.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 10478
+}
+{
+  "timestamp": "2026-03-21T17:28:33Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=.loki/openspec-prd-normalized.md",
+  "user": "vishnu",
+  "pid": 10478
+}
+{
+  "timestamp": "2026-03-21T19:40:28Z",
+  "event": "SESSION_START",
+  "data": "prd=.loki/openspec-prd-normalized.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 95303
+}
+{
+  "timestamp": "2026-03-21T19:50:04Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=.loki/openspec-prd-normalized.md",
+  "user": "vishnu",
+  "pid": 95303
+}
+{
+  "timestamp": "2026-03-21T20:31:25Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 71035
+}
+{
+  "timestamp": "2026-03-21T20:38:41Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md",
+  "user": "vishnu",
+  "pid": 71035
+}

@@ -1,0 +1,7 @@
+VERDICT: **PASS**
+
+FINDINGS:
+- [Medium] Window management logic (anchor tracking, bounds computation, drag deferral, display clamping — ~80 lines, 4 functions, 3 mutable module-level variables) lives directly in the god file `main/index.ts` rather than an extracted `WindowManager` module. `anchorPoint`, `isDragging`, `deferredViewMode` are implicit shared mutable state coupling `applyViewMode`, `createWindow`, `showWindow`, and the `will-move`/`moved` event handlers. Encapsulating in a class would make the invariants explicit and testable. (`src/main/index.ts:42-44`)
+- [Low] `VIEW_DIMENSIONS` typed as `Record<string, ...>` and `applyViewMode(mode: string)` accept any string, but the IPC handler constrains to `'pill' | 'expanded' | 'full'`. A typo in `applyViewMode('pil')` silently no-ops. Use the union type from the IPC handler signature. (`src/main/index.ts:35,128`)
+- [Low] Three no-op IPC handlers (`RESIZE_HEIGHT`, `SET_WINDOW_WIDTH`, `ANIMATE_HEIGHT`) kept for backward compatibility, plus their preload API surface (`setWindowWidth`, `animateHeight`). CLAUDE.md says to delete unused code rather than leave compat shims. (`src/main/index.ts:303-313`)
+- [Low] Beat Check force-expand effect (App.tsx:94-100) directly calls `setViewMode('expanded')`, but `setExpanded(true)` on the line above will also trigger the existing view-mode effect (App.tsx:66-92) which computes the same result. The explicit `setViewMode` call is redundant — two effects managing the same concern. (`src/renderer/App.tsx:94-100`)

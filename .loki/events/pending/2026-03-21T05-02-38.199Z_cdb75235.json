@@ -1,0 +1,8 @@
+{
+  "id": "cdb75235",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-21T05:02:38.199Z",
+  "payload": {"action":"load","count":"0","prd_provided":"true"},
+  "version": "1.0"
+}

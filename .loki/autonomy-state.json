@@ -1,0 +1,10 @@
+{
+    "retryCount": 1,
+    "status": "completion_promise_fulfilled",
+    "lastExitCode": 0,
+    "lastRun": "2026-03-21T20:38:40Z",
+    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md",
+    "pid": 71035,
+    "maxRetries": 50,
+    "baseWait": 60
+}

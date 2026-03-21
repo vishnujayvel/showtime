@@ -1,0 +1,5 @@
+
+
+VERDICT: PASS
+FINDINGS:
+- [Low] Dead no-op IPC handlers (`RESIZE_HEIGHT`, `SET_WINDOW_WIDTH`, `ANIMATE_HEIGHT`) kept for "backward compatibility" violate ISP — if no renderer sends these messages, the handlers are dead code and should be removed rather than preserved as no-ops with comments explaining their emptiness (src/main/index.ts:222-232)

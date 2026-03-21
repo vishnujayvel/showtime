@@ -1,0 +1,8 @@
+{
+  "id": "fe60c541",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-21T20:31:17.345Z",
+  "payload": {"action":"load","count":"0","prd_provided":"true"},
+  "version": "1.0"
+}

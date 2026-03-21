@@ -1,0 +1,5 @@
+VERDICT: PASS
+FINDINGS:
+- None
+
+The changes are architecturally sound. The `window-geometry.ts` extraction is a textbook SRP improvement: pure functions with no Electron dependencies, clean interfaces (`Point`, `Bounds`, `Dims`), and correct dependency direction (leaf module imported by the main process). The thin `clampToDisplay` adapter in `index.ts` properly bridges the pure geometry with Electron's `screen` API. The inline style removal in `DarkStudioView` and drag region additions follow established project conventions.

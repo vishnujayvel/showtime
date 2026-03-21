@@ -1,0 +1,509 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/context/tracking.json
+e2e/screenshots/01-dark-studio.png
+e2e/screenshots/02-writers-room.png
+e2e/screenshots/03-energy-selected.png
+e2e/screenshots/04-plan-filled.png
+e2e/screenshots/05-lineup-preview.png
+e2e/screenshots/07-expanded-view.png
+e2e/screenshots/08-beat-check.png
+e2e/screenshots/09-intermission.png
+e2e/screenshots/10-strike-verdict.png
+e2e/screenshots/13-final-state.png
+e2e/screenshots/14-going-live-onair.png
+e2e/screenshots/15-beat-celebration.png
+e2e/screenshots/claude-e2e-verification.png
+e2e/screenshots/issue-1-claude.png
+e2e/screenshots/issue-10-dimensions.png
+e2e/screenshots/issue-11-race-guard.png
+e2e/screenshots/issue-14-loading.png
+e2e/screenshots/issue-2-celebration.png
+e2e/screenshots/issue-7-onair.png
+e2e/screenshots/issue-8-spotlight.png
+e2e/screenshots/onboarding-01-welcome.png
+e2e/screenshots/onboarding-02-writers-room.png
+e2e/screenshots/onboarding-03-acts.png
+e2e/screenshots/onboarding-04-beats.png
+e2e/screenshots/onboarding-05-ready.png
+e2e/screenshots/onboarding-06-complete.png
+e2e/screenshots/onboarding-07-skipped.png
+e2e/screenshots/onboarding-08-skip.png
+e2e/screenshots/onboarding-09-back.png
+e2e/screenshots/onboarding-10-help-retrigger.png
+src/__tests__/windowGeometry.test.ts
+src/main/index.ts
+src/main/window-geometry.ts
+src/renderer/index.css
+src/renderer/views/DarkStudioView.tsx
+src/renderer/views/OnboardingView.tsx
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index 3a0e888..28770f5 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,44 +1,31 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T18:00:00Z
++Updated: 2026-03-21T20:37:17Z
+ 
+ ## Current State
+ 
+-- Iteration: 2
+-- Phase: VERIFICATION
+-- RARV Step: VERIFY
++- Iteration: 1
++- Phase: DEVELOPMENT
++- RARV Step: ACT
+ - Provider: claude
+-- Elapsed: 5m
++- Elapsed: 0m
+ 
+ ## Last Completed Task
+ 
+-- Last commit: Clean up dead code (BAR_WIDTH, PILL_HEIGHT) and stale comments in main/index.ts
+-- Quality gate failures from iteration 1 were false positives (syntax errors in App.tsx and OnboardingView.tsx — both compile cleanly)
+-- Removed unused BAR_WIDTH and PILL_HEIGHT constants
+-- Updated stale comments about "fixed height mode" to reference SET_VIEW_MODE
++- Last commit: Complete window-management OpenSpec: extract geometry, add drag regions, safety valve
++- Files changed: src/__tests__/windowGeometry.test.ts, src/main/index.ts, src/main/window-geometry.ts, src/renderer/index.css, src/renderer/views/DarkStudioView.tsx
++  (+1 more)
+ 
+ ## Active Blockers
+ 
+ - None
+ 
+-## Verified PRD Implementation
++## Next Up
+ 
+-All 4 OpenSpec requirements verified against PRD:
+-
+-1. **Window Management (#10)**: VIEW_DIMENSIONS map with pill/expanded/full sizes. SET_VIEW_MODE handler does real setBounds() with bottom-anchor + horizontal center. createWindow() uses VIEW_DIMENSIONS.expanded for initial sizing. App.tsx useEffect calls setViewMode on phase/isExpanded/goingLiveActive changes.
+-
+-2. **Onboarding (#15)**: OnboardingView with 5 steps, localStorage check, Skip/Back/Next navigation, Help button re-trigger, all Tailwind styling, spring physics animations. E2E tests cover all scenarios.
+-
+-3. **Claude E2E (#6, #13)**: Conditional test with Promise.race (lineup vs error path), validates both paths, 30s timeout, proper selectors for Act cards structure.
+-
+-4. **E2E Tests**: Comprehensive tests for onboarding (7 tests), window bounds (2 tests), Claude verification (1 conditional test).
+-
+-## Mistakes & Learnings
+-
+-- Quality gate flagged "syntax errors" in App.tsx and OnboardingView.tsx but both files compile cleanly with tsc and parse without errors. The static_analysis gate may have had a transient failure.
+-- Dead code (BAR_WIDTH=1040, PILL_HEIGHT=720) and stale comments survived from the old fixed-window approach — cleaned up in iteration 2.
++- Tailwind CSS v4 Configuration & Design Tokens
++- shadcn/ui Setup & Custom Button Variants
++- Font Imports
+ 
+ ## Key Decisions This Session
+ 
+-- Confirmed all PRD requirements are fully implemented
+-- Cleaned up dead code rather than leaving it for future confusion
++- None recorded yet
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index a130730..ffb5709 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,7 +1,7 @@
+ {
+-  "session_id": "b050c090-c7f6-4bc7-b49a-34b22f7d37f4",
++  "session_id": "c08e1e32-8865-42a2-9780-7e0b2888a217",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T17:27:36.131490+00:00",
++  "updated_at": "2026-03-21T20:37:15.519867+00:00",
+   "current": {
+     "input_tokens": 0,
+     "output_tokens": 0,
+@@ -9,7 +9,7 @@
+     "cache_creation_tokens": 0,
+     "total_tokens": 0,
+     "context_window_pct": 0.0,
+-    "estimated_cost_usd": 19.7349
++    "estimated_cost_usd": 23.8322
+   },
+   "compactions": [
+     {
+@@ -42,9 +42,9 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 13820,
+-    "total_output": 108433,
+-    "total_cost_usd": 19.7349,
++    "total_input": 13962,
++    "total_output": 127952,
++    "total_cost_usd": 23.8322,
+     "compaction_count": 1,
+     "iterations_tracked": 2
+   }
+diff --git a/e2e/screenshots/01-dark-studio.png b/e2e/screenshots/01-dark-studio.png
+index 74ee89a..402cc6e 100644
+Binary files a/e2e/screenshots/01-dark-studio.png and b/e2e/screenshots/01-dark-studio.png differ
+diff --git a/e2e/screenshots/02-writers-room.png b/e2e/screenshots/02-writers-room.png
+index 33030a2..95dd239 100644
+Binary files a/e2e/screenshots/02-writers-room.png and b/e2e/screenshots/02-writers-room.png differ
+diff --git a/e2e/screenshots/03-energy-selected.png b/e2e/screenshots/03-energy-selected.png
+index 85a5115..c7f3408 100644
+Binary files a/e2e/screenshots/03-energy-selected.png and b/e2e/screenshots/03-energy-selected.png differ
+diff --git a/e2e/screenshots/04-plan-filled.png b/e2e/screenshots/04-plan-filled.png
+index 060d852..7cf0756 100644
+Binary files a/e2e/screenshots/04-plan-filled.png and b/e2e/screenshots/04-plan-filled.png differ
+diff --git a/e2e/screenshots/05-lineup-preview.png b/e2e/screenshots/05-lineup-preview.png
+index aa9c4aa..657a00c 100644
+Binary files a/e2e/screenshots/05-lineup-preview.png and b/e2e/screenshots/05-lineup-preview.png differ
+diff --git a/e2e/screenshots/07-expanded-view.png b/e2e/screenshots/07-expanded-view.png
+index 0bfdd8a..30f2eec 100644
+Binary files a/e2e/screenshots/07-expanded-view.png and b/e2e/screenshots/07-expanded-view.png differ
+diff --git a/e2e/screenshots/08-beat-check.png b/e2e/screenshots/08-beat-check.png
+index 1f7828a..208aa1c 100644
+Binary files a/e2e/screenshots/08-beat-check.png and b/e2e/screenshots/08-beat-check.png differ
+diff --git a/e2e/screenshots/09-intermission.png b/e2e/screenshots/09-intermission.png
+index e353d76..397f90a 100644
+Binary files a/e2e/screenshots/09-intermission.png and b/e2e/screenshots/09-intermission.png differ
+diff --git a/e2e/screenshots/10-strike-verdict.png b/e2e/screenshots/10-strike-verdict.png
+index e93d45a..88ced11 100644
+Binary files a/e2e/screenshots/10-strike-verdict.png and b/e2e/screenshots/10-strike-verdict.png differ
+diff --git a/e2e/screenshots/13-final-state.png b/e2e/screenshots/13-final-state.png
+index 0686059..a08c93a 100644
+Binary files a/e2e/screenshots/13-final-state.png and b/e2e/screenshots/13-final-state.png differ
+diff --git a/e2e/screenshots/14-going-live-onair.png b/e2e/screenshots/14-going-live-onair.png
+index 23ed339..0656a81 100644
+Binary files a/e2e/screenshots/14-going-live-onair.png and b/e2e/screenshots/14-going-live-onair.png differ
+diff --git a/e2e/screenshots/15-beat-celebration.png b/e2e/screenshots/15-beat-celebration.png
+index 70ef2ba..f778cb9 100644
+Binary files a/e2e/screenshots/15-beat-celebration.png and b/e2e/screenshots/15-beat-celebration.png differ
+diff --git a/e2e/screenshots/claude-e2e-verification.png b/e2e/screenshots/claude-e2e-verification.png
+index 83d9130..8205b1c 100644
+Binary files a/e2e/screenshots/claude-e2e-verification.png and b/e2e/screenshots/claude-e2e-verification.png differ
+diff --git a/e2e/screenshots/issue-1-claude.png b/e2e/screenshots/issue-1-claude.png
+index 7070ca1..c60672e 100644
+Binary files a/e2e/screenshots/issue-1-claude.png and b/e2e/screenshots/issue-1-claude.png differ
+diff --git a/e2e/screenshots/issue-10-dimensions.png b/e2e/screenshots/issue-10-dimensions.png
+index 23ed339..cbe8433 100644
+Binary files a/e2e/screenshots/issue-10-dimensions.png and b/e2e/screenshots/issue-10-dimensions.png differ
+diff --git a/e2e/screenshots/issue-11-race-guard.png b/e2e/screenshots/issue-11-race-guard.png
+index f976cfe..3498d23 100644
+Binary files a/e2e/screenshots/issue-11-race-guard.png and b/e2e/screenshots/issue-11-race-guard.png differ
+diff --git a/e2e/screenshots/issue-14-loading.png b/e2e/screenshots/issue-14-loading.png
+index e016a8c..86167a9 100644
+Binary files a/e2e/screenshots/issue-14-loading.png and b/e2e/screenshots/issue-14-loading.png differ
+diff --git a/e2e/screenshots/issue-2-celebration.png b/e2e/screenshots/issue-2-celebration.png
+index e62693e..d56f7d0 100644
+Binary files a/e2e/screenshots/issue-2-celebration.png and b/e2e/screenshots/issue-2-celebration.png differ
+diff --git a/e2e/screenshots/issue-7-onair.png b/e2e/screenshots/issue-7-onair.png
+index 35af840..f673a73 100644
+Binary files a/e2e/screenshots/issue-7-onair.png and b/e2e/screenshots/issue-7-onair.png differ
+diff --git a/e2e/screenshots/issue-8-spotlight.png b/e2e/screenshots/issue-8-spotlight.png
+index 23ed339..cbe8433 100644
+Binary files a/e2e/screenshots/issue-8-spotlight.png and b/e2e/screenshots/issue-8-spotlight.png differ
+diff --git a/e2e/screenshots/onboarding-01-welcome.png b/e2e/screenshots/onboarding-01-welcome.png
+index 001f718..27b8b03 100644
+Binary files a/e2e/screenshots/onboarding-01-welcome.png and b/e2e/screenshots/onboarding-01-welcome.png differ
+diff --git a/e2e/screenshots/onboarding-02-writers-room.png b/e2e/screenshots/onboarding-02-writers-room.png
+index 047c283..1783108 100644
+Binary files a/e2e/screenshots/onboarding-02-writers-room.png and b/e2e/screenshots/onboarding-02-writers-room.png differ
+diff --git a/e2e/screenshots/onboarding-03-acts.png b/e2e/screenshots/onboarding-03-acts.png
+index af444cf..79453af 100644
+Binary files a/e2e/screenshots/onboarding-03-acts.png and b/e2e/screenshots/onboarding-03-acts.png differ
+diff --git a/e2e/screenshots/onboarding-04-beats.png b/e2e/screenshots/onboarding-04-beats.png
+index 7ab1626..b29ee1e 100644
+Binary files a/e2e/screenshots/onboarding-04-beats.png and b/e2e/screenshots/onboarding-04-beats.png differ
+diff --git a/e2e/screenshots/onboarding-05-ready.png b/e2e/screenshots/onboarding-05-ready.png
+index a8b08a4..f9ab40e 100644
+Binary files a/e2e/screenshots/onboarding-05-ready.png and b/e2e/screenshots/onboarding-05-ready.png differ
+diff --git a/e2e/screenshots/onboarding-06-complete.png b/e2e/screenshots/onboarding-06-complete.png
+index 23ed339..cbe8433 100644
+Binary files a/e2e/screenshots/onboarding-06-complete.png and b/e2e/screenshots/onboarding-06-complete.png differ
+diff --git a/e2e/screenshots/onboarding-07-skipped.png b/e2e/screenshots/onboarding-07-skipped.png
+index 74ee89a..d56f7d0 100644
+Binary files a/e2e/screenshots/onboarding-07-skipped.png and b/e2e/screenshots/onboarding-07-skipped.png differ
+diff --git a/e2e/screenshots/onboarding-08-skip.png b/e2e/screenshots/onboarding-08-skip.png
+index 3f27d73..6690126 100644
+Binary files a/e2e/screenshots/onboarding-08-skip.png and b/e2e/screenshots/onboarding-08-skip.png differ
+diff --git a/e2e/screenshots/onboarding-09-back.png b/e2e/screenshots/onboarding-09-back.png
+index f01443c..c867b43 100644
+Binary files a/e2e/screenshots/onboarding-09-back.png and b/e2e/screenshots/onboarding-09-back.png differ
+diff --git a/e2e/screenshots/onboarding-10-help-retrigger.png b/e2e/screenshots/onboarding-10-help-retrigger.png
+index 3e856f2..e95cbf2 100644
+Binary files a/e2e/screenshots/onboarding-10-help-retrigger.png and b/e2e/screenshots/onboarding-10-help-retrigger.png differ
+diff --git a/src/__tests__/windowGeometry.test.ts b/src/__tests__/windowGeometry.test.ts
+new file mode 100644
+index 0000000..6e4dc8c
+--- /dev/null
++++ b/src/__tests__/windowGeometry.test.ts
+@@ -0,0 +1,95 @@
++import { describe, it, expect } from 'vitest'
++import {
++  computeAnchorFromBounds,
++  computeBoundsFromAnchor,
++  clampToWorkArea,
++} from '../main/window-geometry'
++
++describe('window-geometry', () => {
++  describe('computeAnchorFromBounds', () => {
++    it('returns center-bottom point', () => {
++      const anchor = computeAnchorFromBounds({ x: 640, y: 380, width: 560, height: 620 })
++      expect(anchor).toEqual({ x: 920, y: 1000 })
++    })
++
++    it('works with pill-sized bounds', () => {
++      const anchor = computeAnchorFromBounds({ x: 760, y: 1002, width: 320, height: 48 })
++      expect(anchor).toEqual({ x: 920, y: 1050 })
++    })
++  })
++
++  describe('computeBoundsFromAnchor', () => {
++    it('computes full-size bounds from anchor', () => {
++      const bounds = computeBoundsFromAnchor({ x: 800, y: 1050 }, { width: 560, height: 740 })
++      expect(bounds).toEqual({ x: 520, y: 310, width: 560, height: 740 })
++    })
++
++    it('computes pill bounds from anchor', () => {
++      const bounds = computeBoundsFromAnchor({ x: 800, y: 1050 }, { width: 320, height: 48 })
++      expect(bounds).toEqual({ x: 640, y: 1002, width: 320, height: 48 })
++    })
++
++    it('preserves center-x across view transitions', () => {
++      // Start with full-size window
++      const fullBounds = { x: 520, y: 310, width: 560, height: 740 }
++      const anchor = computeAnchorFromBounds(fullBounds)
++
++      // Transition to pill
++      const pillBounds = computeBoundsFromAnchor(anchor, { width: 320, height: 48 })
++      expect(pillBounds.x + pillBounds.width / 2).toBe(anchor.x)
++
++      // Transition back to expanded
++      const expandedBounds = computeBoundsFromAnchor(anchor, { width: 560, height: 620 })
++      expect(expandedBounds.x + expandedBounds.width / 2).toBe(anchor.x)
++    })
++
++    it('preserves bottom-y across view transitions', () => {
++      const anchor = { x: 800, y: 1050 }
++      const pill = computeBoundsFromAnchor(anchor, { width: 320, height: 48 })
++      const full = computeBoundsFromAnchor(anchor, { width: 560, height: 740 })
++
++      expect(pill.y + pill.height).toBe(1050)
++      expect(full.y + full.height).toBe(1050)
++    })
++  })
++
++  describe('clampToWorkArea', () => {
++    const workArea = { x: 0, y: 25, width: 1920, height: 1055 }
++
++    it('returns unchanged bounds when fully within work area', () => {
++      const bounds = { x: 100, y: 100, width: 560, height: 740 }
++      expect(clampToWorkArea(bounds, workArea)).toEqual(bounds)
++    })
++
++    it('clamps negative x to work area left edge', () => {
++      const bounds = { x: -100, y: 100, width: 560, height: 740 }
++      const clamped = clampToWorkArea(bounds, workArea)
++      expect(clamped.x).toBe(0)
++    })
++
++    it('clamps overflow x to work area right edge', () => {
++      const bounds = { x: 1500, y: 100, width: 560, height: 740 }
++      const clamped = clampToWorkArea(bounds, workArea)
++      expect(clamped.x).toBe(1360) // 1920 - 560
++    })
++
++    it('clamps above work area to top edge', () => {
++      const bounds = { x: 100, y: 0, width: 560, height: 740 }
++      const clamped = clampToWorkArea(bounds, workArea)
++      expect(clamped.y).toBe(25)
++    })
++
++    it('clamps below work area to bottom edge', () => {
++      const bounds = { x: 100, y: 500, width: 560, height: 740 }
++      const clamped = clampToWorkArea(bounds, workArea)
++      expect(clamped.y).toBe(340) // 25 + 1055 - 740
++    })
++
++    it('preserves dimensions', () => {
++      const bounds = { x: -500, y: -500, width: 320, height: 48 }
++      const clamped = clampToWorkArea(bounds, workArea)
++      expect(clamped.width).toBe(320)
++      expect(clamped.height).toBe(48)
++    })
++  })
++})
+diff --git a/src/main/index.ts b/src/main/index.ts
+index 07835da..b2a525e 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -10,6 +10,7 @@ import { log as _log, LOG_FILE, flushLogs } from './logger'
+ import { getCliEnv } from './cli-env'
+ import { IPC } from '../shared/types'
+ import type { RunOptions, NormalizedEvent, EnrichedError } from '../shared/types'
++import { computeAnchorFromBounds, computeBoundsFromAnchor, clampToWorkArea } from './window-geometry'
+ 
+ const DEBUG_MODE = process.env.CLUI_DEBUG === '1'
+ const SPACES_DEBUG = DEBUG_MODE || process.env.CLUI_SPACES_DEBUG === '1'
+@@ -101,28 +102,9 @@ controlPlane.on('error', (tabId: string, error: EnrichedError) => {
+ 
+ // ─── Window Creation ───
+ 
+-function computeAnchorFromBounds(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number } {
+-  return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }
+-}
+-
+-function computeBoundsFromAnchor(anchor: { x: number; y: number }, dims: { width: number; height: number }): { x: number; y: number; width: number; height: number } {
+-  return {
+-    x: Math.round(anchor.x - dims.width / 2),
+-    y: Math.round(anchor.y - dims.height),
+-    width: dims.width,
+-    height: dims.height,
+-  }
+-}
+-
+ function clampToDisplay(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } {
+   const display = screen.getDisplayMatching(bounds as Electron.Rectangle)
+-  const wa = display.workArea
+-  return {
+-    x: Math.max(wa.x, Math.min(bounds.x, wa.x + wa.width - bounds.width)),
+-    y: Math.max(wa.y, Math.min(bounds.y, wa.y + wa.height - bounds.height)),
+-    width: bounds.width,
+-    height: bounds.height,
+-  }
++  return clampToWorkArea(bounds, display.workArea)
+ }
+ 
+ function applyViewMode(mode: string): void {
+@@ -192,10 +174,25 @@ function createWindow(): void {
+   mainWindow.setAlwaysOnTop(true, 'screen-saver')
+ 
+   // isDragging guard: track user drags to prevent setBounds during drag
++  let dragTimeout: ReturnType<typeof setTimeout> | null = null
+   mainWindow.on('will-move', () => {
+     isDragging = true
++    // Safety valve: if 'moved' never fires, reset after 5 seconds
++    if (dragTimeout) clearTimeout(dragTimeout)
++    dragTimeout = setTimeout(() => {
++      if (isDragging) {
++        log('Showtime: isDragging safety valve triggered (5s timeout)')
++        isDragging = false
++        if (deferredViewMode) {
++          const mode = deferredViewMode
++          deferredViewMode = null
++          applyViewMode(mode)
++        }
++      }
++    }, 5000)
+   })
+   mainWindow.on('moved', () => {
++    if (dragTimeout) { clearTimeout(dragTimeout); dragTimeout = null }
+     isDragging = false
+     if (mainWindow && !mainWindow.isDestroyed()) {
+       anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
+diff --git a/src/main/window-geometry.ts b/src/main/window-geometry.ts
+new file mode 100644
+index 0000000..f966f78
+--- /dev/null
++++ b/src/main/window-geometry.ts
+@@ -0,0 +1,39 @@
++/**
++ * Pure geometry functions for anchor-based window positioning.
++ * Extracted from index.ts for testability.
++ */
++
++export interface Point { x: number; y: number }
++export interface Bounds { x: number; y: number; width: number; height: number }
++export interface Dims { width: number; height: number }
++
++/**
++ * Compute the center-bottom anchor point from a window's bounds.
++ */
++export function computeAnchorFromBounds(bounds: Bounds): Point {
++  return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }
++}
++
++/**
++ * Compute window bounds from a center-bottom anchor point and dimensions.
++ */
++export function computeBoundsFromAnchor(anchor: Point, dims: Dims): Bounds {
++  return {
++    x: Math.round(anchor.x - dims.width / 2),
++    y: Math.round(anchor.y - dims.height),
++    width: dims.width,
++    height: dims.height,
++  }
++}
++
++/**
++ * Clamp bounds so the window stays within a work area.
++ */
++export function clampToWorkArea(bounds: Bounds, workArea: Bounds): Bounds {
++  return {
++    x: Math.max(workArea.x, Math.min(bounds.x, workArea.x + workArea.width - bounds.width)),
++    y: Math.max(workArea.y, Math.min(bounds.y, workArea.y + workArea.height - bounds.height)),
++    width: bounds.width,
++    height: bounds.height,
++  }
++}
+diff --git a/src/renderer/index.css b/src/renderer/index.css
+index a965a89..0d022c0 100644
+--- a/src/renderer/index.css
++++ b/src/renderer/index.css
+@@ -261,3 +261,9 @@ textarea:focus {
+ .no-drag {
+   -webkit-app-region: no-drag;
+ }
++
++/* ─── Spotlight Accent Gradient ─── */
++
++.spotlight-accent {
++  background: radial-gradient(ellipse 400px 350px at 50% 35%, rgba(217,119,87,0.06) 0%, transparent 70%);
++}
+diff --git a/src/renderer/views/DarkStudioView.tsx b/src/renderer/views/DarkStudioView.tsx
+index b47d124..2b3dc64 100644
+--- a/src/renderer/views/DarkStudioView.tsx
++++ b/src/renderer/views/DarkStudioView.tsx
+@@ -9,14 +9,11 @@ export function DarkStudioView() {
+     <div
+       className="min-h-screen bg-studio-bg flex flex-col items-center justify-center relative"
+     >
++      {/* Invisible drag handle */}
++      <div className="absolute top-0 left-0 right-0 h-8 drag-region" />
++
+       {/* Spotlight overlay */}
+-      <div
+-        className="absolute inset-0 pointer-events-none"
+-        style={{
+-          background:
+-            'radial-gradient(ellipse 400px 350px at 50% 35%, rgba(217,119,87,0.06) 0%, transparent 70%)',
+-        }}
+-      />
++      <div className="absolute inset-0 pointer-events-none spotlight-accent" />
+ 
+       <motion.div
+         initial={{ opacity: 0, filter: 'blur(8px)' }}
+diff --git a/src/renderer/views/OnboardingView.tsx b/src/renderer/views/OnboardingView.tsx
+index 40fdaba..9d30793 100644
+--- a/src/renderer/views/OnboardingView.tsx
++++ b/src/renderer/views/OnboardingView.tsx
+@@ -63,6 +63,9 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
+     <div
+       className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between rounded-xl overflow-hidden relative"
+     >
++      {/* Invisible drag handle */}
++      <div className="absolute top-0 left-0 right-0 h-8 drag-region z-10" />
++
+       {/* Skip link */}
+       <div className="w-full flex justify-end pt-5 pr-6">
+         <button
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None

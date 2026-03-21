@@ -1,0 +1,12 @@
+{
+    "main_pid": 0,
+    "process_group": "-0",
+    "method": "npm run dev",
+    "port": 5173,
+    "url": "http://localhost:5173",
+    "started_at": "2026-03-21T20:38:42Z",
+    "restart_count": 0,
+    "status": "stopped",
+    "last_health": {"ok": false},
+    "crash_count": 0
+}

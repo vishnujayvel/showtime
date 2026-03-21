@@ -1,0 +1,16 @@
+{
+  "id": "sig-55d5eacd",
+  "type": "tool_efficiency",
+  "source": "cli",
+  "action": "iteration_complete",
+  "context": {},
+  "outcome": "success",
+  "confidence": 0.8,
+  "timestamp": "2026-03-21T06:30:51.604715+00:00Z",
+  "metadata": {},
+  "tool_name": "claude",
+  "tokens_used": 0,
+  "execution_time_ms": 761000,
+  "success_rate": 1.0,
+  "alternative_tools": []
+}

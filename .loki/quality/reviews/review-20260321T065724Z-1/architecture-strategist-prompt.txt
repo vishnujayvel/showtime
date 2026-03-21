@@ -1,0 +1,445 @@
+You are architecture-strategist. Your SOLE focus is: SOLID, coupling, cohesion, patterns, abstraction, dependency direction.
+
+Review ONLY for: SOLID violations, excessive coupling, wrong patterns, missing abstractions, dependency direction issues, god classes/functions.
+
+Files changed:
+.loki/CONTINUITY.md
+docs/plans/pipeline-journal.md
+e2e/screenshots/02-writers-room.png
+e2e/screenshots/03-energy-selected.png
+e2e/showtime.test.ts
+src/__tests__/showStore.test.ts
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index ac8db60..993726d 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,66 +1,30 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T08:15:00Z
++Updated: 2026-03-21T06:57:22Z
+ 
+ ## Current State
+ 
+-- Iteration: 1 — COMPLETE
+-- Phase: DEVELOPMENT → all 7 groups done
++- Iteration: 1
++- Phase: DEVELOPMENT
++- RARV Step: ACT
+ - Provider: claude
+-- **All 35/35 tasks complete**
++- Elapsed: 0m
+ 
+-## Test Suite
++## Last Completed Task
+ 
+-- **128 unit tests** across 6 files — ALL PASSING
+-- **12 Playwright E2E tests** — ALL PASSING
+-- Zero TypeScript errors (tsc --noEmit clean)
+-- Build succeeds (npm run build)
++- Last commit: Add visual validation E2E tests and expand unit test matrix
++- Files changed: e2e/showtime.test.ts, src/__tests__/showStore.test.ts
+ 
+-## What Was Done This Session
++## Active Blockers
+ 
+-### Groups 1-2 (Foundation, verified from prior session)
+-- Tailwind CSS v4 with @theme design tokens, keyframes, animations
+-- shadcn/ui setup with custom Button variants
+-- Google Fonts (Inter + JetBrains Mono)
+-- Category color utility (getCategoryToken, getCategoryHex)
+-- showStore updates (goingLiveActive, writersRoomStep, breathingPauseEndAt)
+-- Shared types IPC channels
++- None
+ 
+-### Group 3 (Atomic Components)
+-- TallyLight, OnAirIndicator, ClapperboardBadge, BeatCounter, EnergySelector
++## Next Up
+ 
+-### Group 4 (Core Views — 12 components)
+-- DarkStudioView, GoingLiveTransition, WritersRoomView
+-- TimerPanel, LineupPanel, ActCard, BeatCheckModal
+-- IntermissionView, DirectorMode, ShowVerdict
+-- PillView, ExpandedView, StrikeView
++- Tailwind CSS v4 Configuration & Design Tokens
++- shadcn/ui Setup & Custom Button Variants
++- Font Imports
+ 
+-### Group 5 (App Shell)
+-- App.tsx routing: phase-aware view switching
+-- Deleted 8 CLUI dead-weight files
++## Key Decisions This Session
+ 
+-### Group 6 (Cleanup)
+-- sessionStore: removed 294 lines of multi-tab CLUI code
+-- theme.ts: removed 377 lines of Tailwind-duplicated tokens
+-- ChatPanel: converted from inline styles to Tailwind
+-
+-### Group 7 (Testing)
+-- showStore unit tests (103 assertions)
+-- useTimer hook tests (9 tests)
+-- components.test.tsx rewritten for new APIs
+-- 12 Playwright E2E tests covering full show flow
+-
+-## Key Decisions
+-
+-- sessionStore keeps `tabs` array internally (IPC bridge needs tabId) but all multi-tab actions removed
+-- theme.ts retains only PermissionCard runtime colors
+-- E2E tests use `goto(url, { waitUntil: 'commit' })` instead of `reload()` to avoid Google Fonts load timeout
+-- Screenshots wrapped in try/catch for font-loading resilience
+-
+-## Next Steps (Future Sessions)
+-
+-- Polish individual view styling to match mockup (docs/mockups/direction-4-the-show.html)
+-- PermissionCard migration from inline styles to Tailwind
+-- Claude integration for lineup generation (replace mock in WritersRoomView)
+-- Whisper voice input integration
+-- macOS distribution/signing
++- None recorded yet
+diff --git a/docs/plans/pipeline-journal.md b/docs/plans/pipeline-journal.md
+index d6b6d09..a12a32b 100644
+--- a/docs/plans/pipeline-journal.md
++++ b/docs/plans/pipeline-journal.md
+@@ -708,6 +708,79 @@ This closes the verification gap that both Loki v2 and v2.1 left open.
+ 
+ **Concern:** The v2.2 agent is generating a large artifact set (30-50 test cases across 3 levels). May take several more minutes. The user has gone to sleep — need to ensure the full pipeline (artifact gen → commit → Loki launch → monitoring) completes autonomously.
+ 
++---
++
++## 2026-03-21 08:30 UTC — Loki v2.2 Launched with --parallel. User Sleeping.
++
++**OpenSpec v2.2 artifacts generated and committed** (`ea456ab`):
++- 7 files, 926 insertions
++- 50-entry test matrix (22 unit + 13 component + 18 E2E)
++- 15 tasks across 4 waves
++- 3 delta specs with 29 GIVEN/WHEN/THEN scenarios
++
++**Stale processes cleaned:** Killed 5 Electron helper processes from previous dev/test runs. 4 more respawned (possibly from a lingering main process) — will monitor.
++
++**Loki v2.2 launched:** `nohup loki start --parallel --openspec openspec/changes/showtime-v22-all-fixes`
++- PID: 30957
++- Complexity: **complex** (auto-detected — triggers full parallel agent dispatch)
++- Prompt includes all 8 MODIFIED + 2 ADDED delta entries
++- RARV Phase: ACT, Tier: development (opus)
++- Log: `/tmp/loki-v22.log`
++
++**Key improvement over v2.1:** Using `--parallel` flag for git worktree parallelism. Wave 1 (3 tasks: Beat race fix, loading indicator, window CSS) should all run in parallel processes.
++
++**User is sleeping.** Gardening cron continues monitoring. Next check in 8 minutes.
++
++---
++
++## 2026-03-21 08:35 UTC — Loki v2.2 Running, Early Phase
++
++**Loki v2.2 status:** 1 task in progress, 1 completed, 1 failed. Process alive (PID 31590, Claude Opus). Using TodoWrite (saw `[Tool: TodoWrite] 5 items` in log) — this means it's planning its task breakdown internally before acting.
++
++**No new commits yet.** Loki is in its initial REASON phase — reading CONTINUITY.md, loading context, planning. Expected first commit within 5-10 minutes.
++
++**No code changes from v2.2 yet.** The only uncommitted changes are the pipeline journal and some E2E screenshots from the previous run.
++
++**Tests:** 128/128 passing (unchanged from v2.1).
++
++**Process health:** 4 bash processes (Loki orchestrator), 1 Claude process. Active and reading files.
++
++**No issues closeable** — new rule: screenshot evidence via Playwright MCP required for all closures. 14 issues remain open.
++
++**Note:** The `--parallel` flag was used but STATUS shows only 1 in-progress — Loki may still be in its planning phase before dispatching parallel worktrees. Or the "complex" tier may handle parallelism differently from "enterprise." Will monitor for parallel dispatch in next check.
++
++---
++
++## 2026-03-21 08:40 UTC — Loki v2.2: 3 Commits, 144 Tests, Waves 1-3 Done
++
++**Three commits in ~7 minutes:**
++
++| Commit | Wave | What |
++|--------|------|------|
++| `f62fde7` | Wave 1 | Beat race fix (module-level timeout + guards), loading indicator ("The writers are working..." with spotlight sweep + pulsing dots + 10/30s progression), window CSS layout (flex justify-end, max-h StrikeView) |
++| `f2ab679` | Wave 2 | E2E button text fix, 4 race condition unit tests, 3 BeatCheckModal celebration tests, inline gradient → spotlight-golden CSS class |
++| `02e23d4` | Wave 3 | 6 visual validation E2E tests (no inline styles, onair-glow, beat-ignite, view dimensions, spotlight CSS), 9 new store action tests |
++
++**Tests: 128 → 144 (16 new tests added).** All passing.
++
++**What Loki v2.2 fixed:**
++- #10 Window sizing: CSS layout anchored to bottom of fixed frame with flex justify-end
++- #11 Beat race condition: Module-level timeout ID, re-entry guard, phase-change guard, cleanup on reset
++- #14 Loading indicator: Theatrical "The writers are working..." with animated overlay, progressive feedback at 10s/30s
++- #8 (BeatCheckModal inline gradient): Replaced with .spotlight-golden CSS class
++- #6 (E2E button text): Fixed "Show me the lineup" → "Build my lineup"
++- Added 6 visual validation E2E tests checking CSS classes and dimensions
++- Added 9 unit tests for new store actions (enterWritersRoom, triggerGoingLive, etc.)
++- Added 4 race condition guard tests for lockBeat
++- Added 3 celebration display component tests
++
++**Loki is still running** (1 task in progress) — likely on Wave 4 (polish) or doing verification passes.
++
++**Issue closure readiness — STILL REQUIRES SCREENSHOT EVIDENCE:**
++None can be closed yet. The code changes look solid but we need Playwright MCP visual validation per the new rule. Will need to launch the app and capture screenshots after Loki finishes.
++
++**Observation on --parallel:** Loki completed 3 waves in 7 minutes using internal Task tool parallelism within a single Claude process. The `--parallel` flag (git worktree mode) may not have actually triggered — the STATUS never showed >1 in-progress. For 15 tasks this level of throughput is acceptable, but for larger batches the worktree parallelism would matter more.
++
+ ## 2026-03-21 04:18 UTC — Initial Check
+ 
+ **Artifacts status:**
+diff --git a/e2e/screenshots/02-writers-room.png b/e2e/screenshots/02-writers-room.png
+index e168943..a437500 100644
+Binary files a/e2e/screenshots/02-writers-room.png and b/e2e/screenshots/02-writers-room.png differ
+diff --git a/e2e/screenshots/03-energy-selected.png b/e2e/screenshots/03-energy-selected.png
+index 1b7511e..748d3e3 100644
+Binary files a/e2e/screenshots/03-energy-selected.png and b/e2e/screenshots/03-energy-selected.png differ
+diff --git a/e2e/showtime.test.ts b/e2e/showtime.test.ts
+index b61705b..c1e580f 100644
+--- a/e2e/showtime.test.ts
++++ b/e2e/showtime.test.ts
+@@ -213,6 +213,145 @@ test.describe('7.5 — Strike the Stage', () => {
+   })
+ })
+ 
++// ─── openspec-3: Visual Validation ───
++
++test.describe('Visual Validation', () => {
++  test('no inline styles on migrated components (#5, #8)', async () => {
++    // Reset to writers_room to check WritersRoomView
++    await page.evaluate(() => {
++      const raw = localStorage.getItem('showtime-show-state')
++      if (raw) {
++        const parsed = JSON.parse(raw)
++        parsed.state.phase = 'writers_room'
++        parsed.state.writersRoomStep = 'energy'
++        parsed.state.isExpanded = true
++        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
++      }
++    })
++    await navigateAndWait()
++
++    // Check no element within [data-clui-ui] has inline background/color/display styles
++    // (only -webkit-app-region: drag is allowed)
++    const inlineStyleViolations = await page.evaluate(() => {
++      const uiElements = document.querySelectorAll('[data-clui-ui] *')
++      const violations: string[] = []
++      uiElements.forEach((el) => {
++        const style = (el as HTMLElement).style
++        if (style.background || style.backgroundColor || style.color || style.display) {
++          violations.push(`${el.tagName}.${el.className}: bg=${style.background}, color=${style.color}, display=${style.display}`)
++        }
++      })
++      return violations
++    })
++
++    // Should have no inline style violations (WebkitAppRegion is ignored)
++    expect(inlineStyleViolations).toHaveLength(0)
++  })
++
++  test('GoingLive ON AIR animation has onair-glow class (#7)', async () => {
++    // Set goingLiveActive to render GoingLiveTransition
++    await page.evaluate(() => {
++      const raw = localStorage.getItem('showtime-show-state')
++      if (raw) {
++        const parsed = JSON.parse(raw)
++        parsed.state.phase = 'writers_room'
++        parsed.state.goingLiveActive = true
++        parsed.state.isExpanded = true
++        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
++      }
++    })
++    await navigateAndWait()
++
++    // Check for onair-glow class on any element
++    const hasOnairGlow = await page.locator('.onair-glow').count()
++    // GoingLiveTransition should have it or it's fine if view is already transitioned
++    if (hasOnairGlow > 0) {
++      expect(hasOnairGlow).toBeGreaterThan(0)
++    }
++    await screenshot('14-going-live-onair')
++  })
++
++  test('Beat Check celebration shows animate-beat-ignite (#2)', async () => {
++    await page.evaluate(() => {
++      const raw = localStorage.getItem('showtime-show-state')
++      if (raw) {
++        const parsed = JSON.parse(raw)
++        parsed.state.phase = 'live'
++        parsed.state.beatCheckPending = true
++        parsed.state.celebrationActive = true
++        parsed.state.isExpanded = true
++        parsed.state.beatsLocked = 1
++        parsed.state.currentActId = parsed.state.acts?.[0]?.id || null
++        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
++      }
++    })
++    await navigateAndWait()
++
++    const celebrationText = page.getByText('That moment was real.')
++    const isVisible = await celebrationText.isVisible().catch(() => false)
++    if (isVisible) {
++      const hasIgniteClass = await celebrationText.evaluate((el) =>
++        el.classList.contains('animate-beat-ignite')
++      )
++      expect(hasIgniteClass).toBe(true)
++    }
++    await screenshot('15-beat-celebration')
++  })
++
++  test('view containers have correct widths', async () => {
++    // Check Writer's Room (560px)
++    await page.evaluate(() => {
++      const raw = localStorage.getItem('showtime-show-state')
++      if (raw) {
++        const parsed = JSON.parse(raw)
++        parsed.state.phase = 'writers_room'
++        parsed.state.writersRoomStep = 'energy'
++        parsed.state.isExpanded = true
++        parsed.state.goingLiveActive = false
++        parsed.state.beatCheckPending = false
++        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
++      }
++    })
++    await navigateAndWait()
++
++    const viewContainer = page.locator('[data-clui-ui]').first()
++    if (await viewContainer.isVisible().catch(() => false)) {
++      const box = await viewContainer.boundingBox()
++      if (box) {
++        // Writer's Room should be ~560px wide (within tolerance)
++        expect(box.width).toBeGreaterThanOrEqual(540)
++        expect(box.width).toBeLessThanOrEqual(580)
++      }
++    }
++  })
++
++  test('spotlight-warm gradient is CSS class not inline (#8)', async () => {
++    const spotlightElements = await page.locator('.spotlight-warm').count()
++    // The spotlight gradient should be applied via CSS class
++    expect(spotlightElements).toBeGreaterThan(0)
++  })
++
++  test('BeatCheckModal uses spotlight-golden class not inline (#8 follow-up)', async () => {
++    await page.evaluate(() => {
++      const raw = localStorage.getItem('showtime-show-state')
++      if (raw) {
++        const parsed = JSON.parse(raw)
++        parsed.state.beatCheckPending = true
++        parsed.state.celebrationActive = false
++        parsed.state.phase = 'live'
++        parsed.state.isExpanded = true
++        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
++      }
++    })
++    await navigateAndWait()
++
++    const goldenSpotlight = await page.locator('.spotlight-golden').count()
++    if (goldenSpotlight > 0) {
++      expect(goldenSpotlight).toBeGreaterThan(0)
++    }
++  })
++})
++
+ // ─── Pill ↔ Expanded transition ───
+ 
+ test.describe('Pill ↔ Expanded', () => {
+diff --git a/src/__tests__/showStore.test.ts b/src/__tests__/showStore.test.ts
+index 0777747..cec309b 100644
+--- a/src/__tests__/showStore.test.ts
++++ b/src/__tests__/showStore.test.ts
+@@ -632,6 +632,89 @@ describe('showStore', () => {
+     })
+   })
+ 
++  // ─── Writer's Room Steps ───
++
++  describe('enterWritersRoom', () => {
++    it('sets phase to writers_room', () => {
++      useShowStore.getState().enterWritersRoom()
++      expect(useShowStore.getState().phase).toBe('writers_room')
++    })
++
++    it('sets step to energy', () => {
++      useShowStore.getState().enterWritersRoom()
++      expect(useShowStore.getState().writersRoomStep).toBe('energy')
++    })
++
++    it('records entry timestamp', () => {
++      const before = Date.now()
++      useShowStore.getState().enterWritersRoom()
++      const after = Date.now()
++      const entered = useShowStore.getState().writersRoomEnteredAt!
++      expect(entered).toBeGreaterThanOrEqual(before)
++      expect(entered).toBeLessThanOrEqual(after)
++    })
++  })
++
++  describe('setWritersRoomStep', () => {
++    it('changes the writers room step', () => {
++      useShowStore.getState().setWritersRoomStep('plan')
++      expect(useShowStore.getState().writersRoomStep).toBe('plan')
++    })
++  })
++
++  // ─── Going Live Transition ───
++
++  describe('triggerGoingLive', () => {
++    it('sets goingLiveActive to true', () => {
++      useShowStore.getState().triggerGoingLive()
++      expect(useShowStore.getState().goingLiveActive).toBe(true)
++    })
++  })
++
++  describe('completeGoingLive', () => {
++    it('sets goingLiveActive to false and starts show', () => {
++      useShowStore.getState().setLineup(sampleLineup)
++      useShowStore.getState().triggerGoingLive()
++      useShowStore.getState().completeGoingLive()
++      expect(useShowStore.getState().goingLiveActive).toBe(false)
++      expect(useShowStore.getState().phase).toBe('live')
++    })
++  })
++
++  // ─── Breathing Pause ───
++
++  describe('startBreathingPause', () => {
++    it('pauses timer and sets breathing pause end time', () => {
++      useShowStore.getState().setLineup(sampleLineup)
++      useShowStore.getState().startShow()
++      const before = Date.now()
++      useShowStore.getState().startBreathingPause()
++      const state = useShowStore.getState()
++      expect(state.phase).toBe('intermission')
++      expect(state.breathingPauseEndAt).toBeGreaterThanOrEqual(before + 5 * 60 * 1000 - 50)
++      expect(state.timerEndAt).toBeNull()
++      expect(state.timerPausedRemaining).toBeGreaterThan(0)
++    })
++
++    it('accepts custom duration', () => {
++      useShowStore.getState().setLineup(sampleLineup)
++      useShowStore.getState().startShow()
++      const before = Date.now()
++      useShowStore.getState().startBreathingPause(60000) // 1 minute
++      expect(useShowStore.getState().breathingPauseEndAt).toBeGreaterThanOrEqual(before + 60000 - 50)
++    })
++  })
++
++  describe('endBreathingPause', () => {
++    it('clears breathing pause end time', () => {
++      useShowStore.getState().setLineup(sampleLineup)
++      useShowStore.getState().startShow()
++      useShowStore.getState().startBreathingPause()
++      useShowStore.getState().endBreathingPause()
++      expect(useShowStore.getState().breathingPauseEndAt).toBeNull()
++    })
++  })
++
+   // ─── Session ───
+ 
+   describe('setClaudeSessionId', () => {
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None
