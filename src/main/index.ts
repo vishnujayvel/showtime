@@ -30,11 +30,11 @@ const controlPlane = new ControlPlane(INTERACTIVE_PTY)
 
 const PILL_BOTTOM_MARGIN = 24
 
-const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  pill: { width: 340, height: 60 },
-  expanded: { width: 580, height: 640 },
-  full: { width: 580, height: 700 },
-}
+// Fixed canvas — one size for all views. CSS handles content sizing.
+// Dynamic setBounds() causes: click-through math errors, movability loss,
+// display-scaling drift. The fixed-canvas pattern (like Raycast) is more reliable.
+const CANVAS_WIDTH = 600
+const CANVAS_HEIGHT = 740
 
 // ─── Broadcast to renderer ───
 
@@ -100,13 +100,12 @@ function createWindow(): void {
   const { width: screenWidth, height: screenHeight } = display.workAreaSize
   const { x: dx, y: dy } = display.workArea
 
-  const initDims = VIEW_DIMENSIONS.expanded
-  const x = dx + Math.round((screenWidth - initDims.width) / 2)
-  const y = dy + screenHeight - initDims.height - PILL_BOTTOM_MARGIN
+  const x = dx + Math.round((screenWidth - CANVAS_WIDTH) / 2)
+  const y = dy + screenHeight - CANVAS_HEIGHT - PILL_BOTTOM_MARGIN
 
   mainWindow = new BrowserWindow({
-    width: initDims.width,
-    height: initDims.height,
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
     x,
     y,
     ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),  // NSPanel — non-activating, joins all spaces
@@ -173,13 +172,12 @@ function showWindow(source = 'unknown'): void {
   const display = screen.getDisplayNearestPoint(cursor)
   const { width: sw, height: sh } = display.workAreaSize
   const { x: dx, y: dy } = display.workArea
-  // Preserve current window size (set by SET_VIEW_MODE), only reposition
-  const { width: curW, height: curH } = mainWindow.getBounds()
+  // Always use fixed canvas size — never read back getBounds() (causes DIP drift)
   mainWindow.setBounds({
-    x: dx + Math.round((sw - curW) / 2),
-    y: dy + sh - curH - PILL_BOTTOM_MARGIN,
-    width: curW,
-    height: curH,
+    x: dx + Math.round((sw - CANVAS_WIDTH) / 2),
+    y: dy + sh - CANVAS_HEIGHT - PILL_BOTTOM_MARGIN,
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
   })
 
   // Always re-assert space membership — the flag can be lost after hide/show cycles
@@ -236,7 +234,9 @@ ipcMain.on(IPC.HIDE_WINDOW, () => {
 })
 
 ipcMain.on(IPC.APP_QUIT, () => {
-  app.quit()
+  // Hide window first to avoid black flash during quit
+  mainWindow?.hide()
+  setTimeout(() => app.quit(), 100)
 })
 
 ipcMain.handle(IPC.IS_VISIBLE, () => {
@@ -386,20 +386,9 @@ ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
 })
 
 // ─── Showtime window management ───
+// SET_VIEW_MODE — no native resize needed. Fixed canvas, CSS handles content sizing.
 ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
-  if (!mainWindow) return
-  log(`Showtime: setViewMode → ${mode}`)
-  const dims = VIEW_DIMENSIONS[mode]
-  if (!dims) return
-
-  const cursor = screen.getCursorScreenPoint()
-  const display = screen.getDisplayNearestPoint(cursor)
-  const { x: waX, y: waY, width: waWidth, height: waHeight } = display.workArea
-
-  const x = waX + Math.round((waWidth - dims.width) / 2)
-  const y = waY + waHeight - dims.height - PILL_BOTTOM_MARGIN
-
-  mainWindow.setBounds({ x, y, width: dims.width, height: dims.height })
+  log(`Showtime: setViewMode → ${mode} (CSS-only, no native resize)`)
 })
 
 ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
