@@ -9,6 +9,9 @@ interface ActCardProps {
   actNumber: number
   onReorder?: (direction: 'up' | 'down') => void
   onRemove?: () => void
+  timeLabel?: string
+  timeDrifted?: boolean
+  plannedTimeLabel?: string
 }
 
 function FullActCard({ act, actNumber, onReorder, onRemove }: Omit<ActCardProps, 'variant'>) {
@@ -64,7 +67,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove }: Omit<ActCardProps,
   )
 }
 
-function SidebarActCard({ act }: Omit<ActCardProps, 'variant' | 'onReorder' | 'onRemove'>) {
+function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReorder, onRemove }: Omit<ActCardProps, 'variant'>) {
   const statusDotClass = (() => {
     switch (act.status) {
       case 'active':
@@ -94,26 +97,64 @@ function SidebarActCard({ act }: Omit<ActCardProps, 'variant' | 'onReorder' | 'o
   })()
 
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs">
+    <div className="group flex items-center gap-2 px-2 py-1.5 rounded-md text-xs hover:bg-surface-hover/30 transition-colors">
       {/* Status dot */}
       <div className={statusDotClass} />
 
-      {/* Act name */}
-      <span className={cn('truncate flex-1', nameClass)}>
-        {act.name}
-      </span>
+      {/* Act info */}
+      <div className="flex-1 min-w-0">
+        <span className={cn('truncate block', nameClass)}>
+          {act.name}
+        </span>
+        {/* Projected time display */}
+        {timeLabel && (
+          <span className="block mt-0.5">
+            {timeDrifted && plannedTimeLabel && (
+              <span className="line-through text-txt-muted mr-1">{plannedTimeLabel}</span>
+            )}
+            <span className={timeDrifted ? 'text-txt-secondary' : 'text-txt-muted'}>
+              {timeLabel}
+            </span>
+          </span>
+        )}
+      </div>
 
       {/* Beat star */}
       {act.beatLocked && (
         <span className="text-beat text-xs">★</span>
       )}
+
+      {/* Reorder / Remove (visible on hover for upcoming acts) */}
+      {(onReorder || onRemove) && (
+        <div className="hidden group-hover:flex items-center gap-0.5">
+          {onReorder && (
+            <>
+              <button onClick={() => onReorder('up')} className="text-txt-muted hover:text-txt-secondary text-xs p-0.5">↑</button>
+              <button onClick={() => onReorder('down')} className="text-txt-muted hover:text-txt-secondary text-xs p-0.5">↓</button>
+            </>
+          )}
+          {onRemove && (
+            <button onClick={onRemove} className="text-txt-muted hover:text-onair text-xs p-0.5">×</button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-export function ActCard({ act, variant, actNumber, onReorder, onRemove }: ActCardProps) {
+export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabel, timeDrifted, plannedTimeLabel }: ActCardProps) {
   if (variant === 'sidebar') {
-    return <SidebarActCard act={act} actNumber={actNumber} />
+    return (
+      <SidebarActCard
+        act={act}
+        actNumber={actNumber}
+        timeLabel={timeLabel}
+        timeDrifted={timeDrifted}
+        plannedTimeLabel={plannedTimeLabel}
+        onReorder={onReorder}
+        onRemove={onRemove}
+      />
+    )
   }
 
   return (

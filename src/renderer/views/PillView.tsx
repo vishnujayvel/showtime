@@ -4,6 +4,7 @@ import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
+import { MiniRundownStrip } from '../components/MiniRundownStrip'
 import { cn } from '../lib/utils'
 
 export function PillView() {
@@ -61,10 +62,12 @@ export function PillView() {
     )
   }
 
+  const showStrip = phase === 'live' || phase === 'intermission'
+
   return (
     <motion.div
       className={cn(
-        'w-80 h-12 rounded-full flex items-center gap-3 py-2.5 px-4',
+        'w-80 rounded-full flex flex-col',
         'bg-surface/85 backdrop-blur-[20px]',
         'border border-white/[0.06]',
         'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
@@ -76,7 +79,10 @@ export function PillView() {
       exit={{ scale: 0.8, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
     >
-      {content}
+      <div className="flex items-center gap-3 py-2.5 px-4">
+        {content}
+      </div>
+      {showStrip && <MiniRundownStrip />}
     </motion.div>
   )
 }
