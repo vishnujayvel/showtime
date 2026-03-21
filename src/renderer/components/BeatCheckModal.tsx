@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { ClapperboardBadge } from './ClapperboardBadge'
@@ -6,19 +5,11 @@ import { Button } from '../ui/button'
 
 export function BeatCheckModal() {
   const beatCheckPending = useShowStore((s) => s.beatCheckPending)
+  const celebrationActive = useShowStore((s) => s.celebrationActive)
   const lockBeat = useShowStore((s) => s.lockBeat)
   const skipBeat = useShowStore((s) => s.skipBeat)
   const acts = useShowStore((s) => s.acts)
   const currentAct = useShowStore(selectCurrentAct)
-
-  const [showConfirmation, setShowConfirmation] = useState(false)
-
-  // Reset confirmation state when modal opens
-  useEffect(() => {
-    if (beatCheckPending) {
-      setShowConfirmation(false)
-    }
-  }, [beatCheckPending])
 
   if (!beatCheckPending) return null
 
@@ -27,19 +18,14 @@ export function BeatCheckModal() {
     : 0
 
   const handleLockBeat = () => {
-    setShowConfirmation(true)
     lockBeat()
-    setTimeout(() => {
-      // Store will set beatCheckPending=false after lockBeat,
-      // but if still showing, auto-dismiss after 1s
-    }, 1000)
   }
 
   return (
     <div className="fixed inset-0 bg-black/75 backdrop-blur-[8px] z-50 flex items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.div
-          key={showConfirmation ? 'confirmation' : 'prompt'}
+          key={celebrationActive ? 'celebration' : 'prompt'}
           initial={{ scale: 0.8, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -54,7 +40,7 @@ export function BeatCheckModal() {
             }}
           />
 
-          {showConfirmation ? (
+          {celebrationActive ? (
             <p className="text-beat font-semibold text-lg animate-beat-ignite relative z-10">
               That moment was real.
             </p>

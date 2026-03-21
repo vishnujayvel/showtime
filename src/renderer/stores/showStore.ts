@@ -84,6 +84,7 @@ interface ShowStoreState {
   verdict: ShowVerdict | null
   isExpanded: boolean
   beatCheckPending: boolean
+  celebrationActive: boolean
   goingLiveActive: boolean
   writersRoomStep: WritersRoomStep
   writersRoomEnteredAt: number | null
@@ -106,6 +107,7 @@ const initialState: ShowStoreState = {
   verdict: null,
   isExpanded: true,
   beatCheckPending: false,
+  celebrationActive: false,
   goingLiveActive: false,
   writersRoomStep: 'energy',
   writersRoomEnteredAt: null,
@@ -244,20 +246,25 @@ export const useShowStore = create<ShowStore>()(
         const { currentActId } = get()
         set((s) => ({
           beatsLocked: s.beatsLocked + 1,
-          beatCheckPending: false,
+          celebrationActive: true,
           acts: s.acts.map((a) =>
             a.id === currentActId ? { ...a, beatLocked: true } : a
           ),
         }))
 
-        // Start next act or strike
-        const state = get()
-        const nextAct = state.acts.find((a) => a.status === 'upcoming')
-        if (nextAct) {
-          get().startAct(nextAct.id)
-        } else {
-          get().strikeTheStage()
-        }
+        // Celebration delay — show "That moment was real" for 1800ms before advancing
+        setTimeout(() => {
+          set({ celebrationActive: false, beatCheckPending: false })
+
+          // Start next act or strike
+          const state = get()
+          const nextAct = state.acts.find((a) => a.status === 'upcoming')
+          if (nextAct) {
+            get().startAct(nextAct.id)
+          } else {
+            get().strikeTheStage()
+          }
+        }, 1800)
       },
 
       skipBeat: () => {
@@ -454,7 +461,7 @@ export const useShowStore = create<ShowStore>()(
       name: 'showtime-show-state',
       partialize: (state) => {
         // Don't persist transient UI state
-        const { beatCheckPending: _bcp, goingLiveActive: _gla, ...rest } = state
+        const { beatCheckPending: _bcp, celebrationActive: _ca, goingLiveActive: _gla, ...rest } = state
         return rest
       },
       onRehydrateStorage: () => {

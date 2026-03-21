@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useShowStore } from '../renderer/stores/showStore'
 import type { ShowLineup } from '../shared/types'
 
@@ -18,6 +18,7 @@ function resetStore() {
     verdict: null,
     isExpanded: true,
     beatCheckPending: false,
+    celebrationActive: false,
   })
 }
 
@@ -118,6 +119,7 @@ describe('full show flow → verdict', () => {
   beforeEach(() => resetStore())
 
   it('complete show with all beats locked → DAY_WON', () => {
+    vi.useFakeTimers()
     const lineup: ShowLineup = {
       acts: [
         { name: 'Act 1', sketch: 'Deep Work', durationMinutes: 30 },
@@ -134,15 +136,18 @@ describe('full show flow → verdict', () => {
     const act1Id = useShowStore.getState().currentActId!
     useShowStore.getState().completeAct(act1Id)
     useShowStore.getState().lockBeat()
+    vi.advanceTimersByTime(1800)
 
     // Complete act 2, lock beat → triggers strikeTheStage
     const act2Id = useShowStore.getState().currentActId!
     useShowStore.getState().completeAct(act2Id)
     useShowStore.getState().lockBeat()
+    vi.advanceTimersByTime(1800)
 
     expect(useShowStore.getState().phase).toBe('strike')
     expect(useShowStore.getState().verdict).toBe('DAY_WON')
     expect(useShowStore.getState().beatsLocked).toBe(2)
+    vi.useRealTimers()
   })
 
   it('complete show with no beats locked → SHOW_CALLED_EARLY', () => {
@@ -167,6 +172,7 @@ describe('full show flow → verdict', () => {
   })
 
   it('call show early from director mode → verdict reflects partial progress', () => {
+    vi.useFakeTimers()
     const lineup: ShowLineup = {
       acts: [
         { name: 'Act 1', sketch: 'Deep Work', durationMinutes: 30 },
@@ -184,6 +190,7 @@ describe('full show flow → verdict', () => {
     const act1Id = useShowStore.getState().currentActId!
     useShowStore.getState().completeAct(act1Id)
     useShowStore.getState().lockBeat()
+    vi.advanceTimersByTime(1800)
 
     // Enter director mode and call show early
     useShowStore.getState().enterDirector()
@@ -193,5 +200,6 @@ describe('full show flow → verdict', () => {
     expect(useShowStore.getState().beatsLocked).toBe(1)
     // 1/3: Not (1>=3), Not (1===2), Not (1>=2). → SHOW_CALLED_EARLY
     expect(useShowStore.getState().verdict).toBe('SHOW_CALLED_EARLY')
+    vi.useRealTimers()
   })
 })

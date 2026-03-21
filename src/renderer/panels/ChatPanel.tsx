@@ -5,19 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useSessionStore } from '../stores/sessionStore'
 import { useShowStore } from '../stores/showStore'
-import type { ShowLineup } from '../../shared/types'
-
-function tryParseLineup(text: string): ShowLineup | null {
-  const match = text.match(/```showtime-lineup\s*\n([\s\S]*?)```/)
-  if (!match) return null
-  try {
-    const parsed = JSON.parse(match[1])
-    if (parsed.acts && Array.isArray(parsed.acts) && typeof parsed.beatThreshold === 'number') {
-      return parsed as ShowLineup
-    }
-  } catch {}
-  return null
-}
+import { tryParseLineup } from '../lib/lineup-parser'
 
 export function ChatPanel() {
   const tabs = useSessionStore((s) => s.tabs)

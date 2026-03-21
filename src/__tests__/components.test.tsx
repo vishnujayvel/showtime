@@ -117,6 +117,7 @@ describe('BeatCheckModal', () => {
   it('calls lockBeat when lock button clicked', () => {
     useShowStore.setState({
       beatCheckPending: true,
+      celebrationActive: false,
       beatsLocked: 0,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',
@@ -125,11 +126,13 @@ describe('BeatCheckModal', () => {
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText(/Lock the Beat/))
     expect(useShowStore.getState().beatsLocked).toBe(1)
+    expect(useShowStore.getState().celebrationActive).toBe(true)
   })
 
   it('calls skipBeat when "Not this time" clicked', () => {
     useShowStore.setState({
       beatCheckPending: true,
+      celebrationActive: false,
       beatsLocked: 0,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',

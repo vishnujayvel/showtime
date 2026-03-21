@@ -34,6 +34,9 @@ export interface CluiAPI {
   getTheme(): Promise<{ isDark: boolean }>
   onThemeChange(callback: (isDark: boolean) => void): () => void
 
+  // ─── App lifecycle ───
+  quit(): void
+
   // ─── Window management ───
   resizeHeight(height: number): void
   setWindowWidth(width: number): void
@@ -99,6 +102,9 @@ const api: CluiAPI = {
     ipcRenderer.on(IPC.THEME_CHANGED, handler)
     return () => ipcRenderer.removeListener(IPC.THEME_CHANGED, handler)
   },
+
+  // ─── App lifecycle ───
+  quit: () => ipcRenderer.send(IPC.APP_QUIT),
 
   // ─── Window management ───
   resizeHeight: (height) => ipcRenderer.send(IPC.RESIZE_HEIGHT, height),

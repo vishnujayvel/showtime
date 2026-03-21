@@ -423,6 +423,9 @@ export const IPC = {
   // Showtime expanded toggle (main → renderer, triggered by global hotkey)
   TOGGLE_EXPANDED: 'showtime:toggle-expanded',
 
+  // App lifecycle
+  APP_QUIT: 'app:quit',
+
   // Legacy (kept for backward compat during migration)
   STREAM_EVENT: 'clui:stream-event',
   RUN_COMPLETE: 'clui:run-complete',

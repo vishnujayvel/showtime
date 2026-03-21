@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useShowStore, selectCurrentAct, selectNextAct, selectCompletedActs, selectSkippedActs, selectBeatsRemaining } from '../renderer/stores/showStore'
 import type { ShowLineup } from '../shared/types'
 
@@ -18,6 +18,7 @@ function resetStore() {
     verdict: null,
     isExpanded: true,
     beatCheckPending: false,
+    celebrationActive: false,
   })
 }
 
@@ -267,10 +268,15 @@ describe('showStore', () => {
 
   describe('lockBeat', () => {
     beforeEach(() => {
+      vi.useFakeTimers()
       useShowStore.getState().setLineup(sampleLineup)
       useShowStore.getState().startShow()
       const actId = useShowStore.getState().currentActId!
       useShowStore.getState().completeAct(actId)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
     })
 
     it('increments beatsLocked', () => {
@@ -278,10 +284,14 @@ describe('showStore', () => {
       expect(useShowStore.getState().beatsLocked).toBe(1)
     })
 
-    it('clears beatCheckPending', () => {
+    it('clears beatCheckPending after celebration delay', () => {
       expect(useShowStore.getState().beatCheckPending).toBe(true)
       useShowStore.getState().lockBeat()
+      // During celebration, beatCheckPending stays true
+      expect(useShowStore.getState().celebrationActive).toBe(true)
+      vi.advanceTimersByTime(1800)
       expect(useShowStore.getState().beatCheckPending).toBe(false)
+      expect(useShowStore.getState().celebrationActive).toBe(false)
     })
 
     it('marks act as beat-locked', () => {
@@ -293,6 +303,7 @@ describe('showStore', () => {
 
     it('starts next act after locking', () => {
       useShowStore.getState().lockBeat()
+      vi.advanceTimersByTime(1800)
       const state = useShowStore.getState()
       expect(state.acts[1].status).toBe('active')
     })
