@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Direction A: Live Rundown Bar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* === ANIMATIONS === */
+  @keyframes tallyPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px rgba(239,68,68,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 2px 1px rgba(239,68,68,0.2); }
+  }
+  @keyframes onairGlow {
+    0%, 100% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.5), inset 0 0 4px rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 16px 4px rgba(239,68,68,0.8), inset 0 0 8px rgba(239,68,68,0.3); }
+  }
+  @keyframes warmPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  @keyframes nowMarkerPulse {
+    0%, 100% { box-shadow: 0 0 6px 1px rgba(239,68,68,0.6); }
+    50% { box-shadow: 0 0 12px 3px rgba(239,68,68,0.9); }
+  }
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes onairBlockGlow {
+    0%, 100% { box-shadow: inset 0 0 8px rgba(239,68,68,0.15), 0 0 6px rgba(239,68,68,0.1); }
+    50% { box-shadow: inset 0 0 12px rgba(239,68,68,0.25), 0 0 12px rgba(239,68,68,0.2); }
+  }
+
+  .tally-live { animation: tallyPulse 2s ease-in-out infinite; }
+  .onair-glow { animation: onairGlow 2s ease-in-out infinite; }
+  .warm-pulse { animation: warmPulse 2s ease-in-out infinite; }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* ON AIR light box */
+  .onair-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #ef4444;
+    border: 1.5px solid #ef4444;
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .onair-box.live { animation: onairGlow 2s ease-in-out infinite; }
+
+  /* Beat stars */
+  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .beat-dim { color: #5a5855; }
+
+  /* ================================================================ */
+  /* RUNDOWN BAR STYLES                                                */
+  /* ================================================================ */
+
+  .rundown-bar {
+    position: relative;
+    height: 32px;
+    background: #151517;
+    border-radius: 6px;
+    display: flex;
+    overflow: hidden;
+    border: 1px solid #242428;
+  }
+
+  .rundown-block {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: filter 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .rundown-block:hover {
+    filter: brightness(1.2);
+  }
+
+  .rundown-block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(232, 230, 224, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 6px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+  }
+
+  .rundown-block:hover .rundown-block-label {
+    color: rgba(232, 230, 224, 0.95);
+  }
+
+  /* Completed blocks — slightly dimmed */
+  .rundown-block-completed {
+    opacity: 0.7;
+  }
+  .rundown-block-completed:hover {
+    opacity: 0.9;
+  }
+
+  /* Active block — ON AIR glow */
+  .rundown-block-active {
+    animation: onairBlockGlow 2s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  /* Future blocks — subtler */
+  .rundown-block-future {
+    opacity: 0.5;
+  }
+  .rundown-block-future:hover {
+    opacity: 0.75;
+  }
+
+  /* Intermission gap */
+  .rundown-gap {
+    width: 3px;
+    height: 100%;
+    background: #0d0d0f;
+    flex-shrink: 0;
+  }
+
+  /* NOW marker */
+  .now-marker {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #ef4444;
+    z-index: 10;
+    border-radius: 1px;
+    animation: nowMarkerPulse 2s ease-in-out infinite;
+    transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .now-marker-head {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #ef4444;
+  }
+
+  .now-marker-label {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #ef4444;
+    white-space: nowrap;
+  }
+
+  /* Overrun indicator (striped pattern on completed blocks that ran over) */
+  .rundown-block-overrun::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--overrun-width, 0);
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 2px,
+      rgba(239, 68, 68, 0.15) 2px,
+      rgba(239, 68, 68, 0.15) 4px
+    );
+    border-left: 1px dashed rgba(239, 68, 68, 0.3);
+    pointer-events: none;
+  }
+
+  /* Tooltip */
+  .rundown-tooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    background: #1a1a1e;
+    border: 1px solid #2a2a2e;
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 180px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index: 20;
+  }
+
+  .rundown-block:hover .rundown-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+
+  /* Tooltip arrow */
+  .rundown-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #2a2a2e;
+  }
+  .rundown-tooltip::before {
+    content: '';
+    position: absolute;
+    top: calc(100% - 1px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #1a1a1e;
+    z-index: 1;
+  }
+
+  /* Progress status bar */
+  .progress-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ================================================================ */
+  /* PILL MINI RUNDOWN                                                 */
+  /* ================================================================ */
+
+  .pill-rundown {
+    position: relative;
+    height: 4px;
+    background: #242428;
+    border-radius: 9999px;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .pill-rundown-block {
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .pill-rundown-gap {
+    width: 2px;
+    height: 100%;
+    background: rgba(26,26,30,0.85);
+    flex-shrink: 0;
+  }
+
+  .pill-now-marker {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: #ef4444;
+    border-radius: 1px;
+    z-index: 5;
+    box-shadow: 0 0 4px rgba(239,68,68,0.6);
+  }
+
+  /* ================================================================ */
+  /* BEHIND/AHEAD SCHEDULE BADGE                                       */
+  /* ================================================================ */
+
+  .schedule-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .schedule-badge-behind {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .schedule-badge-ahead {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .schedule-badge-ontime {
+    color: #9a9890;
+    background: rgba(154, 152, 144, 0.08);
+    border: 1px solid rgba(154, 152, 144, 0.15);
+  }
+
+  /* ================================================================ */
+  /* TIMESTAMP MARKERS                                                 */
+  /* ================================================================ */
+
+  .rundown-timestamps {
+    position: relative;
+    height: 14px;
+    margin-top: 4px;
+  }
+
+  .rundown-timestamp {
+    position: absolute;
+    top: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: #5a5855;
+    transform: translateX(-50%);
+    letter-spacing: 0.04em;
+  }
+
+  /* ================================================================ */
+  /* INTERACTIVE DEMO CONTROLS                                         */
+  /* ================================================================ */
+
+  .demo-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #242428;
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .demo-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #ef4444;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(239,68,68,0.4);
+  }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Direction A</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2 text-txt-primary">Live Rundown Bar</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    A compact horizontal timeline modeled after a TV broadcast rundown sheet. Shows the entire show at a glance &mdash; planned acts as proportional blocks, a moving NOW marker, and real-time divergence from the plan.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- 1. CONCEPT BREAKDOWN                                           -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-20">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Concept</span>
+    <h2 class="text-xl font-bold text-txt-primary">Anatomy of the Rundown Bar</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-8">Each act is a colored block proportional to its planned duration. The bar is a live broadcast timeline &mdash; reality stretches and compresses it.</p>
+
+  <!-- Annotated standalone rundown bar -->
+  <div class="p-8 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+
+    <!-- Legend -->
+    <div class="flex items-center gap-5 mb-6">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded" style="background:#8b5cf6; opacity:0.7;"></div>
+        <span class="text-xs text-txt-secondary">Completed</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded" style="background:#22c55e; border:1px solid #ef4444;"></div>
+        <span class="text-xs text-txt-secondary">ON AIR</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded" style="background:#60a5fa; opacity:0.5;"></div>
+        <span class="text-xs text-txt-secondary">Upcoming</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-1 rounded" style="background:#0d0d0f;"></div>
+        <span class="text-xs text-txt-secondary">Intermission</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-0.5 h-3 rounded" style="background:#ef4444;"></div>
+        <span class="text-xs text-txt-secondary">NOW</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded" style="background: repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(239,68,68,0.25) 2px, rgba(239,68,68,0.25) 4px);"></div>
+        <span class="text-xs text-txt-secondary">Overrun</span>
+      </div>
+    </div>
+
+    <!-- The rundown bar — large annotated version -->
+    <div class="rundown-bar" style="height:40px;">
+
+      <!-- Act 1: Cold Open — 15min planned, 15min actual (on time) -->
+      <div class="rundown-block rundown-block-completed" style="width:10%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+        <span class="rundown-block-label">Cold Open</span>
+        <div class="rundown-tooltip">
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-2 h-2 rounded-full" style="background:#ec4899;"></div>
+            <span class="text-xs font-semibold text-txt-primary">Cold Open</span>
+          </div>
+          <div class="text-xs text-txt-muted font-mono">SOCIAL | ACT 1</div>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-xs text-txt-secondary">Planned: <span class="text-txt-primary font-mono">15m</span></span>
+            <span class="text-xs text-txt-secondary">Actual: <span class="text-txt-primary font-mono">15m</span></span>
+          </div>
+          <div class="mt-2 flex items-center gap-1">
+            <span class="beat-lit text-xs">&#9733;</span>
+            <span class="text-xs text-txt-muted">Beat locked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intermission gap -->
+      <div class="rundown-gap"></div>
+
+      <!-- Act 2: API Integration — 45min planned, ran 57min (+12min over) -->
+      <div class="rundown-block rundown-block-completed rundown-block-overrun" style="width:28%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3); --overrun-width: 21%;">
+        <span class="rundown-block-label">API Integration</span>
+        <div class="rundown-tooltip">
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-2 h-2 rounded-full" style="background:#8b5cf6;"></div>
+            <span class="text-xs font-semibold text-txt-primary">API Integration</span>
+          </div>
+          <div class="text-xs text-txt-muted font-mono">DEEP WORK | ACT 2</div>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-xs text-txt-secondary">Planned: <span class="text-txt-primary font-mono">45m</span></span>
+            <span class="text-xs" style="color:#ef4444;">Actual: <span class="font-mono">57m</span> (+12m)</span>
+          </div>
+          <div class="mt-2 flex items-center gap-1">
+            <span class="beat-lit text-xs">&#9733;</span>
+            <span class="text-xs text-txt-muted">Beat locked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intermission gap -->
+      <div class="rundown-gap"></div>
+
+      <!-- Act 3: Afternoon Run — 30min planned, currently 18min in (ON AIR) -->
+      <div class="rundown-block rundown-block-active" style="width:22%; background:rgba(34,197,94,0.35); border-right:1px solid rgba(0,0,0,0.3); border-top:2px solid #ef4444; border-bottom:2px solid #ef4444;">
+        <span class="rundown-block-label" style="color:rgba(232,230,224,0.95);">Afternoon Run</span>
+        <div class="rundown-tooltip" style="border-color:rgba(239,68,68,0.3);">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live"></span>
+            <span class="text-xs font-semibold text-txt-primary">Afternoon Run</span>
+            <span class="text-[9px] font-mono font-bold" style="color:#ef4444;">LIVE</span>
+          </div>
+          <div class="text-xs text-txt-muted font-mono">EXERCISE | ACT 3</div>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-xs text-txt-secondary">Planned: <span class="text-txt-primary font-mono">30m</span></span>
+            <span class="text-xs text-txt-secondary">Elapsed: <span class="text-txt-primary font-mono">18m</span></span>
+          </div>
+          <div class="mt-1.5">
+            <div class="w-full h-1 rounded-full" style="background:#242428;">
+              <div class="h-full rounded-full" style="width:60%; background:linear-gradient(90deg, #22c55e, #4ade80);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intermission gap -->
+      <div class="rundown-gap"></div>
+
+      <!-- Act 4: Email Catchup — 25min planned (future) -->
+      <div class="rundown-block rundown-block-future" style="width:18%; background:rgba(96,165,250,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+        <span class="rundown-block-label">Email Catchup</span>
+        <div class="rundown-tooltip">
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-2 h-2 rounded-full" style="background:#60a5fa;"></div>
+            <span class="text-xs font-semibold text-txt-primary">Email Catchup</span>
+          </div>
+          <div class="text-xs text-txt-muted font-mono">ADMIN | ACT 4</div>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-xs text-txt-secondary">Planned: <span class="text-txt-primary font-mono">25m</span></span>
+            <span class="text-xs text-txt-muted">Starts ~2:24 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intermission gap -->
+      <div class="rundown-gap"></div>
+
+      <!-- Act 5: Newsletter Brainstorm — 30min planned (future) -->
+      <div class="rundown-block rundown-block-future" style="width:22%; background:rgba(245,158,11,0.2);">
+        <span class="rundown-block-label">Newsletter</span>
+        <div class="rundown-tooltip">
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-2 h-2 rounded-full" style="background:#f59e0b;"></div>
+            <span class="text-xs font-semibold text-txt-primary">Newsletter Brainstorm</span>
+          </div>
+          <div class="text-xs text-txt-muted font-mono">CREATIVE | ACT 5</div>
+          <div class="flex items-center gap-3 mt-2">
+            <span class="text-xs text-txt-secondary">Planned: <span class="text-txt-primary font-mono">30m</span></span>
+            <span class="text-xs text-txt-muted">Starts ~3:00 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOW marker — positioned at 60% through Act 3 -->
+      <div class="now-marker" style="left:51%;">
+        <div class="now-marker-head"></div>
+        <div class="now-marker-label">NOW</div>
+      </div>
+    </div>
+
+    <!-- Timestamps below bar -->
+    <div class="rundown-timestamps">
+      <span class="rundown-timestamp" style="left:0; transform:none;">10:00</span>
+      <span class="rundown-timestamp" style="left:11%;">10:15</span>
+      <span class="rundown-timestamp" style="left:40%;">11:12</span>
+      <span class="rundown-timestamp" style="left:63%;">2:12</span>
+      <span class="rundown-timestamp" style="left:82%;">2:37</span>
+      <span class="rundown-timestamp" style="left:100%; transform:translateX(-100%);">3:30</span>
+    </div>
+
+    <!-- Status line -->
+    <div class="flex items-center justify-between mt-5">
+      <div class="flex items-center gap-3">
+        <span class="progress-status text-txt-secondary">Act <span class="text-txt-primary">3</span> of <span class="text-txt-primary">5</span></span>
+        <span class="text-txt-muted">&middot;</span>
+        <span class="schedule-badge schedule-badge-behind">
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          12m behind
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+        <span class="text-[10px] text-txt-muted font-mono">2/3 Beats</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 2. EXPANDED VIEW WITH INTEGRATED RUNDOWN BAR                   -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Integration</span>
+    <h2 class="text-xl font-bold text-txt-primary">Expanded View with Rundown Bar</h2>
+    <span class="text-xs text-txt-muted font-mono">560 x 620px</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The rundown bar sits between the ON AIR indicator and the timer hero, providing instant show-wide context without leaving the active view.</p>
+
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="text-xs px-2.5 py-1 rounded text-txt-secondary hover:text-txt-primary" style="background:#242428;">&#127916; Director</button>
+        <button class="text-xs text-txt-muted hover:text-txt-primary">&#9660;</button>
+      </div>
+    </div>
+
+    <div class="flex" style="min-height:540px;">
+      <!-- Main content area -->
+      <div class="flex-1 p-6" style="border-right:1px solid #242428;">
+
+        <!-- ON AIR + schedule status row -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="onair-box live">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-onair tally-live"></span>
+            ON AIR
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="progress-status text-txt-muted">Act <span class="text-txt-primary font-semibold">3</span> of <span class="text-txt-primary font-semibold">5</span></span>
+            <span class="schedule-badge schedule-badge-behind">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              12m behind
+            </span>
+          </div>
+        </div>
+
+        <!-- === THE RUNDOWN BAR === -->
+        <div class="mb-5">
+          <div class="rundown-bar" style="height:28px;">
+            <!-- Act 1: Cold Open — completed on time -->
+            <div class="rundown-block rundown-block-completed" style="width:10%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+              <span class="rundown-block-label" style="font-size:8px;">1</span>
+              <div class="rundown-tooltip">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-2 h-2 rounded-full" style="background:#ec4899;"></div>
+                  <span class="text-xs font-semibold text-txt-primary">Cold Open</span>
+                </div>
+                <div class="text-[10px] text-txt-muted font-mono">SOCIAL | ACT 1 | 15m</div>
+                <div class="mt-1.5 flex items-center gap-1">
+                  <span class="beat-lit text-xs">&#9733;</span>
+                  <span class="text-[10px] text-txt-muted">Beat locked</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rundown-gap"></div>
+
+            <!-- Act 2: API Integration — ran 12min over -->
+            <div class="rundown-block rundown-block-completed rundown-block-overrun" style="width:28%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3); --overrun-width:21%;">
+              <span class="rundown-block-label" style="font-size:8px;">2</span>
+              <div class="rundown-tooltip">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-2 h-2 rounded-full" style="background:#8b5cf6;"></div>
+                  <span class="text-xs font-semibold text-txt-primary">API Integration</span>
+                </div>
+                <div class="text-[10px] text-txt-muted font-mono">DEEP WORK | ACT 2</div>
+                <div class="flex gap-3 mt-1.5">
+                  <span class="text-[10px] text-txt-secondary">Plan: <span class="font-mono text-txt-primary">45m</span></span>
+                  <span class="text-[10px]" style="color:#ef4444;">Ran: <span class="font-mono">57m</span></span>
+                </div>
+                <div class="mt-1.5 flex items-center gap-1">
+                  <span class="beat-lit text-xs">&#9733;</span>
+                  <span class="text-[10px] text-txt-muted">Beat locked</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rundown-gap"></div>
+
+            <!-- Act 3: Afternoon Run — ACTIVE -->
+            <div class="rundown-block rundown-block-active" style="width:22%; background:rgba(34,197,94,0.35); border-right:1px solid rgba(0,0,0,0.3); border-top:2px solid #ef4444; border-bottom:2px solid #ef4444;">
+              <span class="rundown-block-label" style="font-size:8px; color:rgba(232,230,224,0.95);">&#9654; 3</span>
+              <div class="rundown-tooltip" style="border-color:rgba(239,68,68,0.3);">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live"></span>
+                  <span class="text-xs font-semibold text-txt-primary">Afternoon Run</span>
+                  <span class="text-[9px] font-mono font-bold" style="color:#ef4444;">LIVE</span>
+                </div>
+                <div class="text-[10px] text-txt-muted font-mono">EXERCISE | ACT 3 | 12:00 left</div>
+                <div class="mt-1.5">
+                  <div class="w-full h-1 rounded-full" style="background:#242428;">
+                    <div class="h-full rounded-full" style="width:60%; background:linear-gradient(90deg, #22c55e, #4ade80);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rundown-gap"></div>
+
+            <!-- Act 4: Email Catchup — future -->
+            <div class="rundown-block rundown-block-future" style="width:18%; background:rgba(96,165,250,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+              <span class="rundown-block-label" style="font-size:8px;">4</span>
+              <div class="rundown-tooltip">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-2 h-2 rounded-full" style="background:#60a5fa;"></div>
+                  <span class="text-xs font-semibold text-txt-primary">Email Catchup</span>
+                </div>
+                <div class="text-[10px] text-txt-muted font-mono">ADMIN | ACT 4 | 25m</div>
+              </div>
+            </div>
+
+            <div class="rundown-gap"></div>
+
+            <!-- Act 5: Newsletter — future -->
+            <div class="rundown-block rundown-block-future" style="width:22%; background:rgba(245,158,11,0.2);">
+              <span class="rundown-block-label" style="font-size:8px;">5</span>
+              <div class="rundown-tooltip">
+                <div class="flex items-center gap-2 mb-1">
+                  <div class="w-2 h-2 rounded-full" style="background:#f59e0b;"></div>
+                  <span class="text-xs font-semibold text-txt-primary">Newsletter Brainstorm</span>
+                </div>
+                <div class="text-[10px] text-txt-muted font-mono">CREATIVE | ACT 5 | 30m</div>
+              </div>
+            </div>
+
+            <!-- NOW marker -->
+            <div class="now-marker" style="left:51%;">
+              <div class="now-marker-head"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timer Hero Section -->
+        <div class="text-center mb-4">
+          <!-- Clapperboard badge -->
+          <div class="flex justify-center mb-4">
+            <span class="clap-badge" style="border-color:rgba(34,197,94,0.5); color:#22c55e;">
+              EXERCISE <span class="divider">|</span> ACT 3 <span class="divider">|</span> 30:00
+            </span>
+          </div>
+
+          <!-- Act name -->
+          <h2 class="text-lg font-bold text-txt-primary mb-5">Afternoon Run</h2>
+
+          <!-- HUGE countdown -->
+          <div class="font-mono font-bold text-txt-primary mb-3" style="font-size:64px; line-height:1; letter-spacing:-0.02em;">
+            12:00
+          </div>
+
+          <!-- Progress bar -->
+          <div class="w-full h-1 rounded-full mb-6" style="background:#242428;">
+            <div class="h-full rounded-full" style="width:60%; background: linear-gradient(90deg, #22c55e, #4ade80);"></div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex justify-center gap-2">
+            <button class="px-4 py-2 rounded-lg text-sm font-medium font-mono" style="background:#242428; color:#9a9890; border:1px solid #333;">+15m</button>
+            <button class="px-5 py-2 rounded-lg text-sm font-medium" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">End Act</button>
+            <button class="px-4 py-2 rounded-lg text-sm font-medium" style="background:rgba(139,92,246,0.1); color:#8b5cf6; border:1px solid rgba(139,92,246,0.25);">Rest</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show Lineup sidebar -->
+      <div class="flex-shrink-0" style="width:200px;">
+        <div class="px-3 py-3">
+          <p class="section-label text-[10px] mb-3">Show Lineup</p>
+
+          <div class="space-y-1.5">
+            <!-- Act 1 — completed, beat locked -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.05);">
+              <span class="text-xs" title="Completed">&#9989;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-secondary truncate">Cold Open</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#ec4899;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">15m</span>
+                  <span class="beat-lit text-[10px]">&#9733;</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 2 — completed, beat locked, ran over -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.05);">
+              <span class="text-xs" title="Completed">&#9989;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-secondary truncate">API Integration</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#8b5cf6;"></div>
+                  <span class="font-mono text-[10px]" style="color:#ef4444;">57m</span>
+                  <span class="beat-lit text-[10px]">&#9733;</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 3 — ACTIVE -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
+              <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live" title="Live"></span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-txt-primary truncate">Afternoon Run</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#22c55e;"></div>
+                  <span class="font-mono text-[10px] text-txt-primary">12:00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 4 — upcoming -->
+            <div class="flex items-center gap-2 p-2 rounded-md opacity-60">
+              <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-muted truncate">Email Catchup</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#60a5fa;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">25m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 5 — upcoming -->
+            <div class="flex items-center gap-2 p-2 rounded-md opacity-60">
+              <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-muted truncate">Newsletter Brainstorm</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">30m</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-top:1px solid #242428;">
+      <div class="onair-box live">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-onair tally-live"></span>
+        ON AIR
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+        <span class="text-xs text-txt-muted font-mono">2/3 Beats</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 3. PILL VIEW WITH MINI RUNDOWN                                 -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Integration</span>
+    <h2 class="text-xl font-bold text-txt-primary">Pill View with Mini Rundown</h2>
+    <span class="text-xs text-txt-muted font-mono">320 x 48px &middot; Floating</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-8">The rundown bar compresses into a thin progress strip below the pill content. A glanceable show-wide context indicator.</p>
+
+  <div class="space-y-8">
+
+    <!-- Pill variant: with mini rundown bar -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono">LIVE &mdash; WITH RUNDOWN STRIP</p>
+      <div class="inline-block" style="width:320px;">
+        <div class="flex items-center gap-3 px-4 pt-2.5 pb-1 rounded-t-full rounded-b-none" style="height:40px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); border-bottom:none; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+          <!-- Tally light -->
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+          <!-- Act name -->
+          <span class="text-sm font-medium text-txt-primary truncate flex-1">Afternoon Run</span>
+          <!-- Timer -->
+          <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">12:00</span>
+          <!-- Beats -->
+          <span class="flex-shrink-0 text-sm tracking-wider">
+            <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+          </span>
+        </div>
+        <!-- Mini rundown strip -->
+        <div class="relative px-3 pb-2 pt-1 rounded-b-full" style="background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); border-top:none; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+          <div class="pill-rundown">
+            <div class="pill-rundown-block" style="width:10%; background:rgba(236,72,153,0.5); border-radius:9999px 0 0 9999px;"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:28%; background:rgba(139,92,246,0.5);"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:22%; background:rgba(34,197,94,0.6);"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:18%; background:rgba(96,165,250,0.25);"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:22%; background:rgba(245,158,11,0.25); border-radius:0 9999px 9999px 0;"></div>
+            <!-- NOW marker -->
+            <div class="pill-now-marker" style="left:51%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alternative: single-line pill with integrated rundown -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono">ALTERNATIVE &mdash; SINGLE ROW PILL (48px)</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <!-- Tally light -->
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <!-- Mini rundown bar replaces act name -->
+        <div class="flex-1 relative">
+          <div class="pill-rundown" style="height:6px;">
+            <div class="pill-rundown-block" style="width:10%; background:rgba(236,72,153,0.5); border-radius:9999px 0 0 9999px;"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:28%; background:rgba(139,92,246,0.5);"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:22%; background:rgba(34,197,94,0.6);"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:18%; background:rgba(96,165,250,0.25);"></div>
+            <div class="pill-rundown-gap"></div>
+            <div class="pill-rundown-block" style="width:22%; background:rgba(245,158,11,0.25); border-radius:0 9999px 9999px 0;"></div>
+            <div class="pill-now-marker" style="left:51%;"></div>
+          </div>
+        </div>
+        <!-- Timer -->
+        <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">12:00</span>
+        <!-- Beats -->
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Reference: original pill for comparison -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono">REFERENCE &mdash; ORIGINAL PILL (NO RUNDOWN)</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">Afternoon Run</span>
+        <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">12:00</span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 4. STATE VARIATIONS                                            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">States</span>
+    <h2 class="text-xl font-bold text-txt-primary">Rundown Bar Variations</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-8">How the rundown bar adapts to different show states.</p>
+
+  <div class="space-y-10">
+
+    <!-- State: Show just started (Act 1 active) -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono uppercase tracking-wider">Show just started &mdash; Act 1 Active</p>
+      <div class="p-5 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+        <div class="rundown-bar" style="height:28px;">
+          <div class="rundown-block rundown-block-active" style="width:10%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3); border-top:2px solid #ef4444; border-bottom:2px solid #ef4444;">
+            <span class="rundown-block-label" style="font-size:8px; color:rgba(232,230,224,0.95);">&#9654; 1</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:30%; background:rgba(139,92,246,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">2</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:20%; background:rgba(34,197,94,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">3</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:18%; background:rgba(96,165,250,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">4</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:22%; background:rgba(245,158,11,0.2);">
+            <span class="rundown-block-label" style="font-size:8px;">5</span>
+          </div>
+          <div class="now-marker" style="left:5%;">
+            <div class="now-marker-head"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <span class="progress-status text-txt-muted">Act <span class="text-txt-primary">1</span> of <span class="text-txt-primary">5</span></span>
+          <span class="schedule-badge schedule-badge-ontime">on time</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- State: Ahead of schedule -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono uppercase tracking-wider">Ahead of schedule &mdash; Acts completed faster than planned</p>
+      <div class="p-5 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+        <div class="rundown-bar" style="height:28px;">
+          <div class="rundown-block rundown-block-completed" style="width:8%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">1</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed" style="width:20%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">2</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed" style="width:16%; background:rgba(34,197,94,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">3</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-active" style="width:18%; background:rgba(96,165,250,0.35); border-right:1px solid rgba(0,0,0,0.3); border-top:2px solid #ef4444; border-bottom:2px solid #ef4444;">
+            <span class="rundown-block-label" style="font-size:8px; color:rgba(232,230,224,0.95);">&#9654; 4</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:22%; background:rgba(245,158,11,0.2);">
+            <span class="rundown-block-label" style="font-size:8px;">5</span>
+          </div>
+          <!-- Remaining unused space shown as empty -->
+          <div style="flex:1; background:rgba(255,255,255,0.02);"></div>
+          <div class="now-marker" style="left:54%;">
+            <div class="now-marker-head"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <span class="progress-status text-txt-muted">Act <span class="text-txt-primary">4</span> of <span class="text-txt-primary">5</span></span>
+          <span class="schedule-badge schedule-badge-ahead">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            15m ahead
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- State: Heavily behind — blocks compressed -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono uppercase tracking-wider">Heavily behind &mdash; Early acts ballooned, future acts compressed</p>
+      <div class="p-5 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+        <div class="rundown-bar" style="height:28px;">
+          <div class="rundown-block rundown-block-completed rundown-block-overrun" style="width:15%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3); --overrun-width:33%;">
+            <span class="rundown-block-label" style="font-size:8px;">1</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed rundown-block-overrun" style="width:40%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3); --overrun-width:25%;">
+            <span class="rundown-block-label" style="font-size:8px;">2</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-active" style="width:20%; background:rgba(34,197,94,0.35); border-right:1px solid rgba(0,0,0,0.3); border-top:2px solid #ef4444; border-bottom:2px solid #ef4444;">
+            <span class="rundown-block-label" style="font-size:8px; color:rgba(232,230,224,0.95);">&#9654; 3</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <!-- Compressed future blocks -->
+          <div class="rundown-block rundown-block-future" style="width:12%; background:rgba(96,165,250,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">4</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:13%; background:rgba(245,158,11,0.2);">
+            <span class="rundown-block-label" style="font-size:8px;">5</span>
+          </div>
+          <div class="now-marker" style="left:65%;">
+            <div class="now-marker-head"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <span class="progress-status text-txt-muted">Act <span class="text-txt-primary">3</span> of <span class="text-txt-primary">5</span></span>
+          <span class="schedule-badge schedule-badge-behind">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            38m behind
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- State: Show complete -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono uppercase tracking-wider">Show complete &mdash; All acts finished</p>
+      <div class="p-5 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+        <div class="rundown-bar" style="height:28px;">
+          <div class="rundown-block rundown-block-completed" style="width:10%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">1</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed rundown-block-overrun" style="width:28%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3); --overrun-width:21%;">
+            <span class="rundown-block-label" style="font-size:8px;">2</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed" style="width:22%; background:rgba(34,197,94,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">3</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed" style="width:18%; background:rgba(96,165,250,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">4</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed" style="width:22%; background:rgba(245,158,11,0.35);">
+            <span class="rundown-block-label" style="font-size:8px;">5</span>
+          </div>
+          <!-- No NOW marker — show is over -->
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <div class="flex items-center gap-3">
+            <span class="progress-status" style="color:#f59e0b;">Show Complete</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm tracking-wider">
+              <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span>
+            </span>
+            <span class="text-[10px] text-txt-muted font-mono">3/3 Beats</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State: Intermission -->
+    <div>
+      <p class="text-xs text-txt-muted mb-3 font-mono uppercase tracking-wider">Intermission &mdash; Between Act 2 and Act 3</p>
+      <div class="p-5 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+        <div class="rundown-bar" style="height:28px;">
+          <div class="rundown-block rundown-block-completed" style="width:10%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">1</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-completed rundown-block-overrun" style="width:28%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3); --overrun-width:21%;">
+            <span class="rundown-block-label" style="font-size:8px;">2</span>
+          </div>
+          <!-- Intermission: wider pulsing gap -->
+          <div style="width:6px; height:100%; background: repeating-linear-gradient(0deg, #242428, #242428 3px, #1a1a1e 3px, #1a1a1e 6px); flex-shrink:0; opacity:0.8;"></div>
+          <div class="rundown-block rundown-block-future" style="width:22%; background:rgba(34,197,94,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">3</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:18%; background:rgba(96,165,250,0.2); border-right:1px solid rgba(0,0,0,0.3);">
+            <span class="rundown-block-label" style="font-size:8px;">4</span>
+          </div>
+          <div class="rundown-gap"></div>
+          <div class="rundown-block rundown-block-future" style="width:22%; background:rgba(245,158,11,0.2);">
+            <span class="rundown-block-label" style="font-size:8px;">5</span>
+          </div>
+          <!-- NOW marker sits in the intermission gap -->
+          <div class="now-marker" style="left:39.5%;">
+            <div class="now-marker-head"></div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <div class="flex items-center gap-3">
+            <span class="progress-status" style="color:#8b5cf6;">Intermission</span>
+            <span class="text-[10px] font-mono text-txt-muted">no rush</span>
+          </div>
+          <span class="schedule-badge schedule-badge-behind">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            12m behind
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 5. INTERACTIVE TIME SCRUBBER DEMO                              -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Interactive</span>
+    <h2 class="text-xl font-bold text-txt-primary">Time Scrubber Demo</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Drag the slider to see how the NOW marker moves across the rundown bar throughout the day.</p>
+
+  <div class="p-6 rounded-xl" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+    <!-- Scrubber bar -->
+    <div id="demo-rundown" class="rundown-bar" style="height:36px;">
+      <div class="rundown-block" id="demo-act-1" style="width:10%; background:rgba(236,72,153,0.35); border-right:1px solid rgba(0,0,0,0.3); transition: opacity 0.3s ease;">
+        <span class="rundown-block-label" style="font-size:9px;">Cold Open</span>
+      </div>
+      <div class="rundown-gap"></div>
+      <div class="rundown-block" id="demo-act-2" style="width:28%; background:rgba(139,92,246,0.35); border-right:1px solid rgba(0,0,0,0.3); transition: opacity 0.3s ease;">
+        <span class="rundown-block-label" style="font-size:9px;">API Integration</span>
+      </div>
+      <div class="rundown-gap"></div>
+      <div class="rundown-block" id="demo-act-3" style="width:22%; background:rgba(34,197,94,0.35); border-right:1px solid rgba(0,0,0,0.3); transition: opacity 0.3s ease;">
+        <span class="rundown-block-label" style="font-size:9px;">Afternoon Run</span>
+      </div>
+      <div class="rundown-gap"></div>
+      <div class="rundown-block" id="demo-act-4" style="width:18%; background:rgba(96,165,250,0.35); border-right:1px solid rgba(0,0,0,0.3); transition: opacity 0.3s ease;">
+        <span class="rundown-block-label" style="font-size:9px;">Email</span>
+      </div>
+      <div class="rundown-gap"></div>
+      <div class="rundown-block" id="demo-act-5" style="width:22%; background:rgba(245,158,11,0.35); transition: opacity 0.3s ease;">
+        <span class="rundown-block-label" style="font-size:9px;">Newsletter</span>
+      </div>
+      <div class="now-marker" id="demo-now" style="left:0%; transition: left 0.1s ease;">
+        <div class="now-marker-head"></div>
+        <div class="now-marker-label" id="demo-now-label">NOW</div>
+      </div>
+    </div>
+
+    <!-- Slider -->
+    <div class="mt-6 mb-3">
+      <input type="range" id="time-slider" class="demo-slider" min="0" max="100" value="0">
+    </div>
+
+    <!-- Status display -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="progress-status text-txt-muted" id="demo-status">Act <span class="text-txt-primary">1</span> of <span class="text-txt-primary">5</span></span>
+        <span class="schedule-badge schedule-badge-ontime" id="demo-schedule">on time</span>
+      </div>
+      <span class="font-mono text-sm text-txt-secondary" id="demo-time">10:00 AM</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 6. DESIGN RATIONALE                                            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Rationale</span>
+    <h2 class="text-xl font-bold text-txt-primary">Why a Rundown Bar?</h2>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-8">
+    <div class="p-5 rounded-lg" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">Broadcast DNA</p>
+      <p class="text-xs text-txt-secondary leading-relaxed">TV producers use rundown sheets to track the live show. The horizontal timeline maps directly to the SNL metaphor &mdash; you see the whole show, where you are, and what is ahead.</p>
+    </div>
+    <div class="p-5 rounded-lg" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">Reality vs. Plan</p>
+      <p class="text-xs text-txt-secondary leading-relaxed">When an act runs over, its block physically grows. Future acts compress. The bar is a living document &mdash; the plan bends to reality, not the other way around. No guilt, just truth.</p>
+    </div>
+    <div class="p-5 rounded-lg" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">Glanceable Progress</p>
+      <p class="text-xs text-txt-secondary leading-relaxed">At 28-32px tall, the rundown bar adds show-wide context without stealing attention from the timer hero. The colored blocks and NOW marker tell the story in milliseconds.</p>
+    </div>
+    <div class="p-5 rounded-lg" style="background:#1a1a1e; border:1px solid #2a2a2e;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">ADHD-Friendly</p>
+      <p class="text-xs text-txt-secondary leading-relaxed">Visual proportionality answers "how much is left?" without reading numbers. The overrun hatching pattern says "this ran long" without saying "you failed." Information without judgment.</p>
+    </div>
+  </div>
+
+  <!-- Implementation notes -->
+  <div class="p-5 rounded-lg" style="background:#13130f; border:1px solid #2a2a24;">
+    <p class="section-label mb-3">Implementation Notes</p>
+    <ul class="space-y-2 text-xs text-txt-secondary">
+      <li class="flex gap-2">
+        <span class="text-txt-muted flex-shrink-0">&bull;</span>
+        <span>Block widths = <code class="font-mono text-txt-primary" style="font-size:11px;">actualDuration / totalShowDuration * 100%</code> for completed acts, <code class="font-mono text-txt-primary" style="font-size:11px;">plannedDuration / totalShowDuration * 100%</code> for future acts</span>
+      </li>
+      <li class="flex gap-2">
+        <span class="text-txt-muted flex-shrink-0">&bull;</span>
+        <span>NOW marker position = <code class="font-mono text-txt-primary" style="font-size:11px;">(completedTime + currentActElapsed) / totalShowDuration * 100%</code></span>
+      </li>
+      <li class="flex gap-2">
+        <span class="text-txt-muted flex-shrink-0">&bull;</span>
+        <span>Overrun hatching width = <code class="font-mono text-txt-primary" style="font-size:11px;">(actualDuration - plannedDuration) / actualDuration * 100%</code> of that block</span>
+      </li>
+      <li class="flex gap-2">
+        <span class="text-txt-muted flex-shrink-0">&bull;</span>
+        <span>All transitions use spring-like cubic-bezier <code class="font-mono text-txt-primary" style="font-size:11px;">cubic-bezier(0.34, 1.56, 0.64, 1)</code> to match Framer Motion feel</span>
+      </li>
+      <li class="flex gap-2">
+        <span class="text-txt-muted flex-shrink-0">&bull;</span>
+        <span>In Pill view, the rundown bar compresses to 4px height &mdash; category colors are sufficient at this scale, no labels needed</span>
+      </li>
+      <li class="flex gap-2">
+        <span class="text-txt-muted flex-shrink-0">&bull;</span>
+        <span>Tooltips positioned with Radix UI Popover in production for collision-aware placement</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- INTERACTIVE DEMO SCRIPT                                        -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  const slider = document.getElementById('time-slider');
+  const nowMarker = document.getElementById('demo-now');
+  const nowLabel = document.getElementById('demo-now-label');
+  const statusEl = document.getElementById('demo-status');
+  const scheduleEl = document.getElementById('demo-schedule');
+  const timeEl = document.getElementById('demo-time');
+
+  // Act boundaries (percentage ranges on the bar)
+  // Gaps between are intermissions
+  const acts = [
+    { start: 0, end: 10, name: 'Cold Open', num: 1 },
+    { start: 11, end: 39, name: 'API Integration', num: 2 },
+    { start: 40, end: 62, name: 'Afternoon Run', num: 3 },
+    { start: 63, end: 81, name: 'Email Catchup', num: 4 },
+    { start: 82, end: 100, name: 'Newsletter', num: 5 }
+  ];
+
+  // Map slider percentage to a time
+  function getTime(pct) {
+    // Show runs from 10:00 AM to 3:30 PM (330 minutes)
+    var minutes = Math.round(pct / 100 * 330);
+    var totalMinutes = 600 + minutes; // 600 = 10:00 AM in minutes from midnight
+    var hours = Math.floor(totalMinutes / 60);
+    var mins = totalMinutes % 60;
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    var displayHours = hours > 12 ? hours - 12 : hours;
+    return displayHours + ':' + (mins < 10 ? '0' : '') + mins + ' ' + ampm;
+  }
+
+  function getCurrentAct(pct) {
+    for (var i = 0; i < acts.length; i++) {
+      if (pct >= acts[i].start && pct <= acts[i].end) return acts[i];
+    }
+    // In an intermission gap
+    for (var i = 0; i < acts.length - 1; i++) {
+      if (pct > acts[i].end && pct < acts[i+1].start) {
+        return { name: 'Intermission', num: 0, intermissionAfter: acts[i].num };
+      }
+    }
+    return acts[acts.length - 1];
+  }
+
+  function update() {
+    var pct = parseInt(slider.value);
+    nowMarker.style.left = pct + '%';
+
+    var currentAct = getCurrentAct(pct);
+    timeEl.textContent = getTime(pct);
+
+    // Update act block states
+    for (var i = 0; i < acts.length; i++) {
+      var el = document.getElementById('demo-act-' + (i + 1));
+      if (!el) continue;
+
+      // Reset borders
+      el.style.borderTop = 'none';
+      el.style.borderBottom = 'none';
+
+      if (pct > acts[i].end) {
+        // Completed
+        el.style.opacity = '0.7';
+      } else if (pct >= acts[i].start && pct <= acts[i].end) {
+        // Active
+        el.style.opacity = '1';
+        el.style.borderTop = '2px solid #ef4444';
+        el.style.borderBottom = '2px solid #ef4444';
+      } else {
+        // Future
+        el.style.opacity = '0.5';
+      }
+    }
+
+    if (currentAct.num === 0) {
+      statusEl.innerHTML = '<span style="color:#8b5cf6;">Intermission</span> after Act ' + currentAct.intermissionAfter;
+      scheduleEl.className = 'schedule-badge schedule-badge-ontime';
+      scheduleEl.textContent = 'resting';
+    } else {
+      statusEl.innerHTML = 'Act <span class="text-txt-primary">' + currentAct.num + '</span> of <span class="text-txt-primary">5</span>';
+
+      // Simulate behind/ahead based on position
+      if (pct < 30) {
+        scheduleEl.className = 'schedule-badge schedule-badge-ontime';
+        scheduleEl.textContent = 'on time';
+      } else if (pct < 70) {
+        scheduleEl.className = 'schedule-badge schedule-badge-behind';
+        scheduleEl.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> 12m behind';
+      } else {
+        scheduleEl.className = 'schedule-badge schedule-badge-behind';
+        scheduleEl.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> 8m behind';
+      }
+    }
+  }
+
+  slider.addEventListener('input', update);
+  update();
+})();
+</script>
+
+</body>
+</html>
