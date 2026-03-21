@@ -35,7 +35,7 @@ export function ExpandedView() {
           SHOWTIME
         </span>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
           <button
             onClick={enterDirector}
             className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors"
@@ -45,10 +45,18 @@ export function ExpandedView() {
           </button>
           <button
             onClick={toggleExpanded}
-            className="ml-2 text-txt-muted hover:text-txt-secondary transition-colors"
+            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
           >
             ▼
+          </button>
+          <button
+            onClick={() => window.clui.quit()}
+            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm"
+            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+            title="Quit Showtime"
+          >
+            ✕
           </button>
         </div>
       </div>
