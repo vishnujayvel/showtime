@@ -62,6 +62,10 @@ export interface CluiAPI {
   setViewMode(mode: 'pill' | 'expanded' | 'full'): void
   onDayBoundary(callback: () => void): () => void
   onToggleExpanded(callback: () => void): () => void
+
+  // ─── Test-only (NODE_ENV=test) ───
+  testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
+  testGetTrayMenu?: () => Promise<string[]>
 }
 
 const api: CluiAPI = {
@@ -174,6 +178,12 @@ const api: CluiAPI = {
     ipcRenderer.on(IPC.TOGGLE_EXPANDED, handler)
     return () => ipcRenderer.removeListener(IPC.TOGGLE_EXPANDED, handler)
   },
+
+  // Test-only IPC (NODE_ENV=test)
+  ...(process.env.NODE_ENV === 'test' ? {
+    testGetWindowConfig: () => ipcRenderer.invoke('test:get-window-config'),
+    testGetTrayMenu: () => ipcRenderer.invoke('test:get-tray-menu'),
+  } : {}),
 }
 
 contextBridge.exposeInMainWorld('clui', api)

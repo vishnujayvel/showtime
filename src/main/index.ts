@@ -1082,6 +1082,18 @@ app.whenReady().then(async () => {
   // Using showWindow here instead of toggleWindow prevents the re-entry race where
   // a summon immediately hides itself because activate fires mid-show.
   app.on('activate', () => showWindow('app activate'))
+
+  // ─── Test-mode IPC handlers for E2E verification ───
+  if (process.env.NODE_ENV === 'test') {
+    ipcMain.handle('test:get-window-config', () => ({
+      alwaysOnTop: mainWindow?.isAlwaysOnTop(),
+      visibleOnAllWorkspaces: mainWindow?.isVisibleOnAllWorkspaces(),
+      backgroundColor: mainWindow?.getBackgroundColor(),
+      bounds: mainWindow?.getBounds(),
+    }))
+    ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Quit Showtime']
+    ipcMain.handle('test:get-tray-menu', () => (global as any).__trayMenuLabels)
+  }
 })
 
 app.on('will-quit', () => {
