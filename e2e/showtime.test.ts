@@ -410,9 +410,21 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
   })
 
   test('#10 window uses content-tight sizing', async () => {
+    // Reset to no_show phase so window enters 'full' mode
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-show-state')
+      localStorage.setItem('showtime-onboarding-complete', 'true')
+    })
+    await navigateAndWait()
+
+    // Wait for DarkStudio CTA to confirm phase reset, then allow setBounds to complete
+    const cta = page.getByText("Enter the Writer's Room")
+    await expect(cta).toBeVisible({ timeout: 10000 })
+    await page.waitForTimeout(1000)
+
     const bwHandle = await app.browserWindow(page)
     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    // Content-tight: DarkStudio/Onboarding launch in 'full' mode (560x740)
+    // Content-tight: DarkStudio in 'full' mode (560x740)
     expect(bounds.width).toBe(560)
     expect(bounds.height).toBe(740)
   })

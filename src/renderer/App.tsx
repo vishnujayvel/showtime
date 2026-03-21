@@ -7,6 +7,7 @@ import { useShowStore } from './stores/showStore'
 import { useThemeStore } from './theme'
 import { DarkStudioView } from './views/DarkStudioView'
 import { WritersRoomView } from './views/WritersRoomView'
+import { ColdOpenTransition } from './views/ColdOpenTransition'
 import { GoingLiveTransition } from './views/GoingLiveTransition'
 import { PillView } from './views/PillView'
 import { ExpandedView } from './views/ExpandedView'
@@ -20,6 +21,8 @@ export default function App() {
 
   const phase = useShowStore((s) => s.phase)
   const isExpanded = useShowStore((s) => s.isExpanded)
+  const coldOpenActive = useShowStore((s) => s.coldOpenActive)
+  const completeColdOpen = useShowStore((s) => s.completeColdOpen)
   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
@@ -66,7 +69,7 @@ export default function App() {
   useEffect(() => {
     if (!window.clui?.setViewMode) return
 
-    if (goingLiveActive) {
+    if (coldOpenActive || goingLiveActive) {
       window.clui.setViewMode('full')
       return
     }
@@ -77,11 +80,11 @@ export default function App() {
     }
 
     switch (phase) {
+      case 'no_show':
       case 'writers_room':
       case 'strike':
         window.clui.setViewMode('full')
         break
-      case 'no_show':
       case 'live':
       case 'intermission':
       case 'director':
@@ -89,7 +92,7 @@ export default function App() {
         window.clui.setViewMode('expanded')
         break
     }
-  }, [phase, isExpanded, goingLiveActive])
+  }, [phase, isExpanded, coldOpenActive, goingLiveActive])
 
   // ─── Force-expand on Beat Check ───
   useEffect(() => {
@@ -117,7 +120,7 @@ export default function App() {
   // ─── View routing ───
   const renderView = () => {
     // Onboarding takes priority on first launch
-    if (showOnboarding && phase === 'no_show' && isExpanded && !goingLiveActive) {
+    if (showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive) {
       return (
         <OnboardingView
           key="onboarding"
@@ -125,6 +128,11 @@ export default function App() {
           onSkip={() => handleOnboardingComplete(false)}
         />
       )
+    }
+
+    // Cold Open transition (Dark Studio → Writer's Room)
+    if (coldOpenActive) {
+      return <ColdOpenTransition key="cold-open" onComplete={completeColdOpen} />
     }
 
     // Going Live transition takes priority
@@ -157,7 +165,7 @@ export default function App() {
   return (
     <div className="w-full h-full relative bg-transparent flex flex-col items-center justify-end">
       {/* Help button — visible on DarkStudio when onboarding was completed */}
-      {!showOnboarding && phase === 'no_show' && isExpanded && !goingLiveActive && (
+      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && (
         <button
           onClick={handleHelpClick}
           className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"

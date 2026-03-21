@@ -67,7 +67,7 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
       <div className="absolute top-0 left-0 right-0 h-8 drag-region z-10" />
 
       {/* Skip link */}
-      <div className="w-full flex justify-end pt-5 pr-6">
+      <div className="w-full flex justify-end pt-5 pr-6 relative z-20">
         <button
           onClick={onSkip || onComplete}
           className="font-body text-sm text-txt-muted hover:text-txt-secondary transition-colors no-drag"

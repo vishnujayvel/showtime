@@ -662,6 +662,24 @@ describe('showStore', () => {
     })
   })
 
+  // ─── Cold Open Transition ───
+
+  describe('triggerColdOpen', () => {
+    it('sets coldOpenActive to true', () => {
+      useShowStore.getState().triggerColdOpen()
+      expect(useShowStore.getState().coldOpenActive).toBe(true)
+    })
+  })
+
+  describe('completeColdOpen', () => {
+    it('sets coldOpenActive to false and enters writers room', () => {
+      useShowStore.getState().triggerColdOpen()
+      useShowStore.getState().completeColdOpen()
+      expect(useShowStore.getState().coldOpenActive).toBe(false)
+      expect(useShowStore.getState().phase).toBe('writers_room')
+    })
+  })
+
   // ─── Going Live Transition ───
 
   describe('triggerGoingLive', () => {
