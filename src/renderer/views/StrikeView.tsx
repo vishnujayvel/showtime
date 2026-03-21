@@ -18,7 +18,7 @@ export function StrikeView() {
 
   return (
     <motion.div
-      className="w-[560px] bg-surface rounded-xl overflow-hidden flex flex-col"
+      className="w-[560px] max-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
       data-clui-ui
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

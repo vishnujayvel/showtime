@@ -27,6 +27,7 @@ export function WritersRoomView() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showNudge, setShowNudge] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingPhase, setLoadingPhase] = useState<'initial' | 'extended' | 'timeout'>('initial')
 
   // 20-minute nudge timer
   useEffect(() => {
@@ -100,14 +101,24 @@ ${planText}`
     }
   }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep])
 
-  // Timeout after 30 seconds
+  // Loading phase progression: initial → extended (10s) → timeout (30s)
   useEffect(() => {
-    if (!isSubmitting) return
-    const timeout = setTimeout(() => {
+    if (!isSubmitting) {
+      setLoadingPhase('initial')
+      return
+    }
+
+    const extendedTimer = setTimeout(() => setLoadingPhase('extended'), 10000)
+    const timeoutTimer = setTimeout(() => {
+      setLoadingPhase('timeout')
       setIsSubmitting(false)
-      setError('Took too long. Try again or edit your plan.')
+      setError('The writers need a coffee break. Try again?')
     }, 30000)
-    return () => clearTimeout(timeout)
+
+    return () => {
+      clearTimeout(extendedTimer)
+      clearTimeout(timeoutTimer)
+    }
   }, [isSubmitting])
 
   return (
@@ -152,7 +163,7 @@ ${planText}`
             </motion.div>
           )}
 
-          {/* Step 2: Plan Dump */}
+          {/* Step 2: Plan Dump / Loading Overlay */}
           {writersRoomStep === 'plan' && (
             <motion.div
               key="plan"
@@ -161,41 +172,86 @@ ${planText}`
               exit={{ opacity: 0, y: -12 }}
               transition={springTransition}
             >
-              <h2 className="font-body text-xl font-semibold text-txt-primary mb-2">
-                What&apos;s on the schedule?
-              </h2>
-              <p className="text-sm text-txt-muted mb-6">
-                Dump everything. Claude will organize it into tonight&apos;s lineup.
-              </p>
+              <AnimatePresence mode="wait">
+                {isSubmitting ? (
+                  <motion.div
+                    key="loading"
+                    className="flex flex-col items-center justify-center py-20 relative"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={springTransition}
+                  >
+                    {/* Spotlight sweep background */}
+                    <div className="absolute inset-0 spotlight-sweep rounded-lg" />
 
-              <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
-                <textarea
-                  value={planText}
-                  onChange={(e) => setPlanText(e.target.value)}
-                  placeholder="meetings, tasks, errands, whatever..."
-                  className="w-full h-[200px] resize-none bg-transparent font-body text-sm text-notepad-text placeholder:text-txt-muted focus:outline-none"
-                  autoFocus
-                />
-              </div>
+                    <p className="font-body text-lg text-txt-secondary mb-4 relative z-10">
+                      {loadingPhase === 'extended'
+                        ? 'Still writing... almost there'
+                        : 'The writers are working...'}
+                    </p>
 
-              <Button
-                variant="accent"
-                className="mt-4"
-                disabled={isSubmitting || !planText.trim()}
-                onClick={handleBuildLineup}
-              >
-                {isSubmitting ? 'Planning...' : 'Build my lineup'}
-              </Button>
+                    {/* Pulsing dots */}
+                    <div className="flex gap-2 relative z-10">
+                      <span className="w-2 h-2 rounded-full bg-accent writers-dot-1" />
+                      <span className="w-2 h-2 rounded-full bg-accent writers-dot-2" />
+                      <span className="w-2 h-2 rounded-full bg-accent writers-dot-3" />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={springTransition}
+                  >
+                    <h2 className="font-body text-xl font-semibold text-txt-primary mb-2">
+                      What&apos;s on the schedule?
+                    </h2>
+                    <p className="text-sm text-txt-muted mb-6">
+                      Dump everything. Claude will organize it into tonight&apos;s lineup.
+                    </p>
 
-              {error && (
-                <p className="text-xs text-onair mt-2">{error}</p>
-              )}
+                    <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
+                      <textarea
+                        value={planText}
+                        onChange={(e) => setPlanText(e.target.value)}
+                        placeholder="meetings, tasks, errands, whatever..."
+                        className="w-full h-[200px] resize-none bg-transparent font-body text-sm text-notepad-text placeholder:text-txt-muted focus:outline-none"
+                        autoFocus
+                      />
+                    </div>
 
-              {showNudge && (
-                <p className="text-xs text-txt-muted mt-4 animate-breathe">
-                  Still writing? No rush — the show starts when you&apos;re ready.
-                </p>
-              )}
+                    <Button
+                      variant="accent"
+                      className="mt-4"
+                      disabled={!planText.trim()}
+                      onClick={handleBuildLineup}
+                    >
+                      Build my lineup
+                    </Button>
+
+                    {error && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <p className="text-xs text-onair">{error}</p>
+                        <button
+                          onClick={handleBuildLineup}
+                          className="text-xs text-accent hover:text-accent-dark underline"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
+
+                    {showNudge && (
+                      <p className="text-xs text-txt-muted mt-4 animate-breathe">
+                        Still writing? No rush — the show starts when you&apos;re ready.
+                      </p>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
 

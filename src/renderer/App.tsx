@@ -118,7 +118,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-full relative bg-transparent">
+    <div className="w-full h-full relative bg-transparent flex flex-col items-center justify-end">
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>

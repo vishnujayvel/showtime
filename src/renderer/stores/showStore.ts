@@ -93,6 +93,9 @@ interface ShowStoreState {
 
 export type ShowStore = ShowStoreState & ShowActions
 
+// Module-level timeout tracker for beat celebration (outside store to avoid serialization)
+let celebrationTimeout: ReturnType<typeof setTimeout> | null = null
+
 const initialState: ShowStoreState = {
   phase: 'no_show',
   energy: null,
@@ -243,6 +246,12 @@ export const useShowStore = create<ShowStore>()(
       // ─── Beat Tracking ───
 
       lockBeat: () => {
+        // Clear any in-flight celebration timeout to prevent race conditions
+        if (celebrationTimeout) {
+          clearTimeout(celebrationTimeout)
+          celebrationTimeout = null
+        }
+
         const { currentActId } = get()
         set((s) => ({
           beatsLocked: s.beatsLocked + 1,
@@ -252,8 +261,19 @@ export const useShowStore = create<ShowStore>()(
           ),
         }))
 
+        // Capture phase at time of lock — if it changes, the callback is stale
+        const lockPhase = get().phase
+
         // Celebration delay — show "That moment was real" for 1800ms before advancing
-        setTimeout(() => {
+        celebrationTimeout = setTimeout(() => {
+          celebrationTimeout = null
+
+          // Guard: only advance if still in the same phase and celebration is active
+          if (get().phase !== lockPhase || !get().celebrationActive) {
+            set({ celebrationActive: false })
+            return
+          }
+
           set({ celebrationActive: false, beatCheckPending: false })
 
           // Start next act or strike
@@ -451,7 +471,13 @@ export const useShowStore = create<ShowStore>()(
 
       // ─── Reset ───
 
-      resetShow: () => set({ ...initialState, showDate: today(), isExpanded: true }),
+      resetShow: () => {
+        if (celebrationTimeout) {
+          clearTimeout(celebrationTimeout)
+          celebrationTimeout = null
+        }
+        set({ ...initialState, showDate: today(), isExpanded: true })
+      },
 
       // ─── Session ───
 
