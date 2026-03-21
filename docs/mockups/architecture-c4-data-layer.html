@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Data Persistence Architecture (C4 Model)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  /* ─── Reset & Base ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --surface-elevated: #2a2a30;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+    --border: #333338;
+    --c4-system: #60a5fa;
+    --c4-container: #8b5cf6;
+    --c4-component: #22c55e;
+    --c4-external: #9a9890;
+    --c4-data: #f59e0b;
+    --c4-ipc: #ec4899;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--studio-bg);
+    color: var(--txt-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── Layout ─── */
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 32px 96px; }
+
+  .hero {
+    text-align: center;
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .hero h1 {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .hero .subtitle {
+    font-size: 18px;
+    color: var(--txt-secondary);
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+  .hero .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 6px 16px;
+    border: 1px solid var(--c4-component);
+    color: var(--c4-component);
+    border-radius: 4px;
+  }
+
+  /* ─── Section ─── */
+  .section { margin-bottom: 64px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .section-header .level-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+  .section-header .level-tag.system { color: var(--c4-system); border-color: var(--c4-system); }
+  .section-header .level-tag.container { color: var(--c4-container); border-color: var(--c4-container); }
+  .section-header .level-tag.component { color: var(--c4-component); border-color: var(--c4-component); }
+  .section-header .level-tag.data { color: var(--c4-data); border-color: var(--c4-data); }
+  .section-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--txt-primary);
+  }
+  .section-desc {
+    color: var(--txt-secondary);
+    font-size: 15px;
+    margin-bottom: 32px;
+    max-width: 720px;
+  }
+
+  /* ─── Nav ─── */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13, 13, 15, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .nav a {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--txt-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .nav a:hover { color: var(--txt-primary); border-color: var(--accent); }
+  .nav .nav-brand {
+    font-weight: 700;
+    color: var(--accent);
+    margin-right: 12px;
+  }
+
+  /* ─── Recommendation ─── */
+  .recommendation {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 48px;
+  }
+  .recommendation h3 {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--c4-component);
+    margin-bottom: 16px;
+  }
+  .recommendation h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .recommendation p {
+    color: var(--txt-secondary);
+    font-size: 15px;
+    margin-bottom: 12px;
+    line-height: 1.7;
+  }
+  .recommendation .rationale {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .rationale-card {
+    background: var(--surface-hover);
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 3px solid;
+  }
+  .rationale-card.pro { border-color: var(--c4-component); }
+  .rationale-card.con { border-color: var(--onair); }
+  .rationale-card.why { border-color: var(--c4-system); }
+  .rationale-card h5 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .rationale-card.pro h5 { color: var(--c4-component); }
+  .rationale-card.con h5 { color: var(--onair); }
+  .rationale-card.why h5 { color: var(--c4-system); }
+  .rationale-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .rationale-card li {
+    font-size: 13px;
+    color: var(--txt-secondary);
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .rationale-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .rationale-card.pro li::before { background: var(--c4-component); }
+  .rationale-card.con li::before { background: var(--onair); }
+  .rationale-card.why li::before { background: var(--c4-system); }
+
+  /* ─── Rejected options ─── */
+  .rejected {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .rejected h5 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--txt-muted);
+    margin-bottom: 12px;
+  }
+  .rejected-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .rejected-item {
+    background: var(--studio-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+  }
+  .rejected-item .name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--txt-muted);
+    margin-bottom: 4px;
+    text-decoration: line-through;
+  }
+  .rejected-item .reason {
+    font-size: 12px;
+    color: var(--txt-muted);
+    line-height: 1.5;
+  }
+
+  /* ─── Diagram Container ─── */
+  .diagram-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    overflow-x: auto;
+  }
+  .diagram-caption {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--txt-muted);
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  /* ─── SVG Diagram Styles ─── */
+  svg text {
+    font-family: 'Inter', sans-serif;
+    fill: var(--txt-primary);
+  }
+  svg text.mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  svg .node-label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  svg .node-tech {
+    font-size: 10px;
+    fill: var(--txt-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  svg .node-desc {
+    font-size: 11px;
+    fill: var(--txt-secondary);
+  }
+  svg .arrow-label {
+    font-size: 10px;
+    fill: var(--txt-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ─── Tooltips ─── */
+  .diagram-wrap { position: relative; }
+  .tooltip {
+    position: fixed;
+    z-index: 1000;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    max-width: 320px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip h6 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tooltip p {
+    font-size: 12px;
+    color: var(--txt-secondary);
+    line-height: 1.5;
+  }
+  .tooltip .tech {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--c4-container);
+    margin-top: 4px;
+  }
+
+  /* ─── Data Model Tables ─── */
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .schema-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .schema-card-header {
+    background: var(--surface-hover);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .schema-card-header .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .schema-card-header h4 {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--txt-primary);
+  }
+  .schema-card-header .desc {
+    font-size: 11px;
+    color: var(--txt-muted);
+    margin-left: auto;
+  }
+  .schema-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .schema-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--txt-muted);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .schema-table td {
+    font-size: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(51, 51, 56, 0.4);
+    vertical-align: top;
+  }
+  .schema-table tr:last-child td { border-bottom: none; }
+  .schema-table tr:hover td { background: rgba(36, 36, 40, 0.5); }
+  .schema-table .col-name {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--txt-primary);
+    font-size: 12px;
+  }
+  .schema-table .col-type {
+    font-family: var(--font-mono);
+    color: var(--c4-container);
+    font-size: 11px;
+  }
+  .schema-table .col-desc {
+    color: var(--txt-secondary);
+    font-size: 11px;
+  }
+  .schema-table .pk {
+    color: var(--beat);
+    font-weight: 600;
+  }
+  .schema-table .fk {
+    color: var(--c4-ipc);
+  }
+  .schema-table .idx {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--txt-muted);
+  }
+
+  /* ─── Sync Flow ─── */
+  .sync-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 32px;
+  }
+  .sync-step {
+    background: var(--surface-hover);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+    position: relative;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .sync-step:hover {
+    border-color: var(--accent);
+    background: var(--surface-elevated);
+  }
+  .sync-step .step-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .sync-step .step-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    margin-bottom: 2px;
+  }
+  .sync-step .step-detail {
+    font-size: 11px;
+    color: var(--txt-muted);
+    font-family: var(--font-mono);
+  }
+  .sync-arrow {
+    font-size: 20px;
+    color: var(--txt-muted);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  /* ─── Interactive SVG node hover ─── */
+  svg .node-box { cursor: pointer; }
+  svg .node-box:hover rect,
+  svg .node-box:hover .node-rect { filter: brightness(1.3); }
+  svg .node-box:hover .node-label { fill: #fff; }
+
+  /* ─── Legend ─── */
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 16px 0;
+    margin-bottom: 24px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+  .legend-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--txt-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .page { padding: 24px 16px 64px; }
+    .hero h1 { font-size: 22px; }
+    .schema-grid { grid-template-columns: 1fr; }
+    .recommendation .rationale { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">Showtime</a>
+    <a href="#recommendation">Recommendation</a>
+    <a href="#c4-context">L1 Context</a>
+    <a href="#c4-container">L2 Container</a>
+    <a href="#c4-component">L3 Component</a>
+    <a href="#data-model">Data Model</a>
+    <a href="#sync-strategy">Sync Strategy</a>
+  </div>
+</nav>
+
+<!-- ─── Tooltip (shared) ─── -->
+<div id="tooltip" class="tooltip"></div>
+
+<div class="page">
+
+<!-- ─── Hero ─── -->
+<header class="hero">
+  <h1>Data Persistence Architecture</h1>
+  <p class="subtitle">C4 Model for Showtime's cache, persistence, and day-history layer</p>
+  <span class="badge">Option C: Hybrid Zustand + SQLite</span>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- RECOMMENDATION                                             -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="recommendation" class="section">
+  <div class="recommendation">
+    <h3>Architecture Decision Record</h3>
+    <h4>Recommendation: Option C — Hybrid Zustand + SQLite</h4>
+    <p>
+      Zustand remains the runtime state engine powering the reactive UI. SQLite (via <code>better-sqlite3</code>) serves
+      as the durable persistence and analytical query layer, running exclusively in the Electron main process. The renderer
+      never touches the database directly — all persistence flows through typed IPC handlers, maintaining strict process isolation.
+    </p>
+    <p>
+      This hybrid approach preserves Showtime's existing architecture (Zustand stores, IPC bridge, preload API) while
+      adding durability and multi-day query capability without rewiring the entire data flow.
+    </p>
+
+    <div class="rationale">
+      <div class="rationale-card why">
+        <h5>Why this architecture</h5>
+        <ul>
+          <li>Zustand is already battle-tested in Showtime — zero migration risk for runtime state</li>
+          <li>SQLite's sync API means zero async overhead for reads in the main process</li>
+          <li>Strict IPC boundary enforced by Electron preload — renderer never imports Node.js</li>
+          <li>Debounced writes (5s or phase transitions) prevent write amplification during live shows</li>
+          <li>Historical queries (drift analytics, streak patterns) need SQL, not in-memory filtering</li>
+        </ul>
+      </div>
+      <div class="rationale-card pro">
+        <h5>Strengths</h5>
+        <ul>
+          <li>Incremental adoption: Zustand persist middleware stays, SQLite adds durability underneath</li>
+          <li>timeline_events table enables day-structure drift tracking with a simple query</li>
+          <li>Migrations via versioned SQL files — no ORM overhead</li>
+          <li>Single-file database in app data dir — no server, no network, zero config</li>
+          <li>WAL mode for safe concurrent reads during write batches</li>
+        </ul>
+      </div>
+      <div class="rationale-card con">
+        <h5>Trade-offs</h5>
+        <ul>
+          <li>Native dependency (better-sqlite3) requires electron-rebuild for each Electron version</li>
+          <li>Two sources of truth during runtime — sync bugs possible if IPC fails silently</li>
+          <li>Schema migrations need careful versioning as the data model evolves</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rejected">
+      <h5>Rejected Alternatives</h5>
+      <div class="rejected-grid">
+        <div class="rejected-item">
+          <div class="name">Option A: SQLite Only</div>
+          <div class="reason">Requires replacing Zustand as the reactive store. Too invasive for v1. Loses Zustand's middleware ecosystem (persist, devtools).</div>
+        </div>
+        <div class="rejected-item">
+          <div class="name">Option B: localStorage + JSON files</div>
+          <div class="reason">Not queryable for historical analytics. IndexedDB is async-only, adding latency to hot-path reads. JSON files have no schema enforcement.</div>
+        </div>
+        <div class="rejected-item">
+          <div class="name">Option D: DuckDB + JSON</div>
+          <div class="reason">DuckDB's Node.js bindings are immature for Electron. Overkill for v1 analytics. Adds a second native dependency with worse Electron support than better-sqlite3.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- C4 LEVEL 1: SYSTEM CONTEXT                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="c4-context" class="section">
+  <div class="section-header">
+    <span class="level-tag system">Level 1</span>
+    <h2>System Context</h2>
+  </div>
+  <p class="section-desc">
+    Showtime in its operating environment. The user interacts with a macOS Electron app that uses Claude CLI for lineup
+    generation. Show data persists to the local file system via SQLite.
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-system);"></div><span class="legend-label">System</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-external);"></div><span class="legend-label">External</span></div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;margin:0 auto;display:block;">
+      <!-- User -->
+      <g class="node-box" data-tooltip="user" transform="translate(400, 30)">
+        <rect class="node-rect" x="-60" y="0" width="120" height="70" rx="35" fill="none" stroke="var(--c4-external)" stroke-width="2"/>
+        <circle cx="0" cy="20" r="14" fill="none" stroke="var(--c4-external)" stroke-width="2"/>
+        <line x1="0" y1="34" x2="0" y2="50" stroke="var(--c4-external)" stroke-width="2"/>
+        <line x1="-14" y1="42" x2="14" y2="42" stroke="var(--c4-external)" stroke-width="2"/>
+        <text class="node-label" text-anchor="middle" y="88" font-size="13" font-weight="600" fill="var(--txt-primary)">ADHD Professional</text>
+        <text class="node-desc" text-anchor="middle" y="104" font-size="10" fill="var(--txt-muted)">Plans and performs their day</text>
+      </g>
+
+      <!-- Showtime System -->
+      <g class="node-box" data-tooltip="showtime-system" transform="translate(400, 200)">
+        <rect class="node-rect" x="-140" y="0" width="280" height="110" rx="8" fill="rgba(96,165,250,0.08)" stroke="var(--c4-system)" stroke-width="2.5"/>
+        <text class="node-label" text-anchor="middle" y="32" font-size="16" font-weight="700" fill="var(--c4-system)">Showtime</text>
+        <text class="node-desc" text-anchor="middle" y="52" font-size="11" fill="var(--txt-secondary)">ADHD-friendly macOS day planner</text>
+        <text class="node-desc" text-anchor="middle" y="68" font-size="11" fill="var(--txt-secondary)">built on the SNL Day Framework</text>
+        <text class="node-tech mono" text-anchor="middle" y="92" font-size="10">Electron + React + Zustand + SQLite</text>
+      </g>
+
+      <!-- Claude CLI -->
+      <g class="node-box" data-tooltip="claude-cli" transform="translate(100, 350)">
+        <rect class="node-rect" x="-90" y="0" width="180" height="90" rx="8" fill="rgba(154,152,144,0.06)" stroke="var(--c4-external)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text class="node-label" text-anchor="middle" y="28" font-size="13" font-weight="600" fill="var(--c4-external)">Claude CLI</text>
+        <text class="node-desc" text-anchor="middle" y="46" font-size="10" fill="var(--txt-muted)">Generates show lineups</text>
+        <text class="node-desc" text-anchor="middle" y="60" font-size="10" fill="var(--txt-muted)">from energy + plan dump</text>
+        <text class="node-tech mono" text-anchor="middle" y="80" font-size="9">claude --json subprocess</text>
+      </g>
+
+      <!-- macOS -->
+      <g class="node-box" data-tooltip="macos" transform="translate(400, 380)">
+        <rect class="node-rect" x="-90" y="0" width="180" height="70" rx="8" fill="rgba(154,152,144,0.06)" stroke="var(--c4-external)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text class="node-label" text-anchor="middle" y="26" font-size="13" font-weight="600" fill="var(--c4-external)">macOS</text>
+        <text class="node-desc" text-anchor="middle" y="44" font-size="10" fill="var(--txt-muted)">Notifications, vibrancy, tray</text>
+        <text class="node-tech mono" text-anchor="middle" y="60" font-size="9">NSPanel, nativeTheme</text>
+      </g>
+
+      <!-- File System / SQLite -->
+      <g class="node-box" data-tooltip="filesystem" transform="translate(700, 350)">
+        <rect class="node-rect" x="-90" y="0" width="180" height="90" rx="8" fill="rgba(154,152,144,0.06)" stroke="var(--c4-external)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text class="node-label" text-anchor="middle" y="28" font-size="13" font-weight="600" fill="var(--c4-external)">Local File System</text>
+        <text class="node-desc" text-anchor="middle" y="46" font-size="10" fill="var(--txt-muted)">SQLite database file</text>
+        <text class="node-desc" text-anchor="middle" y="60" font-size="10" fill="var(--txt-muted)">in ~/Library/Application Support</text>
+        <text class="node-tech mono" text-anchor="middle" y="80" font-size="9">showtime.db (WAL mode)</text>
+      </g>
+
+      <!-- Arrows -->
+      <!-- User → Showtime -->
+      <line x1="400" y1="115" x2="400" y2="198" stroke="var(--txt-muted)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" text-anchor="middle" x="400" y="162">Plans day, tracks acts & beats</text>
+
+      <!-- Showtime → Claude CLI -->
+      <line x1="290" y1="290" x2="160" y2="348" stroke="var(--txt-muted)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" text-anchor="middle" x="200" y="310">Lineup generation</text>
+
+      <!-- Showtime → macOS -->
+      <line x1="400" y1="310" x2="400" y2="378" stroke="var(--txt-muted)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" text-anchor="end" x="394" y="350">Notifications</text>
+
+      <!-- Showtime → File System -->
+      <line x1="510" y1="290" x2="640" y2="348" stroke="var(--txt-muted)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" text-anchor="middle" x="600" y="310">Persist / query shows</text>
+
+      <!-- Arrowhead marker -->
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--txt-muted)"/>
+        </marker>
+        <marker id="arrowhead-accent" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+        </marker>
+        <marker id="arrowhead-ipc" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--c4-ipc)"/>
+        </marker>
+      </defs>
+    </svg>
+    <p class="diagram-caption">C4 Level 1 — System Context Diagram</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- C4 LEVEL 2: CONTAINER                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="c4-container" class="section">
+  <div class="section-header">
+    <span class="level-tag container">Level 2</span>
+    <h2>Container Diagram</h2>
+  </div>
+  <p class="section-desc">
+    Inside Showtime: the renderer process (React UI + Zustand), the main process (Node.js + SQLite + IPC handlers),
+    the preload bridge, and the SQLite database file. The critical data flow is the debounced sync between Zustand
+    and SQLite via the IPC bridge.
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-container);"></div><span class="legend-label">Container</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-ipc);"></div><span class="legend-label">IPC Bridge</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-data);"></div><span class="legend-label">Data Store</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-external);"></div><span class="legend-label">External</span></div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 940 640" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:940px;margin:0 auto;display:block;">
+
+      <!-- Electron boundary -->
+      <rect x="30" y="10" width="880" height="560" rx="12" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="8 4"/>
+      <text class="mono" x="50" y="32" font-size="10" fill="var(--txt-muted)" letter-spacing="1">ELECTRON APP</text>
+
+      <!-- ─── Renderer Process ─── -->
+      <g class="node-box" data-tooltip="renderer" transform="translate(160, 70)">
+        <rect class="node-rect" x="0" y="0" width="260" height="140" rx="8" fill="rgba(139,92,246,0.08)" stroke="var(--c4-container)" stroke-width="2"/>
+        <text class="node-label" x="130" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="var(--c4-container)">Renderer Process</text>
+        <text class="node-desc" x="130" y="48" text-anchor="middle" font-size="11" fill="var(--txt-secondary)">React 19 UI + Zustand stores</text>
+        <line x1="20" y1="62" x2="240" y2="62" stroke="var(--border)" stroke-width="0.5"/>
+        <text class="mono" x="22" y="80" font-size="10" fill="var(--c4-container)">showStore.ts</text>
+        <text class="node-desc" x="22" y="94" font-size="10" fill="var(--txt-muted)">Runtime show state (acts, beats, phase)</text>
+        <text class="mono" x="22" y="112" font-size="10" fill="var(--c4-container)">sessionStore.ts</text>
+        <text class="node-desc" x="22" y="126" font-size="10" fill="var(--txt-muted)">Claude session + messages</text>
+      </g>
+
+      <!-- ─── Preload Bridge ─── -->
+      <g class="node-box" data-tooltip="preload" transform="translate(200, 260)">
+        <rect class="node-rect" x="0" y="0" width="180" height="60" rx="6" fill="rgba(236,72,153,0.08)" stroke="var(--c4-ipc)" stroke-width="2"/>
+        <text class="node-label" x="90" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="var(--c4-ipc)">Preload Bridge</text>
+        <text class="mono" x="90" y="44" text-anchor="middle" font-size="10" fill="var(--txt-muted)">window.clui API (typed IPC)</text>
+      </g>
+
+      <!-- ─── Main Process ─── -->
+      <g class="node-box" data-tooltip="main-process" transform="translate(80, 370)">
+        <rect class="node-rect" x="0" y="0" width="380" height="170" rx="8" fill="rgba(139,92,246,0.08)" stroke="var(--c4-container)" stroke-width="2"/>
+        <text class="node-label" x="190" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="var(--c4-container)">Main Process</text>
+        <text class="node-desc" x="190" y="48" text-anchor="middle" font-size="11" fill="var(--txt-secondary)">Node.js — persistence, IPC, window mgmt</text>
+        <line x1="16" y1="60" x2="364" y2="60" stroke="var(--border)" stroke-width="0.5"/>
+
+        <!-- Sub-blocks inside main process -->
+        <rect x="16" y="72" width="164" height="44" rx="4" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1"/>
+        <text class="mono" x="98" y="92" text-anchor="middle" font-size="10" font-weight="600" fill="var(--c4-component)">DataService</text>
+        <text class="node-desc" x="98" y="106" text-anchor="middle" font-size="9" fill="var(--txt-muted)">Repositories + Sync Engine</text>
+
+        <rect x="200" y="72" width="164" height="44" rx="4" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1"/>
+        <text class="mono" x="282" y="92" text-anchor="middle" font-size="10" font-weight="600" fill="var(--c4-component)">ControlPlane</text>
+        <text class="node-desc" x="282" y="106" text-anchor="middle" font-size="9" fill="var(--txt-muted)">Claude subprocess mgmt</text>
+
+        <rect x="16" y="126" width="164" height="34" rx="4" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1"/>
+        <text class="mono" x="98" y="148" text-anchor="middle" font-size="10" font-weight="600" fill="var(--c4-component)">MigrationRunner</text>
+
+        <rect x="200" y="126" width="164" height="34" rx="4" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1"/>
+        <text class="mono" x="282" y="148" text-anchor="middle" font-size="10" font-weight="600" fill="var(--c4-component)">IPC Handlers</text>
+      </g>
+
+      <!-- ─── SQLite Database ─── -->
+      <g class="node-box" data-tooltip="sqlite" transform="translate(580, 400)">
+        <!-- Cylinder shape for DB -->
+        <ellipse cx="120" cy="12" rx="110" ry="16" fill="rgba(245,158,11,0.08)" stroke="var(--c4-data)" stroke-width="2"/>
+        <rect x="10" y="12" width="220" height="90" fill="rgba(245,158,11,0.08)" stroke="none"/>
+        <line x1="10" y1="12" x2="10" y2="102" stroke="var(--c4-data)" stroke-width="2"/>
+        <line x1="230" y1="12" x2="230" y2="102" stroke="var(--c4-data)" stroke-width="2"/>
+        <ellipse cx="120" cy="102" rx="110" ry="16" fill="rgba(245,158,11,0.08)" stroke="var(--c4-data)" stroke-width="2"/>
+        <text class="node-label" x="120" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="var(--c4-data)">SQLite</text>
+        <text class="node-desc" x="120" y="66" text-anchor="middle" font-size="11" fill="var(--txt-secondary)">showtime.db</text>
+        <text class="mono" x="120" y="84" text-anchor="middle" font-size="10" fill="var(--txt-muted)">better-sqlite3 (WAL mode)</text>
+      </g>
+
+      <!-- ─── Claude CLI ─── -->
+      <g class="node-box" data-tooltip="claude-cli-container" transform="translate(630, 180)">
+        <rect class="node-rect" x="0" y="0" width="200" height="80" rx="8" fill="rgba(154,152,144,0.06)" stroke="var(--c4-external)" stroke-width="1.5" stroke-dasharray="6 3"/>
+        <text class="node-label" x="100" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="var(--c4-external)">Claude CLI</text>
+        <text class="node-desc" x="100" y="46" text-anchor="middle" font-size="10" fill="var(--txt-muted)">Lineup generation subprocess</text>
+        <text class="mono" x="100" y="64" text-anchor="middle" font-size="9" fill="var(--txt-muted)">claude --json --session-id</text>
+      </g>
+
+      <!-- ─── Arrows ─── -->
+      <!-- Renderer → Preload -->
+      <line x1="290" y1="210" x2="290" y2="258" stroke="var(--c4-ipc)" stroke-width="1.5" marker-end="url(#arrowhead-ipc)"/>
+      <text class="arrow-label" x="296" y="238" fill="var(--c4-ipc)">window.clui.*</text>
+
+      <!-- Preload → Main -->
+      <line x1="290" y1="320" x2="270" y2="368" stroke="var(--c4-ipc)" stroke-width="1.5" marker-end="url(#arrowhead-ipc)"/>
+      <text class="arrow-label" x="260" y="348" fill="var(--c4-ipc)">ipcMain.handle()</text>
+
+      <!-- Main → SQLite -->
+      <line x1="460" y1="460" x2="588" y2="460" stroke="var(--c4-data)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" x="524" y="452">Sync reads / writes</text>
+
+      <!-- Main → Claude CLI -->
+      <line x1="380" y1="410" x2="628" y2="240" stroke="var(--c4-external)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" x="530" y="310">spawn subprocess</text>
+
+      <!-- Hydration arrow (SQLite → Main → Renderer) -->
+      <path d="M 590 420 Q 530 350 420 280 Q 370 260 360 220" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 3" marker-end="url(#arrowhead-accent)"/>
+      <text class="arrow-label" x="490" y="340" fill="var(--accent)">Hydrate on launch</text>
+
+    </svg>
+    <p class="diagram-caption">C4 Level 2 — Container Diagram</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- C4 LEVEL 3: COMPONENT                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="c4-component" class="section">
+  <div class="section-header">
+    <span class="level-tag component">Level 3</span>
+    <h2>Component Diagram — Data Layer</h2>
+  </div>
+  <p class="section-desc">
+    Inside the main process data layer: the DataService facade, individual repositories for each domain,
+    the migration runner, and the sync engine that bridges Zustand state changes to SQLite writes.
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-component);"></div><span class="legend-label">Component</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-data);"></div><span class="legend-label">Data Store</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--c4-ipc);"></div><span class="legend-label">IPC Boundary</span></div>
+    <div class="legend-item"><div class="legend-swatch" style="background: var(--accent);"></div><span class="legend-label">Key Data Flow</span></div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 940 720" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:940px;margin:0 auto;display:block;">
+
+      <!-- IPC Boundary (from renderer) -->
+      <rect x="30" y="10" width="880" height="60" rx="6" fill="rgba(236,72,153,0.05)" stroke="var(--c4-ipc)" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text class="mono" x="470" y="36" text-anchor="middle" font-size="11" font-weight="600" fill="var(--c4-ipc)">IPC BOUNDARY — Renderer calls via window.clui.*</text>
+      <text class="mono" x="470" y="54" text-anchor="middle" font-size="9" fill="var(--txt-muted)">saveShow | loadShow | getShowHistory | getDayDrift | saveClaudeContext | loadClaudeContext</text>
+
+      <!-- Main process boundary -->
+      <rect x="30" y="85" width="880" height="620" rx="10" fill="none" stroke="var(--border)" stroke-width="1"/>
+      <text class="mono" x="50" y="106" font-size="10" fill="var(--txt-muted)" letter-spacing="1">MAIN PROCESS — src/main/data/</text>
+
+      <!-- ─── IPC Handlers ─── -->
+      <g class="node-box" data-tooltip="ipc-handlers" transform="translate(340, 120)">
+        <rect class="node-rect" x="0" y="0" width="260" height="66" rx="6" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="2"/>
+        <text class="node-label" x="130" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="var(--c4-component)">IPC Data Handlers</text>
+        <text class="mono" x="130" y="42" text-anchor="middle" font-size="10" fill="var(--txt-muted)">src/main/data/ipc-handlers.ts</text>
+        <text class="node-desc" x="130" y="58" text-anchor="middle" font-size="10" fill="var(--txt-secondary)">Registers ipcMain.handle() for all data ops</text>
+      </g>
+
+      <!-- Arrow: IPC boundary → handlers -->
+      <line x1="470" y1="70" x2="470" y2="118" stroke="var(--c4-ipc)" stroke-width="1.5" marker-end="url(#arrowhead-ipc)"/>
+
+      <!-- ─── DataService (facade) ─── -->
+      <g class="node-box" data-tooltip="data-service" transform="translate(300, 230)">
+        <rect class="node-rect" x="0" y="0" width="340" height="76" rx="8" fill="rgba(34,197,94,0.10)" stroke="var(--c4-component)" stroke-width="2.5"/>
+        <text class="node-label" x="170" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="var(--c4-component)">DataService</text>
+        <text class="mono" x="170" y="44" text-anchor="middle" font-size="10" fill="var(--txt-muted)">src/main/data/data-service.ts</text>
+        <text class="node-desc" x="170" y="62" text-anchor="middle" font-size="10" fill="var(--txt-secondary)">Facade: init DB, run migrations, expose repositories</text>
+      </g>
+
+      <!-- Arrow: handlers → DataService -->
+      <line x1="470" y1="186" x2="470" y2="228" stroke="var(--c4-component)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- ─── Repositories row ─── -->
+      <!-- ShowRepository -->
+      <g class="node-box" data-tooltip="show-repo" transform="translate(50, 360)">
+        <rect class="node-rect" x="0" y="0" width="190" height="90" rx="6" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1.5"/>
+        <text class="node-label" x="95" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="var(--c4-component)">ShowRepository</text>
+        <text class="mono" x="95" y="38" text-anchor="middle" font-size="9" fill="var(--txt-muted)">show-repository.ts</text>
+        <line x1="12" y1="48" x2="178" y2="48" stroke="var(--border)" stroke-width="0.5"/>
+        <text class="node-desc" x="95" y="64" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">saveShow(), loadShow(date)</text>
+        <text class="node-desc" x="95" y="78" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">getShowHistory(range)</text>
+      </g>
+
+      <!-- ActRepository -->
+      <g class="node-box" data-tooltip="act-repo" transform="translate(270, 360)">
+        <rect class="node-rect" x="0" y="0" width="190" height="90" rx="6" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1.5"/>
+        <text class="node-label" x="95" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="var(--c4-component)">ActRepository</text>
+        <text class="mono" x="95" y="38" text-anchor="middle" font-size="9" fill="var(--txt-muted)">act-repository.ts</text>
+        <line x1="12" y1="48" x2="178" y2="48" stroke="var(--border)" stroke-width="0.5"/>
+        <text class="node-desc" x="95" y="64" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">upsertActs(showId, acts[])</text>
+        <text class="node-desc" x="95" y="78" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">getActsForShow(showId)</text>
+      </g>
+
+      <!-- TimelineRepository -->
+      <g class="node-box" data-tooltip="timeline-repo" transform="translate(490, 360)">
+        <rect class="node-rect" x="0" y="0" width="190" height="90" rx="6" fill="rgba(245,158,11,0.08)" stroke="var(--c4-data)" stroke-width="2"/>
+        <text class="node-label" x="95" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="var(--c4-data)">TimelineRepository</text>
+        <text class="mono" x="95" y="38" text-anchor="middle" font-size="9" fill="var(--txt-muted)">timeline-repository.ts</text>
+        <line x1="12" y1="48" x2="178" y2="48" stroke="var(--border)" stroke-width="0.5"/>
+        <text class="node-desc" x="95" y="64" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">recordEvent(act, type, ts)</text>
+        <text class="node-desc" x="95" y="78" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">getDriftReport(showId)</text>
+      </g>
+
+      <!-- ClaudeContextRepository -->
+      <g class="node-box" data-tooltip="claude-repo" transform="translate(710, 360)">
+        <rect class="node-rect" x="0" y="0" width="190" height="90" rx="6" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1.5"/>
+        <text class="node-label" x="95" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="var(--c4-component)">ClaudeContextRepo</text>
+        <text class="mono" x="95" y="38" text-anchor="middle" font-size="9" fill="var(--txt-muted)">claude-context-repo.ts</text>
+        <line x1="12" y1="48" x2="178" y2="48" stroke="var(--border)" stroke-width="0.5"/>
+        <text class="node-desc" x="95" y="64" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">saveContext(showId, ctx)</text>
+        <text class="node-desc" x="95" y="78" text-anchor="middle" font-size="9" fill="var(--txt-secondary)">loadContext(showId)</text>
+      </g>
+
+      <!-- Arrows: DataService → Repositories -->
+      <line x1="380" y1="306" x2="145" y2="358" stroke="var(--c4-component)" stroke-width="1" marker-end="url(#arrowhead)"/>
+      <line x1="430" y1="306" x2="365" y2="358" stroke="var(--c4-component)" stroke-width="1" marker-end="url(#arrowhead)"/>
+      <line x1="510" y1="306" x2="585" y2="358" stroke="var(--c4-component)" stroke-width="1" marker-end="url(#arrowhead)"/>
+      <line x1="570" y1="306" x2="805" y2="358" stroke="var(--c4-component)" stroke-width="1" marker-end="url(#arrowhead)"/>
+
+      <!-- ─── SyncEngine ─── -->
+      <g class="node-box" data-tooltip="sync-engine" transform="translate(100, 510)">
+        <rect class="node-rect" x="0" y="0" width="280" height="80" rx="8" fill="rgba(217,119,87,0.10)" stroke="var(--accent)" stroke-width="2.5"/>
+        <text class="node-label" x="140" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent)">SyncEngine</text>
+        <text class="mono" x="140" y="42" text-anchor="middle" font-size="10" fill="var(--txt-muted)">src/main/data/sync-engine.ts</text>
+        <text class="node-desc" x="140" y="60" text-anchor="middle" font-size="10" fill="var(--txt-secondary)">Debounced write (5s) + phase-transition flush</text>
+        <text class="node-desc" x="140" y="74" text-anchor="middle" font-size="10" fill="var(--txt-secondary)">Timeline event recording on act start/complete/skip</text>
+      </g>
+
+      <!-- ─── MigrationRunner ─── -->
+      <g class="node-box" data-tooltip="migration-runner" transform="translate(450, 510)">
+        <rect class="node-rect" x="0" y="0" width="220" height="66" rx="6" fill="rgba(34,197,94,0.06)" stroke="var(--c4-component)" stroke-width="1.5"/>
+        <text class="node-label" x="110" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="var(--c4-component)">MigrationRunner</text>
+        <text class="mono" x="110" y="40" text-anchor="middle" font-size="10" fill="var(--txt-muted)">src/main/data/migrations/</text>
+        <text class="node-desc" x="110" y="56" text-anchor="middle" font-size="10" fill="var(--txt-secondary)">Versioned SQL files, run on app launch</text>
+      </g>
+
+      <!-- ─── SQLite ─── -->
+      <g class="node-box" data-tooltip="sqlite-component" transform="translate(330, 630)">
+        <ellipse cx="140" cy="14" rx="130" ry="16" fill="rgba(245,158,11,0.08)" stroke="var(--c4-data)" stroke-width="2"/>
+        <rect x="10" y="14" width="260" height="50" fill="rgba(245,158,11,0.08)" stroke="none"/>
+        <line x1="10" y1="14" x2="10" y2="64" stroke="var(--c4-data)" stroke-width="2"/>
+        <line x1="270" y1="14" x2="270" y2="64" stroke="var(--c4-data)" stroke-width="2"/>
+        <ellipse cx="140" cy="64" rx="130" ry="16" fill="rgba(245,158,11,0.08)" stroke="var(--c4-data)" stroke-width="2"/>
+        <text class="node-label" x="140" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="var(--c4-data)">showtime.db</text>
+        <text class="mono" x="140" y="58" text-anchor="middle" font-size="9" fill="var(--txt-muted)">better-sqlite3 | WAL mode | ~/Library/Application Support/Showtime/</text>
+      </g>
+
+      <!-- Arrows: Repos → SQLite -->
+      <line x1="145" y1="450" x2="400" y2="628" stroke="var(--c4-data)" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrowhead)"/>
+      <line x1="365" y1="450" x2="430" y2="628" stroke="var(--c4-data)" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrowhead)"/>
+      <line x1="585" y1="450" x2="500" y2="628" stroke="var(--c4-data)" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrowhead)"/>
+      <line x1="805" y1="450" x2="540" y2="628" stroke="var(--c4-data)" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrowhead)"/>
+
+      <!-- Arrow: SyncEngine → DataService -->
+      <path d="M 240 510 Q 360 490 380 306" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowhead-accent)"/>
+      <text class="arrow-label" x="330" y="480" fill="var(--accent)">writes via repos</text>
+
+      <!-- Arrow: MigrationRunner → SQLite -->
+      <line x1="560" y1="576" x2="510" y2="628" stroke="var(--c4-component)" stroke-width="1" marker-end="url(#arrowhead)"/>
+      <text class="arrow-label" x="554" y="608">DDL</text>
+
+    </svg>
+    <p class="diagram-caption">C4 Level 3 — Component Diagram (Main Process Data Layer)</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SYNC STRATEGY                                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="sync-strategy" class="section">
+  <div class="section-header">
+    <span class="level-tag component">Strategy</span>
+    <h2>Sync Strategy</h2>
+  </div>
+  <p class="section-desc">
+    The SyncEngine bridges Zustand's in-memory state to SQLite persistence. It operates in three modes:
+    debounced periodic writes during live shows, immediate flush on phase transitions, and hydration on app launch.
+  </p>
+
+  <h3 style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 20px; font-family: var(--font-mono); letter-spacing: 1px;">Launch (Hydration)</h3>
+  <div class="sync-flow">
+    <div class="sync-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-label">App starts</div>
+      <div class="step-detail">app.on('ready')</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-label">Init DataService</div>
+      <div class="step-detail">open DB, run migrations</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-label">Load today's show</div>
+      <div class="step-detail">SELECT ... WHERE date = today</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-label">Send to renderer</div>
+      <div class="step-detail">IPC hydrate event</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Step 5</div>
+      <div class="step-label">Zustand rehydrates</div>
+      <div class="step-detail">set(savedState)</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 16px; font-weight: 600; color: var(--accent); margin: 32px 0 20px; font-family: var(--font-mono); letter-spacing: 1px;">Runtime (Debounced Persistence)</h3>
+  <div class="sync-flow">
+    <div class="sync-step">
+      <div class="step-num">Trigger</div>
+      <div class="step-label">State change</div>
+      <div class="step-detail">Zustand set()</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Debounce</div>
+      <div class="step-label">5s timer</div>
+      <div class="step-detail">coalesce writes</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">IPC</div>
+      <div class="step-label">saveShow(state)</div>
+      <div class="step-detail">window.clui.saveShow</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Write</div>
+      <div class="step-label">SQLite UPSERT</div>
+      <div class="step-detail">shows + acts tables</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 16px; font-weight: 600; color: var(--accent); margin: 32px 0 20px; font-family: var(--font-mono); letter-spacing: 1px;">Phase Transitions (Immediate Flush + Timeline Events)</h3>
+  <div class="sync-flow">
+    <div class="sync-step">
+      <div class="step-num">Event</div>
+      <div class="step-label">Phase change</div>
+      <div class="step-detail">startAct | completeAct | skip | strike</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Flush</div>
+      <div class="step-label">Immediate save</div>
+      <div class="step-detail">cancel debounce timer</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Record</div>
+      <div class="step-label">Timeline event</div>
+      <div class="step-detail">INSERT timeline_events</div>
+    </div>
+    <div class="sync-arrow">&rarr;</div>
+    <div class="sync-step">
+      <div class="step-num">Compute</div>
+      <div class="step-label">Drift calculation</div>
+      <div class="step-detail">actual_start - planned_start</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- DATA MODEL                                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="data-model" class="section">
+  <div class="section-header">
+    <span class="level-tag data">Schema</span>
+    <h2>Data Model</h2>
+  </div>
+  <p class="section-desc">
+    Five tables: <code>shows</code>, <code>acts</code>, <code>timeline_events</code>, <code>claude_contexts</code>,
+    and <code>migrations</code>. The timeline_events table is the foundation for the day-structure drift feature.
+  </p>
+
+  <div class="schema-grid">
+
+    <!-- ─── shows ─── -->
+    <div class="schema-card">
+      <div class="schema-card-header">
+        <div class="icon" style="background: var(--c4-system);">S</div>
+        <h4>shows</h4>
+        <span class="desc">1 row per day</span>
+      </div>
+      <table class="schema-table">
+        <thead>
+          <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="col-name pk">id</span></td>
+            <td><span class="col-type">TEXT PK</span></td>
+            <td><span class="col-desc">UUID, generated on show creation</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">date</span></td>
+            <td><span class="col-type">TEXT UNIQUE</span></td>
+            <td><span class="col-desc">ISO date string (YYYY-MM-DD). One show per day.</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">phase</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">no_show | writers_room | live | intermission | director | strike</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">energy</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">high | medium | low | recovery (NULL if unset)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">beats_locked</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Number of presence beats locked during the show</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">beat_threshold</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Target beats for day-won verdict (default 3)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">verdict</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">DAY_WON | SOLID_SHOW | GOOD_EFFORT | SHOW_CALLED_EARLY</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">writers_room_step</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">energy | plan | lineup (Writer's Room progress)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">timer_end_at</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms timestamp for active timer expiry</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">timer_paused_remaining</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Remaining ms when paused (intermission)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">current_act_id</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">FK to acts.id — currently active act</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">claude_session_id</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Claude CLI session ID for lineup generation</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">created_at</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">ISO timestamp of show creation</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">updated_at</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">ISO timestamp of last sync write</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── acts ─── -->
+    <div class="schema-card">
+      <div class="schema-card-header">
+        <div class="icon" style="background: var(--c4-container);">A</div>
+        <h4>acts</h4>
+        <span class="desc">N rows per show</span>
+      </div>
+      <table class="schema-table">
+        <thead>
+          <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="col-name pk">id</span></td>
+            <td><span class="col-type">TEXT PK</span></td>
+            <td><span class="col-desc">Generated act ID (8-char base36)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name fk">show_id</span></td>
+            <td><span class="col-type">TEXT FK</span></td>
+            <td><span class="col-desc">FK &rarr; shows.id (ON DELETE CASCADE)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">name</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Act display name (e.g., "Deep Work Sprint")</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">sketch</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Category: deep_work | exercise | admin | creative | social</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">duration_minutes</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Planned duration (45-90 min typical)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">status</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">upcoming | active | completed | skipped</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">beat_locked</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Boolean (0/1) — whether a presence beat was locked</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">order_index</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Sort position in the lineup</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">started_at</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms when act started (NULL if upcoming)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">completed_at</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms when act completed/skipped</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── timeline_events ─── -->
+    <div class="schema-card" style="border-color: var(--accent);">
+      <div class="schema-card-header" style="border-color: var(--accent);">
+        <div class="icon" style="background: var(--accent);">T</div>
+        <h4>timeline_events</h4>
+        <span class="desc" style="color: var(--accent);">KEY TABLE &mdash; powers drift analytics</span>
+      </div>
+      <table class="schema-table">
+        <thead>
+          <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="col-name pk">id</span></td>
+            <td><span class="col-type">INTEGER PK</span></td>
+            <td><span class="col-desc">Auto-increment row ID</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name fk">show_id</span></td>
+            <td><span class="col-type">TEXT FK</span></td>
+            <td><span class="col-desc">FK &rarr; shows.id</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name fk">act_id</span></td>
+            <td><span class="col-type">TEXT FK</span></td>
+            <td><span class="col-desc">FK &rarr; acts.id (NULL for show-level events)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">event_type</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">act_planned | act_started | act_completed | act_skipped | act_extended | beat_locked | beat_skipped | intermission_start | intermission_end | show_started | show_struck | director_entered</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">timestamp</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms when event occurred</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">planned_start</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms &mdash; when act was <em>expected</em> to start (based on lineup order + durations)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">planned_end</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms &mdash; planned_start + duration_minutes * 60000</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">actual_start</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms &mdash; when act actually started (from act.startedAt)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">actual_end</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Unix ms &mdash; when act actually ended (from act.completedAt)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">drift_seconds</span></td>
+            <td><span class="col-type">INTEGER</span></td>
+            <td><span class="col-desc">Computed: (actual_start - planned_start) / 1000. Positive = late, negative = early.</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">metadata</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">JSON blob for event-specific data (extension minutes, director choice, etc.)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── claude_contexts ─── -->
+    <div class="schema-card">
+      <div class="schema-card-header">
+        <div class="icon" style="background: var(--c4-ipc);">C</div>
+        <h4>claude_contexts</h4>
+        <span class="desc">Conversation continuity</span>
+      </div>
+      <table class="schema-table">
+        <thead>
+          <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="col-name pk">id</span></td>
+            <td><span class="col-type">INTEGER PK</span></td>
+            <td><span class="col-desc">Auto-increment</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name fk">show_id</span></td>
+            <td><span class="col-type">TEXT FK</span></td>
+            <td><span class="col-desc">FK &rarr; shows.id</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">session_id</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Claude CLI session ID for resume</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">energy_level</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Energy context at time of generation</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">plan_dump</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">User's free-text plan dump from Writer's Room</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">lineup_json</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">JSON blob of the generated ShowLineup</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">model</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Claude model used (e.g., claude-sonnet-4-6)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">cost_usd</span></td>
+            <td><span class="col-type">REAL</span></td>
+            <td><span class="col-desc">Total cost of the lineup generation run</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">created_at</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">ISO timestamp</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ─── migrations ─── -->
+    <div class="schema-card">
+      <div class="schema-card-header">
+        <div class="icon" style="background: var(--txt-muted);">M</div>
+        <h4>_migrations</h4>
+        <span class="desc">Schema versioning</span>
+      </div>
+      <table class="schema-table">
+        <thead>
+          <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="col-name pk">version</span></td>
+            <td><span class="col-type">INTEGER PK</span></td>
+            <td><span class="col-desc">Migration version number (1, 2, 3, ...)</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">name</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">Migration file name (e.g., "001_initial_schema")</span></td>
+          </tr>
+          <tr>
+            <td><span class="col-name">applied_at</span></td>
+            <td><span class="col-type">TEXT</span></td>
+            <td><span class="col-desc">ISO timestamp when migration was applied</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ─── Key Indexes ─── -->
+  <div style="margin-top: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px;">
+    <h4 style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase;">Key Indexes</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--c4-component); background: var(--surface-hover); padding: 10px 14px; border-radius: 6px;">
+        <span style="color: var(--txt-muted);">idx_shows_date</span><br>
+        <span style="color: var(--txt-secondary);">UNIQUE INDEX ON shows(date)</span>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--c4-component); background: var(--surface-hover); padding: 10px 14px; border-radius: 6px;">
+        <span style="color: var(--txt-muted);">idx_acts_show_id</span><br>
+        <span style="color: var(--txt-secondary);">INDEX ON acts(show_id, order_index)</span>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--c4-component); background: var(--surface-hover); padding: 10px 14px; border-radius: 6px;">
+        <span style="color: var(--txt-muted);">idx_timeline_show_act</span><br>
+        <span style="color: var(--txt-secondary);">INDEX ON timeline_events(show_id, act_id)</span>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--c4-component); background: var(--surface-hover); padding: 10px 14px; border-radius: 6px;">
+        <span style="color: var(--txt-muted);">idx_timeline_type</span><br>
+        <span style="color: var(--txt-secondary);">INDEX ON timeline_events(event_type, timestamp)</span>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--c4-component); background: var(--surface-hover); padding: 10px 14px; border-radius: 6px;">
+        <span style="color: var(--txt-muted);">idx_claude_show</span><br>
+        <span style="color: var(--txt-secondary);">INDEX ON claude_contexts(show_id)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Example Drift Query ─── -->
+  <div style="margin-top: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px;">
+    <h4 style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--c4-data); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase;">Example: Day Structure Drift Query</h4>
+    <pre style="font-family: var(--font-mono); font-size: 12px; line-height: 1.8; color: var(--txt-secondary); background: var(--studio-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow-x: auto;"><span style="color: var(--c4-system);">-- Get drift report for today's show</span>
+<span style="color: var(--c4-container);">SELECT</span>
+  a.name                              <span style="color: var(--txt-muted);">AS</span> act_name,
+  a.sketch                            <span style="color: var(--txt-muted);">AS</span> category,
+  te.planned_start,
+  te.actual_start,
+  te.planned_end,
+  te.actual_end,
+  te.drift_seconds,
+  <span style="color: var(--c4-container);">CASE</span>
+    <span style="color: var(--c4-container);">WHEN</span> te.drift_seconds <span style="color: var(--accent);">BETWEEN</span> -300 <span style="color: var(--accent);">AND</span> 300
+      <span style="color: var(--c4-container);">THEN</span> <span style="color: var(--c4-component);">'on_track'</span>
+    <span style="color: var(--c4-container);">WHEN</span> te.drift_seconds > 300
+      <span style="color: var(--c4-container);">THEN</span> <span style="color: var(--onair);">'late'</span>
+    <span style="color: var(--c4-container);">ELSE</span> <span style="color: var(--c4-component);">'early'</span>
+  <span style="color: var(--c4-container);">END</span>                                <span style="color: var(--txt-muted);">AS</span> drift_status
+<span style="color: var(--c4-container);">FROM</span> timeline_events te
+<span style="color: var(--c4-container);">JOIN</span> acts a <span style="color: var(--c4-container);">ON</span> a.id = te.act_id
+<span style="color: var(--c4-container);">JOIN</span> shows s <span style="color: var(--c4-container);">ON</span> s.id = te.show_id
+<span style="color: var(--c4-container);">WHERE</span> s.date = <span style="color: var(--c4-component);">'2026-03-21'</span>
+  <span style="color: var(--c4-container);">AND</span> te.event_type = <span style="color: var(--c4-component);">'act_started'</span>
+<span style="color: var(--c4-container);">ORDER BY</span> a.order_index;</pre>
+  </div>
+
+  <!-- ─── Example Multi-Day Query ─── -->
+  <div style="margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px;">
+    <h4 style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--c4-data); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase;">Example: 7-Day Streak &amp; Pattern Query</h4>
+    <pre style="font-family: var(--font-mono); font-size: 12px; line-height: 1.8; color: var(--txt-secondary); background: var(--studio-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow-x: auto;"><span style="color: var(--c4-system);">-- Past 7 days: verdict distribution + beat averages</span>
+<span style="color: var(--c4-container);">SELECT</span>
+  s.date,
+  s.energy,
+  s.verdict,
+  s.beats_locked,
+  s.beat_threshold,
+  <span style="color: var(--c4-container);">COUNT</span>(a.id)                       <span style="color: var(--txt-muted);">AS</span> total_acts,
+  <span style="color: var(--c4-container);">SUM</span>(a.status = <span style="color: var(--c4-component);">'completed'</span>)        <span style="color: var(--txt-muted);">AS</span> completed_acts,
+  <span style="color: var(--c4-container);">SUM</span>(a.status = <span style="color: var(--c4-component);">'skipped'</span>)           <span style="color: var(--txt-muted);">AS</span> skipped_acts,
+  <span style="color: var(--c4-container);">AVG</span>(te.drift_seconds)              <span style="color: var(--txt-muted);">AS</span> avg_drift_seconds
+<span style="color: var(--c4-container);">FROM</span> shows s
+<span style="color: var(--c4-container);">LEFT JOIN</span> acts a <span style="color: var(--c4-container);">ON</span> a.show_id = s.id
+<span style="color: var(--c4-container);">LEFT JOIN</span> timeline_events te
+  <span style="color: var(--c4-container);">ON</span> te.show_id = s.id
+  <span style="color: var(--c4-container);">AND</span> te.act_id = a.id
+  <span style="color: var(--c4-container);">AND</span> te.event_type = <span style="color: var(--c4-component);">'act_started'</span>
+<span style="color: var(--c4-container);">WHERE</span> s.date >= <span style="color: var(--c4-container);">date</span>(<span style="color: var(--c4-component);">'now'</span>, <span style="color: var(--c4-component);">'-7 days'</span>)
+<span style="color: var(--c4-container);">GROUP BY</span> s.id
+<span style="color: var(--c4-container);">ORDER BY</span> s.date <span style="color: var(--c4-container);">DESC</span>;</pre>
+  </div>
+
+  <!-- ─── Initial Migration SQL ─── -->
+  <div style="margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px;">
+    <h4 style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--c4-component); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase;">Migration 001: Initial Schema</h4>
+    <pre style="font-family: var(--font-mono); font-size: 12px; line-height: 1.8; color: var(--txt-secondary); background: var(--studio-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow-x: auto;"><span style="color: var(--c4-system);">-- 001_initial_schema.sql</span>
+<span style="color: var(--c4-container);">PRAGMA</span> journal_mode = WAL;
+<span style="color: var(--c4-container);">PRAGMA</span> foreign_keys = ON;
+
+<span style="color: var(--c4-container);">CREATE TABLE IF NOT EXISTS</span> _migrations (
+  version   <span style="color: var(--c4-data);">INTEGER PRIMARY KEY</span>,
+  name      <span style="color: var(--c4-data);">TEXT NOT NULL</span>,
+  applied_at <span style="color: var(--c4-data);">TEXT NOT NULL DEFAULT</span> (<span style="color: var(--c4-container);">datetime</span>(<span style="color: var(--c4-component);">'now'</span>))
+);
+
+<span style="color: var(--c4-container);">CREATE TABLE IF NOT EXISTS</span> shows (
+  id                    <span style="color: var(--c4-data);">TEXT PRIMARY KEY</span>,
+  date                  <span style="color: var(--c4-data);">TEXT NOT NULL UNIQUE</span>,
+  phase                 <span style="color: var(--c4-data);">TEXT NOT NULL DEFAULT</span> <span style="color: var(--c4-component);">'no_show'</span>,
+  energy                <span style="color: var(--c4-data);">TEXT</span>,
+  beats_locked          <span style="color: var(--c4-data);">INTEGER NOT NULL DEFAULT</span> 0,
+  beat_threshold        <span style="color: var(--c4-data);">INTEGER NOT NULL DEFAULT</span> 3,
+  verdict               <span style="color: var(--c4-data);">TEXT</span>,
+  writers_room_step     <span style="color: var(--c4-data);">TEXT DEFAULT</span> <span style="color: var(--c4-component);">'energy'</span>,
+  timer_end_at          <span style="color: var(--c4-data);">INTEGER</span>,
+  timer_paused_remaining <span style="color: var(--c4-data);">INTEGER</span>,
+  current_act_id        <span style="color: var(--c4-data);">TEXT</span>,
+  claude_session_id     <span style="color: var(--c4-data);">TEXT</span>,
+  created_at            <span style="color: var(--c4-data);">TEXT NOT NULL DEFAULT</span> (<span style="color: var(--c4-container);">datetime</span>(<span style="color: var(--c4-component);">'now'</span>)),
+  updated_at            <span style="color: var(--c4-data);">TEXT NOT NULL DEFAULT</span> (<span style="color: var(--c4-container);">datetime</span>(<span style="color: var(--c4-component);">'now'</span>))
+);
+
+<span style="color: var(--c4-container);">CREATE TABLE IF NOT EXISTS</span> acts (
+  id                <span style="color: var(--c4-data);">TEXT PRIMARY KEY</span>,
+  show_id           <span style="color: var(--c4-data);">TEXT NOT NULL REFERENCES</span> shows(id) <span style="color: var(--c4-data);">ON DELETE CASCADE</span>,
+  name              <span style="color: var(--c4-data);">TEXT NOT NULL</span>,
+  sketch            <span style="color: var(--c4-data);">TEXT NOT NULL</span>,
+  duration_minutes  <span style="color: var(--c4-data);">INTEGER NOT NULL</span>,
+  status            <span style="color: var(--c4-data);">TEXT NOT NULL DEFAULT</span> <span style="color: var(--c4-component);">'upcoming'</span>,
+  beat_locked       <span style="color: var(--c4-data);">INTEGER NOT NULL DEFAULT</span> 0,
+  order_index       <span style="color: var(--c4-data);">INTEGER NOT NULL</span>,
+  started_at        <span style="color: var(--c4-data);">INTEGER</span>,
+  completed_at      <span style="color: var(--c4-data);">INTEGER</span>
+);
+
+<span style="color: var(--c4-container);">CREATE TABLE IF NOT EXISTS</span> timeline_events (
+  id              <span style="color: var(--c4-data);">INTEGER PRIMARY KEY AUTOINCREMENT</span>,
+  show_id         <span style="color: var(--c4-data);">TEXT NOT NULL REFERENCES</span> shows(id) <span style="color: var(--c4-data);">ON DELETE CASCADE</span>,
+  act_id          <span style="color: var(--c4-data);">TEXT REFERENCES</span> acts(id) <span style="color: var(--c4-data);">ON DELETE CASCADE</span>,
+  event_type      <span style="color: var(--c4-data);">TEXT NOT NULL</span>,
+  timestamp       <span style="color: var(--c4-data);">INTEGER NOT NULL</span>,
+  planned_start   <span style="color: var(--c4-data);">INTEGER</span>,
+  planned_end     <span style="color: var(--c4-data);">INTEGER</span>,
+  actual_start    <span style="color: var(--c4-data);">INTEGER</span>,
+  actual_end      <span style="color: var(--c4-data);">INTEGER</span>,
+  drift_seconds   <span style="color: var(--c4-data);">INTEGER</span>,
+  metadata        <span style="color: var(--c4-data);">TEXT</span>
+);
+
+<span style="color: var(--c4-container);">CREATE TABLE IF NOT EXISTS</span> claude_contexts (
+  id              <span style="color: var(--c4-data);">INTEGER PRIMARY KEY AUTOINCREMENT</span>,
+  show_id         <span style="color: var(--c4-data);">TEXT NOT NULL REFERENCES</span> shows(id) <span style="color: var(--c4-data);">ON DELETE CASCADE</span>,
+  session_id      <span style="color: var(--c4-data);">TEXT</span>,
+  energy_level    <span style="color: var(--c4-data);">TEXT</span>,
+  plan_dump       <span style="color: var(--c4-data);">TEXT</span>,
+  lineup_json     <span style="color: var(--c4-data);">TEXT</span>,
+  model           <span style="color: var(--c4-data);">TEXT</span>,
+  cost_usd        <span style="color: var(--c4-data);">REAL</span>,
+  created_at      <span style="color: var(--c4-data);">TEXT NOT NULL DEFAULT</span> (<span style="color: var(--c4-container);">datetime</span>(<span style="color: var(--c4-component);">'now'</span>))
+);
+
+<span style="color: var(--c4-system);">-- Indexes</span>
+<span style="color: var(--c4-container);">CREATE UNIQUE INDEX</span> idx_shows_date <span style="color: var(--c4-container);">ON</span> shows(date);
+<span style="color: var(--c4-container);">CREATE INDEX</span> idx_acts_show_id <span style="color: var(--c4-container);">ON</span> acts(show_id, order_index);
+<span style="color: var(--c4-container);">CREATE INDEX</span> idx_timeline_show_act <span style="color: var(--c4-container);">ON</span> timeline_events(show_id, act_id);
+<span style="color: var(--c4-container);">CREATE INDEX</span> idx_timeline_type <span style="color: var(--c4-container);">ON</span> timeline_events(event_type, timestamp);
+<span style="color: var(--c4-container);">CREATE INDEX</span> idx_claude_show <span style="color: var(--c4-container);">ON</span> claude_contexts(show_id);</pre>
+  </div>
+
+</section>
+
+</div><!-- /.page -->
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- INTERACTIVE TOOLTIP SCRIPT                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+const tooltipData = {
+  'user': {
+    title: 'ADHD Professional',
+    desc: 'Primary persona: ADHD professionals who plan their day as a live show. Interacts with the app via the always-on-top floating window (pill or expanded view).',
+    tech: 'macOS user'
+  },
+  'showtime-system': {
+    title: 'Showtime System',
+    desc: 'Electron macOS app that transforms daily planning into a live SNL-style show. Zustand for reactive UI state, SQLite for durable persistence and historical queries.',
+    tech: 'Electron 33 + React 19 + Zustand + better-sqlite3'
+  },
+  'claude-cli': {
+    title: 'Claude CLI (External)',
+    desc: 'Anthropic\'s CLI tool spawned as a subprocess by the main process. Generates show lineups from energy level + free-text plan dump. Session ID enables conversation continuity.',
+    tech: 'claude --json --session-id <id>'
+  },
+  'claude-cli-container': {
+    title: 'Claude CLI Subprocess',
+    desc: 'Managed by ControlPlane in the main process. Streams events via stdout (JSON lines). Session ID stored in claude_contexts table for cross-restart continuity.',
+    tech: 'Spawned via child_process, parsed by StreamParser'
+  },
+  'macos': {
+    title: 'macOS Platform',
+    desc: 'Provides native integrations: NSPanel vibrancy for the translucent window, system notifications for act completion and beat checks, nativeTheme for dark mode sync, global hotkey for toggle.',
+    tech: 'NSPanel, Notification Center, nativeTheme'
+  },
+  'filesystem': {
+    title: 'Local File System',
+    desc: 'SQLite database file stored in the standard macOS app data directory. WAL mode enables safe concurrent reads during write batches. Single file, no server, zero network dependency.',
+    tech: '~/Library/Application Support/Showtime/showtime.db'
+  },
+  'renderer': {
+    title: 'Renderer Process',
+    desc: 'React 19 UI with Zustand stores for runtime state. showStore manages the show state machine (phase, acts, beats, timers). sessionStore manages Claude subprocess sessions. Both hydrate from SQLite on launch.',
+    tech: 'React 19 + Zustand + Tailwind CSS v4 + Framer Motion'
+  },
+  'preload': {
+    title: 'Preload Bridge',
+    desc: 'contextBridge-based typed IPC API (window.clui). All renderer-to-main communication flows through this bridge. New data methods: saveShow(), loadShow(), getShowHistory(), getDayDrift(), saveClaudeContext(), loadClaudeContext().',
+    tech: 'contextBridge + ipcRenderer.invoke()'
+  },
+  'main-process': {
+    title: 'Main Process',
+    desc: 'Node.js process hosting window management, Claude subprocess control (ControlPlane), and the new data persistence layer (DataService + SQLite). IPC handlers bridge all renderer requests.',
+    tech: 'Node.js + Electron main + better-sqlite3'
+  },
+  'sqlite': {
+    title: 'SQLite Database',
+    desc: 'Single-file database in WAL mode for safe concurrent access. Tables: shows, acts, timeline_events, claude_contexts, _migrations. better-sqlite3 provides synchronous API (no async overhead for reads).',
+    tech: 'better-sqlite3 v11+ | WAL journal mode | FK constraints'
+  },
+  'sqlite-component': {
+    title: 'showtime.db',
+    desc: 'Physical SQLite database file. Located at ~/Library/Application Support/Showtime/showtime.db. WAL mode journal for crash safety. Foreign keys enforced. Migrations tracked in _migrations table.',
+    tech: 'better-sqlite3 | PRAGMA journal_mode=WAL | PRAGMA foreign_keys=ON'
+  },
+  'ipc-handlers': {
+    title: 'IPC Data Handlers',
+    desc: 'New ipcMain.handle() registrations for data operations. Maps renderer calls (window.clui.saveShow, loadShow, etc.) to DataService methods. Validates input, returns typed results.',
+    tech: 'ipcMain.handle() in src/main/data/ipc-handlers.ts'
+  },
+  'data-service': {
+    title: 'DataService (Facade)',
+    desc: 'Central facade that initializes the database connection, runs migrations on startup, and exposes repository instances. Singleton created in app.on(\'ready\') before window creation.',
+    tech: 'Singleton | init() opens DB + runs migrations | getters for repos'
+  },
+  'show-repo': {
+    title: 'ShowRepository',
+    desc: 'CRUD operations for the shows table. saveShow() upserts by date (one show per day). loadShow(date) returns the full show state. getShowHistory(startDate, endDate) returns summary rows for the multi-day view.',
+    tech: 'INSERT OR REPLACE | SELECT with date range | Sync API'
+  },
+  'act-repo': {
+    title: 'ActRepository',
+    desc: 'Manages the acts table. upsertActs() deletes existing acts for a show and inserts the current lineup (transactional). getActsForShow() returns ordered acts for hydration.',
+    tech: 'Transaction: DELETE + INSERT batch | ORDER BY order_index'
+  },
+  'timeline-repo': {
+    title: 'TimelineRepository',
+    desc: 'The key table for the day-structure feature. Records timestamped events for every act lifecycle change. Computes drift_seconds on insert. getDriftReport() returns planned vs actual timeline for a show.',
+    tech: 'INSERT with computed drift | Analytical queries for day structure'
+  },
+  'claude-repo': {
+    title: 'ClaudeContextRepository',
+    desc: 'Preserves Claude conversation context between sessions. Stores the session ID, energy level, plan dump, and generated lineup JSON. Enables "resume lineup generation" after app restart.',
+    tech: 'JSON blob storage for lineup | Session ID for CLI resume'
+  },
+  'sync-engine': {
+    title: 'SyncEngine',
+    desc: 'Bridges Zustand runtime state to SQLite persistence. Three modes: (1) Debounced writes every 5 seconds during active shows. (2) Immediate flush on phase transitions (startAct, completeAct, strike). (3) Timeline event recording on each act lifecycle change with drift calculation.',
+    tech: 'Debounce timer (5s) | Phase transition hooks | IPC listener'
+  },
+  'migration-runner': {
+    title: 'MigrationRunner',
+    desc: 'Reads versioned SQL files from src/main/data/migrations/. Applies any unapplied migrations in order on app startup. Tracks applied versions in the _migrations table. Simple, no ORM.',
+    tech: 'Glob *.sql | Sort by version | Run in transaction'
+  }
+};
+
+const tooltipEl = document.getElementById('tooltip');
+let activeNode = null;
+
+document.querySelectorAll('.node-box').forEach(node => {
+  const key = node.getAttribute('data-tooltip');
+  if (!key || !tooltipData[key]) return;
+  const data = tooltipData[key];
+
+  node.addEventListener('mouseenter', (e) => {
+    activeNode = key;
+    tooltipEl.innerHTML = `
+      <h6>${data.title}</h6>
+      <p>${data.desc}</p>
+      ${data.tech ? `<div class="tech">${data.tech}</div>` : ''}
+    `;
+    tooltipEl.classList.add('visible');
+    positionTooltip(e);
+  });
+
+  node.addEventListener('mousemove', positionTooltip);
+
+  node.addEventListener('mouseleave', () => {
+    activeNode = null;
+    tooltipEl.classList.remove('visible');
+  });
+});
+
+function positionTooltip(e) {
+  const pad = 16;
+  const ttWidth = 320;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+
+  if (x + ttWidth > window.innerWidth - pad) {
+    x = e.clientX - ttWidth - pad;
+  }
+  if (y + 200 > window.innerHeight - pad) {
+    y = e.clientY - 200;
+  }
+
+  tooltipEl.style.left = x + 'px';
+  tooltipEl.style.top = y + 'px';
+}
+</script>
+
+</body>
+</html>
