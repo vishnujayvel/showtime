@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-21T21:51:47Z
+Updated: 2026-03-21T22:12:30Z
 
 ## Current State
 
@@ -12,9 +12,9 @@ Updated: 2026-03-21T21:51:47Z
 
 ## Last Completed Task
 
-- Last commit: feat: audio broadcast package + UX polish (5 features)
-- Files changed: src/__tests__/audioAndPolish.test.tsx, src/renderer/components/BeatCheckModal.tsx, src/renderer/components/IntermissionView.tsx, src/renderer/components/MuteToggle.tsx, src/renderer/hooks/useAudio.ts
-  (+7 more)
+- Last commit: fix: border fix #22 + architecture cleanup #24
+- Files changed: package.json, src/__tests__/showStore.test.ts, src/main/index.ts, src/preload/index.ts, src/renderer/components/MiniRundownStrip.tsx
+  (+14 more)
 
 ## Active Blockers
 

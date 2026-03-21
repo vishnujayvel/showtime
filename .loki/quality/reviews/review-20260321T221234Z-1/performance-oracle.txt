@@ -1,0 +1,13 @@
+VERDICT: **PASS**
+
+FINDINGS:
+- None
+
+The changes are a net positive for performance:
+
+- **Bundle size win**: Removed `react-markdown` + `remark-gfm` dependencies (significant — these pull in large AST/parser trees)
+- **Re-render optimization**: Added `useMemo` for `sortedActs`/`totalPlannedMs` in `MiniRundownStrip.tsx`, preventing re-sort/re-reduce on every render tick (1s interval)
+- **Dead code removal**: Removed unused selectors (`selectNextAct`, `selectCompletedActs`, etc.), unused exports (`getCategoryToken`, `getCategoryHex`, `SKETCH_COLORS`), deleted `ChatPanel.tsx`, `PermissionCard.tsx`, `input.tsx`, `textarea.tsx` — all improve tree-shaking
+- **No-op IPC handlers removed**: Eliminated dead `RESIZE_HEIGHT`, `SET_WINDOW_WIDTH`, `ANIMATE_HEIGHT` handlers in main process
+- Zustand selectors use individual field accessors (correct pattern to minimize re-renders)
+- `setInterval(update, 1000)` in MiniRundownStrip is properly cleaned up via the effect return

@@ -1,5 +1,8 @@
 {
-  "static_analysis": 5,
+  "timestamp": "2026-03-21T22:11:48Z",
+  "gate_failures": [],
+  "pass": true,
+  "static_analysis": 1,
   "test_coverage": 0,
-  "code_review": 1
+  "code_review": 0
 }

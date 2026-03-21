@@ -68,3 +68,17 @@
   "user": "vishnu",
   "pid": 65108
 }
+{
+  "timestamp": "2026-03-21T22:01:58Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 58641
+}
+{
+  "timestamp": "2026-03-21T22:15:03Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md",
+  "user": "vishnu",
+  "pid": 58641
+}
