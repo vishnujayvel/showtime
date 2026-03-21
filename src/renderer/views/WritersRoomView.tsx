@@ -1,168 +1,186 @@
-import React, { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Notebook, PaperPlaneRight, Play } from '@phosphor-icons/react'
+import { useState, useEffect } from 'react'
 import { useShowStore } from '../stores/showStore'
-import { useSessionStore } from '../stores/sessionStore'
 import { EnergySelector } from '../components/EnergySelector'
-import { ActCard } from '../components/ActCard'
-import { useColors } from '../theme'
+import { LineupPanel } from '../panels/LineupPanel'
+import { Button } from '../ui/button'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '../lib/utils'
 
-type Step = 'energy' | 'plan' | 'preview'
+const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
 export function WritersRoomView() {
   const energy = useShowStore((s) => s.energy)
+  const writersRoomStep = useShowStore((s) => s.writersRoomStep)
   const acts = useShowStore((s) => s.acts)
-  const startShow = useShowStore((s) => s.startShow)
-  const phase = useShowStore((s) => s.phase)
-  const skipAct = useShowStore((s) => s.skipAct)
-  const reorderAct = useShowStore((s) => s.reorderAct)
-  const sendMessage = useSessionStore((s) => s.sendMessage)
-  const tabs = useSessionStore((s) => s.tabs)
-  const activeTabId = useSessionStore((s) => s.activeTabId)
-  const colors = useColors()
-
-  const tab = tabs.find((t) => t.id === activeTabId)
-  const isRunning = tab?.status === 'running' || tab?.status === 'connecting'
+  const setEnergy = useShowStore((s) => s.setEnergy)
+  const setWritersRoomStep = useShowStore((s) => s.setWritersRoomStep)
+  const setLineup = useShowStore((s) => s.setLineup)
+  const triggerGoingLive = useShowStore((s) => s.triggerGoingLive)
+  const writersRoomEnteredAt = useShowStore((s) => s.writersRoomEnteredAt)
 
   const [planText, setPlanText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showNudge, setShowNudge] = useState(false)
 
-  const step: Step = !energy ? 'energy' : acts.length === 0 ? 'plan' : 'preview'
+  // 20-minute nudge timer
+  useEffect(() => {
+    if (!writersRoomEnteredAt) return
 
-  const handleSubmitPlan = useCallback(() => {
-    if (!planText.trim() || !energy) return
-    const prompt = `[Showtime context: Writer's Room | Energy: ${energy}]
+    const check = () => {
+      const elapsed = Date.now() - writersRoomEnteredAt
+      if (elapsed > 20 * 60 * 1000) {
+        setShowNudge(true)
+      }
+    }
 
-The user wants to plan their day. Structure their input into a Show Lineup.
+    check()
+    const interval = setInterval(check, 60_000)
+    return () => clearInterval(interval)
+  }, [writersRoomEnteredAt])
 
-User's day plan:
-${planText.trim()}
+  const handleBuildLineup = () => {
+    if (!planText.trim()) return
+    setIsSubmitting(true)
 
-Respond with a \`\`\`showtime-lineup JSON block containing the structured lineup. Schedule acts based on the user's ${energy} energy level.`
+    // Mock lineup generation (will be replaced with real Claude integration)
+    const mockActs = planText
+      .split('\n')
+      .filter((l) => l.trim())
+      .slice(0, 5)
+      .map((line) => ({
+        name: line.trim(),
+        sketch: ['Deep Work', 'Admin', 'Creative', 'Exercise', 'Social'][
+          Math.floor(Math.random() * 5)
+        ],
+        durationMinutes: [25, 30, 45, 60][Math.floor(Math.random() * 4)],
+      }))
 
-    sendMessage(prompt)
-    setPlanText('')
-  }, [planText, energy, sendMessage])
-
-  const sorted = [...acts].sort((a, b) => a.order - b.order)
+    setLineup({
+      acts: mockActs,
+      beatThreshold: Math.min(mockActs.length, 3),
+      openingNote: '',
+    })
+    setWritersRoomStep('lineup')
+    setIsSubmitting(false)
+  }
 
   return (
-    <motion.div
-      layoutId="showtime-container"
-      style={{
-        width: 420,
-        maxHeight: 560,
-        borderRadius: 20,
-        background: colors.cardBg,
-        border: `1px solid ${colors.border}`,
-        padding: '24px 20px',
-        position: 'absolute',
-        bottom: 12,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 20,
-        overflowY: 'auto',
-      }}
+    <div
+      className="w-[560px] min-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
       data-clui-ui
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Notebook size={20} weight="duotone" color="#f59e0b" />
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text, margin: 0 }}>Writer's Room</h2>
+      {/* Title bar */}
+      <div
+        className="bg-[#151517] px-5 py-3 flex items-center border-b border-[#242428]"
+        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      >
+        <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
+          SHOWTIME
+        </span>
       </div>
 
-      <AnimatePresence mode="wait">
-        {step === 'energy' && (
-          <motion.div key="energy" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <p style={{ fontSize: 14, color: colors.textSecondary, margin: '0 0 12px 0' }}>How's your energy?</p>
-            <EnergySelector />
-          </motion.div>
-        )}
+      {/* Content */}
+      <div className="px-8 py-8 flex-1 flex flex-col relative">
+        {/* Spotlight gradient overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.05) 0%, transparent 70%)',
+          }}
+        />
 
-        {step === 'plan' && (
-          <motion.div key="plan" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <p style={{ fontSize: 14, color: colors.textSecondary, margin: '0 0 12px 0' }}>What's on the show today? Dump everything.</p>
-            <textarea
-              value={planText}
-              onChange={(e) => setPlanText(e.target.value)}
-              placeholder="project proposal, gym, review PRs, prep meeting..."
-              rows={4}
-              style={{
-                width: '100%',
-                resize: 'none',
-                border: `1px solid ${colors.border}`,
-                borderRadius: 12,
-                padding: '10px 14px',
-                fontSize: 14,
-                color: colors.text,
-                background: `${colors.cardBg}`,
-                outline: 'none',
-                fontFamily: 'inherit',
-                lineHeight: 1.5,
-                boxSizing: 'border-box',
-              }}
-              autoFocus
-            />
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSubmitPlan}
-              disabled={!planText.trim() || isRunning}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '10px 20px', borderRadius: 10,
-                border: 'none',
-                background: planText.trim() && !isRunning ? '#8b5cf6' : colors.border,
-                color: '#fff', fontWeight: 600, fontSize: 14,
-                cursor: planText.trim() && !isRunning ? 'pointer' : 'default',
-                marginTop: 12,
-              }}
+        <AnimatePresence mode="wait">
+          {/* Step 1: Energy */}
+          {writersRoomStep === 'energy' && (
+            <motion.div
+              key="energy"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={springTransition}
             >
-              <PaperPlaneRight size={16} weight="fill" />
-              {isRunning ? 'Planning...' : 'Plan my show'}
-            </motion.button>
-          </motion.div>
-        )}
+              <h2 className="font-body text-xl font-semibold text-txt-primary mb-6">
+                How&apos;s your energy?
+              </h2>
+              <EnergySelector
+                onSelect={(level) => {
+                  setEnergy(level)
+                  setWritersRoomStep('plan')
+                }}
+              />
+            </motion.div>
+          )}
 
-        {step === 'preview' && (
-          <motion.div key="preview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <p style={{ fontSize: 14, color: colors.textSecondary, margin: '0 0 12px 0' }}>Your lineup is set. Ready to go live?</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto' }}>
-              {sorted.map((act, i) => (
-                <ActCard
-                  key={act.id}
-                  act={act}
-                  isActive={false}
-                  onSkip={() => skipAct(act.id)}
-                  onMoveUp={i > 0 ? () => reorderAct(act.id, 'up') : undefined}
-                  onMoveDown={i < sorted.length - 1 ? () => reorderAct(act.id, 'down') : undefined}
-                  showReorder
+          {/* Step 2: Plan Dump */}
+          {writersRoomStep === 'plan' && (
+            <motion.div
+              key="plan"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={springTransition}
+            >
+              <h2 className="font-body text-xl font-semibold text-txt-primary mb-2">
+                What&apos;s on the schedule?
+              </h2>
+              <p className="text-sm text-txt-muted mb-6">
+                Dump everything. Claude will organize it into tonight&apos;s lineup.
+              </p>
+
+              <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
+                <textarea
+                  value={planText}
+                  onChange={(e) => setPlanText(e.target.value)}
+                  placeholder="meetings, tasks, errands, whatever..."
+                  className="w-full h-[200px] resize-none bg-transparent font-body text-sm text-notepad-text placeholder:text-txt-muted focus:outline-none"
+                  autoFocus
                 />
-              ))}
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={startShow}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
-                width: '100%',
-                padding: '12px 20px', borderRadius: 12,
-                border: 'none',
-                background: '#22c55e',
-                color: '#000', fontWeight: 700, fontSize: 15,
-                cursor: 'pointer',
-                marginTop: 16,
-              }}
+              </div>
+
+              <Button
+                variant="accent"
+                className="mt-4"
+                disabled={isSubmitting || !planText.trim()}
+                onClick={handleBuildLineup}
+              >
+                {isSubmitting ? 'Building...' : 'Build my lineup'}
+              </Button>
+
+              {showNudge && (
+                <p className="text-xs text-txt-muted mt-4 animate-breathe">
+                  Still writing? No rush — the show starts when you&apos;re ready.
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Step 3: Lineup Preview */}
+          {writersRoomStep === 'lineup' && (
+            <motion.div
+              key="lineup"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={springTransition}
             >
-              <Play size={18} weight="fill" /> We're live!
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+              <h2 className="font-body text-xl font-semibold text-txt-primary mb-6">
+                Tonight&apos;s Lineup
+              </h2>
+
+              <LineupPanel variant="full" />
+
+              <Button
+                variant="primary"
+                className="mt-8"
+                onClick={() => triggerGoingLive()}
+              >
+                WE&apos;RE LIVE!
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
   )
 }

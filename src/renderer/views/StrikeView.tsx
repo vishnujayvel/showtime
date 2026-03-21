@@ -1,99 +1,138 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { FilmSlate, ArrowCounterClockwise, X } from '@phosphor-icons/react'
 import { useShowStore, selectCompletedActs, selectSkippedActs } from '../stores/showStore'
 import { ShowVerdict } from '../components/ShowVerdict'
+import { OnAirIndicator } from '../components/OnAirIndicator'
 import { BeatCounter } from '../components/BeatCounter'
-import { useColors } from '../theme'
+import { Button } from '../ui/button'
+import { motion } from 'framer-motion'
+import { cn } from '../lib/utils'
 
 export function StrikeView() {
   const verdict = useShowStore((s) => s.verdict)
   const acts = useShowStore((s) => s.acts)
+  const beatsLocked = useShowStore((s) => s.beatsLocked)
+  const beatThreshold = useShowStore((s) => s.beatThreshold)
   const resetShow = useShowStore((s) => s.resetShow)
   const setExpanded = useShowStore((s) => s.setExpanded)
   const completedActs = useShowStore(selectCompletedActs)
   const skippedActs = useShowStore(selectSkippedActs)
-  const colors = useColors()
 
   return (
     <motion.div
-      layoutId="showtime-container"
+      className="w-[560px] bg-surface rounded-xl overflow-hidden flex flex-col"
+      data-clui-ui
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{
-        width: 420,
-        maxHeight: 560,
-        borderRadius: 20,
-        background: colors.cardBg,
-        border: `1px solid ${colors.border}`,
-        padding: '28px 24px',
-        position: 'absolute',
-        bottom: 12,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 20,
-        overflowY: 'auto',
-      }}
-      data-clui-ui
+      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <FilmSlate size={20} weight="duotone" color="#f59e0b" />
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text, margin: 0 }}>Strike the Stage</h2>
+      {/* Title bar */}
+      <div
+        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
+        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      >
+        <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
+          SHOWTIME
+        </span>
+        <OnAirIndicator isLive={false} />
       </div>
 
-      {/* Stats */}
-      <div style={{ display: 'flex', gap: 24 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: colors.text }}>{completedActs.length}</div>
-          <div style={{ fontSize: 11, color: colors.textTertiary, textTransform: 'uppercase' }}>Completed</div>
+      {/* Main content */}
+      <div className="flex-1 overflow-y-auto px-8 py-6">
+        {verdict && (
+          <ShowVerdict
+            verdict={verdict}
+            beatsLocked={beatsLocked}
+            beatThreshold={beatThreshold}
+          />
+        )}
+
+        {/* Stats row */}
+        <div className="flex items-center justify-center gap-8 mt-8">
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 0.2 }}
+          >
+            <div className="font-mono text-3xl font-bold text-txt-primary">
+              {completedActs.length}
+            </div>
+            <div className="text-xs text-txt-muted mt-1">Acts Completed</div>
+          </motion.div>
+
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 0.3 }}
+          >
+            <div className="font-mono text-3xl font-bold text-txt-primary">
+              {skippedActs.length}
+            </div>
+            <div className="text-xs text-txt-muted mt-1">Acts Cut</div>
+          </motion.div>
+
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 0.4 }}
+          >
+            <div className="font-mono text-3xl font-bold text-txt-primary">
+              {beatsLocked}
+            </div>
+            <div className="text-xs text-txt-muted mt-1">Beats Locked</div>
+          </motion.div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: colors.textTertiary }}>{skippedActs.length}</div>
-          <div style={{ fontSize: 11, color: colors.textTertiary, textTransform: 'uppercase' }}>Cut</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e0b' }}>{acts.filter((a) => a.beatLocked).length}</div>
-          <div style={{ fontSize: 11, color: colors.textTertiary, textTransform: 'uppercase' }}>Beats</div>
+
+        {/* Act recap panel */}
+        <div className="bg-[#151517] rounded-xl p-4 mt-8">
+          <h3 className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted mb-3">
+            END CREDITS
+          </h3>
+          <div>
+            {acts.map((act, i) => {
+              const isCompleted = act.status === 'completed'
+              const isSkipped = act.status === 'skipped'
+              return (
+                <motion.div
+                  key={act.id}
+                  className={cn(
+                    'flex items-center gap-2 py-1.5 text-sm',
+                    isCompleted ? 'text-txt-secondary' : 'text-txt-muted'
+                  )}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 200,
+                    damping: 25,
+                    delay: 0.5 + i * 0.06,
+                  }}
+                >
+                  <span
+                    className={cn(
+                      isCompleted ? 'text-emerald-400' : 'text-txt-muted'
+                    )}
+                  >
+                    {isCompleted ? '✓' : isSkipped ? '✕' : '–'}
+                  </span>
+                  <span>{act.name}</span>
+                  {act.beatLocked && <span className="text-beat">★</span>}
+                </motion.div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
-      <BeatCounter />
-
-      {verdict && <ShowVerdict verdict={verdict} />}
-
-      <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={resetShow}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '10px 20px', borderRadius: 10,
-            border: `1px solid ${colors.border}`, background: 'transparent',
-            color: colors.text, fontWeight: 500, fontSize: 14, cursor: 'pointer',
-          }}
-        >
-          <ArrowCounterClockwise size={16} /> New Show
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setExpanded(false)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '10px 20px', borderRadius: 10,
-            border: 'none', background: colors.border,
-            color: colors.textSecondary, fontWeight: 500, fontSize: 14, cursor: 'pointer',
-          }}
-        >
-          <X size={16} /> Close
-        </motion.button>
+      {/* Footer */}
+      <div className="px-8 py-6 flex items-center gap-3 border-t border-[#242428]">
+        <Button variant="accent" onClick={resetShow}>
+          New Show
+        </Button>
+        <Button variant="neutral" onClick={() => setExpanded(false)}>
+          Close
+        </Button>
       </div>
     </motion.div>
   )

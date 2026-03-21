@@ -1,84 +1,79 @@
-import React from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Star, ThumbsUp, Heart } from '@phosphor-icons/react'
 import type { ShowVerdict as ShowVerdictType } from '../../shared/types'
-import { useColors } from '../theme'
+import { BeatCounter } from './BeatCounter'
+import { cn } from '../lib/utils'
 
-const VERDICT_CONFIG: Record<ShowVerdictType, {
-  icon: typeof Trophy
-  title: string
+interface VerdictConfig {
+  headline: string
   message: string
-  color: string
-  celebrate: boolean
-}> = {
+  colorClass: string
+  animationClass?: string
+  spotlightGradient?: string
+}
+
+const VERDICT_CONFIG: Record<ShowVerdictType, VerdictConfig> = {
   DAY_WON: {
-    icon: Trophy,
-    title: 'DAY WON',
-    message: 'Standing ovation! You showed up and stayed present. That\'s the whole game.',
-    color: '#f59e0b',
-    celebrate: true,
+    headline: 'DAY WON',
+    message: 'You showed up and you were present.',
+    colorClass: 'text-beat',
+    animationClass: 'animate-golden-glow',
+    spotlightGradient: 'radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)',
   },
   SOLID_SHOW: {
-    icon: Star,
-    title: 'SOLID SHOW',
-    message: 'One beat short of a standing ovation \u2014 but still a solid show.',
-    color: '#22c55e',
-    celebrate: false,
+    headline: 'SOLID SHOW',
+    message: 'Not every sketch lands. The show was still great.',
+    colorClass: 'text-accent',
   },
   GOOD_EFFORT: {
-    icon: ThumbsUp,
-    title: 'GOOD EFFORT',
-    message: 'Not every show is a blockbuster \u2014 but this one had heart.',
-    color: '#60a5fa',
-    celebrate: false,
+    headline: 'GOOD EFFORT',
+    message: 'You got on stage. That\'s the hardest part.',
+    colorClass: 'text-blue-400',
   },
   SHOW_CALLED_EARLY: {
-    icon: Heart,
-    title: 'SHOW CALLED EARLY',
-    message: 'Sometimes the best direction is knowing when to wrap. See you tomorrow.',
-    color: '#a78bfa',
-    celebrate: false,
+    headline: 'SHOW CALLED EARLY',
+    message: 'Sometimes the show is short. The audience still came.',
+    colorClass: 'text-txt-secondary',
   },
 }
 
 interface ShowVerdictProps {
   verdict: ShowVerdictType
+  beatsLocked: number
+  beatThreshold: number
 }
 
-export function ShowVerdict({ verdict }: ShowVerdictProps) {
+export function ShowVerdict({ verdict, beatsLocked, beatThreshold }: ShowVerdictProps) {
   const config = VERDICT_CONFIG[verdict]
-  const Icon = config.icon
-  const colors = useColors()
 
   return (
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 16,
-        padding: '28px 24px',
-        borderRadius: 16,
-        border: `2px solid ${config.color}40`,
-        background: `${config.color}08`,
-        textAlign: 'center',
-      }}
-    >
-      <motion.div
-        animate={config.celebrate ? { rotate: [0, -10, 10, -10, 10, 0], scale: [1, 1.2, 1] } : {}}
-        transition={{ duration: 0.8, delay: 0.3 }}
+    <div className="flex flex-col items-center text-center py-8 relative">
+      {config.spotlightGradient && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: config.spotlightGradient }}
+        />
+      )}
+
+      <motion.h2
+        className={cn(
+          'font-body text-5xl font-black tracking-tight',
+          config.colorClass,
+          config.animationClass,
+        )}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
       >
-        <Icon size={48} weight="duotone" color={config.color} />
-      </motion.div>
-      <h3 style={{ fontSize: 22, fontWeight: 700, color: config.color, margin: 0, letterSpacing: 1 }}>
-        {config.title}
-      </h3>
-      <p style={{ fontSize: 14, color: colors.textSecondary, margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
+        {config.headline}
+      </motion.h2>
+
+      <p className="text-sm text-txt-secondary mt-4 max-w-[300px]">
         {config.message}
       </p>
-    </motion.div>
+
+      <div className="mt-6">
+        <BeatCounter size="xl" showLabel />
+      </div>
+    </div>
   )
 }

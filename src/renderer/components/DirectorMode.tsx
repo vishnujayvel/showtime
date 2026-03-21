@@ -1,80 +1,71 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { FilmSlate, SkipForward, ArrowsClockwise, Coffee, FlagCheckered } from '@phosphor-icons/react'
 import { useShowStore } from '../stores/showStore'
-import { useColors } from '../theme'
+import { Button } from '../ui/button'
+import { motion } from 'framer-motion'
 
 export function DirectorMode() {
   const exitDirector = useShowStore((s) => s.exitDirector)
+  const skipAct = useShowStore((s) => s.skipAct)
+  const currentActId = useShowStore((s) => s.currentActId)
   const callShowEarly = useShowStore((s) => s.callShowEarly)
   const enterIntermission = useShowStore((s) => s.enterIntermission)
-  const colors = useColors()
-
-  const options = [
-    {
-      icon: SkipForward,
-      label: 'Cut remaining acts',
-      subtitle: 'Some of the best shows are short ones.',
-      action: callShowEarly,
-      color: '#f97316',
-    },
-    {
-      icon: Coffee,
-      label: 'Extended intermission',
-      subtitle: 'Take all the time. The stage will be here.',
-      action: () => { exitDirector(); enterIntermission() },
-      color: '#a78bfa',
-    },
-    {
-      icon: FlagCheckered,
-      label: 'Call the show',
-      subtitle: 'Every show has a runtime. This one\'s been solid.',
-      action: callShowEarly,
-      color: '#60a5fa',
-    },
-    {
-      icon: ArrowsClockwise,
-      label: 'Back to the show',
-      subtitle: 'False alarm \u2014 let\'s keep going.',
-      action: exitDirector,
-      color: '#22c55e',
-    },
-  ]
+  const startBreathingPause = useShowStore((s) => s.startBreathingPause)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: 28 }}>
-      <FilmSlate size={40} weight="duotone" color="#f59e0b" />
-      <h2 style={{ fontSize: 20, fontWeight: 600, color: colors.text, margin: 0 }}>The show adapts.</h2>
-      <p style={{ fontSize: 14, color: colors.textSecondary, margin: 0, textAlign: 'center' }}>What do you need right now?</p>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-[12px] z-50 flex items-center justify-center">
+      <motion.div
+        className="w-[420px] p-8 rounded-2xl bg-surface border border-card-border"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      >
+        <h2 className="font-body text-xl font-bold text-txt-primary mb-2">
+          The Director is here.
+        </h2>
+        <p className="text-sm text-txt-secondary mb-8">
+          What's the call?
+        </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 320 }}>
-        {options.map(({ icon: Icon, label, subtitle, action, color }) => (
-          <motion.button
-            key={label}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={action}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '12px 16px',
-              borderRadius: 12,
-              border: `1px solid ${colors.border}`,
-              background: colors.cardBg,
-              cursor: 'pointer',
-              textAlign: 'left',
-              width: '100%',
+        <div className="flex flex-col gap-3">
+          <Button
+            className="w-full py-3 rounded-xl bg-surface-hover text-txt-primary text-sm font-medium border border-border-default hover:bg-[#2a2a2e] transition-colors"
+            onClick={() => {
+              skipAct(currentActId!)
+              exitDirector()
             }}
           >
-            <Icon size={20} color={color} weight="duotone" />
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: colors.text }}>{label}</div>
-              <div style={{ fontSize: 12, color: colors.textTertiary, marginTop: 2 }}>{subtitle}</div>
-            </div>
-          </motion.button>
-        ))}
-      </div>
+            Skip this act, move on
+          </Button>
+
+          <Button
+            className="w-full py-3 rounded-xl bg-onair/10 text-onair text-sm font-medium border border-onair/20 hover:bg-onair/15 transition-colors"
+            onClick={() => {
+              callShowEarly()
+            }}
+          >
+            Call the show early
+          </Button>
+
+          <Button
+            className="w-full py-3 rounded-xl bg-purple-500/10 text-purple-400 text-sm font-medium border border-purple-500/20 hover:bg-purple-500/15 transition-colors"
+            onClick={() => {
+              enterIntermission()
+              exitDirector()
+            }}
+          >
+            Take a longer break
+          </Button>
+
+          <Button
+            className="w-full py-3 rounded-xl bg-blue-500/10 text-blue-400 text-sm font-medium border border-blue-500/20 hover:bg-blue-500/15 transition-colors"
+            onClick={() => {
+              startBreathingPause()
+              exitDirector()
+            }}
+          >
+            Just a moment
+          </Button>
+        </div>
+      </motion.div>
     </div>
   )
 }
