@@ -201,8 +201,8 @@ describe('showStore', () => {
       const actId = useShowStore.getState().currentActId!
       useShowStore.getState().completeAct(actId)
 
-      expect(window.clui.notifyActComplete).toHaveBeenCalledWith('Morning Deep Work')
-      expect(window.clui.notifyBeatCheck).toHaveBeenCalled()
+      expect(window.clui.notifyActComplete).toHaveBeenCalledWith('Morning Deep Work', 'Deep Work')
+      expect(window.clui.notifyBeatCheck).toHaveBeenCalledWith('Morning Deep Work')
     })
   })
 

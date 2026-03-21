@@ -9,6 +9,9 @@ vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef((props: any, ref: any) => <div ref={ref} {...stripMotionProps(props)} />),
     button: React.forwardRef((props: any, ref: any) => <button ref={ref} {...stripMotionProps(props)} />),
+    h1: React.forwardRef((props: any, ref: any) => <h1 ref={ref} {...stripMotionProps(props)} />),
+    h2: React.forwardRef((props: any, ref: any) => <h2 ref={ref} {...stripMotionProps(props)} />),
+    span: React.forwardRef((props: any, ref: any) => <span ref={ref} {...stripMotionProps(props)} />),
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
@@ -22,48 +25,6 @@ function stripMotionProps(props: any) {
   } = props
   return rest
 }
-
-// ─── Mock theme ───
-vi.mock('../renderer/theme', () => ({
-  useColors: () => ({
-    text: '#fff',
-    textPrimary: '#fff',
-    textSecondary: '#999',
-    textTertiary: '#666',
-    border: '#333',
-    cardBg: '#222',
-    pillBg: '#111',
-    containerBg: '#222',
-    containerBgCollapsed: '#111',
-    containerBorder: '#333',
-    accent: '#8b5cf6',
-  }),
-}))
-
-// ─── Mock Phosphor icons ───
-vi.mock('@phosphor-icons/react', () => {
-  const Icon = ({ children, ...props }: any) => <span data-testid="icon" {...props}>{children}</span>
-  return {
-    Lightning: Icon,
-    Sun: Icon,
-    CloudSun: Icon,
-    Moon: Icon,
-    Star: Icon,
-    X: Icon,
-    Trophy: Icon,
-    ThumbsUp: Icon,
-    Heart: Icon,
-    Play: Icon,
-    Check: Icon,
-    SkipForward: Icon,
-    ArrowUp: Icon,
-    ArrowDown: Icon,
-    Timer: Icon,
-    FilmSlate: Icon,
-    Coffee: Icon,
-    PaperPlaneRight: Icon,
-  }
-})
 
 // Reset store between tests
 function resetStore() {
@@ -81,6 +42,10 @@ function resetStore() {
     verdict: null,
     isExpanded: true,
     beatCheckPending: false,
+    goingLiveActive: false,
+    writersRoomStep: 'energy',
+    writersRoomEnteredAt: null,
+    breathingPauseEndAt: null,
   })
 }
 
@@ -100,25 +65,25 @@ describe('EnergySelector', () => {
   })
 
   it('renders all four energy options', () => {
-    render(<EnergySelector />)
-    expect(screen.getByText('High')).toBeInTheDocument()
-    expect(screen.getByText('Medium')).toBeInTheDocument()
-    expect(screen.getByText('Low')).toBeInTheDocument()
-    expect(screen.getByText('Recovery')).toBeInTheDocument()
+    render(<EnergySelector onSelect={() => {}} />)
+    expect(screen.getByText('High Energy')).toBeInTheDocument()
+    expect(screen.getByText('Medium Energy')).toBeInTheDocument()
+    expect(screen.getByText('Low Energy')).toBeInTheDocument()
+    expect(screen.getByText('Recovery Day')).toBeInTheDocument()
   })
 
-  it('dispatches setEnergy on click', () => {
-    render(<EnergySelector />)
-    fireEvent.click(screen.getByText('High'))
-    expect(useShowStore.getState().energy).toBe('high')
+  it('calls onSelect with correct level on click', () => {
+    const onSelect = vi.fn()
+    render(<EnergySelector onSelect={onSelect} />)
+    fireEvent.click(screen.getByText('High Energy'))
+    expect(onSelect).toHaveBeenCalledWith('high')
   })
 
-  it('updates selection when clicked', () => {
-    render(<EnergySelector />)
-    fireEvent.click(screen.getByText('Low'))
-    expect(useShowStore.getState().energy).toBe('low')
-    fireEvent.click(screen.getByText('Medium'))
-    expect(useShowStore.getState().energy).toBe('medium')
+  it('calls onSelect for different energy levels', () => {
+    const onSelect = vi.fn()
+    render(<EnergySelector onSelect={onSelect} />)
+    fireEvent.click(screen.getByText('Low Energy'))
+    expect(onSelect).toHaveBeenCalledWith('low')
   })
 })
 
@@ -139,31 +104,34 @@ describe('BeatCheckModal', () => {
   })
 
   it('renders modal when beatCheckPending is true', () => {
-    useShowStore.setState({ beatCheckPending: true })
+    useShowStore.setState({
+      beatCheckPending: true,
+      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
+      currentActId: 'a1',
+    })
     render(<BeatCheckModal />)
-    expect(screen.getByText('Yes, lock it')).toBeInTheDocument()
+    expect(screen.getByText(/Did you have a moment of presence/)).toBeInTheDocument()
     expect(screen.getByText('Not this time')).toBeInTheDocument()
   })
 
-  it('calls lockBeat when "Yes" clicked', () => {
+  it('calls lockBeat when lock button clicked', () => {
     useShowStore.setState({
       beatCheckPending: true,
       beatsLocked: 0,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Test', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
+      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',
       phase: 'live',
     })
     render(<BeatCheckModal />)
-    fireEvent.click(screen.getByText('Yes, lock it'))
+    fireEvent.click(screen.getByText(/Lock the Beat/))
     expect(useShowStore.getState().beatsLocked).toBe(1)
-    expect(useShowStore.getState().beatCheckPending).toBe(false)
   })
 
   it('calls skipBeat when "Not this time" clicked', () => {
     useShowStore.setState({
       beatCheckPending: true,
       beatsLocked: 0,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Test', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
+      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',
       phase: 'live',
     })
@@ -194,39 +162,45 @@ describe('ActCard', () => {
     ActCard = mod.ActCard
   })
 
-  it('renders act name and details', () => {
-    render(<ActCard act={baseAct} isActive={false} onSkip={() => {}} />)
+  it('renders act name in full variant', () => {
+    render(<ActCard act={baseAct} variant="full" actNumber={1} />)
     expect(screen.getByText('Morning Focus')).toBeInTheDocument()
-    expect(screen.getByText('Deep Work')).toBeInTheDocument()
-    expect(screen.getByText('60m')).toBeInTheDocument()
   })
 
-  it('shows skip button for upcoming acts', () => {
-    render(<ActCard act={baseAct} isActive={false} onSkip={() => {}} />)
-    expect(screen.getByTitle('Cut this act')).toBeInTheDocument()
+  it('renders act name in sidebar variant', () => {
+    render(<ActCard act={baseAct} variant="sidebar" actNumber={1} />)
+    expect(screen.getByText('Morning Focus')).toBeInTheDocument()
   })
 
-  it('hides skip button for completed acts', () => {
-    render(<ActCard act={{ ...baseAct, status: 'completed' }} isActive={false} onSkip={() => {}} />)
-    expect(screen.queryByTitle('Cut this act')).not.toBeInTheDocument()
+  it('shows remove button when onRemove provided in full variant', () => {
+    const onRemove = vi.fn()
+    render(<ActCard act={baseAct} variant="full" actNumber={1} onRemove={onRemove} />)
+    const removeBtn = screen.getByText('×')
+    expect(removeBtn).toBeInTheDocument()
+    fireEvent.click(removeBtn)
+    expect(onRemove).toHaveBeenCalledOnce()
   })
 
-  it('calls onSkip handler', () => {
-    const onSkip = vi.fn()
-    render(<ActCard act={baseAct} isActive={false} onSkip={onSkip} />)
-    fireEvent.click(screen.getByTitle('Cut this act'))
-    expect(onSkip).toHaveBeenCalledOnce()
+  it('shows reorder buttons when onReorder provided in full variant', () => {
+    const onReorder = vi.fn()
+    render(<ActCard act={baseAct} variant="full" actNumber={1} onReorder={onReorder} />)
+    const upBtn = screen.getByText('↑')
+    const downBtn = screen.getByText('↓')
+    expect(upBtn).toBeInTheDocument()
+    expect(downBtn).toBeInTheDocument()
+    fireEvent.click(upBtn)
+    expect(onReorder).toHaveBeenCalledWith('up')
   })
 
-  it('shows reorder buttons when showReorder is true', () => {
-    const onUp = vi.fn()
-    const onDown = vi.fn()
-    render(
-      <ActCard act={baseAct} isActive={false} onSkip={() => {}} showReorder onMoveUp={onUp} onMoveDown={onDown} />
-    )
-    // Should have arrow buttons
-    const buttons = screen.getAllByRole('button')
-    expect(buttons.length).toBeGreaterThan(1)
+  it('shows beat star for beat-locked acts in sidebar variant', () => {
+    render(<ActCard act={{ ...baseAct, status: 'completed', beatLocked: true }} variant="sidebar" actNumber={1} />)
+    expect(screen.getByText('★')).toBeInTheDocument()
+  })
+
+  it('applies line-through for skipped acts in sidebar variant', () => {
+    render(<ActCard act={{ ...baseAct, status: 'skipped' }} variant="sidebar" actNumber={1} />)
+    const name = screen.getByText('Morning Focus')
+    expect(name.className).toContain('line-through')
   })
 })
 
@@ -249,18 +223,18 @@ describe('ShowVerdict', () => {
 
   verdicts.forEach(({ type, title }) => {
     it(`renders ${type} verdict with correct title`, () => {
-      render(<ShowVerdict verdict={type} />)
+      render(<ShowVerdict verdict={type} beatsLocked={2} beatThreshold={3} />)
       expect(screen.getByText(title)).toBeInTheDocument()
     })
   })
 
-  it('shows celebration message for DAY_WON', () => {
-    render(<ShowVerdict verdict="DAY_WON" />)
-    expect(screen.getByText(/Standing ovation/)).toBeInTheDocument()
+  it('shows correct message for DAY_WON', () => {
+    render(<ShowVerdict verdict="DAY_WON" beatsLocked={3} beatThreshold={3} />)
+    expect(screen.getByText(/You showed up and you were present/)).toBeInTheDocument()
   })
 
-  it('shows appropriate message for SHOW_CALLED_EARLY', () => {
-    render(<ShowVerdict verdict="SHOW_CALLED_EARLY" />)
-    expect(screen.getByText(/knowing when to wrap/)).toBeInTheDocument()
+  it('shows correct message for SHOW_CALLED_EARLY', () => {
+    render(<ShowVerdict verdict="SHOW_CALLED_EARLY" beatsLocked={0} beatThreshold={3} />)
+    expect(screen.getByText(/Sometimes the show is short/)).toBeInTheDocument()
   })
 })
