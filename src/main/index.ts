@@ -109,6 +109,10 @@ function createWindow(): void {
     ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),  // NSPanel — non-activating, joins all spaces
     frame: false,
     transparent: true,
+    ...(process.platform === 'darwin' ? {
+      vibrancy: 'under-window' as const,
+      visualEffectState: 'active' as const,
+    } : {}),
     resizable: false,
     movable: true,
     alwaysOnTop: true,
@@ -224,6 +228,10 @@ ipcMain.handle(IPC.ANIMATE_HEIGHT, () => {
 
 ipcMain.on(IPC.HIDE_WINDOW, () => {
   mainWindow?.hide()
+})
+
+ipcMain.on(IPC.APP_QUIT, () => {
+  app.quit()
 })
 
 ipcMain.handle(IPC.IS_VISIBLE, () => {
@@ -1059,12 +1067,13 @@ app.whenReady().then(async () => {
   const trayIcon = nativeImage.createFromPath(trayIconPath)
   trayIcon.setTemplateImage(true)
   tray = new Tray(trayIcon)
-  tray.setToolTip('Clui CC — Claude Code UI')
+  tray.setToolTip('Showtime')
   tray.on('click', () => toggleWindow('tray click'))
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Show Clui CC', click: () => showWindow('tray menu') },
-      { label: 'Quit', click: () => { app.quit() } },
+      { label: 'Show Showtime', click: () => showWindow('tray menu') },
+      { type: 'separator' },
+      { label: 'Quit Showtime', click: () => { app.quit() } },
     ])
   )
 

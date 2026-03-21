@@ -21,18 +21,13 @@ export function GoingLiveTransition({ onComplete }: GoingLiveTransitionProps) {
 
   return (
     <div className="fixed inset-0 bg-studio-bg flex flex-col items-center justify-center z-50">
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 600px 400px at 50% 50%, rgba(217,119,87,0.08) 0%, transparent 70%)',
-        }}
-      />
+      <div className="absolute inset-0 spotlight-stage" />
 
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.3 }}
+        className="onair-glow rounded"
       >
         <OnAirIndicator isLive={true} />
       </motion.div>

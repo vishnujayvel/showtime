@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useShowStore } from '../renderer/stores/showStore'
 import type { ShowLineup, ShowPhase } from '../shared/types'
 
@@ -17,6 +17,7 @@ function resetStore() {
     verdict: null,
     isExpanded: true,
     beatCheckPending: false,
+    celebrationActive: false,
   })
 }
 
@@ -34,6 +35,7 @@ describe('state machine transitions', () => {
   beforeEach(() => resetStore())
 
   it('follows happy path: no_show → writers_room → live → strike', () => {
+    vi.useFakeTimers()
     const phases: ShowPhase[] = []
 
     // no_show → set energy
@@ -48,15 +50,17 @@ describe('state machine transitions', () => {
     useShowStore.getState().startShow()
     phases.push(useShowStore.getState().phase)
 
-    // Complete all acts with beat locks
+    // Complete all acts with beat locks (advance timers for celebration delay)
     for (let i = 0; i < 3; i++) {
       const actId = useShowStore.getState().currentActId!
       useShowStore.getState().completeAct(actId)
       useShowStore.getState().lockBeat()
+      vi.advanceTimersByTime(1800)
     }
     phases.push(useShowStore.getState().phase)
 
     expect(phases).toEqual(['no_show', 'writers_room', 'live', 'strike'])
+    vi.useRealTimers()
   })
 
   it('supports intermission mid-show: live → intermission → live', () => {
@@ -141,12 +145,14 @@ describe('state machine transitions', () => {
   })
 
   it('beat tracking accumulates across acts', () => {
+    vi.useFakeTimers()
     useShowStore.getState().setLineup(lineup)
     useShowStore.getState().startShow()
 
     // Act 1: lock beat
     useShowStore.getState().completeAct(useShowStore.getState().currentActId!)
     useShowStore.getState().lockBeat()
+    vi.advanceTimersByTime(1800)
     expect(useShowStore.getState().beatsLocked).toBe(1)
 
     // Act 2: skip beat
@@ -157,8 +163,10 @@ describe('state machine transitions', () => {
     // Act 3: lock beat → triggers strike
     useShowStore.getState().completeAct(useShowStore.getState().currentActId!)
     useShowStore.getState().lockBeat()
+    vi.advanceTimersByTime(1800)
     expect(useShowStore.getState().beatsLocked).toBe(2)
     expect(useShowStore.getState().phase).toBe('strike')
+    vi.useRealTimers()
   })
 
   it('extendAct adds 15 minutes during live', () => {

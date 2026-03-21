@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useShowStore } from '../stores/showStore'
+import { useSessionStore } from '../stores/sessionStore'
+import { tryParseLineup } from '../lib/lineup-parser'
 import { EnergySelector } from '../components/EnergySelector'
 import { LineupPanel } from '../panels/LineupPanel'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '../lib/utils'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
@@ -18,9 +19,14 @@ export function WritersRoomView() {
   const triggerGoingLive = useShowStore((s) => s.triggerGoingLive)
   const writersRoomEnteredAt = useShowStore((s) => s.writersRoomEnteredAt)
 
+  const sendMessage = useSessionStore((s) => s.sendMessage)
+  const tabs = useSessionStore((s) => s.tabs)
+  const activeTabId = useSessionStore((s) => s.activeTabId)
+
   const [planText, setPlanText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showNudge, setShowNudge] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // 20-minute nudge timer
   useEffect(() => {
@@ -41,28 +47,68 @@ export function WritersRoomView() {
   const handleBuildLineup = () => {
     if (!planText.trim()) return
     setIsSubmitting(true)
+    setError(null)
 
-    // Mock lineup generation (will be replaced with real Claude integration)
-    const mockActs = planText
-      .split('\n')
-      .filter((l) => l.trim())
-      .slice(0, 5)
-      .map((line) => ({
-        name: line.trim(),
-        sketch: ['Deep Work', 'Admin', 'Creative', 'Exercise', 'Social'][
-          Math.floor(Math.random() * 5)
-        ],
-        durationMinutes: [25, 30, 45, 60][Math.floor(Math.random() * 4)],
-      }))
+    const prompt = `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy}" and wants to plan their day. Based on their input below, create a show lineup.
 
-    setLineup({
-      acts: mockActs,
-      beatThreshold: Math.min(mockActs.length, 3),
-      openingNote: '',
-    })
-    setWritersRoomStep('lineup')
-    setIsSubmitting(false)
+Respond with a JSON block in this exact format:
+\`\`\`showtime-lineup
+{
+  "acts": [
+    { "name": "Task name", "sketch": "Deep Work", "durationMinutes": 45 }
+  ],
+  "beatThreshold": 3,
+  "openingNote": "A brief encouraging note"
+}
+\`\`\`
+
+Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
+Energy "${energy}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
+
+User's plan:
+${planText}`
+
+    sendMessage(prompt)
   }
+
+  // Watch for Claude's response with lineup
+  useEffect(() => {
+    if (!isSubmitting) return
+
+    const tab = tabs.find((t) => t.id === activeTabId)
+    if (!tab) return
+
+    const messages = tab.messages
+    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
+
+    if (lastAssistant) {
+      const lineup = tryParseLineup(lastAssistant.content)
+      if (lineup) {
+        setLineup(lineup)
+        setWritersRoomStep('lineup')
+        setIsSubmitting(false)
+        setError(null)
+        return
+      }
+    }
+
+    // Check for errors/completion without valid lineup
+    if (tab.status === 'failed' || tab.status === 'dead') {
+      setIsSubmitting(false)
+      setError('Claude couldn\'t generate a lineup. Try again?')
+      return
+    }
+  }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep])
+
+  // Timeout after 30 seconds
+  useEffect(() => {
+    if (!isSubmitting) return
+    const timeout = setTimeout(() => {
+      setIsSubmitting(false)
+      setError('Took too long. Try again or edit your plan.')
+    }, 30000)
+    return () => clearTimeout(timeout)
+  }, [isSubmitting])
 
   return (
     <div
@@ -82,13 +128,7 @@ export function WritersRoomView() {
       {/* Content */}
       <div className="px-8 py-8 flex-1 flex flex-col relative">
         {/* Spotlight gradient overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.05) 0%, transparent 70%)',
-          }}
-        />
+        <div className="absolute inset-0 pointer-events-none spotlight-warm" />
 
         <AnimatePresence mode="wait">
           {/* Step 1: Energy */}
@@ -144,8 +184,12 @@ export function WritersRoomView() {
                 disabled={isSubmitting || !planText.trim()}
                 onClick={handleBuildLineup}
               >
-                {isSubmitting ? 'Building...' : 'Build my lineup'}
+                {isSubmitting ? 'Planning...' : 'Build my lineup'}
               </Button>
+
+              {error && (
+                <p className="text-xs text-onair mt-2">{error}</p>
+              )}
 
               {showNudge && (
                 <p className="text-xs text-txt-muted mt-4 animate-breathe">

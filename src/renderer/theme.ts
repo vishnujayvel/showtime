@@ -2,64 +2,10 @@
  * Theme store — manages dark/light mode and persisted settings.
  *
  * Design tokens for Showtime live in Tailwind CSS @theme (src/renderer/index.css).
- * This file only keeps runtime color values needed by PermissionCard (which
- * still uses inline styles for dynamic allow/deny button coloring).
+ * All color tokens are consumed via Tailwind utility classes — no runtime
+ * color objects are needed.
  */
 import { create } from 'zustand'
-
-// ─── Runtime colors for PermissionCard ───
-// These are the only values consumed via useColors(). Everything else
-// is handled by Tailwind utility classes.
-
-const darkPermissionColors = {
-  containerBg: '#242422',
-  accent: '#d97757',
-  accentLight: 'rgba(217, 119, 87, 0.1)',
-  accentSoft: 'rgba(217, 119, 87, 0.15)',
-  textPrimary: '#ccc9c0',
-  textSecondary: '#c0bdb2',
-  textTertiary: '#76766e',
-  codeBg: '#1a1a18',
-  statusPermission: '#d97757',
-  statusComplete: '#7aac8c',
-  statusError: '#c47060',
-  permissionBorder: 'rgba(245, 158, 11, 0.3)',
-  permissionShadow: '0 2px 12px rgba(245, 158, 11, 0.08)',
-  permissionHeaderBg: 'rgba(245, 158, 11, 0.06)',
-  permissionHeaderBorder: 'rgba(245, 158, 11, 0.12)',
-  permissionAllowBg: 'rgba(34, 197, 94, 0.1)',
-  permissionAllowHoverBg: 'rgba(34, 197, 94, 0.22)',
-  permissionAllowBorder: 'rgba(34, 197, 94, 0.25)',
-  permissionDenyBg: 'rgba(239, 68, 68, 0.08)',
-  permissionDenyHoverBg: 'rgba(239, 68, 68, 0.18)',
-  permissionDenyBorder: 'rgba(239, 68, 68, 0.22)',
-} as const
-
-const lightPermissionColors = {
-  containerBg: '#f9f8f5',
-  accent: '#d97757',
-  accentLight: 'rgba(217, 119, 87, 0.1)',
-  accentSoft: 'rgba(217, 119, 87, 0.12)',
-  textPrimary: '#3c3929',
-  textSecondary: '#5a5749',
-  textTertiary: '#8a8a80',
-  codeBg: '#f0eee8',
-  statusPermission: '#d97757',
-  statusComplete: '#5a9e6f',
-  statusError: '#c47060',
-  permissionBorder: 'rgba(245, 158, 11, 0.3)',
-  permissionShadow: '0 2px 12px rgba(245, 158, 11, 0.08)',
-  permissionHeaderBg: 'rgba(245, 158, 11, 0.06)',
-  permissionHeaderBorder: 'rgba(245, 158, 11, 0.12)',
-  permissionAllowBg: 'rgba(34, 197, 94, 0.1)',
-  permissionAllowHoverBg: 'rgba(34, 197, 94, 0.22)',
-  permissionAllowBorder: 'rgba(34, 197, 94, 0.25)',
-  permissionDenyBg: 'rgba(239, 68, 68, 0.08)',
-  permissionDenyHoverBg: 'rgba(239, 68, 68, 0.18)',
-  permissionDenyBorder: 'rgba(239, 68, 68, 0.22)',
-} as const
-
-export type PermissionColors = { [K in keyof typeof darkPermissionColors]: string }
 
 // ─── Theme store ───
 
@@ -126,9 +72,3 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   },
 }))
 
-// ─── Color hooks (for PermissionCard) ───
-
-export function useColors(): PermissionColors {
-  const isDark = useThemeStore((s) => s.isDark)
-  return isDark ? darkPermissionColors : lightPermissionColors
-}
