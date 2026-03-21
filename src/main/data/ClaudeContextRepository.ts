@@ -17,7 +17,7 @@ export class ClaudeContextRepository {
   getLatestContext(showId: string): ClaudeContextRow | undefined {
     return this.db.select().from(claudeContexts)
       .where(eq(claudeContexts.showId, showId))
-      .orderBy(desc(claudeContexts.createdAt))
+      .orderBy(desc(claudeContexts.id))
       .limit(1)
       .get()
   }
