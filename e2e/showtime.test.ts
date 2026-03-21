@@ -409,20 +409,12 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
     expect(bgColor).toMatch(/^#0{6}(00)?$/)
   })
 
-  test('#10 window bounds match dynamic view mode', async () => {
+  test('#10 window uses fixed canvas size', async () => {
     const bwHandle = await app.browserWindow(page)
     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    // Dynamic sizing: expanded=580x640, full=580x700, pill=340x60
-    // The window should be one of these sizes, not the old fixed 1040x720
-    const validSizes = [
-      { width: 340, height: 60 },
-      { width: 580, height: 640 },
-      { width: 580, height: 700 },
-    ]
-    const matchesValid = validSizes.some(
-      (s) => bounds.width === s.width && bounds.height === s.height
-    )
-    expect(matchesValid).toBe(true)
+    // Fixed canvas: 600x740 — CSS handles content sizing inside
+    expect(bounds.width).toBe(600)
+    expect(bounds.height).toBe(740)
   })
 
   test('#3 tray menu labels include Quit Showtime', async () => {
@@ -955,8 +947,8 @@ test.describe('Onboarding (#15)', () => {
 // ─── Dynamic Window Bounds (#10) ───
 
 test.describe('Dynamic Window Bounds (#10)', () => {
-  test('window resizes for expanded mode', async () => {
-    // Set to no_show expanded (DarkStudio = expanded mode)
+  test('window maintains fixed canvas across view changes', async () => {
+    // Fixed canvas: 600x740 regardless of which view is rendered
     await page.evaluate(() => {
       localStorage.setItem('showtime-onboarding-complete', 'true')
       localStorage.removeItem('showtime-show-state')
@@ -966,23 +958,18 @@ test.describe('Dynamic Window Bounds (#10)', () => {
 
     const bwHandle = await app.browserWindow(page)
     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    // expanded mode: 580x640
-    expect(bounds.width).toBe(580)
-    expect(bounds.height).toBe(640)
-  })
+    expect(bounds.width).toBe(600)
+    expect(bounds.height).toBe(740)
 
-  test('window resizes for full mode (Writer\'s Room)', async () => {
-    // Transition to Writer's Room
+    // Transition to Writer's Room — canvas size should NOT change
     const cta = page.getByText("Enter the Writer's Room")
     if (await cta.isVisible({ timeout: 5000 }).catch(() => false)) {
       await cta.click()
       await page.waitForTimeout(1000)
     }
 
-    const bwHandle = await app.browserWindow(page)
-    const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    // full mode: 580x700
-    expect(bounds.width).toBe(580)
-    expect(bounds.height).toBe(700)
+    const boundsAfter = await bwHandle.evaluate((bw) => bw.getBounds())
+    expect(boundsAfter.width).toBe(600)
+    expect(boundsAfter.height).toBe(740)
   })
 })
