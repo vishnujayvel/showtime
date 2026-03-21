@@ -1,66 +1,44 @@
 # Session Continuity
 
-Updated: 2026-03-21T08:15:00Z
+Updated: 2026-03-21T18:00:00Z
 
 ## Current State
 
-- Iteration: 1 — COMPLETE
-- Phase: DEVELOPMENT → all 7 groups done
+- Iteration: 2
+- Phase: VERIFICATION
+- RARV Step: VERIFY
 - Provider: claude
-- **All 35/35 tasks complete**
+- Elapsed: 5m
 
-## Test Suite
+## Last Completed Task
 
-- **128 unit tests** across 6 files — ALL PASSING
-- **12 Playwright E2E tests** — ALL PASSING
-- Zero TypeScript errors (tsc --noEmit clean)
-- Build succeeds (npm run build)
+- Last commit: Clean up dead code (BAR_WIDTH, PILL_HEIGHT) and stale comments in main/index.ts
+- Quality gate failures from iteration 1 were false positives (syntax errors in App.tsx and OnboardingView.tsx — both compile cleanly)
+- Removed unused BAR_WIDTH and PILL_HEIGHT constants
+- Updated stale comments about "fixed height mode" to reference SET_VIEW_MODE
 
-## What Was Done This Session
+## Active Blockers
 
-### Groups 1-2 (Foundation, verified from prior session)
-- Tailwind CSS v4 with @theme design tokens, keyframes, animations
-- shadcn/ui setup with custom Button variants
-- Google Fonts (Inter + JetBrains Mono)
-- Category color utility (getCategoryToken, getCategoryHex)
-- showStore updates (goingLiveActive, writersRoomStep, breathingPauseEndAt)
-- Shared types IPC channels
+- None
 
-### Group 3 (Atomic Components)
-- TallyLight, OnAirIndicator, ClapperboardBadge, BeatCounter, EnergySelector
+## Verified PRD Implementation
 
-### Group 4 (Core Views — 12 components)
-- DarkStudioView, GoingLiveTransition, WritersRoomView
-- TimerPanel, LineupPanel, ActCard, BeatCheckModal
-- IntermissionView, DirectorMode, ShowVerdict
-- PillView, ExpandedView, StrikeView
+All 4 OpenSpec requirements verified against PRD:
 
-### Group 5 (App Shell)
-- App.tsx routing: phase-aware view switching
-- Deleted 8 CLUI dead-weight files
+1. **Window Management (#10)**: VIEW_DIMENSIONS map with pill/expanded/full sizes. SET_VIEW_MODE handler does real setBounds() with bottom-anchor + horizontal center. createWindow() uses VIEW_DIMENSIONS.expanded for initial sizing. App.tsx useEffect calls setViewMode on phase/isExpanded/goingLiveActive changes.
 
-### Group 6 (Cleanup)
-- sessionStore: removed 294 lines of multi-tab CLUI code
-- theme.ts: removed 377 lines of Tailwind-duplicated tokens
-- ChatPanel: converted from inline styles to Tailwind
+2. **Onboarding (#15)**: OnboardingView with 5 steps, localStorage check, Skip/Back/Next navigation, Help button re-trigger, all Tailwind styling, spring physics animations. E2E tests cover all scenarios.
 
-### Group 7 (Testing)
-- showStore unit tests (103 assertions)
-- useTimer hook tests (9 tests)
-- components.test.tsx rewritten for new APIs
-- 12 Playwright E2E tests covering full show flow
+3. **Claude E2E (#6, #13)**: Conditional test with Promise.race (lineup vs error path), validates both paths, 30s timeout, proper selectors for Act cards structure.
 
-## Key Decisions
+4. **E2E Tests**: Comprehensive tests for onboarding (7 tests), window bounds (2 tests), Claude verification (1 conditional test).
 
-- sessionStore keeps `tabs` array internally (IPC bridge needs tabId) but all multi-tab actions removed
-- theme.ts retains only PermissionCard runtime colors
-- E2E tests use `goto(url, { waitUntil: 'commit' })` instead of `reload()` to avoid Google Fonts load timeout
-- Screenshots wrapped in try/catch for font-loading resilience
+## Mistakes & Learnings
 
-## Next Steps (Future Sessions)
+- Quality gate flagged "syntax errors" in App.tsx and OnboardingView.tsx but both files compile cleanly with tsc and parse without errors. The static_analysis gate may have had a transient failure.
+- Dead code (BAR_WIDTH=1040, PILL_HEIGHT=720) and stale comments survived from the old fixed-window approach — cleaned up in iteration 2.
 
-- Polish individual view styling to match mockup (docs/mockups/direction-4-the-show.html)
-- PermissionCard migration from inline styles to Tailwind
-- Claude integration for lineup generation (replace mock in WritersRoomView)
-- Whisper voice input integration
-- macOS distribution/signing
+## Key Decisions This Session
+
+- Confirmed all PRD requirements are fully implemented
+- Cleaned up dead code rather than leaving it for future confusion
