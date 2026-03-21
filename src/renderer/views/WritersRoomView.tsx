@@ -128,12 +128,20 @@ ${planText}`
     >
       {/* Title bar */}
       <div
-        className="bg-[#151517] px-5 py-3 flex items-center border-b border-[#242428]"
+        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
         style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
       >
         <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
           SHOWTIME
         </span>
+        <button
+          onClick={() => window.clui.quit()}
+          className="text-txt-muted hover:text-onair transition-colors text-sm"
+          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+          title="Quit Showtime"
+        >
+          ✕
+        </button>
       </div>
 
       {/* Content */}
