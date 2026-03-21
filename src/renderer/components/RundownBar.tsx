@@ -72,7 +72,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
   }, [showStartedAt, totalPlannedMs, phase])
 
   return (
-    <div className={variant === 'full' ? 'px-4 my-2' : ''}>
+    <div className={variant === 'full' ? 'px-4 my-2' : ''} data-testid="rundown-bar">
       {/* Bar container */}
       <div className="relative h-7 rounded-lg border border-surface-hover overflow-hidden flex">
         {sortedActs.map((act) => {
