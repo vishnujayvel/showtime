@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { TabStatus, NormalizedEvent, EnrichedError, Message, TabState, Attachment } from '../../shared/types'
+import type { TabStatus, NormalizedEvent, EnrichedError, Message, TabState } from '../../shared/types'
 import { useThemeStore } from '../theme'
 // @ts-expect-error Vite handles mp3 imports at build time
 import notificationSrc from '../../../resources/notification.mp3'
@@ -23,15 +23,12 @@ interface StaticInfo {
 }
 
 interface State {
+  /** Single session tab (Showtime uses one Claude session) */
   tabs: TabState[]
   activeTabId: string
-  /** Global expand/collapse — user-controlled, not per-tab */
   isExpanded: boolean
-  /** Global info fetched on startup (not per-session) */
   staticInfo: StaticInfo | null
-  /** User's preferred model override (null = use default) */
   preferredModel: string | null
-  /** Global permission mode: 'ask' shows cards, 'auto' auto-approves all tool calls */
   permissionMode: 'ask' | 'auto'
 
   // Actions
@@ -39,20 +36,10 @@ interface State {
   setPreferredModel: (model: string | null) => void
   setPermissionMode: (mode: 'ask' | 'auto') => void
   createTab: () => Promise<string>
-  selectTab: (tabId: string) => void
-  closeTab: (tabId: string) => void
-  clearTab: () => void
   toggleExpanded: () => void
-  resumeSession: (sessionId: string, title?: string, projectPath?: string) => Promise<string>
   addSystemMessage: (content: string) => void
   sendMessage: (prompt: string, projectPath?: string) => void
   respondPermission: (tabId: string, questionId: string, optionId: string) => void
-  addDirectory: (dir: string) => void
-  removeDirectory: (dir: string) => void
-  setBaseDirectory: (dir: string) => void
-  addAttachments: (attachments: Attachment[]) => void
-  removeAttachment: (attachmentId: string) => void
-  clearAttachments: () => void
   handleNormalizedEvent: (tabId: string, event: NormalizedEvent) => void
   handleStatusChange: (tabId: string, newStatus: string, oldStatus: string) => void
   handleError: (tabId: string, error: EnrichedError) => void
@@ -88,7 +75,7 @@ function makeLocalTab(): TabState {
     permissionDenied: null,
     attachments: [],
     messages: [],
-    title: 'New Tab',
+    title: 'Showtime',
     lastResult: null,
     sessionModel: null,
     sessionTools: [],
@@ -100,6 +87,14 @@ function makeLocalTab(): TabState {
     hasChosenDirectory: false,
     additionalDirs: [],
   }
+}
+
+/** Helper: update the single active tab's fields */
+function updateTab(set: (fn: (s: State) => Partial<State>) => void, get: () => State, updates: Partial<TabState>) {
+  const { activeTabId } = get()
+  set((s) => ({
+    tabs: s.tabs.map((t) => t.id === activeTabId ? { ...t, ...updates } : t),
+  }))
 }
 
 const initialTab = makeLocalTab()
@@ -140,165 +135,32 @@ export const useSessionStore = create<State>((set, get) => ({
     const homeDir = get().staticInfo?.homePath || '~'
     try {
       const { tabId } = await window.clui.createTab()
-      const tab: TabState = {
-        ...makeLocalTab(),
-        id: tabId,
-        workingDirectory: homeDir,
-      }
-      set((s) => ({
-        tabs: [...s.tabs, tab],
-        activeTabId: tab.id,
-      }))
+      const tab: TabState = { ...makeLocalTab(), id: tabId, workingDirectory: homeDir }
+      set({ tabs: [tab], activeTabId: tab.id })
       return tabId
     } catch {
       const tab = makeLocalTab()
       tab.workingDirectory = homeDir
-      set((s) => ({
-        tabs: [...s.tabs, tab],
-        activeTabId: tab.id,
-      }))
+      set({ tabs: [tab], activeTabId: tab.id })
       return tab.id
-    }
-  },
-
-  selectTab: (tabId) => {
-    const s = get()
-    if (tabId === s.activeTabId) {
-      // Clicking the already-active tab: toggle global expand/collapse
-      const willExpand = !s.isExpanded
-      set((prev) => ({
-        isExpanded: willExpand,
-        // Expanding = reading: clear unread flag
-        tabs: willExpand
-          ? prev.tabs.map((t) => t.id === tabId ? { ...t, hasUnread: false } : t)
-          : prev.tabs,
-      }))
-    } else {
-      // Switching to a different tab: mark as read
-      set((prev) => ({
-        activeTabId: tabId,
-        tabs: prev.tabs.map((t) =>
-          t.id === tabId ? { ...t, hasUnread: false } : t
-        ),
-      }))
     }
   },
 
   toggleExpanded: () => {
-    const { activeTabId, isExpanded } = get()
-    const willExpand = !isExpanded
-    set((s) => ({
-      isExpanded: willExpand,
-      marketplaceOpen: false,
-      // Expanding = reading: clear unread flag for the active tab
-      tabs: willExpand
-        ? s.tabs.map((t) => t.id === activeTabId ? { ...t, hasUnread: false } : t)
-        : s.tabs,
-    }))
-  },
-
-  closeTab: (tabId) => {
-    window.clui.closeTab(tabId).catch(() => {})
-
-    const s = get()
-    const remaining = s.tabs.filter((t) => t.id !== tabId)
-
-    if (s.activeTabId === tabId) {
-      if (remaining.length === 0) {
-        const newTab = makeLocalTab()
-        set({ tabs: [newTab], activeTabId: newTab.id })
-        return
-      }
-      const closedIndex = s.tabs.findIndex((t) => t.id === tabId)
-      const newActive = remaining[Math.min(closedIndex, remaining.length - 1)]
-      set({ tabs: remaining, activeTabId: newActive.id })
-    } else {
-      set({ tabs: remaining })
-    }
-  },
-
-  clearTab: () => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? { ...t, messages: [], lastResult: null, currentActivity: '', permissionQueue: [], permissionDenied: null, queuedPrompts: [] }
-          : t
-      ),
-    }))
-  },
-
-  resumeSession: async (sessionId, title, projectPath) => {
-    const defaultDir = projectPath || get().staticInfo?.homePath || '~'
-    try {
-      const { tabId } = await window.clui.createTab()
-
-      // Load previous conversation messages from the JSONL file
-      const history = await window.clui.loadSession(sessionId, defaultDir).catch(() => [])
-      const messages: Message[] = history.map((m) => ({
-        id: nextMsgId(),
-        role: m.role as Message['role'],
-        content: m.content,
-        toolName: m.toolName,
-        toolStatus: m.toolName ? 'completed' as const : undefined,
-        timestamp: m.timestamp,
-      }))
-
-      const tab: TabState = {
-        ...makeLocalTab(),
-        id: tabId,
-        claudeSessionId: sessionId,
-        title: title || 'Resumed Session',
-        workingDirectory: defaultDir,
-        hasChosenDirectory: !!projectPath,
-        messages,
-      }
-      set((s) => ({
-        tabs: [...s.tabs, tab],
-        activeTabId: tab.id,
-        isExpanded: true,
-      }))
-      // Don't call initSession — the first real prompt will use --resume with the sessionId
-      return tabId
-    } catch {
-      const tab = makeLocalTab()
-      tab.claudeSessionId = sessionId
-      tab.title = title || 'Resumed Session'
-      tab.workingDirectory = defaultDir
-      tab.hasChosenDirectory = !!projectPath
-      set((s) => ({
-        tabs: [...s.tabs, tab],
-        activeTabId: tab.id,
-        isExpanded: true,
-      }))
-      return tab.id
-    }
+    set((s) => ({ isExpanded: !s.isExpanded }))
   },
 
   addSystemMessage: (content) => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? {
-              ...t,
-              messages: [
-                ...t.messages,
-                { id: nextMsgId(), role: 'system' as const, content, timestamp: Date.now() },
-              ],
-            }
-          : t
-      ),
-    }))
+    updateTab(set, get, {
+      messages: [
+        ...get().tabs[0].messages,
+        { id: nextMsgId(), role: 'system' as const, content, timestamp: Date.now() },
+      ],
+    })
   },
 
-  // ─── Permission response ───
-
   respondPermission: (tabId, questionId, optionId) => {
-    // Send to backend
     window.clui.respondPermission(tabId, questionId, optionId).catch(() => {})
-
-    // Remove answered item from queue; show next tool's activity or clear
     set((s) => ({
       tabs: s.tabs.map((t) => {
         if (t.id !== tabId) return t
@@ -314,155 +176,46 @@ export const useSessionStore = create<State>((set, get) => ({
     }))
   },
 
-  // ─── Directory management ───
-
-  addDirectory: (dir) => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? {
-              ...t,
-              additionalDirs: t.additionalDirs.includes(dir)
-                ? t.additionalDirs
-                : [...t.additionalDirs, dir],
-            }
-          : t
-      ),
-    }))
-  },
-
-  removeDirectory: (dir) => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? { ...t, additionalDirs: t.additionalDirs.filter((d) => d !== dir) }
-          : t
-      ),
-    }))
-  },
-
-  setBaseDirectory: (dir) => {
-    const { activeTabId } = get()
-    window.clui.resetTabSession(activeTabId)
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? {
-              ...t,
-              workingDirectory: dir,
-              hasChosenDirectory: true,
-              claudeSessionId: null,
-              additionalDirs: [],
-            }
-          : t
-      ),
-    }))
-  },
-
-  // ─── Attachment management ───
-
-  addAttachments: (attachments) => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? { ...t, attachments: [...t.attachments, ...attachments] }
-          : t
-      ),
-    }))
-  },
-
-  removeAttachment: (attachmentId) => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId
-          ? { ...t, attachments: t.attachments.filter((a) => a.id !== attachmentId) }
-          : t
-      ),
-    }))
-  },
-
-  clearAttachments: () => {
-    const { activeTabId } = get()
-    set((s) => ({
-      tabs: s.tabs.map((t) =>
-        t.id === activeTabId ? { ...t, attachments: [] } : t
-      ),
-    }))
-  },
-
-  // ─── Send ───
-
   sendMessage: (prompt, projectPath) => {
     const { activeTabId, tabs, staticInfo } = get()
     const tab = tabs.find((t) => t.id === activeTabId)
-    // Use explicitly chosen directory, otherwise fall back to user home
     const resolvedPath = projectPath || (tab?.hasChosenDirectory ? tab.workingDirectory : (staticInfo?.homePath || tab?.workingDirectory || '~'))
     if (!tab) return
-
-    // Guard: don't send while connecting (warmup in progress)
     if (tab.status === 'connecting') return
 
     const isBusy = tab.status === 'running'
     const requestId = crypto.randomUUID()
 
-    // Build full prompt with attachment context
-    let fullPrompt = prompt
-    if (tab.attachments.length > 0) {
-      const attachmentCtx = tab.attachments
-        .map((a) => `[Attached ${a.type}: ${a.path}]`)
-        .join('\n')
-      fullPrompt = `${attachmentCtx}\n\n${prompt}`
-    }
-
     const title = tab.messages.length === 0
       ? (prompt.length > 30 ? prompt.substring(0, 27) + '...' : prompt)
       : tab.title
 
-    // Optimistic update: clear attachments
-    // If busy, add to queuedPrompts (shown at bottom); otherwise add to messages and set connecting
     set((s) => ({
       tabs: s.tabs.map((t) => {
         if (t.id !== activeTabId) return t
-        const withEffectiveBase = t.hasChosenDirectory
+        const withBase = t.hasChosenDirectory
           ? t
-          : {
-              ...t,
-              // Once the user sends the first message, lock in the effective
-              // base directory (home by default) so the footer no longer shows "—".
-              hasChosenDirectory: true,
-              workingDirectory: resolvedPath,
-            }
+          : { ...t, hasChosenDirectory: true, workingDirectory: resolvedPath }
         if (isBusy) {
-          return {
-            ...withEffectiveBase,
-            title,
-            attachments: [],
-            queuedPrompts: [...withEffectiveBase.queuedPrompts, prompt],
-          }
+          return { ...withBase, title, queuedPrompts: [...withBase.queuedPrompts, prompt] }
         }
         return {
-          ...withEffectiveBase,
+          ...withBase,
           status: 'connecting' as TabStatus,
           activeRequestId: requestId,
           currentActivity: 'Starting...',
           title,
-          attachments: [],
           messages: [
-            ...withEffectiveBase.messages,
+            ...withBase.messages,
             { id: nextMsgId(), role: 'user' as const, content: prompt, timestamp: Date.now() },
           ],
         }
       }),
     }))
 
-    // Send to backend — ControlPlane will queue if a run is active
     const { preferredModel } = get()
     window.clui.prompt(activeTabId, requestId, {
-      prompt: fullPrompt,
+      prompt,
       projectPath: resolvedPath,
       sessionId: tab.claudeSessionId || undefined,
       model: preferredModel || undefined,
@@ -495,11 +248,9 @@ export const useSessionStore = create<State>((set, get) => ({
             updated.sessionMcpServers = event.mcpServers
             updated.sessionSkills = event.skills
             updated.sessionVersion = event.version
-            // Don't change status/activity for warmup inits — they're invisible
             if (!event.isWarmup) {
               updated.status = 'running'
               updated.currentActivity = 'Thinking...'
-              // Move the first queued prompt into the timeline (it's now being processed)
               if (updated.queuedPrompts.length > 0) {
                 const [nextPrompt, ...rest] = updated.queuedPrompts
                 updated.queuedPrompts = rest
@@ -565,11 +316,6 @@ export const useSessionStore = create<State>((set, get) => ({
           }
 
           case 'task_update': {
-            // ── Text fallback ──
-            // text_chunk events (from stream_event deltas) are the primary render path.
-            // If they didn't arrive for this run (timing, partial stream, etc.), the
-            // assembled assistant event still has the full text — extract it here.
-            // "This run" = everything after the last user message.
             if (event.message?.content) {
               const lastUserIdx = (() => {
                 for (let i = updated.messages.length - 1; i >= 0; i--) {
@@ -594,7 +340,6 @@ export const useSessionStore = create<State>((set, get) => ({
                 }
               }
 
-              // ── Tool card deduplication (unchanged) ──
               for (const block of event.message.content) {
                 if (block.type === 'tool_use' && block.name) {
                   const exists = updated.messages.find(
@@ -632,9 +377,6 @@ export const useSessionStore = create<State>((set, get) => ({
               usage: event.usage,
               sessionId: event.sessionId,
             }
-            // ── Final text fallback ──
-            // If neither text_chunks nor task_update text produced an assistant message,
-            // use event.result (the CLI's assembled final output) as last resort.
             if (event.result) {
               const lastUserIdx2 = (() => {
                 for (let i = updated.messages.length - 1; i >= 0; i--) {
@@ -652,19 +394,14 @@ export const useSessionStore = create<State>((set, get) => ({
                 ]
               }
             }
-            // Mark as unread unless the user is actively viewing this tab
-            // (active tab with card expanded). A collapsed active tab still
-            // counts as "unread" — the user hasn't seen the response yet.
             if (tabId !== activeTabId || !s.isExpanded) {
               updated.hasUnread = true
             }
-            // Show fallback card when tools were denied by permission settings
             if (event.permissionDenials && event.permissionDenials.length > 0) {
               updated.permissionDenied = { tools: event.permissionDenials }
             } else {
               updated.permissionDenied = null
             }
-            // Play notification sound if window is hidden
             playNotificationIfHidden()
             break
 
@@ -743,7 +480,6 @@ export const useSessionStore = create<State>((set, get) => ({
           ? {
               ...t,
               status: newStatus as TabStatus,
-              // Clear activity when transitioning to idle (e.g., after warmup init)
               ...(newStatus === 'idle' ? { currentActivity: '', permissionQueue: [] as import('../../shared/types').PermissionRequest[], permissionDenied: null } : {}),
             }
           : t
@@ -755,11 +491,8 @@ export const useSessionStore = create<State>((set, get) => ({
     set((s) => ({
       tabs: s.tabs.map((t) => {
         if (t.id !== tabId) return t
-
-        // Deduplicate: skip if the last message is already an error for this failure
         const lastMsg = t.messages[t.messages.length - 1]
         const alreadyHasError = lastMsg?.role === 'system' && lastMsg.content.startsWith('Error:')
-
         return {
           ...t,
           status: 'failed' as TabStatus,
