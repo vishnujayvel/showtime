@@ -336,6 +336,7 @@ export interface ShowState {
   timerPausedRemaining: number | null
   claudeSessionId: string | null
   showDate: string
+  showStartedAt: number | null
   verdict: ShowVerdict | null
   isExpanded: boolean
   beatCheckPending: boolean
@@ -421,6 +422,17 @@ export const IPC = {
 
   // Showtime expanded toggle (main → renderer, triggered by global hotkey)
   TOGGLE_EXPANDED: 'showtime:toggle-expanded',
+
+  // Showtime data persistence
+  DATA_HYDRATE: 'showtime:data-hydrate',
+  DATA_SYNC: 'showtime:data-sync',
+  DATA_FLUSH: 'showtime:data-flush',
+  TIMELINE_RECORD: 'showtime:timeline-record',
+  TIMELINE_EVENTS: 'showtime:timeline-events',
+  TIMELINE_DRIFT: 'showtime:timeline-drift',
+  TIMELINE_DRIFT_PER_ACT: 'showtime:timeline-drift-per-act',
+  CLAUDE_CONTEXT_SAVE: 'showtime:claude-context-save',
+  CLAUDE_CONTEXT_GET: 'showtime:claude-context-get',
 
   // App lifecycle
   APP_QUIT: 'app:quit',

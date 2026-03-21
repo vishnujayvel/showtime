@@ -11,6 +11,8 @@ import { getCliEnv } from './cli-env'
 import { IPC } from '../shared/types'
 import type { RunOptions, NormalizedEvent, EnrichedError } from '../shared/types'
 import { computeAnchorFromBounds, computeBoundsFromAnchor, clampToWorkArea } from './window-geometry'
+import { DataService } from './data/DataService'
+import { SyncEngine } from './data/SyncEngine'
 
 const DEBUG_MODE = process.env.CLUI_DEBUG === '1'
 const SPACES_DEBUG = DEBUG_MODE || process.env.CLUI_SPACES_DEBUG === '1'
@@ -21,6 +23,7 @@ function log(msg: string): void {
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let syncEngine: SyncEngine | null = null
 let screenshotCounter = 0
 let toggleSequence = 0
 
@@ -454,6 +457,90 @@ ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
 // ─── Showtime window management ───
 ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
   applyViewMode(mode)
+})
+
+// ─── Showtime data persistence IPC ───
+
+ipcMain.handle(IPC.DATA_HYDRATE, () => {
+  try {
+    return syncEngine?.hydrate() ?? null
+  } catch (err: any) {
+    log(`DATA_HYDRATE error: ${err.message}`)
+    return null
+  }
+})
+
+ipcMain.on(IPC.DATA_SYNC, (_event, snapshot: any) => {
+  try {
+    syncEngine?.queueSync(snapshot)
+  } catch (err: any) {
+    log(`DATA_SYNC error: ${err.message}`)
+  }
+})
+
+ipcMain.handle(IPC.DATA_FLUSH, (_event, snapshot?: any) => {
+  try {
+    syncEngine?.flush(snapshot)
+  } catch (err: any) {
+    log(`DATA_FLUSH error: ${err.message}`)
+  }
+})
+
+ipcMain.on(IPC.TIMELINE_RECORD, (_event, event: any) => {
+  try {
+    syncEngine?.recordAndFlush(event)
+  } catch (err: any) {
+    log(`TIMELINE_RECORD error: ${err.message}`)
+  }
+})
+
+ipcMain.handle(IPC.TIMELINE_EVENTS, (_event, showId: string) => {
+  try {
+    const data = DataService.getInstance()
+    return data.timeline.getEventsForShow(showId)
+  } catch (err: any) {
+    log(`TIMELINE_EVENTS error: ${err.message}`)
+    return []
+  }
+})
+
+ipcMain.handle(IPC.TIMELINE_DRIFT, (_event, showId: string) => {
+  try {
+    const data = DataService.getInstance()
+    return data.timeline.computeDrift(showId)
+  } catch (err: any) {
+    log(`TIMELINE_DRIFT error: ${err.message}`)
+    return 0
+  }
+})
+
+ipcMain.handle(IPC.TIMELINE_DRIFT_PER_ACT, (_event, showId: string) => {
+  try {
+    const data = DataService.getInstance()
+    return data.timeline.getDriftPerAct(showId)
+  } catch (err: any) {
+    log(`TIMELINE_DRIFT_PER_ACT error: ${err.message}`)
+    return []
+  }
+})
+
+ipcMain.on(IPC.CLAUDE_CONTEXT_SAVE, (_event, ctx: any) => {
+  try {
+    const data = DataService.getInstance()
+    data.claudeCtx.saveContext(ctx)
+  } catch (err: any) {
+    log(`CLAUDE_CONTEXT_SAVE error: ${err.message}`)
+  }
+})
+
+ipcMain.handle(IPC.CLAUDE_CONTEXT_GET, (_event, showId: string) => {
+  try {
+    const data = DataService.getInstance()
+    return data.claudeCtx.getLatestContext(showId) ?? null
+  } catch (err: any) {
+    log(`CLAUDE_CONTEXT_GET error: ${err.message}`)
+    return null
+  }
 })
 
 ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
@@ -1072,6 +1159,15 @@ app.whenReady().then(async () => {
     broadcast(IPC.SKILL_STATUS, status)
   }).catch((err: Error) => log(`Skill provisioning error: ${err.message}`))
 
+  // Initialize SQLite data layer
+  try {
+    const dataService = DataService.init()
+    syncEngine = new SyncEngine(dataService)
+    log('DataService initialized')
+  } catch (err: any) {
+    log(`DataService initialization failed: ${err.message}`)
+  }
+
   createWindow()
   snapshotWindowState('after createWindow')
 
@@ -1157,6 +1253,7 @@ app.whenReady().then(async () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll()
   controlPlane.shutdown()
+  syncEngine?.finalFlush()
   flushLogs()
 })
 

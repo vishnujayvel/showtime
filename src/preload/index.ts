@@ -60,6 +60,17 @@ export interface CluiAPI {
   onDayBoundary(callback: () => void): () => void
   onToggleExpanded(callback: () => void): () => void
 
+  // ─── Showtime data persistence ───
+  dataHydrate(): Promise<any | null>
+  dataSync(snapshot: any): void
+  dataFlush(snapshot?: any): Promise<void>
+  timelineRecord(event: any): void
+  getTimelineEvents(showId: string): Promise<any[]>
+  getTimelineDrift(showId: string): Promise<number>
+  getTimelineDriftPerAct(showId: string): Promise<any[]>
+  saveClaudeContext(ctx: any): void
+  getClaudeContext(showId: string): Promise<any | null>
+
   // ─── Test-only (NODE_ENV=test) ───
   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
   testGetTrayMenu?: () => Promise<string[]>
@@ -173,6 +184,17 @@ const api: CluiAPI = {
     ipcRenderer.on(IPC.TOGGLE_EXPANDED, handler)
     return () => ipcRenderer.removeListener(IPC.TOGGLE_EXPANDED, handler)
   },
+
+  // ─── Showtime data persistence ───
+  dataHydrate: () => ipcRenderer.invoke(IPC.DATA_HYDRATE),
+  dataSync: (snapshot: any) => ipcRenderer.send(IPC.DATA_SYNC, snapshot),
+  dataFlush: (snapshot?: any) => ipcRenderer.invoke(IPC.DATA_FLUSH, snapshot),
+  timelineRecord: (event: any) => ipcRenderer.send(IPC.TIMELINE_RECORD, event),
+  getTimelineEvents: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_EVENTS, showId),
+  getTimelineDrift: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT, showId),
+  getTimelineDriftPerAct: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT_PER_ACT, showId),
+  saveClaudeContext: (ctx: any) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
+  getClaudeContext: (showId: string) => ipcRenderer.invoke(IPC.CLAUDE_CONTEXT_GET, showId),
 
   // Test-only IPC (NODE_ENV=test)
   ...(process.env.NODE_ENV === 'test' ? {
