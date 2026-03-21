@@ -632,6 +632,89 @@ describe('showStore', () => {
     })
   })
 
+  // ─── Writer's Room Steps ───
+
+  describe('enterWritersRoom', () => {
+    it('sets phase to writers_room', () => {
+      useShowStore.getState().enterWritersRoom()
+      expect(useShowStore.getState().phase).toBe('writers_room')
+    })
+
+    it('sets step to energy', () => {
+      useShowStore.getState().enterWritersRoom()
+      expect(useShowStore.getState().writersRoomStep).toBe('energy')
+    })
+
+    it('records entry timestamp', () => {
+      const before = Date.now()
+      useShowStore.getState().enterWritersRoom()
+      const after = Date.now()
+      const entered = useShowStore.getState().writersRoomEnteredAt!
+      expect(entered).toBeGreaterThanOrEqual(before)
+      expect(entered).toBeLessThanOrEqual(after)
+    })
+  })
+
+  describe('setWritersRoomStep', () => {
+    it('changes the writers room step', () => {
+      useShowStore.getState().setWritersRoomStep('plan')
+      expect(useShowStore.getState().writersRoomStep).toBe('plan')
+    })
+  })
+
+  // ─── Going Live Transition ───
+
+  describe('triggerGoingLive', () => {
+    it('sets goingLiveActive to true', () => {
+      useShowStore.getState().triggerGoingLive()
+      expect(useShowStore.getState().goingLiveActive).toBe(true)
+    })
+  })
+
+  describe('completeGoingLive', () => {
+    it('sets goingLiveActive to false and starts show', () => {
+      useShowStore.getState().setLineup(sampleLineup)
+      useShowStore.getState().triggerGoingLive()
+      useShowStore.getState().completeGoingLive()
+      expect(useShowStore.getState().goingLiveActive).toBe(false)
+      expect(useShowStore.getState().phase).toBe('live')
+    })
+  })
+
+  // ─── Breathing Pause ───
+
+  describe('startBreathingPause', () => {
+    it('pauses timer and sets breathing pause end time', () => {
+      useShowStore.getState().setLineup(sampleLineup)
+      useShowStore.getState().startShow()
+      const before = Date.now()
+      useShowStore.getState().startBreathingPause()
+      const state = useShowStore.getState()
+      expect(state.phase).toBe('intermission')
+      expect(state.breathingPauseEndAt).toBeGreaterThanOrEqual(before + 5 * 60 * 1000 - 50)
+      expect(state.timerEndAt).toBeNull()
+      expect(state.timerPausedRemaining).toBeGreaterThan(0)
+    })
+
+    it('accepts custom duration', () => {
+      useShowStore.getState().setLineup(sampleLineup)
+      useShowStore.getState().startShow()
+      const before = Date.now()
+      useShowStore.getState().startBreathingPause(60000) // 1 minute
+      expect(useShowStore.getState().breathingPauseEndAt).toBeGreaterThanOrEqual(before + 60000 - 50)
+    })
+  })
+
+  describe('endBreathingPause', () => {
+    it('clears breathing pause end time', () => {
+      useShowStore.getState().setLineup(sampleLineup)
+      useShowStore.getState().startShow()
+      useShowStore.getState().startBreathingPause()
+      useShowStore.getState().endBreathingPause()
+      expect(useShowStore.getState().breathingPauseEndAt).toBeNull()
+    })
+  })
+
   // ─── Session ───
 
   describe('setClaudeSessionId', () => {
