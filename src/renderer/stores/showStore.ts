@@ -25,6 +25,10 @@ interface ShowActions {
   setLineup: (lineup: ShowLineup) => void
   startShow: () => void
 
+  // Cold Open transition (Dark Studio → Writer's Room)
+  triggerColdOpen: () => void
+  completeColdOpen: () => void
+
   // Going Live transition
   triggerGoingLive: () => void
   completeGoingLive: () => void
@@ -89,6 +93,7 @@ interface ShowStoreState {
   isExpanded: boolean
   beatCheckPending: boolean
   celebrationActive: boolean
+  coldOpenActive: boolean
   goingLiveActive: boolean
   writersRoomStep: WritersRoomStep
   writersRoomEnteredAt: number | null
@@ -116,6 +121,7 @@ const initialState: ShowStoreState = {
   isExpanded: true,
   beatCheckPending: false,
   celebrationActive: false,
+  coldOpenActive: false,
   goingLiveActive: false,
   writersRoomStep: 'energy',
   writersRoomEnteredAt: null,
@@ -234,6 +240,15 @@ export const useShowStore = create<ShowStore>()(
         recordTimeline('show_started', state.showDate, null, { actualStart: now })
         recordTimeline('act_started', state.showDate, firstAct.id, { actualStart: now })
         flushToSQLite(state)
+      },
+
+      // ─── Cold Open Transition ───
+
+      triggerColdOpen: () => set({ coldOpenActive: true }),
+
+      completeColdOpen: () => {
+        set({ coldOpenActive: false })
+        get().enterWritersRoom()
       },
 
       // ─── Going Live Transition ───
@@ -642,7 +657,7 @@ export const useShowStore = create<ShowStore>()(
       name: 'showtime-show-state',
       partialize: (state) => {
         // Don't persist transient UI state
-        const { beatCheckPending: _bcp, celebrationActive: _ca, goingLiveActive: _gla, ...rest } = state
+        const { beatCheckPending: _bcp, celebrationActive: _ca, coldOpenActive: _coa, goingLiveActive: _gla, ...rest } = state
         return rest
       },
       onRehydrateStorage: () => {

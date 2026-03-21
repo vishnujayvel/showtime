@@ -3,7 +3,7 @@ import { useShowStore } from '../stores/showStore'
 import { Button } from '../ui/button'
 
 export function DarkStudioView() {
-  const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
+  const triggerColdOpen = useShowStore((s) => s.triggerColdOpen)
 
   return (
     <div
@@ -33,7 +33,7 @@ export function DarkStudioView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 1.2 }}
         >
-          <Button variant="accent" onClick={enterWritersRoom}>
+          <Button variant="accent" onClick={triggerColdOpen}>
             Enter the Writer's Room
           </Button>
         </motion.div>
