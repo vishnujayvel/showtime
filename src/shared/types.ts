@@ -390,7 +390,6 @@ export const IPC = {
   SET_WINDOW_WIDTH: 'clui:set-window-width',
   HIDE_WINDOW: 'clui:hide-window',
   WINDOW_SHOWN: 'clui:window-shown',
-  SET_IGNORE_MOUSE_EVENTS: 'clui:set-ignore-mouse-events',
   IS_VISIBLE: 'clui:is-visible',
 
   // Skill provisioning (main → renderer)

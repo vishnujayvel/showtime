@@ -61,7 +61,6 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
 
   return (
     <div
-      data-clui-ui
       className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between rounded-xl overflow-hidden relative"
     >
       {/* Skip link */}

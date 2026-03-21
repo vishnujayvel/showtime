@@ -70,7 +70,6 @@ export function PillView() {
         'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
         'cursor-pointer select-none'
       )}
-      data-clui-ui
       onClick={toggleExpanded}
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}

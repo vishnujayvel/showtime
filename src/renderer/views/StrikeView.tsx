@@ -19,15 +19,13 @@ export function StrikeView() {
   return (
     <motion.div
       className="w-[560px] max-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
-      data-clui-ui
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
     >
       {/* Title bar */}
       <div
-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
       >
         <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
           SHOWTIME

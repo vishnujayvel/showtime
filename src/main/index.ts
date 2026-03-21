@@ -30,11 +30,18 @@ const controlPlane = new ControlPlane(INTERACTIVE_PTY)
 
 const PILL_BOTTOM_MARGIN = 24
 
-// Fixed canvas — one size for all views. CSS handles content sizing.
-// Dynamic setBounds() causes: click-through math errors, movability loss,
-// display-scaling drift. The fixed-canvas pattern (like Raycast) is more reliable.
-const CANVAS_WIDTH = 600
-const CANVAS_HEIGHT = 740
+// ─── Content-tight window sizing ───
+// Window resizes to match view content exactly. No transparent dead zones.
+const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
+  pill: { width: 320, height: 48 },
+  expanded: { width: 560, height: 620 },
+  full: { width: 560, height: 740 },
+}
+
+// Anchor-based position tracking: center-bottom point preserved across view transitions and user drags.
+let anchorPoint: { x: number; y: number } | null = null
+let isDragging = false
+let deferredViewMode: string | null = null
 
 // ─── Broadcast to renderer ───
 
@@ -94,32 +101,78 @@ controlPlane.on('error', (tabId: string, error: EnrichedError) => {
 
 // ─── Window Creation ───
 
+function computeAnchorFromBounds(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number } {
+  return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }
+}
+
+function computeBoundsFromAnchor(anchor: { x: number; y: number }, dims: { width: number; height: number }): { x: number; y: number; width: number; height: number } {
+  return {
+    x: Math.round(anchor.x - dims.width / 2),
+    y: Math.round(anchor.y - dims.height),
+    width: dims.width,
+    height: dims.height,
+  }
+}
+
+function clampToDisplay(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } {
+  const display = screen.getDisplayMatching(bounds as Electron.Rectangle)
+  const wa = display.workArea
+  return {
+    x: Math.max(wa.x, Math.min(bounds.x, wa.x + wa.width - bounds.width)),
+    y: Math.max(wa.y, Math.min(bounds.y, wa.y + wa.height - bounds.height)),
+    width: bounds.width,
+    height: bounds.height,
+  }
+}
+
+function applyViewMode(mode: string): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  const dims = VIEW_DIMENSIONS[mode]
+  if (!dims) return
+
+  if (isDragging) {
+    deferredViewMode = mode
+    return
+  }
+
+  if (!anchorPoint) {
+    anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
+  }
+
+  const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
+  mainWindow.setBounds(newBounds)
+  anchorPoint = computeAnchorFromBounds(newBounds)
+  log(`Showtime: applyViewMode(${mode}) → bounds=(${newBounds.x},${newBounds.y},${newBounds.width}x${newBounds.height})`)
+}
+
 function createWindow(): void {
+  const initialDims = VIEW_DIMENSIONS.full
   const cursor = screen.getCursorScreenPoint()
   const display = screen.getDisplayNearestPoint(cursor)
   const { width: screenWidth, height: screenHeight } = display.workAreaSize
   const { x: dx, y: dy } = display.workArea
 
-  const x = dx + Math.round((screenWidth - CANVAS_WIDTH) / 2)
-  const y = dy + screenHeight - CANVAS_HEIGHT - PILL_BOTTOM_MARGIN
+  const x = dx + Math.round((screenWidth - initialDims.width) / 2)
+  const y = dy + screenHeight - initialDims.height - PILL_BOTTOM_MARGIN
 
   mainWindow = new BrowserWindow({
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
+    width: initialDims.width,
+    height: initialDims.height,
     x,
     y,
-    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),  // NSPanel — non-activating, joins all spaces
+    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
     frame: false,
     transparent: true,
     ...(process.platform === 'darwin' ? {
       vibrancy: 'under-window' as const,
       visualEffectState: 'active' as const,
     } : {}),
+    titleBarStyle: 'hiddenInset',
     resizable: false,
     movable: true,
     alwaysOnTop: true,
     skipTaskbar: true,
-    hasShadow: false,
+    hasShadow: true,
     roundedCorners: true,
     backgroundColor: '#00000000',
     show: false,
@@ -131,17 +184,36 @@ function createWindow(): void {
     },
   })
 
+  if (process.platform === 'darwin') {
+    mainWindow.setWindowButtonPosition({ x: 12, y: 14 })
+  }
+
+  // Initialize anchor from initial bounds
+  anchorPoint = computeAnchorFromBounds({ x, y, width: initialDims.width, height: initialDims.height })
+
   // Belt-and-suspenders: panel already joins all spaces and floats,
   // but explicit flags ensure correct behavior on older Electron builds.
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   mainWindow.setAlwaysOnTop(true, 'screen-saver')
 
+  // isDragging guard: track user drags to prevent setBounds during drag
+  mainWindow.on('will-move', () => {
+    isDragging = true
+  })
+  mainWindow.on('moved', () => {
+    isDragging = false
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
+    }
+    if (deferredViewMode) {
+      const mode = deferredViewMode
+      deferredViewMode = null
+      applyViewMode(mode)
+    }
+  })
+
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show()
-    // Enable OS-level click-through for transparent regions.
-    // { forward: true } ensures mousemove events still reach the renderer
-    // so it can toggle click-through off when cursor enters interactive UI.
-    mainWindow?.setIgnoreMouseEvents(true, { forward: true })
     if (process.env.ELECTRON_RENDERER_URL) {
       mainWindow?.webContents.openDevTools({ mode: 'detach' })
     }
@@ -167,18 +239,28 @@ function showWindow(source = 'unknown'): void {
   if (!mainWindow) return
   const toggleId = ++toggleSequence
 
-  // Position on the display where the cursor currently is (not always primary)
-  const cursor = screen.getCursorScreenPoint()
-  const display = screen.getDisplayNearestPoint(cursor)
-  const { width: sw, height: sh } = display.workAreaSize
-  const { x: dx, y: dy } = display.workArea
-  // Always use fixed canvas size — never read back getBounds() (causes DIP drift)
-  mainWindow.setBounds({
-    x: dx + Math.round((sw - CANVAS_WIDTH) / 2),
-    y: dy + sh - CANVAS_HEIGHT - PILL_BOTTOM_MARGIN,
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
-  })
+  if (anchorPoint) {
+    // Use stored anchor — window returns to where user last placed it
+    const currentBounds = mainWindow.getBounds()
+    const dims = { width: currentBounds.width, height: currentBounds.height }
+    const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
+    mainWindow.setBounds(newBounds)
+  } else {
+    // First show after launch — center on cursor's display, bottom-aligned
+    const cursor = screen.getCursorScreenPoint()
+    const display = screen.getDisplayNearestPoint(cursor)
+    const { width: sw, height: sh } = display.workAreaSize
+    const { x: dx, y: dy } = display.workArea
+    const dims = VIEW_DIMENSIONS.full
+    const bounds = {
+      x: dx + Math.round((sw - dims.width) / 2),
+      y: dy + sh - dims.height - PILL_BOTTOM_MARGIN,
+      width: dims.width,
+      height: dims.height,
+    }
+    mainWindow.setBounds(bounds)
+    anchorPoint = computeAnchorFromBounds(bounds)
+  }
 
   // Always re-assert space membership — the flag can be lost after hide/show cycles
   // and must be set before show() so the window joins the active Space, not its
@@ -186,7 +268,8 @@ function showWindow(source = 'unknown'): void {
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 
   if (SPACES_DEBUG) {
-    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${display.id}`)
+    const currentDisplay = screen.getDisplayMatching(mainWindow.getBounds())
+    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${currentDisplay.id}`)
     snapshotWindowState(`showWindow#${toggleId} pre-show`)
   }
   // As an accessory app (app.dock.hide), show() + focus gives keyboard
@@ -241,15 +324,6 @@ ipcMain.on(IPC.APP_QUIT, () => {
 
 ipcMain.handle(IPC.IS_VISIBLE, () => {
   return mainWindow?.isVisible() ?? false
-})
-
-// OS-level click-through toggle — renderer calls this on mousemove
-// to enable clicks on interactive UI while passing through transparent areas
-ipcMain.on(IPC.SET_IGNORE_MOUSE_EVENTS, (event, ignore: boolean, options?: { forward?: boolean }) => {
-  const win = BrowserWindow.fromWebContents(event.sender)
-  if (win && !win.isDestroyed()) {
-    win.setIgnoreMouseEvents(ignore, options || {})
-  }
 })
 
 // ─── IPC Handlers (typed, strict) ───
@@ -386,9 +460,8 @@ ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
 })
 
 // ─── Showtime window management ───
-// SET_VIEW_MODE — no native resize needed. Fixed canvas, CSS handles content sizing.
 ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
-  log(`Showtime: setViewMode → ${mode} (CSS-only, no native resize)`)
+  applyViewMode(mode)
 })
 
 ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {

@@ -104,16 +104,17 @@ const win = new BrowserWindow({
   vibrancy: 'under-window',
   visualEffectState: 'active',
   backgroundColor: '#00000000',
-  transparent: true,
   frame: false,
   titleBarStyle: 'hiddenInset',
+  hasShadow: true,
   // ... other settings
 });
 win.setWindowButtonPosition({ x: 12, y: 14 });
 ```
 
 - HTML, body, and React root: `background-color: transparent`
-- Draggable regions: `-webkit-app-region: drag` on titlebar, `no-drag` on all interactive children
+- Draggable regions: Use CSS classes `.drag-region` and `.no-drag` (defined in `index.css`). **Never** use inline `style={{ WebkitAppRegion: 'drag' }}`.
+- **Do NOT use `setIgnoreMouseEvents`**. Content-tight window sizing eliminates the need for click-through.
 - Dark mode sync: Listen to `nativeTheme.on('updated')`, broadcast to renderer via IPC
 - System font fallback: `-apple-system, BlinkMacSystemFont` at root CSS level
 

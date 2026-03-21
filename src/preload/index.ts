@@ -43,9 +43,6 @@ export interface CluiAPI {
   animateHeight(from: number, to: number, durationMs: number): Promise<void>
   hideWindow(): void
   isVisible(): Promise<boolean>
-  /** OS-level click-through for transparent window regions */
-  setIgnoreMouseEvents(ignore: boolean, options?: { forward?: boolean }): void
-
   // ─── Event listeners (main → renderer) ───
   onEvent(callback: (tabId: string, event: NormalizedEvent) => void): () => void
   onTabStatusChange(callback: (tabId: string, newStatus: string, oldStatus: string) => void): () => void
@@ -116,8 +113,6 @@ const api: CluiAPI = {
     ipcRenderer.invoke(IPC.ANIMATE_HEIGHT, { from, to, durationMs }),
   hideWindow: () => ipcRenderer.send(IPC.HIDE_WINDOW),
   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
-  setIgnoreMouseEvents: (ignore, options) =>
-    ipcRenderer.send(IPC.SET_IGNORE_MOUSE_EVENTS, ignore, options || {}),
   setWindowWidth: (width) => ipcRenderer.send(IPC.SET_WINDOW_WIDTH, width),
 
   // ─── Event listeners ───
