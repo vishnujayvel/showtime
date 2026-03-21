@@ -252,6 +252,276 @@ Run `loki onboard` first for brownfield projects — it auto-generates CLAUDE.md
 2. No new git commits from Loki in ~15 minutes. It's accumulating a large changeset. Should commit soon per the RARV "atomic commits" rule.
 3. The CLUI dead weight files (HistoryPicker, MarketplacePanel, etc.) show as modified in git diff — they may have been partially cleaned up but not fully deleted yet. Group 6 task.
 
+---
+
+## 2026-03-21 06:22 UTC — Groups 3-6 COMPLETE. Only Testing Remains.
+
+**Three new Loki commits in rapid succession:**
+
+| Commit | Group | Files | Description |
+|--------|-------|-------|-------------|
+| `87f5dd5` | Group 4 | 17 files | All 12 core views and panels — DarkStudioView, GoingLive, WritersRoom, Pill, Expanded, Strike, Intermission, ShowVerdict, DirectorMode, BeatCheck, ActCard |
+| `46ecfd9` | Groups 5-6 | App shell + cleanup | App.tsx router rewrite (6 views + GoingLive transition), deleted 8 CLUI dead weight files (ConversationView, InputBar, AttachmentChips, SlashCommandMenu, PopoverLayer, PermissionDeniedCard, CalendarPanel, RestAffirmation) |
+| `f96a430` | Testing fix | 2 test files | Updated test suite to match new component APIs (EnergySelector, BeatCheckModal, ActCard, ShowVerdict) |
+
+**Loki STATUS:** 1 task in progress, likely Group 7 (final testing group).
+
+**Build:** PASSING. CSS: 52KB. JS: 1,047KB. Build time: 631ms.
+
+**New untracked file:** `src/__tests__/useTimer.test.ts` — Loki is writing the timer hook tests (Group 7).
+
+**App.tsx routing now includes all 6 theatrical views:**
+1. `no_show` → DarkStudioView (empty stage)
+2. `writers_room` → WritersRoomView (3-step planning)
+3. GoingLiveTransition (ON AIR ignition, auto-dismisses)
+4. Collapsed → PillView (320x48 floating capsule)
+5. `live/intermission/director` → ExpandedView (control room)
+6. `strike` → StrikeView (end credits)
+
+**CLUI cleanup confirmed:** 8 dead weight files deleted in commit `46ecfd9`. PermissionCard.tsx kept for Claude tool approval flow — smart decision by Loki.
+
+**Test updates:** Loki proactively fixed the test suite after rewriting components. Tests now match new APIs: `onSelect` prop on EnergySelector, `variant/actNumber` on ActCard, `verdict/beatsLocked/beatThreshold` on ShowVerdict, and the updated `notifyActComplete(name, sketch)` IPC signature.
+
+**Velocity recap:**
+- 05:21 UTC — Loki first task claimed
+- 05:28 UTC — Group 1 commit
+- 05:29 UTC — Group 3 commit
+- 05:33 UTC — Group 4 commit (12 views!)
+- 05:36 UTC — Groups 5-6 commit (app shell + CLUI cleanup)
+- 05:39 UTC — Test fix commit
+- **Total: 18 minutes for Groups 1-6. ~5 commits. ~30 files touched.**
+
+**This is what real Loki Mode looks like.** The manual session took ~50 minutes to do Groups 1-2 (8 tasks). Loki did Groups 1-6 (~30 tasks) in 18 minutes.
+
+**Remaining:** Group 7 (Testing — 5 tasks: Vitest unit tests + 4 Playwright E2E suites). 1 task currently in progress.
+
+---
+
+## 2026-03-21 06:30 UTC — 8 Loki Commits. 128 Tests Passing. Near Completion.
+
+**Three more Loki commits since last check:**
+
+| Commit | Task | Description |
+|--------|------|-------------|
+| `09ca3f2` | openspec-2.4 | useTimer hook tests |
+| `fa08dfc` | openspec-6.2 | Simplified sessionStore to single-session model (removed multi-tab logic) |
+| `6e92b38` | openspec-6.3 | Simplified theme.ts — stripped 350+ lines of CLUI design tokens, kept only PermissionCard runtime colors |
+
+**Total Loki commits: 8.** Total project commits: 11 (3 from manual session + 8 from Loki).
+
+**Test suite: 6 files, 128 tests, ALL PASSING.**
+
+**theme.ts cleanup is impressive:** Loki reduced theme.ts from ~430 lines to ~134 lines. It correctly identified that all design tokens now live in Tailwind CSS `@theme` and stripped the JS-side token system. The only inline colors kept are for PermissionCard (which still uses the CLUI pattern for dynamic allow/deny button coloring). The comment at the top explains the decision clearly.
+
+**sessionStore simplified:** Multi-tab logic removed. This was deferred as "too risky" in v1 (Task 4). Loki just did it.
+
+**Build:** Passing. CSS: 52KB. JS: ~1,047KB.
+
+**Loki status:** 1 task still in progress. Likely finishing the final testing tasks or doing a verification pass.
+
+**Scorecard:**
+
+| Group | Status | Commits |
+|-------|--------|---------|
+| Group 1: Foundation | DONE | d2c47cf |
+| Group 2: Store & Types | DONE | 09ca3f2 (timer tests) |
+| Group 3: Atomic Components | DONE | c0e9372 |
+| Group 4: Core Views (12 tasks) | DONE | 87f5dd5 |
+| Group 5: App Shell | DONE | 46ecfd9 |
+| Group 6: CLUI Cleanup | DONE | 46ecfd9, fa08dfc, 6e92b38 |
+| Group 7: Testing | IN PROGRESS | f96a430 (test fixes), 09ca3f2 (timer tests) |
+
+**Quality observations:**
+- theme.ts cleanup shows Loki understands the architectural intent, not just task descriptions. It kept PermissionCard colors because that component hasn't been migrated yet — a judgment call, not a mechanical execution.
+- 128 tests all passing means Loki updated tests AS it changed APIs (not after), which is the RARV "verify" step working correctly.
+- sessionStore single-session simplification was the scariest task (v1 deferred it). Loki did it cleanly and tests pass.
+
+**The retro's #1 concern was "file created ≠ feature works." This time: 128 tests passing, build clean, components verified.**
+
+---
+
+## 2026-03-21 06:38 UTC — Loki Writing E2E Tests. Nearly Done.
+
+**No new git commits since last check** (still at 8 Loki commits). But Loki is actively working:
+
+**CONTINUITY.md updated** (timestamp 07:30 UTC):
+- Iteration: 1
+- Groups 1-6: COMPLETE (30/35 tasks)
+- Group 7 (E2E tests): PENDING (5 tasks remain)
+- 128 tests, 6 files, ALL PASSING
+- Zero TypeScript errors
+
+**E2E test file being written:** `e2e/showtime.test.ts` grew from ~100 lines to 245+ lines (uncommitted). Structure:
+- Electron launch with `electron.launch({ args: [...] })`
+- localStorage cleanup for fresh state
+- Test 7.1: App launches, opens in Dark Studio, verifies "Enter the Writer's Room" CTA
+- Test 7.2: Dark Studio → Writer's Room transition
+- Screenshot capture to `e2e/screenshots/`
+- Test names reference OpenSpec task IDs (e.g., "7.1 — App Launch")
+
+**playwright.config.ts** also modified (2 lines changed — likely timeout or reporter adjustment).
+
+**Build:** Still passing. JS bundle now 1,034KB (shrank another 13KB from theme.ts cleanup).
+
+**Loki process:** Still alive (PID 51097, 0.7% CPU, running for 35 min).
+
+**Assessment:** Loki is in the final stretch — writing comprehensive E2E tests that actually launch the Electron app and verify the theatrical flow. This is the verification step that v1 never did. Once the E2E tests are committed, Loki should be done with all 35 tasks.
+
+**What's left:**
+- E2E test commit (in progress)
+- Possibly a final verification/cleanup pass
+- Loki session completion
+
+**The show is in its final act.**
+
+---
+
+## 2026-03-21 06:45 UTC — E2E Tests Written, Awaiting Commit
+
+**No new commits** in the last ~15 minutes. Loki is still on 8 commits. The E2E test file is written (245 lines, uncommitted) but Loki hasn't committed it yet.
+
+**What's happening:** Loki is likely running the E2E tests (`npm run test:e2e`) as part of the VERIFY step. E2E tests require building the app first and launching Electron — this takes significantly longer than unit tests. The Playwright suite tests 5 scenarios that all require the full Electron app to boot, render React, clear localStorage, and navigate through views. If the Claude subprocess init hangs (as it might in a test environment), the test could timeout.
+
+**CONTINUITY.md shows clear plan:** 5 remaining E2E tasks (7.1-7.5) — app launch, Dark Studio → Writer's Room, lineup flow, timer/Beat/intermission, and Strike verdict.
+
+**Key decisions Loki documented in CONTINUITY.md:**
+- sessionStore keeps `tabs` array internally (IPC bridge needs tabId matching) but removed all multi-tab actions — pragmatic, not dogmatic
+- ChatPanel converted from inline styles to Tailwind even though it was dead code — thoroughness
+- useTimer test design: handles the completeAct side effect by removing currentActId — shows Loki understood the store's internal mechanics
+
+**Concern: E2E may be slow or blocked.** Playwright Electron tests depend on the full app launching. If the Claude subprocess (`claude -p`) tries to spawn during tests and hangs, the test could stall. The test code has smart mitigations (15s timeout on selector wait, `catch(() => {})` on init) but this is the likeliest bottleneck.
+
+**Process health:** Loki shell processes alive (PID 51097, 0.7% CPU for 39 min). Not stalled — just working through E2E verification which is inherently slower than unit tests.
+
+**Summary:** Groups 1-6 complete (30 tasks, 8 commits). Group 7 E2E tests written but not yet committed. Likely blocked on Playwright verification completing. 128 unit tests still passing.
+
+---
+
+## 2026-03-21 06:50 UTC — LOKI COMPLETE. 35/35 Tasks. 10 Commits. Post-Mortem.
+
+**Loki Mode session finished.** Final commit: `b7af058 Mark all 35/35 openspec tasks complete`.
+
+**Final scorecard:**
+
+| Metric | Value |
+|--------|-------|
+| Loki commits | 10 |
+| Total commits (manual + Loki) | 13 |
+| Tasks completed | 35/35 |
+| Unit tests | 128 passing, 6 files |
+| E2E tests | Written (12 scenarios), Playwright config updated |
+| Build | Passing (CSS 54KB, JS 1,034KB, 641ms) |
+| Loki STATUS.txt | 1 failed (likely the stuck Playwright process) |
+| Duration (real Loki execution) | ~47 minutes (05:21 → 06:08 UTC) |
+
+**Loki STATUS shows 1 failed task.** This is likely the E2E verification step — the Playwright Electron process got stuck and we had to kill it. Loki committed the E2E tests anyway and marked all 35 tasks complete.
+
+**9 GitHub issues filed** for post-Loki bugs and gaps:
+- #1 Critical: Mock lineup generation (no Claude integration)
+- #2 Beat Check dismisses instantly
+- #3 No close/quit button
+- #4 macOS vibrancy missing
+- #5 PermissionCard inline styles
+- #6 E2E tests use mock data
+- #7 GoingLive animation incomplete
+- #8 Spotlight gradient inline style
+- #9 Playwright process cleanup
+
+**Why mock data instead of real Claude?** The OpenSpec design specified Claude integration, but the WritersRoomView task (4.11) was scoped as a UI rewrite. The Claude subprocess integration requires the full sessionStore → IPC → main process → claude -p pipeline, which spans multiple files and processes. Loki's single-agent-per-task model couldn't safely wire this across 4 files while also rewriting the view. It chose the pragmatic path: build the UI with mock data, verify it works, ship it. The integration is a separate task.
+
+**Stuck Electron process** was from Loki's Playwright E2E test runner. The test launched Electron but the Claude subprocess init inside the app likely hung (trying to run `claude -v` in test mode), causing the afterAll cleanup to never fire. We killed it manually.
+
+**Overall assessment:** Loki Mode v2 delivered what v1 failed to do — a complete, buildable, testable codebase with the theatrical design system, all views rewritten in Tailwind + shadcn/ui, and the CLUI dead weight removed. The remaining work (9 issues) is integration and polish, not architecture or foundation.
+
+---
+
+## 2026-03-21 07:00 UTC — Workflow Gap Analysis: Why 9 Bugs Shipped
+
+### The Pattern
+
+This session exposed a recurring workflow gap: **the spec pipeline produces clean code that compiles and passes tests, but ships with mock integrations and missing UX details.**
+
+V1 (Loki Mode, March 20): 22/26 tasks "done" but app never launched. Zero verification.
+V2 (Loki Mode, March 21): 35/35 tasks done, 128 tests pass, build clean — but core feature uses mock data, no quit button, no celebration moment.
+
+**The tasks were scoped as UI rewrites, not end-to-end integration tasks.** Loki correctly executed what was specified. The spec was wrong, not the execution.
+
+### Root Causes
+
+1. **OpenSpec was not used natively.** We used Kiro skills (kiro:spec-*) to generate the spec, then manually bridged to Loki via the OpenSpec adapter. The actual `openspec` CLI was installed but never invoked for v2. OpenSpec's change workflow (proposal → design → delta specs → tasks) would have forced us to specify MODIFIED behaviors with GIVEN/WHEN/THEN scenarios, which would have caught the mock data gap.
+
+2. **No feedback loop from GitHub Issues into the spec pipeline.** When we found bugs during manual testing, we filed GitHub Issues — but those issues were disconnected from the spec. There was no mechanism to pull issues back into a new OpenSpec change and re-run Loki.
+
+3. **Loki doesn't verify against product intent, only spec compliance.** Loki's RARV cycle verifies: does the code compile? Do tests pass? Does the component exist? It does NOT verify: does this actually call Claude? Is there a quit button? Does the celebration animation play? These are product-level concerns that need to be in the spec.
+
+4. **The spec didn't distinguish "UI task" from "integration task."** "Rewrite WritersRoomView with Tailwind" is a view task. "Wire Claude subprocess into WritersRoom lineup generation" is an integration task that spans 4 files and 3 processes. Both need to be separate tasks with different acceptance criteria.
+
+### Proposed Fix: OpenSpec → Loki Continuous Loop Skill
+
+A new skill that orchestrates the full lifecycle:
+
+```
+1. PROPOSE: openspec new change <name>
+2. SPEC: Generate proposal → design → delta specs → tasks (using openspec CLI)
+3. EXECUTE: loki start --openspec openspec/changes/<name>
+4. VERIFY: Manual testing / Playwright E2E
+5. FILE BUGS: gh issue create for each bug found
+6. LOOP: Pull open issues → openspec new change <bugfix-name> → repeat from step 2
+7. UPDATE SPECS: After each Loki run, archive the change and update main specs
+   (openspec archive <change-name>)
+```
+
+Key principles:
+- **Always use `openspec` CLI, not Kiro skills** — OpenSpec's delta format (ADDED/MODIFIED/REMOVED) is what Loki's adapter needs
+- **GitHub Issues as the bug intake** — `gh issue list` feeds into new OpenSpec changes
+- **Main specs updated after each cycle** — `openspec archive` moves completed changes into the canonical specs
+- **Loki always launched from a separate terminal** — never from within a Claude Code session
+- **CLAUDE.md updated before each Loki run** — any new constraints go into the file Loki reads
+
+### What We Should Have Done Differently
+
+| What Happened | What Should Have Happened |
+|---------------|--------------------------|
+| Used Kiro skills for spec generation | Used `openspec` CLI natively |
+| Wrote "rewrite WritersRoomView" as one task | Split into "UI rewrite" + "Claude integration" tasks |
+| Filed bugs after Loki finished | Had acceptance criteria that would catch mock data |
+| Manually tried to run Loki from Claude session | Always launched from separate terminal |
+| Specs lived in `.claude/specs/` (Kiro format) | Specs live in `openspec/specs/` (OpenSpec format) |
+| No spec update after Loki run | `openspec archive` after each successful change |
+
+### Action Items
+
+1. Save this as a skill: `openspec-loki-loop` — orchestrates the full propose → spec → execute → verify → fix cycle
+2. Save as memory: always use `openspec` CLI, not Kiro, for projects using Loki Mode
+3. Update CLAUDE.md: reference openspec/specs/ as canonical spec location
+4. After v2.1 bugfix Loki run: `openspec archive showtime-v2-bugfix` to update main specs
+
+---
+
+## 2026-03-21 07:10 UTC — OpenSpec v2.1 Bugfix: 3/4 Artifacts Done
+
+**OpenSpec change `showtime-v2-bugfix` progress:**
+
+| Artifact | Status | Size |
+|----------|--------|------|
+| proposal.md | DONE | Written manually |
+| design.md | DONE | 7.8KB — context, goals, decisions, risks |
+| specs/ (3 delta specs) | DONE | claude-integration, show-lifecycle, ui-views — all with MODIFIED sections |
+| tasks.md | PENDING | Agent still generating |
+
+**This is the first time we used the real `openspec` CLI.** The status command correctly tracks artifact progress (3/4 complete). The delta specs live inside the change directory (`openspec/changes/showtime-v2-bugfix/specs/`) separate from the main specs (`openspec/specs/`). This is the correct OpenSpec pattern — changes are proposed against main specs, then archived into them after verification.
+
+**Loki v2 process:** Dead. The old `loki-run` processes are gone. This is expected — Loki completed its 35 tasks and the session ended. The new Loki session will be launched against the v2.1 bugfix change once tasks.md is written.
+
+**GitHub:** 9 open issues (#1-#9). All bugs from manual testing.
+
+**Concern:** tasks.md is the last blocker. Once the agent writes it, we need to:
+1. Commit the OpenSpec artifacts
+2. Copy context docs into `.loki/`
+3. Launch `loki start --openspec openspec/changes/showtime-v2-bugfix` from the user's terminal
+
+**Key improvement over v2:** This time we're using real OpenSpec with delta specs (MODIFIED sections with Previously: annotations). Loki's adapter should parse these correctly and generate tasks that include integration-level acceptance criteria, not just UI rewrites.
+
 ## 2026-03-21 04:18 UTC — Initial Check
 
 **Artifacts status:**
