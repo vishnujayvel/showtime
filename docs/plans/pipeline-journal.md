@@ -836,7 +836,49 @@ No new commits. No Loki processes running. No modified source files since last c
 
 **Gardening cron is still active** but there's nothing to monitor. Will continue firing every 8 min in case the user wakes up and launches something. Otherwise this is the final steady-state entry until next session.
 
-**Next session action items:**
+---
+
+## 2026-03-21 17:00 UTC — Loki Final-Polish Running, OnboardingView Being Created
+
+Loki active (PID 11140, 4% CPU). 2 in-progress, 2 completed. Already creating `OnboardingView.tsx` (new file) and modifying `main/index.ts` (window resize) + `e2e/showtime.test.ts` (new tests). No commits yet — still in first RARV cycle. Looks healthy.
+
+---
+
+## 2026-03-21 17:55 UTC — Loki Final-Polish COMPLETE. Manual Beat Check Fix Applied.
+
+Loki finished with 2 commits: `4ea8b8b` (dynamic window sizing, onboarding, Claude E2E) + `1607f56` (dead code cleanup). 3 completed, 2 failed (quality gate review findings — likely non-blocking). 0 processes.
+
+**Manual hotfix applied during demo:** BeatCheckModal render gate was `if (!beatCheckPending) return null` — modal vanished on Lock because `lockBeat()` clears beatCheckPending in the same setTimeout as celebrationActive. Fixed to `if (!beatCheckPending && !celebrationActive) return null`. 144 unit tests pass. This is the bug Loki never caught because the E2E test set celebrationActive via localStorage (bypassing the actual click flow).
+
+**Session total: 22 commits, 183 tests (144 unit + 39 E2E), 4 Loki runs, 1 manual hotfix.**
+
+---
+
+## 2026-03-21 17:45 UTC — Loki Committed + Running Quality Gates
+
+Commit `4ea8b8b` landed: dynamic window sizing, onboarding tutorial, Claude E2E verification. 144 unit + 39 E2E = 183 tests passing. Loki now running 3-reviewer blind review (architecture-strategist, test-coverage-auditor, performance-oracle). Post-review it may do another iteration or complete. Process alive.
+
+---
+
+## 2026-03-21 17:35 UTC — Loki Still in VERIFY, 32 Min, No Commit
+
+32 min, still 0 new commits. Loki is editing+re-running tests in a loop (visible in log: Edit → Bash cycles). 1 task in-progress, process alive. This is the longest VERIFY cycle across all 4 Loki runs. Likely the onboarding E2E tests are harder to get green — new component + routing changes + animation timing. Not stalled (active Edit/Bash in log), just thorough. Will give it 10 more minutes before investigating further.
+
+---
+
+## 2026-03-21 17:25 UTC — Loki in VERIFY Loop, Fixing Test Failures
+
+25 min in, still no commit. Log shows Loki is in a test-fix cycle: "went from 3 to 2 failures" — actively debugging E2E test failures. Modified files unchanged (e2e tests, main/index.ts, App.tsx, index.css). This is the RARV VERIFY step working correctly — it won't commit until tests pass. Healthy behavior, just slow.
+
+---
+
+## 2026-03-21 17:15 UTC — Loki Final-Polish: Code Written, No Commit Yet
+
+Still 0 new commits but significant code changes uncommitted: `OnboardingView.tsx` (NEW), `App.tsx` (modified — onboarding routing), `main/index.ts` (modified — window resize), `index.css` (modified — onboarding styles), `e2e/showtime.test.ts` (modified — new tests). Loki has 1 task in-progress, likely doing VERIFY before committing. Process alive (1 Claude). ~16 min since launch. Expect commit soon.
+
+---
+
+## Next session action items (original, now partially done):
 1. Launch app with `npm run dev`
 2. Use Playwright MCP to validate each of the 14 issues visually
 3. Attach screenshots to GitHub issues

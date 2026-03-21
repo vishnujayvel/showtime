@@ -11,7 +11,8 @@ export function BeatCheckModal() {
   const acts = useShowStore((s) => s.acts)
   const currentAct = useShowStore(selectCurrentAct)
 
-  if (!beatCheckPending) return null
+  // Show modal when Beat Check is pending OR celebration is playing
+  if (!beatCheckPending && !celebrationActive) return null
 
   const actNumber = currentAct
     ? acts.findIndex((a) => a.id === currentAct.id) + 1
