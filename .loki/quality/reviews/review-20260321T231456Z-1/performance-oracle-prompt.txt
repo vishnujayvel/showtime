@@ -1,0 +1,1018 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/STATUS.txt
+.loki/app-runner/detection.json
+.loki/app-runner/state.json
+.loki/autonomy-state.json
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+.loki/council/state.json
+.loki/dashboard-state.json
+.loki/dashboard/dashboard.pid
+.loki/events.jsonl
+.loki/logs/agent-audit.jsonl
+.loki/logs/audit-20260321.jsonl
+.loki/metrics/efficiency/iteration-1.json
+.loki/pids/58961.json
+.loki/prd-observations.md
+.loki/quality/gate-failure-count.json
+.loki/quality/gate-failures.txt
+.loki/quality/static-analysis.json
+.loki/quality/test-results.json
+.loki/queue/completed.json
+.loki/state/checkpoints/index.jsonl
+.loki/state/resources.json
+e2e/screenshots/01-dark-studio.png
+e2e/screenshots/02-writers-room.png
+e2e/screenshots/03-energy-selected.png
+e2e/screenshots/04-plan-filled.png
+e2e/screenshots/05-lineup-preview.png
+e2e/screenshots/07-expanded-view.png
+e2e/screenshots/08-beat-check.png
+e2e/screenshots/09-intermission.png
+e2e/screenshots/10-strike-verdict.png
+e2e/screenshots/13-final-state.png
+e2e/screenshots/14-going-live-onair.png
+e2e/screenshots/15-beat-celebration.png
+e2e/screenshots/20-rundown-bar-live.png
+e2e/screenshots/21-mini-rundown-strip.png
+e2e/screenshots/22-no-rundown-in-dark-studio.png
+e2e/screenshots/23-encore-button.png
+e2e/screenshots/24-encore-added.png
+e2e/screenshots/25-projected-times.png
+e2e/screenshots/claude-e2e-verification.png
+e2e/screenshots/issue-1-claude.png
+e2e/screenshots/issue-10-dimensions.png
+e2e/screenshots/issue-11-race-guard.png
+e2e/screenshots/issue-14-loading.png
+e2e/screenshots/issue-2-celebration.png
+e2e/screenshots/issue-7-onair.png
+e2e/screenshots/issue-8-spotlight.png
+e2e/screenshots/onboarding-01-welcome.png
+e2e/screenshots/onboarding-02-writers-room.png
+e2e/screenshots/onboarding-03-acts.png
+e2e/screenshots/onboarding-04-beats.png
+e2e/screenshots/onboarding-05-ready.png
+e2e/screenshots/onboarding-06-complete.png
+e2e/screenshots/onboarding-07-skipped.png
+e2e/screenshots/onboarding-08-skip.png
+e2e/screenshots/onboarding-09-back.png
+e2e/screenshots/onboarding-10-help-retrigger.png
+e2e/showtime.test.ts
+src/__tests__/showStore.test.ts
+src/renderer/App.tsx
+src/renderer/stores/showStore.ts
+src/renderer/views/ColdOpenTransition.tsx
+src/renderer/views/DarkStudioView.tsx
+src/renderer/views/OnboardingView.tsx
+test-results/.last-run.json
+test-results/showtime-Electron-Main-Pro-ac500-w-uses-content-tight-sizing/error-context.md
+test-results/showtime-Onboarding-15-can-navigate-through-all-5-steps/error-context.md
+test-results/showtime-Onboarding-15-can-skip-onboarding/error-context.md
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index d54dcf2..8885fe4 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,6 +1,6 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T22:12:30Z
++Updated: 2026-03-21T23:14:50Z
+ 
+ ## Current State
+ 
+@@ -12,9 +12,9 @@ Updated: 2026-03-21T22:12:30Z
+ 
+ ## Last Completed Task
+ 
+-- Last commit: fix: border fix #22 + architecture cleanup #24
+-- Files changed: package.json, src/__tests__/showStore.test.ts, src/main/index.ts, src/preload/index.ts, src/renderer/components/MiniRundownStrip.tsx
+-  (+14 more)
++- Last commit: feat: wave 3 — onboarding E2E fix + cold open splash + window sizing
++- Files changed: e2e/showtime.test.ts, src/__tests__/showStore.test.ts, src/renderer/App.tsx, src/renderer/stores/showStore.ts, src/renderer/views/ColdOpenTransition.tsx
++  (+2 more)
+ 
+ ## Active Blockers
+ 
+diff --git a/.loki/STATUS.txt b/.loki/STATUS.txt
+index cbf5df3..d1f5431 100644
+--- a/.loki/STATUS.txt
++++ b/.loki/STATUS.txt
+@@ -2,14 +2,14 @@
+ ║                    LOKI MODE STATUS                            ║
+ ╚════════════════════════════════════════════════════════════════╝
+ 
+-Updated: Sat Mar 21 15:15:02 PDT 2026
++Updated: Sat Mar 21 16:14:55 PDT 2026
+ 
+ Phase: DEVELOPMENT
+ 
+ Tasks:
+   ├─ Pending:     0
+   ├─ In Progress: 0
+-  ├─ Completed:   8
++  ├─ Completed:   9
+   └─ Failed:      3
+ 
+ Monitor: watch -n 2 cat .loki/STATUS.txt
+diff --git a/.loki/app-runner/detection.json b/.loki/app-runner/detection.json
+index eaf7b38..856df27 100644
+--- a/.loki/app-runner/detection.json
++++ b/.loki/app-runner/detection.json
+@@ -3,5 +3,5 @@
+     "command": "npm run dev",
+     "port": 5173,
+     "is_docker": false,
+-    "detected_at": "2026-03-21T22:12:26Z"
++    "detected_at": "2026-03-21T23:14:43Z"
+ }
+diff --git a/.loki/app-runner/state.json b/.loki/app-runner/state.json
+index 5787b26..b6e45a3 100644
+--- a/.loki/app-runner/state.json
++++ b/.loki/app-runner/state.json
+@@ -1,12 +1,12 @@
+ {
+-    "main_pid": 0,
+-    "process_group": "-0",
++    "main_pid": 5162,
++    "process_group": "-5162",
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-21T22:15:04Z",
++    "started_at": "2026-03-21T23:14:50Z",
+     "restart_count": 1,
+-    "status": "stopped",
++    "status": "running",
+     "last_health": {"ok": false},
+     "crash_count": 0
+ }
+diff --git a/.loki/autonomy-state.json b/.loki/autonomy-state.json
+index 2e7890b..6db0501 100644
+--- a/.loki/autonomy-state.json
++++ b/.loki/autonomy-state.json
+@@ -1,10 +1,10 @@
+ {
+     "retryCount": 2,
+-    "status": "completion_promise_fulfilled",
++    "status": "exited",
+     "lastExitCode": 0,
+-    "lastRun": "2026-03-21T22:15:03Z",
+-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md",
+-    "pid": 58641,
++    "lastRun": "2026-03-21T23:14:42Z",
++    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md",
++    "pid": 26272,
+     "maxRetries": 50,
+     "baseWait": 60
+ }
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index da4c6e9..c227083 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-297
+\ No newline at end of file
++0
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index 5774479..6bc6a13 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,14 +1,14 @@
+ {
+-  "session_id": "fa4685bc-b298-44ca-8b4d-446d2bbe09cd",
++  "session_id": "fd8829c3-6adb-4f5f-87ef-de65d0f3c533",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T22:12:26.035694+00:00",
++  "updated_at": "2026-03-21T23:14:43.051356+00:00",
+   "current": {
+-    "input_tokens": 1,
+-    "output_tokens": 5098,
+-    "cache_read_tokens": 104310,
+-    "cache_creation_tokens": 24888,
+-    "total_tokens": 104311,
+-    "context_window_pct": 52.16,
++    "input_tokens": 0,
++    "output_tokens": 0,
++    "cache_read_tokens": 0,
++    "cache_creation_tokens": 0,
++    "total_tokens": 0,
++    "context_window_pct": 0.0,
+     "estimated_cost_usd": 41.2175
+   },
+   "compactions": [
+diff --git a/.loki/council/state.json b/.loki/council/state.json
+index 0e4cd9f..eaaa60b 100644
+--- a/.loki/council/state.json
++++ b/.loki/council/state.json
+@@ -1,15 +1,12 @@
+ {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 32
+-}
+\ No newline at end of file
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
++}
+diff --git a/.loki/dashboard-state.json b/.loki/dashboard-state.json
+index 5828bec..025d242 100644
+--- a/.loki/dashboard-state.json
++++ b/.loki/dashboard-state.json
+@@ -1,5 +1,5 @@
+ {
+-  "timestamp": "2026-03-21T22:15:02Z",
++  "timestamp": "2026-03-21T23:14:56Z",
+   "version": "unknown",
+   "project": {
+     "name": "showtime",
+@@ -91,6 +91,15 @@
+     "completedAt": "2026-03-21T22:12:26Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-21T23:14:43Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ],
+     "failed": [
+@@ -127,12 +136,12 @@
+   "metrics": {
+     "tasksCompleted": 0,
+     "tasksFailed": 0,
+-    "cpuUsage": 40,
+-    "memoryUsage": 66,
++    "cpuUsage": 58,
++    "memoryUsage": 68,
+     "resourceStatus": "ok"
+   },
+   "memory": {
+-    "episodic": 10,
++    "episodic": 11,
+     "semantic": 2,
+     "procedural": 0
+   },
+@@ -151,30 +160,30 @@
+ },
+   "checklist": null,
+   "appRunner": {
+-    "main_pid": 5932,
+-    "process_group": "-5932",
++    "main_pid": 5162,
++    "process_group": "-5162",
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-21T22:12:29Z",
++    "started_at": "2026-03-21T23:14:50Z",
+     "restart_count": 1,
+-    "status": "stopped",
++    "status": "running",
+     "last_health": {"ok": false},
+     "crash_count": 0
+ },
+   "playwright": null,
+   "budget": null,
+   "context": {
+-  "session_id": "fa4685bc-b298-44ca-8b4d-446d2bbe09cd",
++  "session_id": "fd8829c3-6adb-4f5f-87ef-de65d0f3c533",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T22:12:26.035694+00:00",
++  "updated_at": "2026-03-21T23:14:43.051356+00:00",
+   "current": {
+-    "input_tokens": 1,
+-    "output_tokens": 5098,
+-    "cache_read_tokens": 104310,
+-    "cache_creation_tokens": 24888,
+-    "total_tokens": 104311,
+-    "context_window_pct": 52.16,
++    "input_tokens": 0,
++    "output_tokens": 0,
++    "cache_read_tokens": 0,
++    "cache_creation_tokens": 0,
++    "total_tokens": 0,
++    "context_window_pct": 0.0,
+     "estimated_cost_usd": 41.2175
+   },
+   "compactions": [
+diff --git a/.loki/dashboard/dashboard.pid b/.loki/dashboard/dashboard.pid
+index 0f7707e..30b001e 100644
+--- a/.loki/dashboard/dashboard.pid
++++ b/.loki/dashboard/dashboard.pid
+@@ -1 +1 @@
+-58961
++26532
+diff --git a/.loki/events.jsonl b/.loki/events.jsonl
+index a0aa13c..df3a88b 100644
+--- a/.loki/events.jsonl
++++ b/.loki/events.jsonl
+@@ -60,3 +60,6 @@
+ {"timestamp":"2026-03-21T22:12:34Z","type":"code_review_start","data":{"review_id":"review-20260321T221234Z-1","reviewers":"architecture-strategist, performance-oracle, test-coverage-auditor","iteration":1}}
+ {"timestamp":"2026-03-21T22:15:02Z","type":"code_review_complete","data":{"review_id":"review-20260321T221234Z-1","pass_count":2,"fail_count":1,"has_blocking":false,"iteration":1}}
+ {"timestamp":"2026-03-21T22:15:03Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
++{"timestamp":"2026-03-21T22:21:05Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md","parallel":true,"complexity":"standard","pid":26272}}
++{"timestamp":"2026-03-21T22:21:05Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md"}}
++{"timestamp":"2026-03-21T23:14:42Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+diff --git a/.loki/logs/agent-audit.jsonl b/.loki/logs/agent-audit.jsonl
+index ee06dbe..70fe03a 100644
+--- a/.loki/logs/agent-audit.jsonl
++++ b/.loki/logs/agent-audit.jsonl
+@@ -27,3 +27,5 @@
+ {"timestamp": "2026-03-21T22:01:58Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md,provider=claude", "iteration": 0, "pid": 58641}
+ {"timestamp": "2026-03-21T22:01:58Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 58641}
+ {"timestamp": "2026-03-21T22:15:04Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 58641}
++{"timestamp": "2026-03-21T22:21:05Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md,provider=claude", "iteration": 0, "pid": 26272}
++{"timestamp": "2026-03-21T22:21:05Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 26272}
+diff --git a/.loki/logs/audit-20260321.jsonl b/.loki/logs/audit-20260321.jsonl
+index 0f50495..c815ee4 100644
+--- a/.loki/logs/audit-20260321.jsonl
++++ b/.loki/logs/audit-20260321.jsonl
+@@ -82,3 +82,10 @@
+   "user": "vishnu",
+   "pid": 58641
+ }
++{
++  "timestamp": "2026-03-21T22:21:05Z",
++  "event": "SESSION_START",
++  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
++  "user": "vishnu",
++  "pid": 26272
++}
+diff --git a/.loki/metrics/efficiency/iteration-1.json b/.loki/metrics/efficiency/iteration-1.json
+index 691871c..c629313 100644
+--- a/.loki/metrics/efficiency/iteration-1.json
++++ b/.loki/metrics/efficiency/iteration-1.json
+@@ -2,11 +2,11 @@
+   "iteration": 1,
+   "model": "opus",
+   "phase": "DEVELOPMENT",
+-  "duration_ms": 627000,
++  "duration_ms": 3217000,
+   "provider": "claude",
+   "status": "completed",
+   "input_tokens": 2891,
+   "output_tokens": 80165,
+   "cost_usd": 13.4582,
+-  "timestamp": "2026-03-21T22:12:26Z"
++  "timestamp": "2026-03-21T23:14:43Z"
+ }
+diff --git a/.loki/pids/58961.json b/.loki/pids/58961.json
+deleted file mode 100644
+index 8b4a724..0000000
+--- a/.loki/pids/58961.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{"pid":58961,"label":"dashboard","started":"2026-03-21T22:01:48Z","ppid":58641,"extra":"port=57374"}
+diff --git a/.loki/prd-observations.md b/.loki/prd-observations.md
+index 369e882..9e720bc 100644
+--- a/.loki/prd-observations.md
++++ b/.loki/prd-observations.md
+@@ -1,21 +1,21 @@
+ # PRD Analysis Observations
+ 
+-**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md`
+-**Analyzed:** 2026-03-21T22:01:58Z
+-**Quality Score:** 3.5/10
+-**Estimated Scope:** small (~5 items detected)
++**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md`
++**Analyzed:** 2026-03-21T22:21:05Z
++**Quality Score:** 1.8/10
++**Estimated Scope:** medium (~6 items detected)
+ 
+ ## Strengths
+ 
+ - **Feature List**: Partially covered (mentioned but lacks dedicated section)
+-- **Tech Stack**: Well-defined with dedicated section and content
+-- **Acceptance Criteria**: Partially covered (mentioned but lacks dedicated section)
+-- **Data Model / Schema**: Partially covered (mentioned but lacks dedicated section)
++- **Tech Stack**: Partially covered (mentioned but lacks dedicated section)
+ - **Deployment Requirements**: Partially covered (mentioned but lacks dedicated section)
+ 
+ ## Missing or Unclear
+ 
+ - **User Stories / Flows**: User stories, personas, or user flow descriptions
++- **Acceptance Criteria**: Measurable completion criteria or checklists
++- **Data Model / Schema**: Database schema, data models, or entity definitions
+ - **API Specifications**: API endpoints, request/response formats
+ - **Error Handling**: Error handling, edge cases, and failure modes
+ - **Security Requirements**: Authentication, authorization, and security measures
+@@ -23,6 +23,8 @@
+ ## Assumptions Made
+ 
+ - Will derive user flows from feature descriptions
++- Will generate acceptance criteria from requirements
++- Will design data model based on feature requirements
+ - Will define API endpoints based on feature set
+ - Will implement standard error handling patterns
+ - Will apply baseline security (input validation, auth if applicable)
+@@ -30,9 +32,10 @@
+ ## Recommended Additions
+ 
+ - Add a dedicated **Feature List** section with more detail
++- Add a dedicated **Tech Stack** section with more detail
+ - Add **User Stories / Flows** section: User stories, personas, or user flow descriptions
+-- Add a dedicated **Acceptance Criteria** section with more detail
+-- Add a dedicated **Data Model / Schema** section with more detail
++- Add **Acceptance Criteria** section: Measurable completion criteria or checklists
++- Add **Data Model / Schema** section: Database schema, data models, or entity definitions
+ - Add **API Specifications** section: API endpoints, request/response formats
+ - Add a dedicated **Deployment Requirements** section with more detail
+ - Add **Error Handling** section: Error handling, edge cases, and failure modes
+diff --git a/.loki/quality/gate-failure-count.json b/.loki/quality/gate-failure-count.json
+index ef1b406..9207c55 100644
+--- a/.loki/quality/gate-failure-count.json
++++ b/.loki/quality/gate-failure-count.json
+@@ -2,7 +2,7 @@
+   "timestamp": "2026-03-21T22:11:48Z",
+   "gate_failures": [],
+   "pass": true,
+-  "static_analysis": 1,
++  "static_analysis": 2,
+   "test_coverage": 0,
+   "code_review": 0
+ }
+\ No newline at end of file
+diff --git a/.loki/quality/gate-failures.txt b/.loki/quality/gate-failures.txt
+index 21c1a04..8b13789 100644
+--- a/.loki/quality/gate-failures.txt
++++ b/.loki/quality/gate-failures.txt
+@@ -1 +1 @@
+-static_analysis,
++
+diff --git a/.loki/quality/static-analysis.json b/.loki/quality/static-analysis.json
+index c0679a3..8ddc15a 100644
+--- a/.loki/quality/static-analysis.json
++++ b/.loki/quality/static-analysis.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-21T22:12:31Z","files_checked":13,"findings":6,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/MiniRundownStrip.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/ShowVerdict.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/OnboardingView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/WritersRoomView.tsx. ","pass":false}
++{"timestamp":"2026-03-21T23:14:51Z","files_checked":7,"findings":4,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ColdOpenTransition.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DarkStudioView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/OnboardingView.tsx. ","pass":false}
+diff --git a/.loki/quality/test-results.json b/.loki/quality/test-results.json
+index ac42daa..7f37d44 100644
+--- a/.loki/quality/test-results.json
++++ b/.loki/quality/test-results.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-21T22:12:34Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':67,'numPassedTestSuites':67,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':182,'numPassedTests':182,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774131152140,'success':true,'testResults':[{'asse"}
++{"timestamp":"2026-03-21T23:14:56Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':69,'numPassedTestSuites':69,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':184,'numPassedTests':184,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774134892509,'success':true,'testResults':[{'asse"}
+diff --git a/.loki/queue/completed.json b/.loki/queue/completed.json
+index f3a9dea..49f4609 100644
+--- a/.loki/queue/completed.json
++++ b/.loki/queue/completed.json
+@@ -70,5 +70,14 @@
+     "completedAt": "2026-03-21T22:12:26Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-21T23:14:43Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ]
+\ No newline at end of file
+diff --git a/.loki/state/checkpoints/index.jsonl b/.loki/state/checkpoints/index.jsonl
+index ba818d6..c27b530 100644
+--- a/.loki/state/checkpoints/index.jsonl
++++ b/.loki/state/checkpoints/index.jsonl
+@@ -20,3 +20,4 @@
+ {"id": "cp-1-1774130029", "ts": "2026-03-21T21:53:49Z", "iter": 1, "task": "session end (iterations=1)", "sha": "3e1bd208a80044b77d8808a689aeb304548d0c68"}
+ {"id": "cp-1-1774131150", "ts": "2026-03-21T22:12:30Z", "iter": 1, "task": "iteration-1 complete", "sha": "7c04ddd379c5e5a726ea3452fe1414a4217d7622"}
+ {"id": "cp-1-1774131303", "ts": "2026-03-21T22:15:03Z", "iter": 1, "task": "session end (iterations=1)", "sha": "7c04ddd379c5e5a726ea3452fe1414a4217d7622"}
++{"id": "cp-1-1774134890", "ts": "2026-03-21T23:14:50Z", "iter": 1, "task": "iteration-1 complete", "sha": "de144d64effcf38d72425c1a96e279093d3b3b79"}
+diff --git a/.loki/state/resources.json b/.loki/state/resources.json
+index 02a48e5..9d7572c 100644
+--- a/.loki/state/resources.json
++++ b/.loki/state/resources.json
+@@ -1,12 +1,12 @@
+ {
+-  "timestamp": "2026-03-21T22:12:02Z",
++  "timestamp": "2026-03-21T23:11:37Z",
+   "cpu": {
+-    "usage_percent": 40,
++    "usage_percent": 58,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+   "memory": {
+-    "usage_percent": 66,
++    "usage_percent": 68,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+diff --git a/e2e/screenshots/01-dark-studio.png b/e2e/screenshots/01-dark-studio.png
+index 402cc6e..a0e0a12 100644
+Binary files a/e2e/screenshots/01-dark-studio.png and b/e2e/screenshots/01-dark-studio.png differ
+diff --git a/e2e/screenshots/02-writers-room.png b/e2e/screenshots/02-writers-room.png
+index d7baaa0..c48dc26 100644
+Binary files a/e2e/screenshots/02-writers-room.png and b/e2e/screenshots/02-writers-room.png differ
+diff --git a/e2e/screenshots/03-energy-selected.png b/e2e/screenshots/03-energy-selected.png
+index cd2edb1..ce57b41 100644
+Binary files a/e2e/screenshots/03-energy-selected.png and b/e2e/screenshots/03-energy-selected.png differ
+diff --git a/e2e/screenshots/04-plan-filled.png b/e2e/screenshots/04-plan-filled.png
+index 201e3aa..49e3e84 100644
+Binary files a/e2e/screenshots/04-plan-filled.png and b/e2e/screenshots/04-plan-filled.png differ
+diff --git a/e2e/screenshots/05-lineup-preview.png b/e2e/screenshots/05-lineup-preview.png
+index 9badfff..e67d2ac 100644
+Binary files a/e2e/screenshots/05-lineup-preview.png and b/e2e/screenshots/05-lineup-preview.png differ
+diff --git a/e2e/screenshots/07-expanded-view.png b/e2e/screenshots/07-expanded-view.png
+index 5a8b3a0..96d1365 100644
+Binary files a/e2e/screenshots/07-expanded-view.png and b/e2e/screenshots/07-expanded-view.png differ
+diff --git a/e2e/screenshots/08-beat-check.png b/e2e/screenshots/08-beat-check.png
+index d78165a..1b2f66f 100644
+Binary files a/e2e/screenshots/08-beat-check.png and b/e2e/screenshots/08-beat-check.png differ
+diff --git a/e2e/screenshots/09-intermission.png b/e2e/screenshots/09-intermission.png
+index a16c841..986454e 100644
+Binary files a/e2e/screenshots/09-intermission.png and b/e2e/screenshots/09-intermission.png differ
+diff --git a/e2e/screenshots/10-strike-verdict.png b/e2e/screenshots/10-strike-verdict.png
+index 56823bd..678c157 100644
+Binary files a/e2e/screenshots/10-strike-verdict.png and b/e2e/screenshots/10-strike-verdict.png differ
+diff --git a/e2e/screenshots/13-final-state.png b/e2e/screenshots/13-final-state.png
+index b20e9e5..06a8f41 100644
+Binary files a/e2e/screenshots/13-final-state.png and b/e2e/screenshots/13-final-state.png differ
+diff --git a/e2e/screenshots/14-going-live-onair.png b/e2e/screenshots/14-going-live-onair.png
+index 2db5ba4..c48dc26 100644
+Binary files a/e2e/screenshots/14-going-live-onair.png and b/e2e/screenshots/14-going-live-onair.png differ
+diff --git a/e2e/screenshots/15-beat-celebration.png b/e2e/screenshots/15-beat-celebration.png
+index 6b82360..d1d425e 100644
+Binary files a/e2e/screenshots/15-beat-celebration.png and b/e2e/screenshots/15-beat-celebration.png differ
+diff --git a/e2e/screenshots/20-rundown-bar-live.png b/e2e/screenshots/20-rundown-bar-live.png
+index 5d73498..241ea17 100644
+Binary files a/e2e/screenshots/20-rundown-bar-live.png and b/e2e/screenshots/20-rundown-bar-live.png differ
+diff --git a/e2e/screenshots/21-mini-rundown-strip.png b/e2e/screenshots/21-mini-rundown-strip.png
+index ff2faa4..1d0198c 100644
+Binary files a/e2e/screenshots/21-mini-rundown-strip.png and b/e2e/screenshots/21-mini-rundown-strip.png differ
+diff --git a/e2e/screenshots/22-no-rundown-in-dark-studio.png b/e2e/screenshots/22-no-rundown-in-dark-studio.png
+index 8456cbe..a03eded 100644
+Binary files a/e2e/screenshots/22-no-rundown-in-dark-studio.png and b/e2e/screenshots/22-no-rundown-in-dark-studio.png differ
+diff --git a/e2e/screenshots/23-encore-button.png b/e2e/screenshots/23-encore-button.png
+index 2935c65..693e5f5 100644
+Binary files a/e2e/screenshots/23-encore-button.png and b/e2e/screenshots/23-encore-button.png differ
+diff --git a/e2e/screenshots/24-encore-added.png b/e2e/screenshots/24-encore-added.png
+index a0eb283..b3d64f0 100644
+Binary files a/e2e/screenshots/24-encore-added.png and b/e2e/screenshots/24-encore-added.png differ
+diff --git a/e2e/screenshots/25-projected-times.png b/e2e/screenshots/25-projected-times.png
+index 69f34e5..6cf5bef 100644
+Binary files a/e2e/screenshots/25-projected-times.png and b/e2e/screenshots/25-projected-times.png differ
+diff --git a/e2e/screenshots/claude-e2e-verification.png b/e2e/screenshots/claude-e2e-verification.png
+index bab49e7..360e81d 100644
+Binary files a/e2e/screenshots/claude-e2e-verification.png and b/e2e/screenshots/claude-e2e-verification.png differ
+diff --git a/e2e/screenshots/issue-1-claude.png b/e2e/screenshots/issue-1-claude.png
+index 402cc6e..a0e0a12 100644
+Binary files a/e2e/screenshots/issue-1-claude.png and b/e2e/screenshots/issue-1-claude.png differ
+diff --git a/e2e/screenshots/issue-10-dimensions.png b/e2e/screenshots/issue-10-dimensions.png
+index 2db5ba4..c48dc26 100644
+Binary files a/e2e/screenshots/issue-10-dimensions.png and b/e2e/screenshots/issue-10-dimensions.png differ
+diff --git a/e2e/screenshots/issue-11-race-guard.png b/e2e/screenshots/issue-11-race-guard.png
+index e33fdc1..a0bacca 100644
+Binary files a/e2e/screenshots/issue-11-race-guard.png and b/e2e/screenshots/issue-11-race-guard.png differ
+diff --git a/e2e/screenshots/issue-14-loading.png b/e2e/screenshots/issue-14-loading.png
+index 3669fb9..6cdfcea 100644
+Binary files a/e2e/screenshots/issue-14-loading.png and b/e2e/screenshots/issue-14-loading.png differ
+diff --git a/e2e/screenshots/issue-2-celebration.png b/e2e/screenshots/issue-2-celebration.png
+index 402cc6e..a0e0a12 100644
+Binary files a/e2e/screenshots/issue-2-celebration.png and b/e2e/screenshots/issue-2-celebration.png differ
+diff --git a/e2e/screenshots/issue-7-onair.png b/e2e/screenshots/issue-7-onair.png
+index 402cc6e..a0e0a12 100644
+Binary files a/e2e/screenshots/issue-7-onair.png and b/e2e/screenshots/issue-7-onair.png differ
+diff --git a/e2e/screenshots/issue-8-spotlight.png b/e2e/screenshots/issue-8-spotlight.png
+index 2db5ba4..df4f6ab 100644
+Binary files a/e2e/screenshots/issue-8-spotlight.png and b/e2e/screenshots/issue-8-spotlight.png differ
+diff --git a/e2e/screenshots/onboarding-01-welcome.png b/e2e/screenshots/onboarding-01-welcome.png
+index 55159c9..1636223 100644
+Binary files a/e2e/screenshots/onboarding-01-welcome.png and b/e2e/screenshots/onboarding-01-welcome.png differ
+diff --git a/e2e/screenshots/onboarding-02-writers-room.png b/e2e/screenshots/onboarding-02-writers-room.png
+index cb6dc52..e85a201 100644
+Binary files a/e2e/screenshots/onboarding-02-writers-room.png and b/e2e/screenshots/onboarding-02-writers-room.png differ
+diff --git a/e2e/screenshots/onboarding-03-acts.png b/e2e/screenshots/onboarding-03-acts.png
+index d6b4c7a..52370ad 100644
+Binary files a/e2e/screenshots/onboarding-03-acts.png and b/e2e/screenshots/onboarding-03-acts.png differ
+diff --git a/e2e/screenshots/onboarding-04-beats.png b/e2e/screenshots/onboarding-04-beats.png
+index 4691e54..898ac4e 100644
+Binary files a/e2e/screenshots/onboarding-04-beats.png and b/e2e/screenshots/onboarding-04-beats.png differ
+diff --git a/e2e/screenshots/onboarding-05-ready.png b/e2e/screenshots/onboarding-05-ready.png
+index 3f43bb6..eb71635 100644
+Binary files a/e2e/screenshots/onboarding-05-ready.png and b/e2e/screenshots/onboarding-05-ready.png differ
+diff --git a/e2e/screenshots/onboarding-06-complete.png b/e2e/screenshots/onboarding-06-complete.png
+index 2db5ba4..c48dc26 100644
+Binary files a/e2e/screenshots/onboarding-06-complete.png and b/e2e/screenshots/onboarding-06-complete.png differ
+diff --git a/e2e/screenshots/onboarding-07-skipped.png b/e2e/screenshots/onboarding-07-skipped.png
+index 3eb0624..a0e0a12 100644
+Binary files a/e2e/screenshots/onboarding-07-skipped.png and b/e2e/screenshots/onboarding-07-skipped.png differ
+diff --git a/e2e/screenshots/onboarding-08-skip.png b/e2e/screenshots/onboarding-08-skip.png
+index 6690126..1c7f310 100644
+Binary files a/e2e/screenshots/onboarding-08-skip.png and b/e2e/screenshots/onboarding-08-skip.png differ
+diff --git a/e2e/screenshots/onboarding-09-back.png b/e2e/screenshots/onboarding-09-back.png
+index e08acdf..fae0e44 100644
+Binary files a/e2e/screenshots/onboarding-09-back.png and b/e2e/screenshots/onboarding-09-back.png differ
+diff --git a/e2e/screenshots/onboarding-10-help-retrigger.png b/e2e/screenshots/onboarding-10-help-retrigger.png
+index 636d34a..bc73005 100644
+Binary files a/e2e/screenshots/onboarding-10-help-retrigger.png and b/e2e/screenshots/onboarding-10-help-retrigger.png differ
+diff --git a/e2e/showtime.test.ts b/e2e/showtime.test.ts
+index dda1bc4..ea06412 100644
+--- a/e2e/showtime.test.ts
++++ b/e2e/showtime.test.ts
+@@ -410,9 +410,21 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
+   })
+ 
+   test('#10 window uses content-tight sizing', async () => {
++    // Reset to no_show phase so window enters 'full' mode
++    await page.evaluate(() => {
++      localStorage.removeItem('showtime-show-state')
++      localStorage.setItem('showtime-onboarding-complete', 'true')
++    })
++    await navigateAndWait()
++
++    // Wait for DarkStudio CTA to confirm phase reset, then allow setBounds to complete
++    const cta = page.getByText("Enter the Writer's Room")
++    await expect(cta).toBeVisible({ timeout: 10000 })
++    await page.waitForTimeout(1000)
++
+     const bwHandle = await app.browserWindow(page)
+     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
+-    // Content-tight: DarkStudio/Onboarding launch in 'full' mode (560x740)
++    // Content-tight: DarkStudio in 'full' mode (560x740)
+     expect(bounds.width).toBe(560)
+     expect(bounds.height).toBe(740)
+   })
+diff --git a/src/__tests__/showStore.test.ts b/src/__tests__/showStore.test.ts
+index b81b77c..a9fe571 100644
+--- a/src/__tests__/showStore.test.ts
++++ b/src/__tests__/showStore.test.ts
+@@ -662,6 +662,24 @@ describe('showStore', () => {
+     })
+   })
+ 
++  // ─── Cold Open Transition ───
++
++  describe('triggerColdOpen', () => {
++    it('sets coldOpenActive to true', () => {
++      useShowStore.getState().triggerColdOpen()
++      expect(useShowStore.getState().coldOpenActive).toBe(true)
++    })
++  })
++
++  describe('completeColdOpen', () => {
++    it('sets coldOpenActive to false and enters writers room', () => {
++      useShowStore.getState().triggerColdOpen()
++      useShowStore.getState().completeColdOpen()
++      expect(useShowStore.getState().coldOpenActive).toBe(false)
++      expect(useShowStore.getState().phase).toBe('writers_room')
++    })
++  })
++
+   // ─── Going Live Transition ───
+ 
+   describe('triggerGoingLive', () => {
+diff --git a/src/renderer/App.tsx b/src/renderer/App.tsx
+index faeaef9..c76b2fb 100644
+--- a/src/renderer/App.tsx
++++ b/src/renderer/App.tsx
+@@ -7,6 +7,7 @@ import { useShowStore } from './stores/showStore'
+ import { useThemeStore } from './theme'
+ import { DarkStudioView } from './views/DarkStudioView'
+ import { WritersRoomView } from './views/WritersRoomView'
++import { ColdOpenTransition } from './views/ColdOpenTransition'
+ import { GoingLiveTransition } from './views/GoingLiveTransition'
+ import { PillView } from './views/PillView'
+ import { ExpandedView } from './views/ExpandedView'
+@@ -20,6 +21,8 @@ export default function App() {
+ 
+   const phase = useShowStore((s) => s.phase)
+   const isExpanded = useShowStore((s) => s.isExpanded)
++  const coldOpenActive = useShowStore((s) => s.coldOpenActive)
++  const completeColdOpen = useShowStore((s) => s.completeColdOpen)
+   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
+   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
+   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
+@@ -66,7 +69,7 @@ export default function App() {
+   useEffect(() => {
+     if (!window.clui?.setViewMode) return
+ 
+-    if (goingLiveActive) {
++    if (coldOpenActive || goingLiveActive) {
+       window.clui.setViewMode('full')
+       return
+     }
+@@ -77,11 +80,11 @@ export default function App() {
+     }
+ 
+     switch (phase) {
++      case 'no_show':
+       case 'writers_room':
+       case 'strike':
+         window.clui.setViewMode('full')
+         break
+-      case 'no_show':
+       case 'live':
+       case 'intermission':
+       case 'director':
+@@ -89,7 +92,7 @@ export default function App() {
+         window.clui.setViewMode('expanded')
+         break
+     }
+-  }, [phase, isExpanded, goingLiveActive])
++  }, [phase, isExpanded, coldOpenActive, goingLiveActive])
+ 
+   // ─── Force-expand on Beat Check ───
+   useEffect(() => {
+@@ -117,7 +120,7 @@ export default function App() {
+   // ─── View routing ───
+   const renderView = () => {
+     // Onboarding takes priority on first launch
+-    if (showOnboarding && phase === 'no_show' && isExpanded && !goingLiveActive) {
++    if (showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive) {
+       return (
+         <OnboardingView
+           key="onboarding"
+@@ -127,6 +130,11 @@ export default function App() {
+       )
+     }
+ 
++    // Cold Open transition (Dark Studio → Writer's Room)
++    if (coldOpenActive) {
++      return <ColdOpenTransition key="cold-open" onComplete={completeColdOpen} />
++    }
++
+     // Going Live transition takes priority
+     if (goingLiveActive) {
+       return <GoingLiveTransition key="going-live" onComplete={completeGoingLive} />
+@@ -157,7 +165,7 @@ export default function App() {
+   return (
+     <div className="w-full h-full relative bg-transparent flex flex-col items-center justify-end">
+       {/* Help button — visible on DarkStudio when onboarding was completed */}
+-      {!showOnboarding && phase === 'no_show' && isExpanded && !goingLiveActive && (
++      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && (
+         <button
+           onClick={handleHelpClick}
+           className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"
+diff --git a/src/renderer/stores/showStore.ts b/src/renderer/stores/showStore.ts
+index c338798..e2a14eb 100644
+--- a/src/renderer/stores/showStore.ts
++++ b/src/renderer/stores/showStore.ts
+@@ -25,6 +25,10 @@ interface ShowActions {
+   setLineup: (lineup: ShowLineup) => void
+   startShow: () => void
+ 
++  // Cold Open transition (Dark Studio → Writer's Room)
++  triggerColdOpen: () => void
++  completeColdOpen: () => void
++
+   // Going Live transition
+   triggerGoingLive: () => void
+   completeGoingLive: () => void
+@@ -89,6 +93,7 @@ interface ShowStoreState {
+   isExpanded: boolean
+   beatCheckPending: boolean
+   celebrationActive: boolean
++  coldOpenActive: boolean
+   goingLiveActive: boolean
+   writersRoomStep: WritersRoomStep
+   writersRoomEnteredAt: number | null
+@@ -116,6 +121,7 @@ const initialState: ShowStoreState = {
+   isExpanded: true,
+   beatCheckPending: false,
+   celebrationActive: false,
++  coldOpenActive: false,
+   goingLiveActive: false,
+   writersRoomStep: 'energy',
+   writersRoomEnteredAt: null,
+@@ -236,6 +242,15 @@ export const useShowStore = create<ShowStore>()(
+         flushToSQLite(state)
+       },
+ 
++      // ─── Cold Open Transition ───
++
++      triggerColdOpen: () => set({ coldOpenActive: true }),
++
++      completeColdOpen: () => {
++        set({ coldOpenActive: false })
++        get().enterWritersRoom()
++      },
++
+       // ─── Going Live Transition ───
+ 
+       triggerGoingLive: () => set({ goingLiveActive: true }),
+@@ -642,7 +657,7 @@ export const useShowStore = create<ShowStore>()(
+       name: 'showtime-show-state',
+       partialize: (state) => {
+         // Don't persist transient UI state
+-        const { beatCheckPending: _bcp, celebrationActive: _ca, goingLiveActive: _gla, ...rest } = state
++        const { beatCheckPending: _bcp, celebrationActive: _ca, coldOpenActive: _coa, goingLiveActive: _gla, ...rest } = state
+         return rest
+       },
+       onRehydrateStorage: () => {
+diff --git a/src/renderer/views/ColdOpenTransition.tsx b/src/renderer/views/ColdOpenTransition.tsx
+new file mode 100644
+index 0000000..0ea510f
+--- /dev/null
++++ b/src/renderer/views/ColdOpenTransition.tsx
+@@ -0,0 +1,41 @@
++import { useEffect } from 'react'
++import { motion } from 'framer-motion'
++import { playAudioCue } from '../hooks/useAudio'
++
++interface ColdOpenTransitionProps {
++  onComplete: () => void
++}
++
++export function ColdOpenTransition({ onComplete }: ColdOpenTransitionProps) {
++  const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' })
++
++  useEffect(() => {
++    playAudioCue('going-live')
++    const timer = setTimeout(onComplete, 1500)
++    return () => clearTimeout(timer)
++  }, [onComplete])
++
++  return (
++    <div className="fixed inset-0 bg-studio-bg flex flex-col items-center justify-center z-50">
++      <div className="absolute inset-0 spotlight-stage" />
++
++      <motion.h1
++        className="font-mono text-3xl font-bold text-txt-primary tracking-tight relative z-10"
++        initial={{ opacity: 0, scale: 0.9 }}
++        animate={{ opacity: 1, scale: 1 }}
++        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
++      >
++        Live from your desk...
++      </motion.h1>
++
++      <motion.p
++        className="font-mono text-xl text-accent mt-3 relative z-10"
++        initial={{ opacity: 0, y: 12 }}
++        animate={{ opacity: 1, y: 0 }}
++        transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.3 }}
++      >
++        it&apos;s {dayName}!
++      </motion.p>
++    </div>
++  )
++}
+diff --git a/src/renderer/views/DarkStudioView.tsx b/src/renderer/views/DarkStudioView.tsx
+index 2b3dc64..695a445 100644
+--- a/src/renderer/views/DarkStudioView.tsx
++++ b/src/renderer/views/DarkStudioView.tsx
+@@ -3,7 +3,7 @@ import { useShowStore } from '../stores/showStore'
+ import { Button } from '../ui/button'
+ 
+ export function DarkStudioView() {
+-  const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
++  const triggerColdOpen = useShowStore((s) => s.triggerColdOpen)
+ 
+   return (
+     <div
+@@ -33,7 +33,7 @@ export function DarkStudioView() {
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 1.2 }}
+         >
+-          <Button variant="accent" onClick={enterWritersRoom}>
++          <Button variant="accent" onClick={triggerColdOpen}>
+             Enter the Writer's Room
+           </Button>
+         </motion.div>
+diff --git a/src/renderer/views/OnboardingView.tsx b/src/renderer/views/OnboardingView.tsx
+index f98a9f1..dce1357 100644
+--- a/src/renderer/views/OnboardingView.tsx
++++ b/src/renderer/views/OnboardingView.tsx
+@@ -67,7 +67,7 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
+       <div className="absolute top-0 left-0 right-0 h-8 drag-region z-10" />
+ 
+       {/* Skip link */}
+-      <div className="w-full flex justify-end pt-5 pr-6">
++      <div className="w-full flex justify-end pt-5 pr-6 relative z-20">
+         <button
+           onClick={onSkip || onComplete}
+           className="font-body text-sm text-txt-muted hover:text-txt-secondary transition-colors no-drag"
+diff --git a/test-results/.last-run.json b/test-results/.last-run.json
+index f3a4a9e..b600d84 100644
+--- a/test-results/.last-run.json
++++ b/test-results/.last-run.json
+@@ -1,9 +1,6 @@
+ {
+   "status": "failed",
+   "failedTests": [
+-    "1ad4b66515be46a2dddf-925f115f64c103f28998",
+-    "1ad4b66515be46a2dddf-362695e33bbfabdffb8f",
+-    "1ad4b66515be46a2dddf-8a16b2ba9362cbc19b15",
+-    "1ad4b66515be46a2dddf-6cbf34bd7252834ad0e2"
++    "1ad4b66515be46a2dddf-b9e98d578406d9d3abf0"
+   ]
+ }
+\ No newline at end of file
+diff --git a/test-results/showtime-Electron-Main-Pro-ac500-w-uses-content-tight-sizing/error-context.md b/test-results/showtime-Electron-Main-Pro-ac500-w-uses-content-tight-sizing/error-context.md
+deleted file mode 100644
+index 69d148c..0000000
+--- a/test-results/showtime-Electron-Main-Pro-ac500-w-uses-content-tight-sizing/error-context.md
++++ /dev/null
+@@ -1,31 +0,0 @@
+-# Page snapshot
+-
+-```yaml
+-- generic [ref=e3]:
+-  - generic [ref=e4]:
+-    - generic [ref=e5]:
+-      - generic [ref=e6]:
+-        - generic [ref=e7]: SHOWTIME
+-        - generic [ref=e8]: SAT, MAR 21
+-      - generic [ref=e9]:
+-        - button "Mute audio" [ref=e10]:
+-          - img [ref=e11]
+-        - button "Director" [ref=e15]
+-        - button "▼" [ref=e16]
+-        - button "✕" [ref=e17]
+-    - generic [ref=e18]:
+-      - generic [ref=e21]: No active act
+-      - generic [ref=e23]:
+-        - generic [ref=e24]: TONIGHT'S LINEUP
+-        - button "+ Encore" [ref=e25]
+-    - generic [ref=e26]:
+-      - generic [ref=e28]: ON AIR
+-      - generic [ref=e30]:
+-        - generic [ref=e31]: ★
+-        - generic [ref=e32]: ☆
+-        - generic [ref=e33]: ☆
+-  - generic [ref=e36]:
+-    - paragraph [ref=e37]: Did you have a moment of presence?
+-    - button "Yes — Lock the Beat" [ref=e38]
+-    - generic [ref=e39] [cursor=pointer]: Not this time
+-```
+\ No newline at end of file
+diff --git a/test-results/showtime-Onboarding-15-can-navigate-through-all-5-steps/error-context.md b/test-results/showtime-Onboarding-15-can-navigate-through-all-5-steps/error-context.md
+deleted file mode 100644
+index d7f4a47..0000000
+--- a/test-results/showtime-Onboarding-15-can-navigate-through-all-5-steps/error-context.md
++++ /dev/null
+@@ -1,10 +0,0 @@
+-# Page snapshot
+-
+-```yaml
+-- generic [ref=e3]:
+-  - button "?" [ref=e4]
+-  - generic [ref=e7]:
+-    - heading "Tonight's show hasn't been written yet." [level=1] [ref=e8]
+-    - paragraph [ref=e9]: Every great show starts somewhere.
+-    - button "Enter the Writer's Room" [ref=e11]
+-```
+\ No newline at end of file
+diff --git a/test-results/showtime-Onboarding-15-can-skip-onboarding/error-context.md b/test-results/showtime-Onboarding-15-can-skip-onboarding/error-context.md
+deleted file mode 100644
+index d7e384d..0000000
+--- a/test-results/showtime-Onboarding-15-can-skip-onboarding/error-context.md
++++ /dev/null
+@@ -1,10 +0,0 @@
+-# Page snapshot
+-
+-```yaml
+-- generic [ref=e4]:
+-  - button "Skip" [ref=e7]
+-  - generic [ref=e10]:
+-    - heading "Welcome to the Show" [level=1] [ref=e11]
+-    - paragraph [ref=e12]: Your day is a Show. You are the Performer. Every task is an Act on your stage.
+-  - button "Next" [ref=e21]
+-```
+\ No newline at end of file
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None

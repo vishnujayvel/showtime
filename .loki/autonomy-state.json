@@ -2,9 +2,9 @@
     "retryCount": 2,
     "status": "completion_promise_fulfilled",
     "lastExitCode": 0,
-    "lastRun": "2026-03-21T22:15:03Z",
-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md",
-    "pid": 58641,
+    "lastRun": "2026-03-21T23:16:40Z",
+    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md",
+    "pid": 26272,
     "maxRetries": 50,
     "baseWait": 60
 }

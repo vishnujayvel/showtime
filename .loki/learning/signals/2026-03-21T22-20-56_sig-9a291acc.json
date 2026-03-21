@@ -1,0 +1,14 @@
+{
+  "id": "sig-9a291acc",
+  "type": "user_preference",
+  "source": "cli",
+  "action": "provider_selection",
+  "context": {},
+  "outcome": "success",
+  "confidence": 0.95,
+  "timestamp": "2026-03-21T22:20:56.689231+00:00Z",
+  "metadata": {},
+  "preference_key": "provider",
+  "preference_value": "claude",
+  "alternatives_rejected": []
+}
