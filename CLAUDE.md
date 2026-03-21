@@ -238,3 +238,14 @@ These CLUI-specific files should be removed:
 - Branch: `main` (no feature branches for MLP)
 - Test before commit: `npm run test && npm run test:e2e`
 - Never commit with failing tests
+
+## Known Pitfalls (from prior runs)
+<!-- Auto-injected by openspec-loki-loop. Do not edit manually. -->
+- [electron] frame:false + titleBarStyle:'hiddenInset' are mutually exclusive — creates ghost native traffic lights
+- [electron] setIgnoreMouseEvents prevents drag — use content-tight sizing instead
+- [electron] better-sqlite3 requires electron-rebuild for native ABI compatibility
+- [electron] Vitest runs under system Node, not Electron Node — test config needs node environment for native modules
+- [loki] Queue pending.json is permanently stale — trust git log for progress
+- [workflow] Update CLAUDE.md BEFORE Loki runs, not as a task for Loki
+- [workflow] Do NOT use titleBarStyle with frame:false
+- [testing] Playwright E2E tests require full Electron app build before running

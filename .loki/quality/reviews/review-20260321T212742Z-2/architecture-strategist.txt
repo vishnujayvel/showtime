@@ -1,0 +1,13 @@
+VERDICT: PASS
+FINDINGS:
+- [Low] `style={{ width: ... }}` and `style={{ left: ... }}` inline styles on lines 111, 132, 146 are acceptable — these are dynamic, data-driven values that Tailwind cannot express statically (percentage widths computed at runtime). Not a CLAUDE.md violation.
+- None (architectural)
+
+The `RundownBar` refactor correctly fixes a React hooks ordering violation (conditional returns moved below all hook calls). The component follows sound principles:
+- Pure utility functions (`actBarStatus`, `formatDriftBadge`) extracted outside the component — good SRP
+- `useMemo` for derived computations (`sortedActs`, `totalPlannedMs`) — appropriate
+- `useCallback` with correct dependency for async IPC call
+- Single responsibility: this component owns only rundown visualization, delegates state to Zustand store
+- Dependency direction is correct: component → store → shared types (no upward dependencies)
+
+The `package.json` change (adding `pretest` script for `better-sqlite3` rebuild) is infrastructure, not architectural.

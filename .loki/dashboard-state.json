@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-21T20:38:42Z",
+  "timestamp": "2026-03-21T21:29:45Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
@@ -16,764 +16,7 @@
     "stages": ["reason", "act", "reflect", "verify"]
   },
   "tasks": {
-    "pending": [
-  {
-    "id": "openspec-1.1",
-    "title": "Tailwind CSS v4 Configuration & Design Tokens",
-    "description": "Create src/renderer/index.css with @import 'tailwindcss', @theme block with ALL design tokens (colors, fonts, animations), @keyframes blocks, :root shadcn variable overrides, global styles (transparent bg, hidden overflow, font-body, antialiased), custom scrollbar styles, @source directive. Modify electron.vite.config.ts to add @tailwindcss/vite plugin to renderer config only. Acceptance: All tokens from Section 6.1, all keyframes (tallyPulse, onairGlow, breathe, beatIgnite, warmPulse, goldenGlow, slideUp), animation shorthands, global styles on html/body/#root, scrollbar styles, @source '../renderer', shadcn CSS variable overrides in :root, electron.vite.config.ts updated, npm run build succeeds. Do NOT delete existing theme.ts.",
-    "priority": "high",
-    "status": "completed",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 1: Foundation",
-      "group_number": 1,
-      "files_create": [
-        "src/renderer/index.css"
-      ],
-      "files_modify": [
-        "electron.vite.config.ts"
-      ],
-      "depends_on": []
-    }
-  },
-  {
-    "id": "openspec-1.2",
-    "title": "shadcn/ui Setup & Custom Button Variants",
-    "description": "Create components.json (project root), src/renderer/lib/utils.ts, src/renderer/ui/button.tsx, src/renderer/ui/dialog.tsx, src/renderer/ui/card.tsx, src/renderer/ui/input.tsx, src/renderer/ui/textarea.tsx, src/renderer/ui/progress.tsx. Acceptance: components.json matches Section 7.2 (style new-york, rsc false, tsx true, aliases to src/renderer/ui and src/renderer/lib/utils). utils.ts exports cn() using clsx + tailwind-merge. All six shadcn components present in src/renderer/ui/. button.tsx has custom variants: primary, accent, beat, beat-large, neutral, ghost_muted per Section 7.3. All imports use correct relative paths. TypeScript passes.",
-    "priority": "high",
-    "status": "completed",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 1: Foundation",
-      "group_number": 1,
-      "files_create": [
-        "components.json",
-        "src/renderer/lib/utils.ts",
-        "src/renderer/ui/button.tsx",
-        "src/renderer/ui/dialog.tsx",
-        "src/renderer/ui/card.tsx",
-        "src/renderer/ui/input.tsx",
-        "src/renderer/ui/textarea.tsx",
-        "src/renderer/ui/progress.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-1.3",
-    "title": "Font Imports",
-    "description": "Modify src/renderer/index.html to add Google Fonts preconnect and font links for Inter (weights 300-900) and JetBrains Mono (weights 400-700). Acceptance: preconnect links for fonts.googleapis.com and fonts.gstatic.com present. Google Fonts link tag loads Inter and JetBrains Mono. Links in <head> before script tags. Fonts render correctly. Do not remove existing index.html content.",
-    "priority": "high",
-    "status": "completed",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 1: Foundation",
-      "group_number": 1,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/index.html"
-      ],
-      "depends_on": []
-    }
-  },
-  {
-    "id": "openspec-1.4",
-    "title": "Category Color Utility",
-    "description": "Create src/renderer/lib/category.ts. Acceptance: Exports SketchCategory type ('Deep Work' | 'Exercise' | 'Admin' | 'Creative' | 'Social'). Exports CATEGORY_CONFIG record mapping each category to { token: string; hex: string }. Exports getCategoryToken(sketch: string): string (returns Tailwind token name, fallback 'accent'). Exports getCategoryHex(sketch: string): string (returns hex color, fallback '#d97757'). Matches Appendix B of design.md exactly.",
-    "priority": "high",
-    "status": "completed",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 1: Foundation",
-      "group_number": 1,
-      "files_create": [
-        "src/renderer/lib/category.ts"
-      ],
-      "files_modify": [],
-      "depends_on": []
-    }
-  },
-  {
-    "id": "openspec-2.1",
-    "title": "showStore Updates — New Fields & Actions",
-    "description": "Modify src/renderer/stores/showStore.ts. Add new state fields: goingLiveActive: boolean, writersRoomStep: 'energy' | 'plan' | 'lineup', writersRoomEnteredAt: number | null, breathingPauseEndAt: number | null. Add new actions: enterWritersRoom(), setWritersRoomStep(), triggerGoingLive(), completeGoingLive(), startBreathingPause(), endBreathingPause(). enterWritersRoom sets phase: 'writers_room', writersRoomStep: 'energy', writersRoomEnteredAt: Date.now(). triggerGoingLive sets goingLiveActive: true. completeGoingLive sets goingLiveActive: false then calls get().startShow(). startBreathingPause sets phase: 'intermission', breathingPauseEndAt: Date.now() + 5*60*1000. endBreathingPause sets breathingPauseEndAt: null. Persistence partialize excludes beatCheckPending and goingLiveActive. Initial state values set correctly. Existing actions/fields unchanged. TypeScript compiles.",
-    "priority": "high",
-    "status": "completed",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 2: Store & Types",
-      "group_number": 2,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/stores/showStore.ts"
-      ],
-      "depends_on": []
-    }
-  },
-  {
-    "id": "openspec-2.2",
-    "title": "Shared Types — IPC Channel Constants",
-    "description": "Modify src/shared/types.ts. Add new IPC channels: SET_VIEW_MODE: 'showtime:set-view-mode', REGISTER_HOTKEY: 'showtime:register-hotkey', DAY_BOUNDARY: 'showtime:day-boundary'. Keep existing IPC channels unchanged (NOTIFY_ACT_COMPLETE, NOTIFY_BEAT_CHECK, NOTIFY_VERDICT). ShowPhase type remains unchanged. TypeScript compiles across main, preload, and renderer. IPC object uses 'as const' assertion.",
-    "priority": "high",
-    "status": "completed",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 2: Store & Types",
-      "group_number": 2,
-      "files_create": [],
-      "files_modify": [
-        "src/shared/types.ts"
-      ],
-      "depends_on": []
-    }
-  },
-  {
-    "id": "openspec-2.3",
-    "title": "showStore Vitest Unit Tests",
-    "description": "Create src/__tests__/stores/showStore.test.ts. Tests use Vitest with jsdom. Cover ALL phase transitions: no_show->writers_room, writers_room->live, startShow guard (fails if acts.length===0), live->intermission, intermission->live, live->director, director->live, director->strike, live->strike, strike->no_show. Cover completeAct sets beatCheckPending:true. Cover lockBeat increments beatsLocked and auto-advances. Cover skipBeat auto-advances without incrementing. Cover timer state intermission save/resume. Cover verdict computation for all four thresholds (DAY_WON, SOLID_SHOW, GOOD_EFFORT, SHOW_CALLED_EARLY). Cover resetShow returns all state to initial. Cover new actions. All tests pass.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 2: Store & Types",
-      "group_number": 2,
-      "files_create": [
-        "src/__tests__/stores/showStore.test.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-2.4",
-    "title": "useTimer Hook Vitest Tests",
-    "description": "Create src/__tests__/hooks/useTimer.test.ts. Tests use Vitest with jsdom and vi.useFakeTimers(). Cover correct MM:SS formatting. Cover isRunning true when timerEndAt set and in future. Cover isRunning false when timerEndAt null or past. Cover progress computes correctly (0 at start, approaching 1 at end). Cover timer auto-completion (calls completeAct when reaching 0). Cover extending adds 15 minutes. All tests pass. Use @testing-library/react renderHook, vi.useFakeTimers, vi.advanceTimersByTime.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 2: Store & Types",
-      "group_number": 2,
-      "files_create": [
-        "src/__tests__/hooks/useTimer.test.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-3.1",
-    "title": "TallyLight Component",
-    "description": "Create src/renderer/components/TallyLight.tsx. Props: isLive: boolean, size?: 'sm' | 'md' | 'lg' (default 'lg'). Size mapping: sm=w-1.5 h-1.5, md=w-2 h-2, lg=w-2.5 h-2.5. Live: bg-onair animate-tally-pulse rounded-full. Off: bg-[#3a3a3e] rounded-full no animation. Uses Tailwind classes, NOT inline styles. Uses cn() for conditional class merging. Matches design.md Section 3.17.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 3: Atomic Components",
-      "group_number": 3,
-      "files_create": [
-        "src/renderer/components/TallyLight.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-3.2",
-    "title": "OnAirIndicator Component",
-    "description": "Create src/renderer/components/OnAirIndicator.tsx. Props: isLive: boolean. Renders 'ON AIR' text in both states. Font: font-mono text-[10px] font-bold tracking-[0.12em]. Container: inline-flex items-center gap-[5px] rounded px-2 py-[2px]. Live: text-onair border-[1.5px] border-onair animate-onair-glow with 6px red tally dot. Off: text-[#3a3a3e] border-[1.5px] border-[#3a3a3e] with gray dot. Uses Tailwind, NOT inline styles. Matches design.md Section 3.16.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 3: Atomic Components",
-      "group_number": 3,
-      "files_create": [
-        "src/renderer/components/OnAirIndicator.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-3.3",
-    "title": "ClapperboardBadge Component",
-    "description": "Create src/renderer/components/ClapperboardBadge.tsx. Props: sketch: string, actNumber: number, duration?: string, status?: 'active' | 'complete', size?: 'sm' | 'md' (default 'md'). Text: {CATEGORY} | ACT {N} with optional | {DURATION} or | COMPLETE. Font: font-mono font-semibold uppercase tracking-[0.08em]. Size: sm=text-[10px], md=text-[11px]. Container: inline-flex items-center gap-1.5 rounded px-2.5 py-[3px]. Border/text from getCategoryToken(). Border-[1.5px] at 40% opacity. Pipe | has opacity-40. Fallback to accent. Uses Tailwind. Matches Section 3.18.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 3: Atomic Components",
-      "group_number": 3,
-      "files_create": [
-        "src/renderer/components/ClapperboardBadge.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-1.4"
-      ]
-    }
-  },
-  {
-    "id": "openspec-3.4",
-    "title": "BeatCounter Component",
-    "description": "REWRITE src/renderer/components/BeatCounter.tsx. Props: size?: 'sm' | 'md' | 'lg' | 'xl' (default 'md'), showLabel?: boolean, dimmed?: boolean, justIgnitedIndex?: number | null. Reads beatsLocked and beatThreshold from showStore. Size: sm=text-sm, md=text-xl, lg=text-2xl, xl=text-3xl. Filled star ★ for locked (text-beat with text-shadow), outline star ☆ for unlocked (text-txt-muted). justIgnitedIndex triggers animate-beat-ignite. showLabel shows 'N/M Beats'. dimmed applies opacity-35. Container: inline-flex items-center gap-1. ALL inline styles removed. Matches Section 3.10.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 3: Atomic Components",
-      "group_number": 3,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/components/BeatCounter.tsx"
-      ],
-      "depends_on": [
-        "openspec-2.1",
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-3.5",
-    "title": "EnergySelector Component",
-    "description": "REWRITE src/renderer/components/EnergySelector.tsx. Props: onSelect: (level: EnergyLevel) => void. Renders 2x2 grid (grid grid-cols-2 gap-3) of four energy buttons. Each has emoji (text-2xl), label (font-semibold text-sm colored), sublabel (text-xs text-txt-muted). Energy data from Section 3.11: High (lightning, amber), Medium (sun, green), Low (moon, blue), Recovery (bed, purple). Unique bg/border/hover colors per design.md. Framer Motion staggered slideUp (delay 0, 0.08, 0.16, 0.24). ALL inline styles removed. Uses Tailwind. Matches Section 3.11.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 3: Atomic Components",
-      "group_number": 3,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/components/EnergySelector.tsx"
-      ],
-      "depends_on": [
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.1",
-    "title": "DarkStudioView",
-    "description": "Create src/renderer/views/DarkStudioView.tsx. Reads enterWritersRoom from showStore. Full-screen min-h-screen bg-studio-bg with centered content. Radial spotlight gradient overlay (pointer-events-none). Heading: 'Tonight's show hasn't been written yet.' Subtext in text-sm text-txt-muted. CTA 'Enter the Writer's Room' accent Button. spotlightFadeIn animation with blur. CTA delayed 1.2s slideUp. data-clui-ui attribute. Uses Tailwind. Matches mockup Dark Studio section and Section 3.1.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [
-        "src/renderer/views/DarkStudioView.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-1.1",
-        "openspec-1.2",
-        "openspec-1.3",
-        "openspec-1.4",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.2",
-    "title": "GoingLiveTransition",
-    "description": "Create src/renderer/views/GoingLiveTransition.tsx. Props: onComplete: () => void. Fixed fullscreen overlay bg-studio-bg z-50. ON AIR indicator (live) scales in from 0 with spring (delay 0.3s). Headline 'Live from your desk, it's {formattedDate}!' with locale long date. Headline fades up (delay 0.8s). Spotlight gradient. Auto-dismisses after 2500ms via onComplete. Cleanup timeout on unmount. Uses Tailwind. Matches Section 3.3.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [
-        "src/renderer/views/GoingLiveTransition.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-3.2",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.3",
-    "title": "IntermissionView (replaces RestAffirmation)",
-    "description": "Create src/renderer/components/IntermissionView.tsx. Delete src/renderer/components/RestAffirmation.tsx. Reads exitIntermission from showStore. Centered card max-w-[380px] p-8 rounded-xl bg-surface border. 'INTERMISSION' label in font-mono. 'WE'LL BE RIGHT BACK' heading. Rotating affirmation (random on mount) with animate-breathe. BeatCounter dimmed=true. 'Back to the show' accent button. NO timer/countdown/pressure. RestAffirmation.tsx deleted. All imports updated. Uses Tailwind. Matches Section 3.12.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [
-        "src/renderer/components/IntermissionView.tsx"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-3.4",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.4",
-    "title": "ShowVerdict Component",
-    "description": "REWRITE src/renderer/components/ShowVerdict.tsx. Props: verdict: ShowVerdict, beatsLocked: number, beatThreshold: number. Renders verdict headline, message, color, animation per Section 3.14: DAY_WON (#f59e0b, animate-golden-glow), SOLID_SHOW (#d97757), GOOD_EFFORT (#60a5fa), SHOW_CALLED_EARLY (#9a9890). Headline font-body text-5xl font-black. Message text-sm text-txt-secondary. BeatCounter size='xl'. DAY_WON golden spotlight. ALL inline styles removed. Uses Tailwind. Matches mockup Strike section.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/components/ShowVerdict.tsx"
-      ],
-      "depends_on": [
-        "openspec-3.4"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.5",
-    "title": "DirectorMode Component",
-    "description": "REWRITE src/renderer/components/DirectorMode.tsx. Reads exitDirector, skipAct, currentActId, callShowEarly, enterIntermission, startBreathingPause from showStore. Modal overlay fixed inset-0 bg-black/80 backdrop-blur-[12px] z-50. Card w-[420px] p-8 rounded-2xl bg-surface. Heading 'The Director is here.' Subtext 'What's the call?' Four option buttons with immediate execution (NO confirmation). Skip calls skipAct+exitDirector. Call show early calls callShowEarly. Longer break calls enterIntermission+exitDirector. Just a moment calls startBreathingPause+exitDirector. Spring scale animation. ALL inline styles removed. Uses Tailwind. Matches mockup.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/components/DirectorMode.tsx"
-      ],
-      "depends_on": [
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.6",
-    "title": "BeatCheckModal Component",
-    "description": "REWRITE src/renderer/components/BeatCheckModal.tsx. Reads beatCheckPending, lockBeat, skipBeat from showStore. Only renders when beatCheckPending true. Scrim overlay fixed bg-black/75 backdrop-blur-[8px] z-50. Card w-[380px] p-8 rounded-2xl bg-surface. Golden spotlight gradient. ClapperboardBadge for completed Act. Question 'Did you have a moment of presence?' 'Yes — Lock the Beat' beat-large button. 'Not this time' muted link. Lock shows 'That moment was real.' for 1s then auto-dismiss. Skip dismisses immediately. Spring scale+y animation. ALL inline styles removed. Uses shadcn Dialog. Matches mockup.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/components/BeatCheckModal.tsx"
-      ],
-      "depends_on": [
-        "openspec-3.3",
-        "openspec-3.4",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.7",
-    "title": "TimerPanel",
-    "description": "REWRITE src/renderer/panels/TimerPanel.tsx. Reads selectCurrentAct, completeAct, extendAct, enterIntermission from showStore. Uses useTimer() hook. ClapperboardBadge with current act. Act name font-body text-lg. Timer digits font-mono text-[64px] tabular-nums. Timer amber (text-beat animate-warm-pulse) when <5min. Progress bar h-1 with category-colored fill. Three buttons: +15m (neutral), End Act (accent), Rest (purple tint). ALL inline styles removed. Uses Tailwind. Matches mockup Timer section.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/panels/TimerPanel.tsx"
-      ],
-      "depends_on": [
-        "openspec-3.3",
-        "openspec-2.1",
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.8",
-    "title": "LineupPanel & ActCard",
-    "description": "REWRITE src/renderer/panels/LineupPanel.tsx and src/renderer/components/ActCard.tsx. LineupPanel accepts variant: 'full' | 'sidebar'. Reads acts, currentActId, reorderAct, removeAct from showStore. Full variant: flex flex-col gap-3 with full ActCard. Sidebar: gap-1 with 'TONIGHT'S LINEUP' label. Staggered Framer Motion on full variant. ActCard accepts act, variant, onReorder, onRemove. Full: category stripe, name, ClapperboardBadge, duration, reorder, remove. Sidebar: compact status-aware rows (active/completed/completed+beat/skipped/upcoming) per Section 3.8. ALL inline styles removed. Uses Tailwind. Matches mockup.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/panels/LineupPanel.tsx",
-        "src/renderer/components/ActCard.tsx"
-      ],
-      "depends_on": [
-        "openspec-3.3",
-        "openspec-1.4",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.9",
-    "title": "PillView",
-    "description": "REWRITE src/renderer/views/PillView.tsx. Reads phase, selectCurrentAct, beatsLocked, beatThreshold, toggleExpanded from showStore. Uses useTimer(). Pill container: w-80 h-12 rounded-full bg-surface/85 backdrop-blur-[20px] border-white/[0.06] shadow cursor-pointer select-none. data-clui-ui. Live: TallyLight (live lg), act name (truncated), timer MM:SS mono, BeatCounter sm. Timer amber <5min. Intermission: TallyLight off, 'Intermission', 'no rush'. Strike: 'Show complete!' golden-glow, final beats. Click toggleExpanded(). Spring scale animation. ALL inline styles removed. Uses Tailwind. Matches mockup Pill section.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/views/PillView.tsx"
-      ],
-      "depends_on": [
-        "openspec-3.1",
-        "openspec-3.4",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.10",
-    "title": "ExpandedView",
-    "description": "REWRITE src/renderer/views/ExpandedView.tsx. Most complex view — composes TimerPanel, LineupPanel (sidebar), OnAirIndicator, BeatCounter, IntermissionView, DirectorMode. 560x620 two-column layout. Outer: w-[560px] min-h-[620px] bg-surface rounded-xl with data-clui-ui. Title bar: bg-[#151517] with drag region, 'SHOWTIME' mono label, Director Mode button, collapse button (no-drag). Main: flex with TimerPanel (flex-1) and LineupPanel sidebar (w-[200px] border-l). Bottom bar with OnAirIndicator and BeatCounter. IntermissionView when phase=intermission. DirectorMode when phase=director. Spring expand animation. ALL inline styles removed. Uses Tailwind. Matches mockup.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/views/ExpandedView.tsx"
-      ],
-      "depends_on": [
-        "openspec-4.7",
-        "openspec-4.8",
-        "openspec-3.2",
-        "openspec-3.4",
-        "openspec-4.3",
-        "openspec-4.5"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.11",
-    "title": "WritersRoomView",
-    "description": "REWRITE src/renderer/views/WritersRoomView.tsx. Most complex flow. Reads energy, writersRoomStep, acts, setEnergy, setWritersRoomStep, setLineup, triggerGoingLive, writersRoomEnteredAt from showStore. Three-step flow with AnimatePresence. Step 1: EnergySelector. Step 2: Plan Dump textarea with notepad styling, submit to Claude. Step 3: Lineup Preview with LineupPanel full variant, reorder/remove, 'WE'RE LIVE!' CTA. Claude integration via sessionStore.sendMessage(). Parses showtime-lineup JSON. Loading state. 20-min nudge. Title bar with drag. Spring step transitions. Outer w-[560px] min-h-[680px] bg-surface rounded-xl data-clui-ui. ALL inline styles removed. Uses Tailwind. Matches mockup.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/views/WritersRoomView.tsx"
-      ],
-      "depends_on": [
-        "openspec-3.5",
-        "openspec-4.8",
-        "openspec-2.1",
-        "openspec-1.2"
-      ]
-    }
-  },
-  {
-    "id": "openspec-4.12",
-    "title": "StrikeView",
-    "description": "REWRITE src/renderer/views/StrikeView.tsx. Reads verdict, acts, beatsLocked, beatThreshold, resetShow, setExpanded from showStore. Derives completedActs, skippedActs. Outer w-[560px] bg-surface rounded-xl data-clui-ui. Title bar with OnAirIndicator OFF and drag. ShowVerdict component. Stats row: Acts Completed, Acts Cut, Beats Locked in font-mono text-3xl with labels. Act recap panel bg-[#151517] scrollable list with status and beat indicator (end credits style). 'New Show' accent button calls resetShow(). 'Close' neutral button collapses. Staggered Framer Motion for stats and recap. ALL inline styles removed. Uses Tailwind. Matches mockup Strike section.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 4: Core Views",
-      "group_number": 4,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/views/StrikeView.tsx"
-      ],
-      "depends_on": [
-        "openspec-4.4",
-        "openspec-3.4",
-        "openspec-3.2",
-        "openspec-2.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-5.1",
-    "title": "App.tsx — View Router & Tailwind Migration",
-    "description": "Modify src/renderer/App.tsx. View routing per Appendix A: goingLiveActive->GoingLiveTransition, !isExpanded->PillView, phase no_show->DarkStudioView, writers_room->WritersRoomView, strike->StrikeView, live/intermission/director->ExpandedView. Root div Tailwind classes (NO inline styles). AnimatePresence mode='wait'. BeatCheckModal global overlay. Click-through system (data-clui-ui + setIgnoreMouseEvents) remains. All view imports updated. ALL inline styles replaced with Tailwind. Unused CLUI imports removed. App compiles and launches.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 5: App Shell & Integration",
-      "group_number": 5,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/App.tsx"
-      ],
-      "depends_on": [
-        "openspec-4.1",
-        "openspec-4.2",
-        "openspec-4.3",
-        "openspec-4.4",
-        "openspec-4.5",
-        "openspec-4.6",
-        "openspec-4.7",
-        "openspec-4.8",
-        "openspec-4.9",
-        "openspec-4.10",
-        "openspec-4.11",
-        "openspec-4.12"
-      ]
-    }
-  },
-  {
-    "id": "openspec-5.2",
-    "title": "IPC Bridge Updates (Preload + Main)",
-    "description": "Modify src/preload/index.ts and src/main/index.ts. Preload: CluiAPI adds setViewMode(mode), onDayBoundary(callback), onToggleExpanded(callback). Implementations use ipcRenderer. Listeners return cleanup functions. Main: setViewMode handler (minimal). startDayBoundaryCheck() checks every 60s for date change, broadcasts DAY_BOUNDARY. Notification handlers verified. Global hotkey Alt+Space broadcasts toggle-expanded. BrowserWindow gets vibrancy: 'under-window', visualEffectState: 'active'. All existing IPC intact. TypeScript compiles across main, preload, renderer.",
-    "priority": "high",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 5: App Shell & Integration",
-      "group_number": 5,
-      "files_create": [],
-      "files_modify": [
-        "src/preload/index.ts",
-        "src/main/index.ts"
-      ],
-      "depends_on": [
-        "openspec-2.2"
-      ]
-    }
-  },
-  {
-    "id": "openspec-6.1",
-    "title": "Delete CLUI Dead Weight Files",
-    "description": "Delete: src/renderer/components/ConversationView.tsx, InputBar.tsx, AttachmentChips.tsx, SlashCommandMenu.tsx, PopoverLayer.tsx, PermissionDeniedCard.tsx, src/renderer/panels/CalendarPanel.tsx. All seven deleted. No remaining imports of deleted files anywhere. PermissionCard.tsx KEPT (still used for Claude tool approval). npm run build succeeds. Claude subprocess communication remains functional.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 6: CLUI Cleanup",
-      "group_number": 6,
-      "files_create": [],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-5.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-6.2",
-    "title": "Simplify sessionStore to Single Session",
-    "description": "Modify src/renderer/stores/sessionStore.ts. Remove tab array management: no tabs[], activeTabId, addTab, closeTab, switchTab. Single session object instead of array. sendMessage() works without tab selection. Claude subprocess communication remains fully functional. All references to tabs in other files updated. TypeScript compiles. Claude communication tested: send message, receive structured response.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 6: CLUI Cleanup",
-      "group_number": 6,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/stores/sessionStore.ts"
-      ],
-      "depends_on": [
-        "openspec-6.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-6.3",
-    "title": "Simplify theme.ts",
-    "description": "Modify src/renderer/theme.ts. Simplify to only runtime-needed values Tailwind cannot handle. Remove all color constants now defined as Tailwind @theme tokens. Keep values used for non-CSS programmatic purposes. If empty/unused, delete entirely. No runtime references to deleted constants remain. TypeScript compiles.",
-    "priority": "low",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 6: CLUI Cleanup",
-      "group_number": 6,
-      "files_create": [],
-      "files_modify": [
-        "src/renderer/theme.ts"
-      ],
-      "depends_on": [
-        "openspec-1.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-7.1",
-    "title": "Vitest Component Unit Tests",
-    "description": "Create src/__tests__/components/BeatCounter.test.ts, ClapperboardBadge.test.ts, OnAirIndicator.test.ts, src/__tests__/utils/verdictLogic.test.ts. BeatCounter: star rendering, dimmed opacity, label format. ClapperboardBadge: all 5 category colors, fallback, formatting. OnAirIndicator: live classes (text-onair, animate-onair-glow), off gray classes. Verdict logic: all four thresholds with edge cases. All use Vitest jsdom. All pass.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 7: Testing",
-      "group_number": 7,
-      "files_create": [
-        "src/__tests__/components/BeatCounter.test.ts",
-        "src/__tests__/components/ClapperboardBadge.test.ts",
-        "src/__tests__/components/OnAirIndicator.test.ts",
-        "src/__tests__/utils/verdictLogic.test.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-3.1",
-        "openspec-3.2",
-        "openspec-3.3",
-        "openspec-3.4",
-        "openspec-4.4"
-      ]
-    }
-  },
-  {
-    "id": "openspec-7.2",
-    "title": "Playwright E2E — App Launch & Dark Studio",
-    "description": "Create e2e/app-launch.spec.ts and e2e/dark-studio.spec.ts. app-launch: Electron launches, window visible, no console errors. dark-studio: fresh launch shows Dark Studio, 'Tonight's show hasn't been written yet.' text visible, 'Enter the Writer's Room' button visible and clickable, clicking transitions to Writer's Room. Uses Playwright Electron. All pass.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 7: Testing",
-      "group_number": 7,
-      "files_create": [
-        "e2e/app-launch.spec.ts",
-        "e2e/dark-studio.spec.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-5.1",
-        "openspec-4.1"
-      ]
-    }
-  },
-  {
-    "id": "openspec-7.3",
-    "title": "Playwright E2E — Writer's Room Flow",
-    "description": "Create e2e/writers-room.spec.ts. Navigate Dark Studio to Writer's Room. Energy selection advances to Plan Dump. Textarea accepts input, submit present. Plan triggers Claude (or mock). Lineup Preview shows acts. Reordering works. Removal works. 'WE'RE LIVE!' visible after lineup. Clicking triggers Going Live. All pass.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 7: Testing",
-      "group_number": 7,
-      "files_create": [
-        "e2e/writers-room.spec.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-4.11",
-        "openspec-7.2"
-      ]
-    }
-  },
-  {
-    "id": "openspec-7.4",
-    "title": "Playwright E2E — Live Show & Beat Check",
-    "description": "Create e2e/act-timer.spec.ts, e2e/beat-check.spec.ts, e2e/pill-expanded-toggle.spec.ts. act-timer: timer displays/counts, +15m extends, End Act completes. beat-check: modal appears after completion, Lock increments + confirmation, Not this time dismisses. pill-expanded: clicking pill expands, collapse returns, content matches state. State set programmatically. All pass.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 7: Testing",
-      "group_number": 7,
-      "files_create": [
-        "e2e/act-timer.spec.ts",
-        "e2e/beat-check.spec.ts",
-        "e2e/pill-expanded-toggle.spec.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-4.6",
-        "openspec-4.7",
-        "openspec-4.8",
-        "openspec-4.9",
-        "openspec-4.10"
-      ]
-    }
-  },
-  {
-    "id": "openspec-7.5",
-    "title": "Playwright E2E — Intermission, Director & Strike",
-    "description": "Create e2e/intermission.spec.ts, e2e/director-mode.spec.ts, e2e/strike.spec.ts. intermission: Rest shows 'WE'LL BE RIGHT BACK', affirmation visible, Back resumes. director: button opens overlay, four options visible, Skip advances, Call show triggers Strike. strike: all four verdict states tested (DAY_WON golden, SOLID_SHOW amber, GOOD_EFFORT blue, SHOW_CALLED_EARLY neutral), stats and recap visible, New Show resets. State set programmatically. All pass.",
-    "priority": "medium",
-    "status": "pending",
-    "source": "openspec",
-    "metadata": {
-      "openspec_source": "tasks.md",
-      "openspec_group": "Group 7: Testing",
-      "group_number": 7,
-      "files_create": [
-        "e2e/intermission.spec.ts",
-        "e2e/director-mode.spec.ts",
-        "e2e/strike.spec.ts"
-      ],
-      "files_modify": [],
-      "depends_on": [
-        "openspec-4.3",
-        "openspec-4.5",
-        "openspec-4.12"
-      ]
-    }
-  }
-],
+    "pending": [],
     "inProgress": [],
     "review": [],
     "completed": [
@@ -821,6 +64,15 @@
     "completedAt": "2026-03-21T20:37:15Z",
     "exitCode": 0,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-2",
+    "type": "iteration",
+    "title": "Iteration 2",
+    "status": "completed",
+    "completedAt": "2026-03-21T21:27:35Z",
+    "exitCode": 0,
+    "provider": "claude"
   }
 ],
     "failed": [
@@ -841,6 +93,15 @@
     "completedAt": "2026-03-21T17:19:59Z",
     "exitCode": 141,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "failed",
+    "completedAt": "2026-03-21T21:15:33Z",
+    "exitCode": 141,
+    "provider": "claude"
   }
 ]
   },
@@ -848,50 +109,47 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 29,
-    "memoryUsage": 61,
+    "cpuUsage": 41,
+    "memoryUsage": 67,
     "resourceStatus": "ok"
   },
   "memory": {
-    "episodic": 7,
+    "episodic": 8,
     "semantic": 2,
     "procedural": 0
   },
   "qualityGates": null,
   "council": {
-  "initialized": true,
-  "enabled": true,
-  "total_votes": 0,
-  "approve_votes": 0,
-  "reject_votes": 0,
-  "last_check_iteration": 0,
-  "consecutive_no_change": 0,
-  "done_signals": 1,
-  "convergence_history": [],
-  "verdicts": [],
-  "total_done_signals": 1,
-  "last_track_iteration": 1,
-  "files_changed": 32
+    "initialized": true,
+    "enabled": true,
+    "total_votes": 0,
+    "approve_votes": 0,
+    "reject_votes": 0,
+    "last_check_iteration": 0,
+    "consecutive_no_change": 0,
+    "done_signals": 0,
+    "convergence_history": [],
+    "verdicts": []
 },
   "checklist": null,
   "appRunner": {
-    "main_pid": 89085,
-    "process_group": "-89085",
+    "main_pid": 51144,
+    "process_group": "-51144",
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-21T20:37:17Z",
-    "restart_count": 0,
-    "status": "running",
+    "started_at": "2026-03-21T21:27:39Z",
+    "restart_count": 1,
+    "status": "stopped",
     "last_health": {"ok": false},
     "crash_count": 0
 },
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "c08e1e32-8865-42a2-9780-7e0b2888a217",
+  "session_id": "75ec375b-f2b5-49fd-9d84-096be420299d",
   "provider": "claude",
-  "updated_at": "2026-03-21T20:37:15.519867+00:00",
+  "updated_at": "2026-03-21T21:27:35.875531+00:00",
   "current": {
     "input_tokens": 0,
     "output_tokens": 0,
@@ -899,7 +157,7 @@
     "cache_creation_tokens": 0,
     "total_tokens": 0,
     "context_window_pct": 0.0,
-    "estimated_cost_usd": 23.8322
+    "estimated_cost_usd": 35.1985
   },
   "compactions": [
     {
@@ -907,6 +165,12 @@
       "timestamp": "2026-03-21T06:08:07.866584+00:00",
       "tokens_before": 161491,
       "line": 248
+    },
+    {
+      "at_iteration": 1,
+      "timestamp": "2026-03-21T21:15:33.567876+00:00",
+      "tokens_before": 161414,
+      "line": 307
     }
   ],
   "per_iteration": [
@@ -932,13 +196,13 @@
     }
   ],
   "totals": {
-    "total_input": 13962,
-    "total_output": 127952,
-    "total_cost_usd": 23.8322,
-    "compaction_count": 1,
+    "total_input": 62390,
+    "total_output": 192616,
+    "total_cost_usd": 35.1985,
+    "compaction_count": 2,
     "iterations_tracked": 2
   }
 },
-  "tokens": {"input": 13962, "output": 127952, "cost_usd": 23.8322},
+  "tokens": {"input": 62390, "output": 192616, "cost_usd": 35.1985},
   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
 }
