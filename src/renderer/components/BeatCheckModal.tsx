@@ -1,7 +1,9 @@
+import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { ClapperboardBadge } from './ClapperboardBadge'
 import { Button } from '../ui/button'
+import { playAudioCue } from '../hooks/useAudio'
 
 export function BeatCheckModal() {
   const beatCheckPending = useShowStore((s) => s.beatCheckPending)
@@ -11,6 +13,15 @@ export function BeatCheckModal() {
   const acts = useShowStore((s) => s.acts)
   const currentAct = useShowStore(selectCurrentAct)
 
+  // Play beat-check audio when modal appears
+  const prevPending = useRef(false)
+  useEffect(() => {
+    if (beatCheckPending && !prevPending.current) {
+      playAudioCue('beat-check')
+    }
+    prevPending.current = beatCheckPending
+  }, [beatCheckPending])
+
   // Show modal when Beat Check is pending OR celebration is playing
   if (!beatCheckPending && !celebrationActive) return null
 
@@ -19,6 +30,7 @@ export function BeatCheckModal() {
     : 0
 
   const handleLockBeat = () => {
+    playAudioCue('beat-locked')
     lockBeat()
   }
 

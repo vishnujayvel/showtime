@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { OnAirIndicator } from '../components/OnAirIndicator';
+import { playAudioCue } from '../hooks/useAudio';
 
 interface GoingLiveTransitionProps {
   onComplete: () => void;
@@ -15,6 +16,7 @@ export function GoingLiveTransition({ onComplete }: GoingLiveTransitionProps) {
   });
 
   useEffect(() => {
+    playAudioCue('going-live');
     const timer = setTimeout(onComplete, 2500);
     return () => clearTimeout(timer);
   }, [onComplete]);

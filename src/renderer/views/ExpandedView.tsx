@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { TimerPanel } from '../panels/TimerPanel'
@@ -7,6 +8,21 @@ import { BeatCounter } from '../components/BeatCounter'
 import { IntermissionView } from '../components/IntermissionView'
 import { DirectorMode } from '../components/DirectorMode'
 import { RundownBar } from '../components/RundownBar'
+import { MuteToggle } from '../components/MuteToggle'
+
+function formatDateLabel(): string {
+  return new Date()
+    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    .toUpperCase()
+}
+
+function formatStartTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
 
 export function ExpandedView() {
   const phase = useShowStore((s) => s.phase)
@@ -16,6 +32,9 @@ export function ExpandedView() {
   const beatThreshold = useShowStore((s) => s.beatThreshold)
   const toggleExpanded = useShowStore((s) => s.toggleExpanded)
   const enterDirector = useShowStore((s) => s.enterDirector)
+  const showStartedAt = useShowStore((s) => s.showStartedAt)
+
+  const dateLabel = useMemo(formatDateLabel, [])
 
   return (
     <motion.div
@@ -29,11 +48,17 @@ export function ExpandedView() {
       <div
         className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
       >
-        <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
-          SHOWTIME
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
+            SHOWTIME
+          </span>
+          <span className="font-mono text-[10px] tracking-wider text-txt-muted/60" data-testid="date-label">
+            {dateLabel}
+          </span>
+        </div>
 
         <div className="flex items-center gap-1">
+          <MuteToggle />
           <button
             onClick={enterDirector}
             className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors no-drag"
@@ -78,7 +103,14 @@ export function ExpandedView() {
 
       {/* Bottom Bar */}
       <div className="bg-[#151517] px-5 py-3 flex items-center justify-between border-t border-[#242428]">
-        <OnAirIndicator isLive={phase === 'live'} />
+        <div className="flex items-center gap-3">
+          <OnAirIndicator isLive={phase === 'live'} />
+          {showStartedAt && (
+            <span className="font-mono text-[10px] text-txt-muted" data-testid="started-at">
+              Started {formatStartTime(showStartedAt)}
+            </span>
+          )}
+        </div>
         <BeatCounter size="sm" />
       </div>
 
