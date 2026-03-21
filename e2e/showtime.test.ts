@@ -38,7 +38,18 @@ test.beforeAll(async () => {
 })
 
 test.afterAll(async () => {
-  if (app) await app.close()
+  if (app) {
+    // Kill the process tree to clean up Electron helper processes (GPU, Renderer, Network, Audio)
+    const pid = app.process().pid
+    await app.close().catch(() => {})
+    if (pid) {
+      try {
+        process.kill(pid, 'SIGKILL')
+      } catch {
+        // Process already exited
+      }
+    }
+  }
 })
 
 // ─── openspec-7.1: App launches successfully ───
