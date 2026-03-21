@@ -1213,6 +1213,12 @@ app.whenReady().then(async () => {
     Menu.buildFromTemplate([
       { label: 'Show Showtime', click: () => showWindow('tray menu') },
       { type: 'separator' },
+      { label: 'Reset Show', click: () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send(IPC.RESET_SHOW)
+        }
+      }},
+      { type: 'separator' },
       { label: 'Quit Showtime', click: () => { app.quit() } },
     ])
   )
@@ -1231,7 +1237,7 @@ app.whenReady().then(async () => {
       backgroundColor: mainWindow?.getBackgroundColor(),
       bounds: mainWindow?.getBounds(),
     }))
-    ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Quit Showtime']
+    ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Reset Show', 'separator', 'Quit Showtime']
     ipcMain.handle('test:get-tray-menu', () => (global as any).__trayMenuLabels)
   }
 })
