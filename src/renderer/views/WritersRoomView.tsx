@@ -9,6 +9,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
+function formatDateLabel(): string {
+  return new Date()
+    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    .toUpperCase()
+}
+
 export function WritersRoomView() {
   const energy = useShowStore((s) => s.energy)
   const writersRoomStep = useShowStore((s) => s.writersRoomStep)
@@ -129,9 +135,14 @@ ${planText}`
       <div
         className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
       >
-        <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
-          SHOWTIME
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
+            SHOWTIME
+          </span>
+          <span className="font-mono text-[10px] tracking-wider text-txt-muted/60" data-testid="date-label">
+            {formatDateLabel()}
+          </span>
+        </div>
         <button
           onClick={() => window.clui.quit()}
           className="text-txt-muted hover:text-onair transition-colors text-sm no-drag"

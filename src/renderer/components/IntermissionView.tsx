@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useShowStore } from '../stores/showStore'
 import { Button } from '../ui/button'
 import { BeatCounter } from './BeatCounter'
+import { playAudioCue } from '../hooks/useAudio'
 
 const AFFIRMATIONS = [
   'Rest is free. Always has been.',
@@ -17,6 +18,11 @@ export function IntermissionView() {
   const [affirmation] = useState(
     () => AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]
   )
+
+  // Play intermission audio cue once on mount
+  useEffect(() => {
+    playAudioCue('intermission')
+  }, [])
 
   return (
     <motion.div
