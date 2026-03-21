@@ -1,0 +1,44 @@
+{
+  "currentPhase": "DEVELOPMENT",
+  "previousPhase": "ARCHITECTURE",
+  "tasksCompleted": 30,
+  "tasksFailed": 0,
+  "tasksDeferred": 0,
+  "totalTasks": 35,
+  "phasesCompleted": ["BOOTSTRAP", "DISCOVERY", "ARCHITECTURE"],
+  "specPath": ".claude/specs/showtime-v2/",
+  "complexity": "standard",
+  "groups": {
+    "group1_foundation": {
+      "tasks": ["openspec-1.1", "openspec-1.2", "openspec-1.3", "openspec-1.4"],
+      "status": "complete"
+    },
+    "group2_store_types": {
+      "tasks": ["openspec-2.1", "openspec-2.2", "openspec-2.3", "openspec-2.4"],
+      "status": "complete"
+    },
+    "group3_atomic_components": {
+      "tasks": ["openspec-3.1", "openspec-3.2", "openspec-3.3", "openspec-3.4", "openspec-3.5"],
+      "status": "complete"
+    },
+    "group4_core_views": {
+      "tasks": ["openspec-4.1", "openspec-4.2", "openspec-4.3", "openspec-4.4", "openspec-4.5", "openspec-4.6", "openspec-4.7", "openspec-4.8", "openspec-4.9", "openspec-4.10", "openspec-4.11", "openspec-4.12"],
+      "status": "complete"
+    },
+    "group5_app_shell": {
+      "tasks": ["openspec-5.1", "openspec-5.2"],
+      "status": "complete"
+    },
+    "group6_clui_cleanup": {
+      "tasks": ["openspec-6.1", "openspec-6.2", "openspec-6.3"],
+      "status": "complete"
+    },
+    "group7_testing": {
+      "tasks": ["openspec-7.1", "openspec-7.2", "openspec-7.3", "openspec-7.4", "openspec-7.5"],
+      "status": "pending"
+    }
+  },
+  "remainingTasks": [
+    "openspec-7.1", "openspec-7.2", "openspec-7.3", "openspec-7.4", "openspec-7.5"
+  ]
+}
