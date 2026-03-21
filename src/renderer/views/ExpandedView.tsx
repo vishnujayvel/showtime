@@ -1,128 +1,83 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { FilmSlate, CaretDown } from '@phosphor-icons/react'
-import { useShowStore } from '../stores/showStore'
+import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { TimerPanel } from '../panels/TimerPanel'
-import { ChatPanel } from '../panels/ChatPanel'
 import { LineupPanel } from '../panels/LineupPanel'
-import { CalendarPanel } from '../panels/CalendarPanel'
+import { OnAirIndicator } from '../components/OnAirIndicator'
 import { BeatCounter } from '../components/BeatCounter'
-import { RestAffirmation } from '../components/RestAffirmation'
+import { IntermissionView } from '../components/IntermissionView'
 import { DirectorMode } from '../components/DirectorMode'
-import { useColors } from '../theme'
 
 export function ExpandedView() {
   const phase = useShowStore((s) => s.phase)
+  const acts = useShowStore((s) => s.acts)
+  const currentAct = useShowStore(selectCurrentAct)
+  const beatsLocked = useShowStore((s) => s.beatsLocked)
+  const beatThreshold = useShowStore((s) => s.beatThreshold)
   const toggleExpanded = useShowStore((s) => s.toggleExpanded)
   const enterDirector = useShowStore((s) => s.enterDirector)
-  const colors = useColors()
 
-  // Intermission overlay
-  if (phase === 'intermission') {
-    return (
-      <motion.div
-        layoutId="showtime-container"
-        style={containerStyle(colors)}
-        data-clui-ui
-      >
-        <Header onCollapse={toggleExpanded} />
-        <RestAffirmation />
-      </motion.div>
-    )
-  }
-
-  // Director mode overlay
-  if (phase === 'director') {
-    return (
-      <motion.div
-        layoutId="showtime-container"
-        style={containerStyle(colors)}
-        data-clui-ui
-      >
-        <Header onCollapse={toggleExpanded} />
-        <DirectorMode />
-      </motion.div>
-    )
-  }
-
-  // Live show layout
   return (
     <motion.div
-      layoutId="showtime-container"
-      style={containerStyle(colors)}
+      className="w-[560px] min-h-[620px] bg-surface rounded-xl overflow-hidden flex flex-col"
       data-clui-ui
+      initial={{ scale: 0.9, opacity: 0, y: 20 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      exit={{ scale: 0.9, opacity: 0, y: 20 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
-      <Header onCollapse={toggleExpanded} onDirector={enterDirector} />
-      <TimerPanel />
-
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Left: Chat */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <ChatPanel />
-        </div>
-
-        {/* Right: Lineup + Calendar */}
-        <div style={{ width: 200, display: 'flex', flexDirection: 'column', borderLeft: `1px solid ${colors.border}` }}>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <LineupPanel />
-          </div>
-          <div style={{ height: 180, overflowY: 'auto', borderTop: `1px solid ${colors.border}`, padding: '8px 4px' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: colors.textTertiary, textTransform: 'uppercase', letterSpacing: 1, padding: '0 8px 4px' }}>
-              Today
-            </div>
-            <CalendarPanel />
-          </div>
-        </div>
-      </div>
-
-      <div style={{ borderTop: `1px solid ${colors.border}`, padding: '4px 0' }}>
-        <BeatCounter />
-      </div>
-    </motion.div>
-  )
-}
-
-function containerStyle(colors: ReturnType<typeof useColors>): React.CSSProperties {
-  return {
-    width: 580,
-    height: 620,
-    borderRadius: 20,
-    background: colors.cardBg,
-    border: `1px solid ${colors.border}`,
-    position: 'absolute',
-    bottom: 12,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  }
-}
-
-function Header({ onCollapse, onDirector }: { onCollapse: () => void; onDirector?: () => void }) {
-  const colors = useColors()
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderBottom: `1px solid ${colors.border}` }}>
-      <span style={{ fontSize: 14, fontWeight: 600, color: colors.text, flex: 1 }}>Showtime</span>
-      {onDirector && (
-        <button
-          onClick={onDirector}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, lineHeight: 0 }}
-          title="Director Mode"
-        >
-          <FilmSlate size={16} color={colors.textTertiary} />
-        </button>
-      )}
-      <button
-        onClick={onCollapse}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, lineHeight: 0 }}
-        title="Collapse"
+      {/* Title Bar */}
+      <div
+        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
+        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
       >
-        <CaretDown size={16} color={colors.textTertiary} />
-      </button>
-    </div>
+        <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
+          SHOWTIME
+        </span>
+
+        <div className="flex items-center">
+          <button
+            onClick={enterDirector}
+            className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors"
+            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+          >
+            Director
+          </button>
+          <button
+            onClick={toggleExpanded}
+            className="ml-2 text-txt-muted hover:text-txt-secondary transition-colors"
+            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+          >
+            ▼
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Timer Section / Conditional Overlays */}
+        <div className="flex-1 px-8 py-8 flex flex-col">
+          {phase === 'intermission' ? (
+            <IntermissionView />
+          ) : (
+            <TimerPanel />
+          )}
+        </div>
+
+        {/* Lineup Sidebar */}
+        <div className="w-[200px] border-l border-[#242428] px-3 py-3 overflow-y-auto">
+          <LineupPanel variant="sidebar" />
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="bg-[#151517] px-5 py-3 flex items-center justify-between border-t border-[#242428]">
+        <OnAirIndicator isLive={phase === 'live'} />
+        <BeatCounter size="sm" />
+      </div>
+
+      {/* Director Mode Overlay */}
+      {phase === 'director' && <DirectorMode />}
+    </motion.div>
   )
 }

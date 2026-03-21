@@ -1,97 +1,70 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { Plus, Stop, Pause } from '@phosphor-icons/react'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { useTimer } from '../hooks/useTimer'
-import { useColors } from '../theme'
+import { ClapperboardBadge } from '../components/ClapperboardBadge'
+import { Button } from '../ui/button'
+import { Progress } from '../ui/progress'
+import { getCategoryClasses } from '../lib/category-colors'
 
 export function TimerPanel() {
   const currentAct = useShowStore(selectCurrentAct)
-  const extendAct = useShowStore((s) => s.extendAct)
+  const acts = useShowStore((s) => s.acts)
   const completeAct = useShowStore((s) => s.completeAct)
+  const extendAct = useShowStore((s) => s.extendAct)
   const enterIntermission = useShowStore((s) => s.enterIntermission)
+  const currentActId = useShowStore((s) => s.currentActId)
   const { minutes, seconds, isRunning, progress } = useTimer()
-  const colors = useColors()
 
-  if (!currentAct) return null
+  if (!currentAct) {
+    return (
+      <div className="flex flex-col items-center flex-1 justify-center">
+        <span className="text-txt-muted">No active act</span>
+      </div>
+    )
+  }
 
-  // Urgency: shift color in last 5 minutes
-  const isUrgent = isRunning && minutes < 5
-  const timerColor = isUrgent ? '#f59e0b' : colors.text
+  const actNumber = acts.findIndex((a) => a.id === currentAct.id) + 1
+  const isUrgent = minutes < 5 && isRunning
+  const categoryClasses = getCategoryClasses(currentAct.sketch)
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 8,
-      padding: '16px 20px',
-      borderBottom: `1px solid ${colors.border}`,
-    }}>
-      <div style={{ fontSize: 12, fontWeight: 500, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1 }}>
-        {currentAct.sketch}
-      </div>
-      <div style={{ fontSize: 15, fontWeight: 600, color: colors.text }}>
+    <div className="flex flex-col items-center flex-1 justify-center">
+      <ClapperboardBadge
+        sketch={currentAct.sketch}
+        actNumber={actNumber}
+        status="active"
+      />
+
+      <span className="font-body text-lg font-bold text-txt-primary mt-3">
         {currentAct.name}
-      </div>
+      </span>
 
-      <motion.div
-        animate={isUrgent ? { scale: [1, 1.02, 1] } : {}}
-        transition={isUrgent ? { duration: 1, repeat: Infinity } : {}}
-        style={{
-          fontSize: 42,
-          fontWeight: 700,
-          fontVariantNumeric: 'tabular-nums',
-          color: timerColor,
-          lineHeight: 1,
-          marginTop: 4,
-        }}
+      <span
+        className={`font-mono text-[64px] font-bold leading-none tracking-tight tabular-nums mt-4 ${
+          isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
+        }`}
       >
-        {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-      </motion.div>
+        {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+      </span>
 
-      {/* Progress bar */}
-      <div style={{ width: '100%', height: 3, borderRadius: 2, background: colors.border, marginTop: 4 }}>
-        <motion.div
-          initial={false}
-          animate={{ width: `${progress * 100}%` }}
-          style={{ height: '100%', borderRadius: 2, background: isUrgent ? '#f59e0b' : '#8b5cf6' }}
+      <div className="mt-6 w-full max-w-[280px]">
+        <Progress
+          value={progress * 100}
+          className={`[&>[data-slot=indicator]]:${categoryClasses.bg}`}
         />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <button
-          onClick={() => extendAct(15)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            padding: '6px 12px', borderRadius: 8,
-            border: `1px solid ${colors.border}`, background: 'transparent',
-            color: colors.textSecondary, fontSize: 12, cursor: 'pointer',
-          }}
-        >
-          <Plus size={12} /> 15m
-        </button>
-        <button
-          onClick={() => completeAct(currentAct.id)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            padding: '6px 12px', borderRadius: 8,
-            border: `1px solid ${colors.border}`, background: 'transparent',
-            color: colors.textSecondary, fontSize: 12, cursor: 'pointer',
-          }}
-        >
-          <Stop size={12} /> End
-        </button>
+      <div className="flex items-center gap-3 mt-8">
+        <Button variant="neutral" size="sm" onClick={() => extendAct(15)}>
+          +15m
+        </Button>
+        <Button variant="accent" size="sm" onClick={() => completeAct(currentActId!)}>
+          End Act
+        </Button>
         <button
           onClick={enterIntermission}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            padding: '6px 12px', borderRadius: 8,
-            border: `1px solid ${colors.border}`, background: 'transparent',
-            color: colors.textSecondary, fontSize: 12, cursor: 'pointer',
-          }}
+          className="px-4 py-2 rounded-lg bg-purple-500/10 text-purple-400 text-sm font-medium border border-purple-500/20 hover:bg-purple-500/15 transition-colors"
         >
-          <Pause size={12} /> Rest
+          Rest
         </button>
       </div>
     </div>

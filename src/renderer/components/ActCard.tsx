@@ -1,106 +1,127 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { Play, Check, SkipForward, ArrowUp, ArrowDown, Star, Timer } from '@phosphor-icons/react'
 import type { Act } from '../../shared/types'
-import { useColors } from '../theme'
-
-const SKETCH_COLORS: Record<string, string> = {
-  'Deep Work': '#8b5cf6',
-  'Exercise': '#22c55e',
-  'Admin': '#60a5fa',
-  'Creative': '#f59e0b',
-  'Social': '#ec4899',
-  'Errands': '#f97316',
-}
+import { cn } from '../lib/utils'
+import { ClapperboardBadge } from './ClapperboardBadge'
+import { getCategoryClasses } from '../lib/category-colors'
 
 interface ActCardProps {
   act: Act
-  isActive: boolean
-  onSkip: () => void
-  onMoveUp?: () => void
-  onMoveDown?: () => void
-  showReorder?: boolean
+  variant: 'full' | 'sidebar'
+  actNumber: number
+  onReorder?: (direction: 'up' | 'down') => void
+  onRemove?: () => void
 }
 
-export function ActCard({ act, isActive, onSkip, onMoveUp, onMoveDown, showReorder }: ActCardProps) {
-  const colors = useColors()
-  const sketchColor = SKETCH_COLORS[act.sketch] || '#94a3b8'
-
-  const statusIcon = () => {
-    switch (act.status) {
-      case 'active':
-        return <Play size={16} weight="fill" color={sketchColor} />
-      case 'completed':
-        return <Check size={16} weight="bold" color="#22c55e" />
-      case 'skipped':
-        return <SkipForward size={16} weight="bold" color={colors.textTertiary} />
-      default:
-        return <Timer size={16} color={colors.textTertiary} />
-    }
-  }
+function FullActCard({ act, actNumber, onReorder, onRemove }: Omit<ActCardProps, 'variant'>) {
+  const categoryClasses = getCategoryClasses(act.sketch)
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '10px 12px',
-        borderRadius: 10,
-        border: `1.5px solid ${isActive ? sketchColor : 'transparent'}`,
-        background: isActive ? `${sketchColor}10` : act.status === 'skipped' ? `${colors.cardBg}80` : colors.cardBg,
-        opacity: act.status === 'skipped' ? 0.5 : 1,
-      }}
-    >
-      <div style={{ flexShrink: 0 }}>{statusIcon()}</div>
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-hover/50 border border-card-border">
+      {/* Category stripe */}
+      <div className={cn('w-1 h-10 rounded-full', categoryClasses.bg)} />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: isActive ? 600 : 400, color: colors.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      {/* Middle content */}
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm text-txt-primary truncate">
           {act.name}
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 2 }}>
-          <span style={{ fontSize: 11, color: sketchColor, fontWeight: 500 }}>{act.sketch}</span>
-          <span style={{ fontSize: 11, color: colors.textTertiary }}>{act.durationMinutes}m</span>
-          {act.status === 'completed' && (
-            <Star size={12} weight={act.beatLocked ? 'fill' : 'regular'} color={act.beatLocked ? '#f59e0b' : colors.textTertiary} />
-          )}
+        <div className="flex items-center gap-2 mt-0.5">
+          <ClapperboardBadge sketch={act.sketch} actNumber={actNumber} size="sm" />
+          <span className="text-xs text-txt-muted">{act.durationMinutes}m</span>
         </div>
       </div>
 
-      {showReorder && act.status === 'upcoming' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {onMoveUp && (
-            <button onClick={onMoveUp} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 0 }}>
-              <ArrowUp size={14} color={colors.textTertiary} />
+      {/* Right actions */}
+      <div className="flex items-center gap-1">
+        {onReorder && (
+          <div className="flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => onReorder('up')}
+              className="text-txt-muted hover:text-txt-secondary text-xs leading-none p-0.5"
+            >
+              ↑
             </button>
-          )}
-          {onMoveDown && (
-            <button onClick={onMoveDown} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 0 }}>
-              <ArrowDown size={14} color={colors.textTertiary} />
+            <button
+              type="button"
+              onClick={() => onReorder('down')}
+              className="text-txt-muted hover:text-txt-secondary text-xs leading-none p-0.5"
+            >
+              ↓
             </button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-txt-muted hover:text-onair text-sm leading-none p-0.5 ml-1"
+          >
+            ×
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
 
-      {act.status === 'upcoming' && (
-        <button
-          onClick={onSkip}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 4,
-            lineHeight: 0,
-            opacity: 0.6,
-          }}
-          title="Cut this act"
-        >
-          <SkipForward size={14} color={colors.textTertiary} />
-        </button>
+function SidebarActCard({ act }: Omit<ActCardProps, 'variant' | 'onReorder' | 'onRemove'>) {
+  const statusDotClass = (() => {
+    switch (act.status) {
+      case 'active':
+        return 'w-1.5 h-1.5 rounded-full bg-onair animate-tally-pulse'
+      case 'completed':
+        return act.beatLocked
+          ? 'w-1.5 h-1.5 rounded-full bg-beat'
+          : 'w-1.5 h-1.5 rounded-full bg-emerald-500'
+      case 'skipped':
+        return 'w-1.5 h-1.5 rounded-full bg-txt-muted'
+      default:
+        return 'w-1.5 h-1.5 rounded-full bg-surface-hover'
+    }
+  })()
+
+  const nameClass = (() => {
+    switch (act.status) {
+      case 'active':
+        return 'text-txt-primary font-medium'
+      case 'completed':
+        return 'text-txt-secondary'
+      case 'skipped':
+        return 'text-txt-muted line-through'
+      default:
+        return 'text-txt-muted'
+    }
+  })()
+
+  return (
+    <div className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs">
+      {/* Status dot */}
+      <div className={statusDotClass} />
+
+      {/* Act name */}
+      <span className={cn('truncate flex-1', nameClass)}>
+        {act.name}
+      </span>
+
+      {/* Beat star */}
+      {act.beatLocked && (
+        <span className="text-beat text-xs">★</span>
       )}
-    </motion.div>
+    </div>
+  )
+}
+
+export function ActCard({ act, variant, actNumber, onReorder, onRemove }: ActCardProps) {
+  if (variant === 'sidebar') {
+    return <SidebarActCard act={act} actNumber={actNumber} />
+  }
+
+  return (
+    <FullActCard
+      act={act}
+      actNumber={actNumber}
+      onReorder={onReorder}
+      onRemove={onRemove}
+    />
   )
 }
