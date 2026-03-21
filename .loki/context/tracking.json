@@ -1,15 +1,15 @@
 {
-  "session_id": "75ec375b-f2b5-49fd-9d84-096be420299d",
+  "session_id": "e57fc6e2-9b10-49bc-a529-a3b4785aefd5",
   "provider": "claude",
-  "updated_at": "2026-03-21T21:27:35.875531+00:00",
+  "updated_at": "2026-03-21T21:51:40.271849+00:00",
   "current": {
-    "input_tokens": 0,
-    "output_tokens": 0,
-    "cache_read_tokens": 0,
-    "cache_creation_tokens": 0,
-    "total_tokens": 0,
-    "context_window_pct": 0.0,
-    "estimated_cost_usd": 35.1985
+    "input_tokens": 1,
+    "output_tokens": 36247,
+    "cache_read_tokens": 118290,
+    "cache_creation_tokens": 311203,
+    "total_tokens": 118291,
+    "context_window_pct": 59.15,
+    "estimated_cost_usd": 40.1051
   },
   "compactions": [
     {
@@ -48,9 +48,9 @@
     }
   ],
   "totals": {
-    "total_input": 62390,
-    "total_output": 192616,
-    "total_cost_usd": 35.1985,
+    "total_input": 73189,
+    "total_output": 228863,
+    "total_cost_usd": 40.1051,
     "compaction_count": 2,
     "iterations_tracked": 2
   }

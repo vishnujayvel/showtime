@@ -1,5 +1,5 @@
 {
-  "static_analysis": 4,
+  "static_analysis": 5,
   "test_coverage": 0,
-  "code_review": 0
+  "code_review": 1
 }
