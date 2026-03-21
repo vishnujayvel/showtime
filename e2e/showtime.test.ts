@@ -429,12 +429,13 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
     expect(bounds.height).toBe(740)
   })
 
-  test('#3 tray menu labels include Quit Showtime', async () => {
+  test('#3 tray menu labels include Quit Showtime and Reset Show', async () => {
     const labels = await app.evaluate(async () => {
       return (global as any).__trayMenuLabels || []
     })
     expect(labels).toContain('Quit Showtime')
     expect(labels).toContain('Show Showtime')
+    expect(labels).toContain('Reset Show')
   })
 })
 
@@ -984,6 +985,85 @@ test.describe('Dynamic Window Bounds (#10)', () => {
     const boundsAfter = await bwHandle.evaluate((bw) => bw.getBounds())
     expect(boundsAfter.width).toBe(560)
     expect(boundsAfter.height).toBe(740)
+  })
+})
+
+// ─── Reset Show (#16) ───
+
+test.describe('Reset Show (#16)', () => {
+  test('Director Mode shows reset button with confirmation dialog', async () => {
+    // Set up live phase with director mode
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('showtime-show-state')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        parsed.state.phase = 'director'
+        parsed.state.isExpanded = true
+        parsed.state.beatsLocked = 1
+        parsed.state.beatCheckPending = false
+        parsed.state.celebrationActive = false
+        parsed.state.goingLiveActive = false
+        if (!parsed.state.acts || parsed.state.acts.length === 0) {
+          parsed.state.acts = [
+            { id: 'reset-act-1', name: 'Test Act', sketch: 'Testing', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
+          ]
+          parsed.state.currentActId = 'reset-act-1'
+        }
+        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+      }
+    })
+    await navigateAndWait()
+
+    // Director Mode should be visible
+    const directorTitle = page.getByText('The Director is here.')
+    await expect(directorTitle).toBeVisible({ timeout: 10000 })
+
+    // Reset button should be visible
+    const resetBtn = page.getByText("Reset tonight's show")
+    await expect(resetBtn).toBeVisible({ timeout: 5000 })
+    await resetBtn.click()
+    await page.waitForTimeout(500)
+
+    // Confirmation dialog should appear
+    const confirmTitle = page.getByText("Reset tonight's show?")
+    await expect(confirmTitle).toBeVisible({ timeout: 5000 })
+    await screenshot('reset-show-confirm')
+
+    // Cancel and verify dialog closes
+    const cancelBtn = page.getByText('Cancel')
+    await cancelBtn.click()
+    await page.waitForTimeout(300)
+
+    // Director mode should still be visible
+    await expect(directorTitle).toBeVisible({ timeout: 3000 })
+  })
+
+  test('confirming reset returns to Dark Studio', async () => {
+    // Click reset again
+    const resetBtn = page.getByText("Reset tonight's show")
+    await resetBtn.click()
+    await page.waitForTimeout(500)
+
+    // Confirm reset
+    const confirmResetBtn = page.getByText('Reset Show')
+    await confirmResetBtn.click()
+    await page.waitForTimeout(1000)
+
+    // Should be back at Dark Studio
+    const cta = page.getByText("Enter the Writer's Room")
+    await expect(cta).toBeVisible({ timeout: 10000 })
+
+    // Verify state is reset
+    const state = await page.evaluate(() => {
+      const raw = localStorage.getItem('showtime-show-state')
+      return raw ? JSON.parse(raw).state : null
+    })
+    if (state) {
+      expect(state.phase).toBe('no_show')
+      expect(state.acts).toHaveLength(0)
+      expect(state.beatsLocked).toBe(0)
+    }
+    await screenshot('reset-show-complete')
   })
 })
 
