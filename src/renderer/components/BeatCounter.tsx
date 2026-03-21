@@ -1,48 +1,50 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { Star } from '@phosphor-icons/react'
 import { useShowStore } from '../stores/showStore'
-import { useColors } from '../theme'
+import { cn } from '../lib/utils'
 
 interface BeatCounterProps {
-  compact?: boolean
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  showLabel?: boolean
+  dimmed?: boolean
+  justIgnitedIndex?: number | null
 }
 
-export function BeatCounter({ compact }: BeatCounterProps) {
+const sizeClasses: Record<NonNullable<BeatCounterProps['size']>, string> = {
+  sm: 'text-sm',
+  md: 'text-xl',
+  lg: 'text-2xl',
+  xl: 'text-3xl',
+}
+
+export function BeatCounter({
+  size = 'md',
+  showLabel = false,
+  dimmed = false,
+  justIgnitedIndex = null,
+}: BeatCounterProps) {
   const beatsLocked = useShowStore((s) => s.beatsLocked)
   const beatThreshold = useShowStore((s) => s.beatThreshold)
-  const colors = useColors()
 
   const stars = Array.from({ length: beatThreshold }, (_, i) => i < beatsLocked)
 
-  if (compact) {
-    return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 14, color: colors.textSecondary }}>
-        {stars.map((filled, i) => (
-          <Star key={i} size={14} weight={filled ? 'fill' : 'regular'} color={filled ? '#f59e0b' : colors.textTertiary} />
-        ))}
-        <span style={{ marginLeft: 2 }}>{beatsLocked}/{beatThreshold}</span>
-      </span>
-    )
-  }
-
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px' }}>
-      <div style={{ display: 'flex', gap: 4 }}>
-        {stars.map((filled, i) => (
-          <motion.div
-            key={i}
-            initial={false}
-            animate={filled ? { scale: [1, 1.3, 1] } : {}}
-            transition={{ duration: 0.3 }}
-          >
-            <Star size={20} weight={filled ? 'fill' : 'regular'} color={filled ? '#f59e0b' : colors.textTertiary} />
-          </motion.div>
-        ))}
-      </div>
-      <span style={{ fontSize: 14, fontWeight: 500, color: colors.textSecondary }}>
-        {beatsLocked}/{beatThreshold} Beats
-      </span>
+    <div className={cn('inline-flex items-center gap-1', dimmed && 'opacity-35')}>
+      {stars.map((filled, i) => (
+        <span
+          key={i}
+          className={cn(
+            sizeClasses[size],
+            filled ? 'text-beat beat-lit' : 'text-txt-muted beat-dim',
+            justIgnitedIndex === i && 'animate-beat-ignite',
+          )}
+        >
+          {filled ? '\u2605' : '\u2606'}
+        </span>
+      ))}
+      {showLabel && (
+        <span className="text-sm text-txt-secondary ml-1">
+          {beatsLocked}/{beatThreshold} Beats
+        </span>
+      )}
     </div>
   )
 }
