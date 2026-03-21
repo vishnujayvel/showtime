@@ -7,7 +7,6 @@ export function DarkStudioView() {
 
   return (
     <div
-      data-clui-ui
       className="min-h-screen bg-studio-bg flex flex-col items-center justify-center relative"
     >
       {/* Spotlight overlay */}

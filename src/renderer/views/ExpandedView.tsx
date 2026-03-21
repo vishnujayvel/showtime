@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { TimerPanel } from '../panels/TimerPanel'
@@ -20,7 +19,6 @@ export function ExpandedView() {
   return (
     <motion.div
       className="w-[560px] min-h-[620px] bg-surface rounded-xl overflow-hidden flex flex-col"
-      data-clui-ui
       initial={{ scale: 0.9, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -28,8 +26,7 @@ export function ExpandedView() {
     >
       {/* Title Bar */}
       <div
-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
       >
         <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
           SHOWTIME
@@ -38,22 +35,19 @@ export function ExpandedView() {
         <div className="flex items-center gap-1">
           <button
             onClick={enterDirector}
-            className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors"
-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+            className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors no-drag"
           >
             Director
           </button>
           <button
             onClick={toggleExpanded}
-            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors"
-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
           >
             ▼
           </button>
           <button
             onClick={() => window.clui.quit()}
-            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm"
-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm no-drag"
             title="Quit Showtime"
           >
             ✕

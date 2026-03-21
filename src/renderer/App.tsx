@@ -23,6 +23,8 @@ export default function App() {
   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
+  const beatCheckPending = useShowStore((s) => s.beatCheckPending)
+  const setExpanded = useShowStore((s) => s.setExpanded)
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
 
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -60,40 +62,6 @@ export default function App() {
     })
   }, [])
 
-  // ─── OS-level click-through ───
-  useEffect(() => {
-    if (!window.clui?.setIgnoreMouseEvents) return
-    let lastIgnored: boolean | null = null
-
-    const onMouseMove = (e: MouseEvent) => {
-      const el = document.elementFromPoint(e.clientX, e.clientY)
-      const isUI = !!(el && el.closest('[data-clui-ui]'))
-      const shouldIgnore = !isUI
-      if (shouldIgnore !== lastIgnored) {
-        lastIgnored = shouldIgnore
-        if (shouldIgnore) {
-          window.clui.setIgnoreMouseEvents(true, { forward: true })
-        } else {
-          window.clui.setIgnoreMouseEvents(false)
-        }
-      }
-    }
-
-    const onMouseLeave = () => {
-      if (lastIgnored !== true) {
-        lastIgnored = true
-        window.clui.setIgnoreMouseEvents(true, { forward: true })
-      }
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseleave', onMouseLeave)
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseleave', onMouseLeave)
-    }
-  }, [])
-
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {
     if (!window.clui?.setViewMode) return
@@ -122,6 +90,14 @@ export default function App() {
         break
     }
   }, [phase, isExpanded, goingLiveActive])
+
+  // ─── Force-expand on Beat Check ───
+  useEffect(() => {
+    if (beatCheckPending && !isExpanded) {
+      setExpanded(true)
+      window.clui?.setViewMode('expanded')
+    }
+  }, [beatCheckPending, isExpanded, setExpanded])
 
   // ─── Onboarding completion handler ───
   const handleOnboardingComplete = useCallback((enterRoom: boolean) => {

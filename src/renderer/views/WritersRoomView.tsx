@@ -124,20 +124,17 @@ ${planText}`
   return (
     <div
       className="w-[560px] min-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
-      data-clui-ui
     >
       {/* Title bar */}
       <div
-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
       >
         <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
           SHOWTIME
         </span>
         <button
           onClick={() => window.clui.quit()}
-          className="text-txt-muted hover:text-onair transition-colors text-sm"
-          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+          className="text-txt-muted hover:text-onair transition-colors text-sm no-drag"
           title="Quit Showtime"
         >
           ✕
