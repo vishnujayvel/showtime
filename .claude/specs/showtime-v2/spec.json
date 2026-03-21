@@ -1,0 +1,32 @@
+{
+  "feature_name": "showtime-v2",
+  "created_at": "2026-03-21T04:20:00Z",
+  "updated_at": "2026-03-20T22:00:00Z",
+  "language": "en",
+  "phase": "tasks-generated",
+  "supersedes": "showtime-snl-planner",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": false
+    }
+  },
+  "ready_for_implementation": true,
+  "context_documents": {
+    "product_context": "docs/plans/product-context.md",
+    "design_system": "docs/plans/design-system.md",
+    "mockup": "docs/mockups/direction-4-the-show.html",
+    "snl_framework": "docs/plans/snl-framework-reference.md",
+    "electron_best_practices": "docs/plans/electron-best-practices-research.md",
+    "design": ".claude/specs/showtime-v2/design.md",
+    "tasks": ".claude/specs/showtime-v2/tasks.md"
+  }
+}

@@ -367,10 +367,29 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
 // Initialize CSS vars with saved theme
 syncTokensToCss(saved.themeMode === 'light' ? lightColors : darkColors)
 
-/** Reactive hook — returns the active color palette */
-export function useColors(): ColorPalette {
+/** Showtime convenience aliases — maps short names to existing CLUI tokens */
+interface ShowtimeColors extends ColorPalette {
+  text: string
+  textSecondary: string
+  textTertiary: string
+  border: string
+  cardBg: string
+  pillBg: string
+}
+
+/** Reactive hook — returns the active color palette with Showtime aliases */
+export function useColors(): ShowtimeColors {
   const isDark = useThemeStore((s) => s.isDark)
-  return isDark ? darkColors : lightColors
+  const palette = isDark ? darkColors : lightColors
+  return {
+    ...palette,
+    text: palette.textPrimary,
+    textSecondary: palette.textSecondary,
+    textTertiary: palette.textTertiary,
+    border: palette.containerBorder,
+    cardBg: palette.containerBg,
+    pillBg: palette.containerBgCollapsed,
+  }
 }
 
 /** Non-reactive getter — use outside React components */

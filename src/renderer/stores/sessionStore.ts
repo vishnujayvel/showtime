@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import type { TabStatus, NormalizedEvent, EnrichedError, Message, TabState, Attachment, CatalogPlugin, PluginStatus } from '../../shared/types'
+import type { TabStatus, NormalizedEvent, EnrichedError, Message, TabState, Attachment } from '../../shared/types'
 import { useThemeStore } from '../theme'
+// @ts-expect-error Vite handles mp3 imports at build time
 import notificationSrc from '../../../resources/notification.mp3'
 
 // ─── Known models ───
@@ -33,16 +34,6 @@ interface State {
   /** Global permission mode: 'ask' shows cards, 'auto' auto-approves all tool calls */
   permissionMode: 'ask' | 'auto'
 
-  // Marketplace state
-  marketplaceOpen: boolean
-  marketplaceCatalog: CatalogPlugin[]
-  marketplaceLoading: boolean
-  marketplaceError: string | null
-  marketplaceInstalledNames: string[]
-  marketplacePluginStates: Record<string, PluginStatus>
-  marketplaceSearch: string
-  marketplaceFilter: string
-
   // Actions
   initStaticInfo: () => Promise<void>
   setPreferredModel: (model: string | null) => void
@@ -52,14 +43,6 @@ interface State {
   closeTab: (tabId: string) => void
   clearTab: () => void
   toggleExpanded: () => void
-  toggleMarketplace: () => void
-  closeMarketplace: () => void
-  loadMarketplace: (forceRefresh?: boolean) => Promise<void>
-  setMarketplaceSearch: (query: string) => void
-  setMarketplaceFilter: (filter: string) => void
-  installMarketplacePlugin: (plugin: CatalogPlugin) => Promise<void>
-  uninstallMarketplacePlugin: (plugin: CatalogPlugin) => Promise<void>
-  buildYourOwn: () => void
   resumeSession: (sessionId: string, title?: string, projectPath?: string) => Promise<string>
   addSystemMessage: (content: string) => void
   sendMessage: (prompt: string, projectPath?: string) => void
@@ -129,16 +112,6 @@ export const useSessionStore = create<State>((set, get) => ({
   preferredModel: null,
   permissionMode: 'ask',
 
-  // Marketplace
-  marketplaceOpen: false,
-  marketplaceCatalog: [],
-  marketplaceLoading: false,
-  marketplaceError: null,
-  marketplaceInstalledNames: [],
-  marketplacePluginStates: {},
-  marketplaceSearch: '',
-  marketplaceFilter: 'All',
-
   initStaticInfo: async () => {
     try {
       const result = await window.clui.start()
@@ -195,7 +168,6 @@ export const useSessionStore = create<State>((set, get) => ({
       const willExpand = !s.isExpanded
       set((prev) => ({
         isExpanded: willExpand,
-        marketplaceOpen: false,
         // Expanding = reading: clear unread flag
         tabs: willExpand
           ? prev.tabs.map((t) => t.id === tabId ? { ...t, hasUnread: false } : t)
@@ -205,7 +177,6 @@ export const useSessionStore = create<State>((set, get) => ({
       // Switching to a different tab: mark as read
       set((prev) => ({
         activeTabId: tabId,
-        marketplaceOpen: false,
         tabs: prev.tabs.map((t) =>
           t.id === tabId ? { ...t, hasUnread: false } : t
         ),
@@ -224,99 +195,6 @@ export const useSessionStore = create<State>((set, get) => ({
         ? s.tabs.map((t) => t.id === activeTabId ? { ...t, hasUnread: false } : t)
         : s.tabs,
     }))
-  },
-
-  toggleMarketplace: () => {
-    const s = get()
-    if (s.marketplaceOpen) {
-      set({ marketplaceOpen: false })
-    } else {
-      set({ isExpanded: false, marketplaceOpen: true })
-      get().loadMarketplace()
-    }
-  },
-
-  closeMarketplace: () => {
-    set({ marketplaceOpen: false })
-  },
-
-  loadMarketplace: async (forceRefresh) => {
-    set({ marketplaceLoading: true, marketplaceError: null })
-    try {
-      const [catalog, installed] = await Promise.all([
-        window.clui.fetchMarketplace(forceRefresh),
-        window.clui.listInstalledPlugins(),
-      ])
-      if (catalog.error && catalog.plugins.length === 0) {
-        set({ marketplaceError: catalog.error, marketplaceLoading: false })
-        return
-      }
-      const installedSet = new Set(installed.map((n) => n.toLowerCase()))
-      const pluginStates: Record<string, PluginStatus> = {}
-      for (const p of catalog.plugins) {
-        // For SKILL.md skills: match individual name against ~/.claude/skills/ dirs
-        // For CLI plugins: match installName or "installName@marketplace" against installed_plugins.json
-        const candidates = p.isSkillMd
-          ? [p.installName]
-          : [p.installName, `${p.installName}@${p.marketplace}`]
-        const isInstalled = candidates.some((c) => installedSet.has(c.toLowerCase()))
-        pluginStates[p.id] = isInstalled ? 'installed' : 'not_installed'
-      }
-      set({
-        marketplaceCatalog: catalog.plugins,
-        marketplaceInstalledNames: installed,
-        marketplacePluginStates: pluginStates,
-        marketplaceLoading: false,
-      })
-    } catch (err: unknown) {
-      set({
-        marketplaceError: err instanceof Error ? err.message : String(err),
-        marketplaceLoading: false,
-      })
-    }
-  },
-
-  setMarketplaceSearch: (query) => {
-    set({ marketplaceSearch: query })
-  },
-
-  setMarketplaceFilter: (filter) => {
-    set({ marketplaceFilter: filter })
-  },
-
-  installMarketplacePlugin: async (plugin) => {
-    set((s) => ({
-      marketplacePluginStates: { ...s.marketplacePluginStates, [plugin.id]: 'installing' },
-    }))
-    const result = await window.clui.installPlugin(plugin.repo, plugin.installName, plugin.marketplace, plugin.sourcePath, plugin.isSkillMd)
-    if (result.ok) {
-      set((s) => ({
-        marketplacePluginStates: { ...s.marketplacePluginStates, [plugin.id]: 'installed' as PluginStatus },
-        marketplaceInstalledNames: [...s.marketplaceInstalledNames, plugin.installName],
-      }))
-    } else {
-      set((s) => ({
-        marketplacePluginStates: { ...s.marketplacePluginStates, [plugin.id]: 'failed' },
-      }))
-    }
-  },
-
-  uninstallMarketplacePlugin: async (plugin) => {
-    const result = await window.clui.uninstallPlugin(plugin.installName)
-    if (result.ok) {
-      set((s) => ({
-        marketplacePluginStates: { ...s.marketplacePluginStates, [plugin.id]: 'not_installed' as PluginStatus },
-        marketplaceInstalledNames: s.marketplaceInstalledNames.filter((n) => n !== plugin.installName),
-      }))
-    }
-  },
-
-  buildYourOwn: () => {
-    set({ marketplaceOpen: false, isExpanded: true })
-    // Small delay to let the UI transition
-    setTimeout(() => {
-      get().sendMessage('Help me create a new Claude Code skill')
-    }, 100)
   },
 
   closeTab: (tabId) => {

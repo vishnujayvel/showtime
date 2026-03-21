@@ -294,6 +294,52 @@ export interface CatalogPlugin {
   isSkillMd: boolean      // true = individual SKILL.md (direct install), false = CLI plugin (bundle install)
 }
 
+// ─── Showtime SNL Types ───
+
+export type ShowPhase = 'no_show' | 'writers_room' | 'live' | 'intermission' | 'director' | 'strike'
+export type EnergyLevel = 'high' | 'medium' | 'low' | 'recovery'
+export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
+export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
+
+export interface Act {
+  id: string
+  name: string
+  sketch: string
+  durationMinutes: number
+  status: ActStatus
+  beatLocked: boolean
+  startedAt?: number
+  completedAt?: number
+  order: number
+}
+
+export interface ShowLineup {
+  acts: Array<{
+    name: string
+    sketch: string
+    durationMinutes: number
+    reason?: string
+  }>
+  beatThreshold: number
+  openingNote: string
+}
+
+export interface ShowState {
+  phase: ShowPhase
+  energy: EnergyLevel | null
+  acts: Act[]
+  currentActId: string | null
+  beatsLocked: number
+  beatThreshold: number
+  timerEndAt: number | null
+  timerPausedRemaining: number | null
+  claudeSessionId: string | null
+  showDate: string
+  verdict: ShowVerdict | null
+  isExpanded: boolean
+  beatCheckPending: boolean
+}
+
 // ─── IPC Channel Names ───
 
 export const IPC = {
@@ -357,6 +403,11 @@ export const IPC = {
 
   // Permission mode
   SET_PERMISSION_MODE: 'clui:set-permission-mode',
+
+  // Showtime notifications
+  NOTIFY_ACT_COMPLETE: 'showtime:notify-act-complete',
+  NOTIFY_BEAT_CHECK: 'showtime:notify-beat-check',
+  NOTIFY_VERDICT: 'showtime:notify-verdict',
 
   // Legacy (kept for backward compat during migration)
   STREAM_EVENT: 'clui:stream-event',
