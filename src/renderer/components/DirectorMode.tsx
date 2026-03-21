@@ -1,6 +1,15 @@
+import { useState } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { Button } from '../ui/button'
 import { motion } from 'framer-motion'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../ui/dialog'
 
 export function DirectorMode() {
   const exitDirector = useShowStore((s) => s.exitDirector)
@@ -9,6 +18,8 @@ export function DirectorMode() {
   const callShowEarly = useShowStore((s) => s.callShowEarly)
   const enterIntermission = useShowStore((s) => s.enterIntermission)
   const startBreathingPause = useShowStore((s) => s.startBreathingPause)
+  const resetShow = useShowStore((s) => s.resetShow)
+  const [confirmReset, setConfirmReset] = useState(false)
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-[12px] z-50 flex items-center justify-center">
@@ -64,8 +75,42 @@ export function DirectorMode() {
           >
             Just a moment
           </Button>
+
+          <div className="border-t border-surface-hover my-1" />
+
+          <Button
+            className="w-full py-3 rounded-xl bg-txt-muted/10 text-txt-muted text-sm font-medium border border-txt-muted/20 hover:bg-txt-muted/15 transition-colors"
+            onClick={() => setConfirmReset(true)}
+          >
+            Reset tonight's show
+          </Button>
         </div>
       </motion.div>
+
+      <Dialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset tonight's show?</DialogTitle>
+            <DialogDescription>
+              This clears your lineup, timer, and beats. It can't be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost_muted" onClick={() => setConfirmReset(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="accent"
+              onClick={() => {
+                setConfirmReset(false)
+                resetShow()
+              }}
+            >
+              Reset Show
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

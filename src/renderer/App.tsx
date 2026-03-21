@@ -34,6 +34,13 @@ export default function App() {
     return localStorage.getItem('showtime-onboarding-complete') !== 'true'
   })
 
+  // ─── Listen for tray-triggered reset ───
+  const resetShow = useShowStore((s) => s.resetShow)
+  useEffect(() => {
+    if (!window.clui?.onResetShow) return
+    return window.clui.onResetShow(() => resetShow())
+  }, [resetShow])
+
   // ─── Theme initialization ───
   useEffect(() => {
     window.clui.getTheme().then(({ isDark }) => {
