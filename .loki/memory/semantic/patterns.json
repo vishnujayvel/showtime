@@ -28,7 +28,47 @@
       "access_count": 0,
       "last_used": "2026-03-21T06:58:45.244105Z",
       "updated_at": "2026-03-21T22:15:03.250171+00:00"
+    },
+    {
+      "id": "sem-2171cc6e",
+      "pattern": "Pattern: /Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-3-proposal.md (and 8 similar)",
+      "category": "testing",
+      "conditions": [
+        "During ACT phase",
+        "When working with .json files"
+      ],
+      "correct_approach": "",
+      "incorrect_approach": "",
+      "confidence": 0.95,
+      "source_episodes": [
+        "ep-2026-03-21-ea787d4b",
+        "ep-2026-03-21-8d220428",
+        "ep-2026-03-21-4c8467d1",
+        "ep-2026-03-21-3f03c773",
+        "ep-2026-03-21-3a0dd5f7",
+        "ep-2026-03-21-2fef694f",
+        "ep-2026-03-21-280b0c77",
+        "ep-2026-03-21-0833d598",
+        "ep-2026-03-21-0741a591"
+      ],
+      "usage_count": 0,
+      "links": [
+        {
+          "to": "sem-2b377288",
+          "relation": "related_to",
+          "strength": 0.35
+        },
+        {
+          "to": "sem-2b377288",
+          "relation": "derived_from",
+          "strength": 0.8888888888888888
+        }
+      ],
+      "importance": 0.5,
+      "access_count": 0,
+      "last_used": "2026-03-21T23:16:39.991606Z",
+      "updated_at": "2026-03-21T23:16:39.992119+00:00"
     }
   ],
-  "last_updated": "2026-03-21T22:15:03.250173+00:00"
+  "last_updated": "2026-03-21T23:16:39.992120+00:00"
 }

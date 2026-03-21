@@ -1,0 +1,13 @@
+{
+  "id": "fed90aac",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-21T23:16:40.768113+00:00",
+  "payload": {
+    "action": "learning_signal",
+    "signal_id": "sig-1abf498f",
+    "signal_type": "success_pattern",
+    "outcome": "success"
+  },
+  "version": "1.0"
+}

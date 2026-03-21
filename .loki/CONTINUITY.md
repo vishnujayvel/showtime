@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-21T22:12:30Z
+Updated: 2026-03-21T23:14:50Z
 
 ## Current State
 
@@ -12,9 +12,9 @@ Updated: 2026-03-21T22:12:30Z
 
 ## Last Completed Task
 
-- Last commit: fix: border fix #22 + architecture cleanup #24
-- Files changed: package.json, src/__tests__/showStore.test.ts, src/main/index.ts, src/preload/index.ts, src/renderer/components/MiniRundownStrip.tsx
-  (+14 more)
+- Last commit: feat: wave 3 — onboarding E2E fix + cold open splash + window sizing
+- Files changed: e2e/showtime.test.ts, src/__tests__/showStore.test.ts, src/renderer/App.tsx, src/renderer/stores/showStore.ts, src/renderer/views/ColdOpenTransition.tsx
+  (+2 more)
 
 ## Active Blockers
 
