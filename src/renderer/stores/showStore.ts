@@ -68,6 +68,9 @@ interface ShowActions {
 
   // Session
   setClaudeSessionId: (id: string) => void
+
+  // SQLite hydration
+  hydrateFromSQLite: () => Promise<void>
 }
 
 interface ShowStoreState {
@@ -81,6 +84,7 @@ interface ShowStoreState {
   timerPausedRemaining: number | null
   claudeSessionId: string | null
   showDate: string
+  showStartedAt: number | null
   verdict: ShowVerdict | null
   isExpanded: boolean
   beatCheckPending: boolean
@@ -107,6 +111,7 @@ const initialState: ShowStoreState = {
   timerPausedRemaining: null,
   claudeSessionId: null,
   showDate: today(),
+  showStartedAt: null,
   verdict: null,
   isExpanded: true,
   beatCheckPending: false,
@@ -115,6 +120,63 @@ const initialState: ShowStoreState = {
   writersRoomStep: 'energy',
   writersRoomEnteredAt: null,
   breathingPauseEndAt: null,
+}
+
+// ─── SQLite sync helpers ───
+
+function buildSnapshot(state: ShowStoreState) {
+  return {
+    showId: state.showDate,
+    phase: state.phase,
+    energy: state.energy,
+    verdict: state.verdict,
+    beatsLocked: state.beatsLocked,
+    beatThreshold: state.beatThreshold,
+    startedAt: state.showStartedAt,
+    planText: null as string | null,
+    acts: state.acts.map((a) => ({
+      id: a.id,
+      name: a.name,
+      sketch: a.sketch,
+      category: null as string | null,
+      plannedDurationMs: a.durationMinutes * 60 * 1000,
+      actualDurationMs: a.completedAt && a.startedAt ? a.completedAt - a.startedAt : null,
+      sortOrder: a.order,
+      status: a.status === 'upcoming' ? 'pending' : a.status,
+      beatLocked: a.beatLocked ? 1 : 0,
+      plannedStartAt: null as number | null,
+      actualStartAt: a.startedAt ?? null,
+      actualEndAt: a.completedAt ?? null,
+    })),
+  }
+}
+
+function syncToSQLite(state: ShowStoreState): void {
+  try {
+    window.clui.dataSync(buildSnapshot(state))
+  } catch { /* ignore if clui not ready */ }
+}
+
+function flushToSQLite(state: ShowStoreState): void {
+  try {
+    window.clui.dataFlush(buildSnapshot(state))
+  } catch { /* ignore if clui not ready */ }
+}
+
+function recordTimeline(eventType: string, showId: string, actId?: string | null, extra?: Record<string, unknown>): void {
+  try {
+    window.clui.timelineRecord({
+      showId,
+      actId: actId ?? null,
+      eventType,
+      actualStart: extra?.actualStart ?? null,
+      actualEnd: extra?.actualEnd ?? null,
+      plannedStart: extra?.plannedStart ?? null,
+      plannedEnd: extra?.plannedEnd ?? null,
+      driftSeconds: extra?.driftSeconds ?? null,
+      metadata: extra?.metadata ?? null,
+    })
+  } catch { /* ignore if clui not ready */ }
 }
 
 export const useShowStore = create<ShowStore>()(
@@ -163,10 +225,15 @@ export const useShowStore = create<ShowStore>()(
           currentActId: firstAct.id,
           timerEndAt: now + firstAct.durationMinutes * 60 * 1000,
           showDate: today(),
+          showStartedAt: now,
           acts: acts.map((a, i) =>
             i === 0 ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
           ),
         })
+        const state = get()
+        recordTimeline('show_started', state.showDate, null, { actualStart: now })
+        recordTimeline('act_started', state.showDate, firstAct.id, { actualStart: now })
+        flushToSQLite(state)
       },
 
       // ─── Going Live Transition ───
@@ -194,20 +261,34 @@ export const useShowStore = create<ShowStore>()(
             a.id === actId ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
           ),
         }))
+        recordTimeline('act_started', get().showDate, actId, { actualStart: now })
+        flushToSQLite(get())
       },
 
       completeAct: (actId) => {
         const act = get().acts.find((a) => a.id === actId)
+        const now = Date.now()
         set((s) => ({
           acts: s.acts.map((a) =>
-            a.id === actId ? { ...a, status: 'completed' as ActStatus, completedAt: Date.now() } : a
+            a.id === actId ? { ...a, status: 'completed' as ActStatus, completedAt: now } : a
           ),
           timerEndAt: null,
           timerPausedRemaining: null,
           beatCheckPending: true,
         }))
-        if (act) window.clui.notifyActComplete(act.name, act.sketch)
-        if (act) window.clui.notifyBeatCheck(act.name)
+        if (act) {
+          const actualMs = act.startedAt ? now - act.startedAt : 0
+          const plannedMs = act.durationMinutes * 60 * 1000
+          const driftSeconds = Math.round((actualMs - plannedMs) / 1000)
+          recordTimeline('act_completed', get().showDate, actId, {
+            actualStart: act.startedAt,
+            actualEnd: now,
+            driftSeconds,
+          })
+          window.clui.notifyActComplete(act.name, act.sketch)
+          window.clui.notifyBeatCheck(act.name)
+        }
+        flushToSQLite(get())
       },
 
       skipAct: (actId) => {
@@ -227,6 +308,8 @@ export const useShowStore = create<ShowStore>()(
             timerPausedRemaining: wasActive ? null : s.timerPausedRemaining,
           }
         })
+        recordTimeline('act_cut', get().showDate, actId, { actualEnd: Date.now() })
+        flushToSQLite(get())
 
         // If was active and there's a next act, auto-start it
         const nextAct = get().acts.find((a) => a.status === 'upcoming')
@@ -241,6 +324,10 @@ export const useShowStore = create<ShowStore>()(
         set((s) => ({
           timerEndAt: s.timerEndAt ? s.timerEndAt + minutes * 60 * 1000 : null,
         }))
+        recordTimeline('act_extended', get().showDate, get().currentActId, {
+          metadata: { extensionMinutes: minutes },
+        })
+        syncToSQLite(get())
       },
 
       // ─── Beat Tracking ───
@@ -311,10 +398,13 @@ export const useShowStore = create<ShowStore>()(
           timerEndAt: null,
           timerPausedRemaining: remaining,
         })
+        recordTimeline('intermission_started', get().showDate, null, { actualStart: Date.now() })
+        flushToSQLite(get())
       },
 
       exitIntermission: () => {
         const { timerPausedRemaining, currentActId } = get()
+        recordTimeline('intermission_ended', get().showDate, null, { actualEnd: Date.now() })
 
         if (timerPausedRemaining && currentActId) {
           set({
@@ -322,12 +412,13 @@ export const useShowStore = create<ShowStore>()(
             timerEndAt: Date.now() + timerPausedRemaining,
             timerPausedRemaining: null,
           })
+          flushToSQLite(get())
         } else {
           // Between acts — start next
           const nextAct = get().acts.find((a) => a.status === 'upcoming')
           if (nextAct) {
             set({ phase: 'live' })
-            get().startAct(nextAct.id)
+            get().startAct(nextAct.id) // startAct handles its own flush
           } else {
             get().strikeTheStage()
           }
@@ -398,6 +489,7 @@ export const useShowStore = create<ShowStore>()(
       // ─── Lineup Editing ───
 
       reorderAct: (actId, direction) => {
+        const oldOrder = get().acts.find((a) => a.id === actId)?.order
         set((s) => {
           const sorted = [...s.acts].sort((a, b) => a.order - b.order)
           const idx = sorted.findIndex((a) => a.id === actId)
@@ -411,20 +503,35 @@ export const useShowStore = create<ShowStore>()(
             acts: newOrder.map((a, i) => ({ ...a, order: i })),
           }
         })
+        const state = get()
+        if (state.phase === 'live' || state.phase === 'intermission') {
+          const newOrderVal = state.acts.find((a) => a.id === actId)?.order
+          recordTimeline('act_reordered', state.showDate, actId, {
+            metadata: { oldOrder: oldOrder, newOrder: newOrderVal, direction },
+          })
+          syncToSQLite(state)
+        }
       },
 
       removeAct: (actId) => {
+        const state = get()
+        const isLive = state.phase === 'live' || state.phase === 'intermission'
         set((s) => ({
           acts: s.acts.filter((a) => a.id !== actId).map((a, i) => ({ ...a, order: i })),
         }))
+        if (isLive) {
+          recordTimeline('act_cut', get().showDate, actId, { actualEnd: Date.now() })
+          syncToSQLite(get())
+        }
       },
 
       addAct: (name, sketch, durationMinutes) => {
+        const newId = generateId()
         set((s) => ({
           acts: [
             ...s.acts,
             {
-              id: generateId(),
+              id: newId,
               name,
               sketch,
               durationMinutes,
@@ -434,6 +541,11 @@ export const useShowStore = create<ShowStore>()(
             },
           ],
         }))
+        const state = get()
+        if (state.phase === 'live' || state.phase === 'intermission') {
+          recordTimeline('act_planned', state.showDate, newId)
+          syncToSQLite(state)
+        }
       },
 
       // ─── Strike the Stage ───
@@ -461,6 +573,8 @@ export const useShowStore = create<ShowStore>()(
           isExpanded: true,
           beatCheckPending: false,
         })
+        recordTimeline('show_ended', get().showDate, null, { actualEnd: Date.now() })
+        flushToSQLite(get())
         window.clui.notifyVerdict(verdict, VERDICT_MESSAGES[verdict])
       },
 
@@ -476,12 +590,53 @@ export const useShowStore = create<ShowStore>()(
           clearTimeout(celebrationTimeout)
           celebrationTimeout = null
         }
-        set({ ...initialState, showDate: today(), isExpanded: true })
+        set({ ...initialState, showDate: today(), showStartedAt: null, isExpanded: true })
       },
 
       // ─── Session ───
 
       setClaudeSessionId: (id) => set({ claudeSessionId: id }),
+
+      // ─── SQLite Hydration ───
+
+      hydrateFromSQLite: async () => {
+        try {
+          const payload = await window.clui.dataHydrate()
+          if (!payload) return
+          // Reconstruct store state from SQLite snapshot
+          const activeAct = payload.acts?.find((a: any) => a.status === 'active')
+          const actsRehydrated: Act[] = (payload.acts || []).map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            sketch: a.sketch,
+            durationMinutes: Math.round(a.plannedDurationMs / 60000),
+            status: a.status === 'pending' ? 'upcoming' as ActStatus : a.status as ActStatus,
+            beatLocked: Boolean(a.beatLocked),
+            order: a.sortOrder,
+            startedAt: a.actualStartAt ?? undefined,
+            completedAt: a.actualEndAt ?? undefined,
+          }))
+          // Reconstruct timer from active act
+          let timerEndAt: number | null = null
+          if (activeAct) {
+            const elapsed = Date.now() - (activeAct.actualStartAt || Date.now())
+            const remaining = activeAct.plannedDurationMs - elapsed
+            timerEndAt = remaining > 0 ? Date.now() + remaining : null
+          }
+          set({
+            phase: payload.phase as ShowPhase,
+            energy: payload.energy as EnergyLevel | null,
+            acts: actsRehydrated,
+            currentActId: activeAct?.id ?? null,
+            beatsLocked: payload.beatsLocked ?? 0,
+            beatThreshold: payload.beatThreshold ?? 3,
+            timerEndAt,
+            verdict: payload.verdict as ShowVerdict | null,
+            showDate: payload.showId,
+            showStartedAt: payload.startedAt ?? null,
+          })
+        } catch { /* SQLite not available, proceed with localStorage state */ }
+      },
     }),
     {
       name: 'showtime-show-state',
