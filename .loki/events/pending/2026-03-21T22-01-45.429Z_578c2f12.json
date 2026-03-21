@@ -1,0 +1,8 @@
+{
+  "id": "578c2f12",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-21T22:01:45.429Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md"},
+  "version": "1.0"
+}

@@ -1,0 +1,7 @@
+VERDICT: FAIL
+
+FINDINGS:
+- [Medium] Removed selectors `selectNextAct`, `selectCompletedActs`, `selectSkippedActs`, `selectBeatsRemaining` from showStore — their tests were deleted but the underlying act-status-filtering logic (`.find(a => a.status === 'upcoming')`, `.filter(a => a.status === 'completed')`, etc.) is still used internally by `skipAct()`, `lockBeat()`, `skipBeat()`, and `strikeTheStage()`. No remaining unit tests directly assert these status-filtering paths. (src/renderer/stores/showStore.ts:663, src/__tests__/showStore.test.ts:742)
+- [Medium] New `formatDateLabel()` utility extracted to shared module with zero unit test coverage. Used by two views (ExpandedView, WritersRoomView) but locale formatting and `.toUpperCase()` transform are untested. (src/renderer/lib/utils.ts:7)
+- [Medium] `MiniRundownStrip` hooks-ordering fix (conditional return moved after `useEffect`) has no component-level or unit test coverage. No test file references `MiniRundownStrip` at all — the NOW marker positioning logic, act segment width calculation, and conditional rendering based on `phase` are completely untested. (src/renderer/components/MiniRundownStrip.tsx:13-33)
+- [Low] `ShowVerdict` changed from inline `style={{ background: spotlightGradient }}` to CSS class `spotlight-verdict`. Existing tests verify verdict text/titles but no test asserts the `spotlight-verdict` class is applied on DAY_WON verdict. (src/renderer/components/ShowVerdict.tsx:50)

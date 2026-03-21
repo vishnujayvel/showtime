@@ -1,0 +1,1377 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/STATUS.txt
+.loki/app-runner/detection.json
+.loki/app-runner/state.json
+.loki/autonomy-state.json
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+.loki/council/state.json
+.loki/dashboard-state.json
+.loki/dashboard/dashboard.pid
+.loki/events.jsonl
+.loki/logs/agent-audit.jsonl
+.loki/logs/audit-20260321.jsonl
+.loki/metrics/efficiency/iteration-1.json
+.loki/pids/65383.json
+.loki/prd-observations.md
+.loki/quality/gate-failure-count.json
+.loki/quality/gate-failures.txt
+.loki/quality/static-analysis.json
+.loki/quality/test-results.json
+.loki/queue/completed.json
+.loki/state/checkpoints/index.jsonl
+.loki/state/resources.json
+e2e/screenshots/20-rundown-bar-live.png
+e2e/screenshots/21-mini-rundown-strip.png
+e2e/screenshots/22-no-rundown-in-dark-studio.png
+e2e/screenshots/23-encore-button.png
+e2e/screenshots/24-encore-added.png
+e2e/screenshots/25-projected-times.png
+e2e/screenshots/onboarding-09-back.png
+e2e/screenshots/onboarding-10-help-retrigger.png
+package.json
+src/__tests__/showStore.test.ts
+src/main/index.ts
+src/preload/index.ts
+src/renderer/components/MiniRundownStrip.tsx
+src/renderer/components/PermissionCard.tsx
+src/renderer/components/ShowVerdict.tsx
+src/renderer/index.css
+src/renderer/lib/category-colors.ts
+src/renderer/lib/utils.ts
+src/renderer/panels/ChatPanel.tsx
+src/renderer/stores/showStore.ts
+src/renderer/ui/input.tsx
+src/renderer/ui/textarea.tsx
+src/renderer/views/ExpandedView.tsx
+src/renderer/views/OnboardingView.tsx
+src/renderer/views/StrikeView.tsx
+src/renderer/views/WritersRoomView.tsx
+src/shared/types.ts
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index a7b1345..d54dcf2 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,6 +1,6 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T21:51:47Z
++Updated: 2026-03-21T22:12:30Z
+ 
+ ## Current State
+ 
+@@ -12,9 +12,9 @@ Updated: 2026-03-21T21:51:47Z
+ 
+ ## Last Completed Task
+ 
+-- Last commit: feat: audio broadcast package + UX polish (5 features)
+-- Files changed: src/__tests__/audioAndPolish.test.tsx, src/renderer/components/BeatCheckModal.tsx, src/renderer/components/IntermissionView.tsx, src/renderer/components/MuteToggle.tsx, src/renderer/hooks/useAudio.ts
+-  (+7 more)
++- Last commit: fix: border fix #22 + architecture cleanup #24
++- Files changed: package.json, src/__tests__/showStore.test.ts, src/main/index.ts, src/preload/index.ts, src/renderer/components/MiniRundownStrip.tsx
++  (+14 more)
+ 
+ ## Active Blockers
+ 
+diff --git a/.loki/STATUS.txt b/.loki/STATUS.txt
+index ae3de63..6fe84bc 100644
+--- a/.loki/STATUS.txt
++++ b/.loki/STATUS.txt
+@@ -2,14 +2,14 @@
+ ║                    LOKI MODE STATUS                            ║
+ ╚════════════════════════════════════════════════════════════════╝
+ 
+-Updated: Sat Mar 21 14:53:50 PDT 2026
++Updated: Sat Mar 21 15:12:32 PDT 2026
+ 
+ Phase: DEVELOPMENT
+ 
+ Tasks:
+   ├─ Pending:     0
+   ├─ In Progress: 0
+-  ├─ Completed:   7
++  ├─ Completed:   8
+   └─ Failed:      3
+ 
+ Monitor: watch -n 2 cat .loki/STATUS.txt
+diff --git a/.loki/app-runner/detection.json b/.loki/app-runner/detection.json
+index dba720e..eaf7b38 100644
+--- a/.loki/app-runner/detection.json
++++ b/.loki/app-runner/detection.json
+@@ -3,5 +3,5 @@
+     "command": "npm run dev",
+     "port": 5173,
+     "is_docker": false,
+-    "detected_at": "2026-03-21T21:51:40Z"
++    "detected_at": "2026-03-21T22:12:26Z"
+ }
+diff --git a/.loki/app-runner/state.json b/.loki/app-runner/state.json
+index aea5395..fb38ee7 100644
+--- a/.loki/app-runner/state.json
++++ b/.loki/app-runner/state.json
+@@ -1,10 +1,10 @@
+ {
+-    "main_pid": 0,
+-    "process_group": "-0",
++    "main_pid": 5932,
++    "process_group": "-5932",
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-21T21:53:50Z",
++    "started_at": "2026-03-21T22:12:29Z",
+     "restart_count": 1,
+     "status": "stopped",
+     "last_health": {"ok": false},
+diff --git a/.loki/autonomy-state.json b/.loki/autonomy-state.json
+index f564572..e44bf4c 100644
+--- a/.loki/autonomy-state.json
++++ b/.loki/autonomy-state.json
+@@ -1,10 +1,10 @@
+ {
+     "retryCount": 2,
+-    "status": "completion_promise_fulfilled",
++    "status": "exited",
+     "lastExitCode": 0,
+-    "lastRun": "2026-03-21T21:53:49Z",
+-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md",
+-    "pid": 65108,
++    "lastRun": "2026-03-21T22:12:25Z",
++    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md",
++    "pid": 58641,
+     "maxRetries": 50,
+     "baseWait": 60
+ }
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index e0c1820..da4c6e9 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-244
+\ No newline at end of file
++297
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index e0eb3f2..5774479 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,15 +1,15 @@
+ {
+-  "session_id": "e57fc6e2-9b10-49bc-a529-a3b4785aefd5",
++  "session_id": "fa4685bc-b298-44ca-8b4d-446d2bbe09cd",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T21:51:40.271849+00:00",
++  "updated_at": "2026-03-21T22:12:26.035694+00:00",
+   "current": {
+     "input_tokens": 1,
+-    "output_tokens": 36247,
+-    "cache_read_tokens": 118290,
+-    "cache_creation_tokens": 311203,
+-    "total_tokens": 118291,
+-    "context_window_pct": 59.15,
+-    "estimated_cost_usd": 40.1051
++    "output_tokens": 5098,
++    "cache_read_tokens": 104310,
++    "cache_creation_tokens": 24888,
++    "total_tokens": 104311,
++    "context_window_pct": 52.16,
++    "estimated_cost_usd": 41.2175
+   },
+   "compactions": [
+     {
+@@ -48,9 +48,9 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 73189,
+-    "total_output": 228863,
+-    "total_cost_usd": 40.1051,
++    "total_input": 73221,
++    "total_output": 233961,
++    "total_cost_usd": 41.2175,
+     "compaction_count": 2,
+     "iterations_tracked": 2
+   }
+diff --git a/.loki/council/state.json b/.loki/council/state.json
+index ddbe8a3..eaaa60b 100644
+--- a/.loki/council/state.json
++++ b/.loki/council/state.json
+@@ -1,15 +1,12 @@
+ {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 25
+-}
+\ No newline at end of file
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
++}
+diff --git a/.loki/dashboard-state.json b/.loki/dashboard-state.json
+index 84bb8bf..ad5a290 100644
+--- a/.loki/dashboard-state.json
++++ b/.loki/dashboard-state.json
+@@ -1,5 +1,5 @@
+ {
+-  "timestamp": "2026-03-21T21:53:50Z",
++  "timestamp": "2026-03-21T22:12:33Z",
+   "version": "unknown",
+   "project": {
+     "name": "showtime",
+@@ -82,6 +82,15 @@
+     "completedAt": "2026-03-21T21:51:40Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-21T22:12:26Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ],
+     "failed": [
+@@ -118,8 +127,8 @@
+   "metrics": {
+     "tasksCompleted": 0,
+     "tasksFailed": 0,
+-    "cpuUsage": 32,
+-    "memoryUsage": 68,
++    "cpuUsage": 40,
++    "memoryUsage": 66,
+     "resourceStatus": "ok"
+   },
+   "memory": {
+@@ -129,47 +138,44 @@
+   },
+   "qualityGates": null,
+   "council": {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 25
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
+ },
+   "checklist": null,
+   "appRunner": {
+-    "main_pid": 34053,
+-    "process_group": "-34053",
++    "main_pid": 5932,
++    "process_group": "-5932",
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-21T21:51:46Z",
++    "started_at": "2026-03-21T22:12:29Z",
+     "restart_count": 1,
+-    "status": "running",
++    "status": "stopped",
+     "last_health": {"ok": false},
+     "crash_count": 0
+ },
+   "playwright": null,
+   "budget": null,
+   "context": {
+-  "session_id": "e57fc6e2-9b10-49bc-a529-a3b4785aefd5",
++  "session_id": "fa4685bc-b298-44ca-8b4d-446d2bbe09cd",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T21:51:40.271849+00:00",
++  "updated_at": "2026-03-21T22:12:26.035694+00:00",
+   "current": {
+     "input_tokens": 1,
+-    "output_tokens": 36247,
+-    "cache_read_tokens": 118290,
+-    "cache_creation_tokens": 311203,
+-    "total_tokens": 118291,
+-    "context_window_pct": 59.15,
+-    "estimated_cost_usd": 40.1051
++    "output_tokens": 5098,
++    "cache_read_tokens": 104310,
++    "cache_creation_tokens": 24888,
++    "total_tokens": 104311,
++    "context_window_pct": 52.16,
++    "estimated_cost_usd": 41.2175
+   },
+   "compactions": [
+     {
+@@ -208,13 +214,13 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 73189,
+-    "total_output": 228863,
+-    "total_cost_usd": 40.1051,
++    "total_input": 73221,
++    "total_output": 233961,
++    "total_cost_usd": 41.2175,
+     "compaction_count": 2,
+     "iterations_tracked": 2
+   }
+ },
+-  "tokens": {"input": 73189, "output": 228863, "cost_usd": 40.1051},
++  "tokens": {"input": 73221, "output": 233961, "cost_usd": 41.2175},
+   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
+ }
+diff --git a/.loki/dashboard/dashboard.pid b/.loki/dashboard/dashboard.pid
+index 11e83dd..0f7707e 100644
+--- a/.loki/dashboard/dashboard.pid
++++ b/.loki/dashboard/dashboard.pid
+@@ -1 +1 @@
+-65383
++58961
+diff --git a/.loki/events.jsonl b/.loki/events.jsonl
+index a1df0cd..e8627b1 100644
+--- a/.loki/events.jsonl
++++ b/.loki/events.jsonl
+@@ -54,3 +54,6 @@
+ {"timestamp":"2026-03-21T21:51:57Z","type":"code_review_start","data":{"review_id":"review-20260321T215156Z-1","reviewers":"architecture-strategist, test-coverage-auditor, security-sentinel","iteration":1}}
+ {"timestamp":"2026-03-21T21:53:48Z","type":"code_review_complete","data":{"review_id":"review-20260321T215156Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+ {"timestamp":"2026-03-21T21:53:49Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
++{"timestamp":"2026-03-21T22:01:58Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md","parallel":true,"complexity":"standard","pid":58641}}
++{"timestamp":"2026-03-21T22:01:58Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md"}}
++{"timestamp":"2026-03-21T22:12:25Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+diff --git a/.loki/logs/agent-audit.jsonl b/.loki/logs/agent-audit.jsonl
+index fc184d2..56fe3fd 100644
+--- a/.loki/logs/agent-audit.jsonl
++++ b/.loki/logs/agent-audit.jsonl
+@@ -24,3 +24,5 @@
+ {"timestamp": "2026-03-21T21:36:17Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md,provider=claude", "iteration": 0, "pid": 65108}
+ {"timestamp": "2026-03-21T21:36:18Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 65108}
+ {"timestamp": "2026-03-21T21:53:49Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 65108}
++{"timestamp": "2026-03-21T22:01:58Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md,provider=claude", "iteration": 0, "pid": 58641}
++{"timestamp": "2026-03-21T22:01:58Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 58641}
+diff --git a/.loki/logs/audit-20260321.jsonl b/.loki/logs/audit-20260321.jsonl
+index b4d2d3e..07461b5 100644
+--- a/.loki/logs/audit-20260321.jsonl
++++ b/.loki/logs/audit-20260321.jsonl
+@@ -68,3 +68,10 @@
+   "user": "vishnu",
+   "pid": 65108
+ }
++{
++  "timestamp": "2026-03-21T22:01:58Z",
++  "event": "SESSION_START",
++  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
++  "user": "vishnu",
++  "pid": 58641
++}
+diff --git a/.loki/metrics/efficiency/iteration-1.json b/.loki/metrics/efficiency/iteration-1.json
+index a353ad2..691871c 100644
+--- a/.loki/metrics/efficiency/iteration-1.json
++++ b/.loki/metrics/efficiency/iteration-1.json
+@@ -2,11 +2,11 @@
+   "iteration": 1,
+   "model": "opus",
+   "phase": "DEVELOPMENT",
+-  "duration_ms": 923000,
++  "duration_ms": 627000,
+   "provider": "claude",
+   "status": "completed",
+   "input_tokens": 2891,
+   "output_tokens": 80165,
+   "cost_usd": 13.4582,
+-  "timestamp": "2026-03-21T21:51:40Z"
++  "timestamp": "2026-03-21T22:12:26Z"
+ }
+diff --git a/.loki/pids/65383.json b/.loki/pids/65383.json
+deleted file mode 100644
+index 6de061b..0000000
+--- a/.loki/pids/65383.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{"pid":65383,"label":"dashboard","started":"2026-03-21T21:36:11Z","ppid":65108,"extra":"port=57374"}
+diff --git a/.loki/prd-observations.md b/.loki/prd-observations.md
+index 016b459..369e882 100644
+--- a/.loki/prd-observations.md
++++ b/.loki/prd-observations.md
+@@ -1,28 +1,28 @@
+ # PRD Analysis Observations
+ 
+-**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md`
+-**Analyzed:** 2026-03-21T21:36:17Z
+-**Quality Score:** 2.9/10
+-**Estimated Scope:** medium (~6 items detected)
++**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-2-proposal.md`
++**Analyzed:** 2026-03-21T22:01:58Z
++**Quality Score:** 3.5/10
++**Estimated Scope:** small (~5 items detected)
+ 
+ ## Strengths
+ 
+ - **Feature List**: Partially covered (mentioned but lacks dedicated section)
+-- **Tech Stack**: Partially covered (mentioned but lacks dedicated section)
+-- **User Stories / Flows**: Partially covered (mentioned but lacks dedicated section)
++- **Tech Stack**: Well-defined with dedicated section and content
++- **Acceptance Criteria**: Partially covered (mentioned but lacks dedicated section)
+ - **Data Model / Schema**: Partially covered (mentioned but lacks dedicated section)
+ - **Deployment Requirements**: Partially covered (mentioned but lacks dedicated section)
+ 
+ ## Missing or Unclear
+ 
+-- **Acceptance Criteria**: Measurable completion criteria or checklists
++- **User Stories / Flows**: User stories, personas, or user flow descriptions
+ - **API Specifications**: API endpoints, request/response formats
+ - **Error Handling**: Error handling, edge cases, and failure modes
+ - **Security Requirements**: Authentication, authorization, and security measures
+ 
+ ## Assumptions Made
+ 
+-- Will generate acceptance criteria from requirements
++- Will derive user flows from feature descriptions
+ - Will define API endpoints based on feature set
+ - Will implement standard error handling patterns
+ - Will apply baseline security (input validation, auth if applicable)
+@@ -30,9 +30,8 @@
+ ## Recommended Additions
+ 
+ - Add a dedicated **Feature List** section with more detail
+-- Add a dedicated **Tech Stack** section with more detail
+-- Add a dedicated **User Stories / Flows** section with more detail
+-- Add **Acceptance Criteria** section: Measurable completion criteria or checklists
++- Add **User Stories / Flows** section: User stories, personas, or user flow descriptions
++- Add a dedicated **Acceptance Criteria** section with more detail
+ - Add a dedicated **Data Model / Schema** section with more detail
+ - Add **API Specifications** section: API endpoints, request/response formats
+ - Add a dedicated **Deployment Requirements** section with more detail
+diff --git a/.loki/quality/gate-failure-count.json b/.loki/quality/gate-failure-count.json
+index 57145f3..4be7641 100644
+--- a/.loki/quality/gate-failure-count.json
++++ b/.loki/quality/gate-failure-count.json
+@@ -1,5 +1,7 @@
+ {
+-  "static_analysis": 5,
+-  "test_coverage": 0,
+-  "code_review": 1
++  "timestamp": "2026-03-21T22:11:48Z",
++  "gate_failures": [],
++  "pass": true,
++  "static_analysis": 1,
++  "test_coverage": 0
+ }
+\ No newline at end of file
+diff --git a/.loki/quality/gate-failures.txt b/.loki/quality/gate-failures.txt
+index a98cb15..8b13789 100644
+--- a/.loki/quality/gate-failures.txt
++++ b/.loki/quality/gate-failures.txt
+@@ -1 +1 @@
+-static_analysis,code_review,
++
+diff --git a/.loki/quality/static-analysis.json b/.loki/quality/static-analysis.json
+index 2bee65d..c0679a3 100644
+--- a/.loki/quality/static-analysis.json
++++ b/.loki/quality/static-analysis.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-21T21:51:48Z","files_checked":11,"findings":9,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/__tests__/audioAndPolish.test.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/BeatCheckModal.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/IntermissionView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/MuteToggle.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/GoingLiveTransition.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/PillView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/WritersRoomView.tsx. ","pass":false}
++{"timestamp":"2026-03-21T22:12:31Z","files_checked":13,"findings":6,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/MiniRundownStrip.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/components/ShowVerdict.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/OnboardingView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/WritersRoomView.tsx. ","pass":false}
+diff --git a/.loki/quality/test-results.json b/.loki/quality/test-results.json
+index 0cd960d..ac42daa 100644
+--- a/.loki/quality/test-results.json
++++ b/.loki/quality/test-results.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-21T21:51:56Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':67,'numPassedTestSuites':67,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':186,'numPassedTests':186,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774129910044,'success':true,'testResults':[{'asse"}
++{"timestamp":"2026-03-21T22:12:34Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':67,'numPassedTestSuites':67,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':182,'numPassedTests':182,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774131152140,'success':true,'testResults':[{'asse"}
+diff --git a/.loki/queue/completed.json b/.loki/queue/completed.json
+index 69d8b66..f3a9dea 100644
+--- a/.loki/queue/completed.json
++++ b/.loki/queue/completed.json
+@@ -61,5 +61,14 @@
+     "completedAt": "2026-03-21T21:51:40Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-21T22:12:26Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ]
+\ No newline at end of file
+diff --git a/.loki/state/checkpoints/index.jsonl b/.loki/state/checkpoints/index.jsonl
+index 3e9bf06..f57dd7c 100644
+--- a/.loki/state/checkpoints/index.jsonl
++++ b/.loki/state/checkpoints/index.jsonl
+@@ -18,3 +18,4 @@
+ {"id": "cp-2-1774128586", "ts": "2026-03-21T21:29:46Z", "iter": 2, "task": "session end (iterations=2)", "sha": "056cf9343b1380396656172eec53fc1972927234"}
+ {"id": "cp-1-1774129907", "ts": "2026-03-21T21:51:47Z", "iter": 1, "task": "iteration-1 complete", "sha": "3e1bd208a80044b77d8808a689aeb304548d0c68"}
+ {"id": "cp-1-1774130029", "ts": "2026-03-21T21:53:49Z", "iter": 1, "task": "session end (iterations=1)", "sha": "3e1bd208a80044b77d8808a689aeb304548d0c68"}
++{"id": "cp-1-1774131150", "ts": "2026-03-21T22:12:30Z", "iter": 1, "task": "iteration-1 complete", "sha": "7c04ddd379c5e5a726ea3452fe1414a4217d7622"}
+diff --git a/.loki/state/resources.json b/.loki/state/resources.json
+index 3244653..02a48e5 100644
+--- a/.loki/state/resources.json
++++ b/.loki/state/resources.json
+@@ -1,12 +1,12 @@
+ {
+-  "timestamp": "2026-03-21T21:51:24Z",
++  "timestamp": "2026-03-21T22:12:02Z",
+   "cpu": {
+-    "usage_percent": 32,
++    "usage_percent": 40,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+   "memory": {
+-    "usage_percent": 68,
++    "usage_percent": 66,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+diff --git a/e2e/screenshots/20-rundown-bar-live.png b/e2e/screenshots/20-rundown-bar-live.png
+index e276653..5d73498 100644
+Binary files a/e2e/screenshots/20-rundown-bar-live.png and b/e2e/screenshots/20-rundown-bar-live.png differ
+diff --git a/e2e/screenshots/21-mini-rundown-strip.png b/e2e/screenshots/21-mini-rundown-strip.png
+index b00e054..ff2faa4 100644
+Binary files a/e2e/screenshots/21-mini-rundown-strip.png and b/e2e/screenshots/21-mini-rundown-strip.png differ
+diff --git a/e2e/screenshots/22-no-rundown-in-dark-studio.png b/e2e/screenshots/22-no-rundown-in-dark-studio.png
+index 84445b6..8456cbe 100644
+Binary files a/e2e/screenshots/22-no-rundown-in-dark-studio.png and b/e2e/screenshots/22-no-rundown-in-dark-studio.png differ
+diff --git a/e2e/screenshots/23-encore-button.png b/e2e/screenshots/23-encore-button.png
+index fff2eb7..2935c65 100644
+Binary files a/e2e/screenshots/23-encore-button.png and b/e2e/screenshots/23-encore-button.png differ
+diff --git a/e2e/screenshots/24-encore-added.png b/e2e/screenshots/24-encore-added.png
+index b7e4d64..a0eb283 100644
+Binary files a/e2e/screenshots/24-encore-added.png and b/e2e/screenshots/24-encore-added.png differ
+diff --git a/e2e/screenshots/25-projected-times.png b/e2e/screenshots/25-projected-times.png
+index 0a1c135..69f34e5 100644
+Binary files a/e2e/screenshots/25-projected-times.png and b/e2e/screenshots/25-projected-times.png differ
+diff --git a/e2e/screenshots/onboarding-09-back.png b/e2e/screenshots/onboarding-09-back.png
+index 0c5a8f3..e08acdf 100644
+Binary files a/e2e/screenshots/onboarding-09-back.png and b/e2e/screenshots/onboarding-09-back.png differ
+diff --git a/e2e/screenshots/onboarding-10-help-retrigger.png b/e2e/screenshots/onboarding-10-help-retrigger.png
+index b4e5742..636d34a 100644
+Binary files a/e2e/screenshots/onboarding-10-help-retrigger.png and b/e2e/screenshots/onboarding-10-help-retrigger.png differ
+diff --git a/package.json b/package.json
+index b57dd85..b4cc114 100644
+--- a/package.json
++++ b/package.json
+@@ -35,8 +35,6 @@
+     "drizzle-orm": "^0.45.1",
+     "framer-motion": "^12.35.1",
+     "node-pty": "^1.1.0",
+-    "react-markdown": "^9.0.0",
+-    "remark-gfm": "^4.0.0",
+     "tailwind-merge": "^3.5.0",
+     "zustand": "^5.0.0"
+   },
+diff --git a/src/__tests__/showStore.test.ts b/src/__tests__/showStore.test.ts
+index cec309b..b81b77c 100644
+--- a/src/__tests__/showStore.test.ts
++++ b/src/__tests__/showStore.test.ts
+@@ -1,5 +1,5 @@
+ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+-import { useShowStore, selectCurrentAct, selectNextAct, selectCompletedActs, selectSkippedActs, selectBeatsRemaining } from '../renderer/stores/showStore'
++import { useShowStore, selectCurrentAct } from '../renderer/stores/showStore'
+ import type { ShowLineup } from '../shared/types'
+ 
+ // Helper to reset store between tests
+@@ -739,33 +739,5 @@ describe('showStore', () => {
+       expect(current?.status).toBe('active')
+     })
+ 
+-    it('selectNextAct returns first upcoming act', () => {
+-      const state = useShowStore.getState()
+-      const next = selectNextAct(state)
+-      expect(next?.name).toBe('Exercise Block')
+-    })
+-
+-    it('selectCompletedActs returns completed acts', () => {
+-      const actId = useShowStore.getState().currentActId!
+-      useShowStore.getState().completeAct(actId)
+-      const completed = selectCompletedActs(useShowStore.getState())
+-      expect(completed).toHaveLength(1)
+-      expect(completed[0].name).toBe('Morning Deep Work')
+-    })
+-
+-    it('selectSkippedActs returns skipped acts', () => {
+-      const actId = useShowStore.getState().currentActId!
+-      useShowStore.getState().skipAct(actId)
+-      const skipped = selectSkippedActs(useShowStore.getState())
+-      expect(skipped).toHaveLength(1)
+-      expect(skipped[0].name).toBe('Morning Deep Work')
+-    })
+-
+-    it('selectBeatsRemaining returns remaining beats', () => {
+-      expect(selectBeatsRemaining(useShowStore.getState())).toBe(3)
+-      useShowStore.getState().completeAct(useShowStore.getState().currentActId!)
+-      useShowStore.getState().lockBeat()
+-      expect(selectBeatsRemaining(useShowStore.getState())).toBe(2)
+-    })
+   })
+ })
+diff --git a/src/main/index.ts b/src/main/index.ts
+index 61186bc..8c7b927 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -292,20 +292,6 @@ function toggleWindow(source = 'unknown'): void {
+ }
+ 
+ // ─── Resize ───
+-// Dynamic sizing is handled by SET_VIEW_MODE via setBounds().
+-// These legacy IPC handlers are kept as no-ops for backward compatibility.
+-
+-ipcMain.on(IPC.RESIZE_HEIGHT, () => {
+-  // No-op — sizing handled by SET_VIEW_MODE
+-})
+-
+-ipcMain.on(IPC.SET_WINDOW_WIDTH, () => {
+-  // No-op — sizing handled by SET_VIEW_MODE
+-})
+-
+-ipcMain.handle(IPC.ANIMATE_HEIGHT, () => {
+-  // No-op — kept for API compat, animation handled purely in renderer
+-})
+ 
+ ipcMain.on(IPC.HIDE_WINDOW, () => {
+   mainWindow?.hide()
+diff --git a/src/preload/index.ts b/src/preload/index.ts
+index e794a0a..f4dd665 100644
+--- a/src/preload/index.ts
++++ b/src/preload/index.ts
+@@ -1,6 +1,7 @@
+ import { contextBridge, ipcRenderer } from 'electron'
+ import { IPC } from '../shared/types'
+ import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, Attachment, SessionMeta, CatalogPlugin, SessionLoadMessage } from '../shared/types'
++import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload } from '../main/data/types'
+ 
+ export interface CluiAPI {
+   // ─── Request-response (renderer → main) ───
+@@ -38,9 +39,6 @@ export interface CluiAPI {
+   quit(): void
+ 
+   // ─── Window management ───
+-  resizeHeight(height: number): void
+-  setWindowWidth(width: number): void
+-  animateHeight(from: number, to: number, durationMs: number): Promise<void>
+   hideWindow(): void
+   isVisible(): Promise<boolean>
+   // ─── Event listeners (main → renderer) ───
+@@ -61,15 +59,15 @@ export interface CluiAPI {
+   onToggleExpanded(callback: () => void): () => void
+ 
+   // ─── Showtime data persistence ───
+-  dataHydrate(): Promise<any | null>
+-  dataSync(snapshot: any): void
+-  dataFlush(snapshot?: any): Promise<void>
+-  timelineRecord(event: any): void
+-  getTimelineEvents(showId: string): Promise<any[]>
++  dataHydrate(): Promise<ShowStateSnapshot | null>
++  dataSync(snapshot: ShowStateSnapshot): void
++  dataFlush(snapshot?: ShowStateSnapshot): Promise<void>
++  timelineRecord(event: TimelineEventInput): void
++  getTimelineEvents(showId: string): Promise<TimelineEventInput[]>
+   getTimelineDrift(showId: string): Promise<number>
+-  getTimelineDriftPerAct(showId: string): Promise<any[]>
+-  saveClaudeContext(ctx: any): void
+-  getClaudeContext(showId: string): Promise<any | null>
++  getTimelineDriftPerAct(showId: string): Promise<ActDriftResult[]>
++  saveClaudeContext(ctx: ClaudeContextPayload): void
++  getClaudeContext(showId: string): Promise<ClaudeContextPayload | null>
+ 
+   // ─── Test-only (NODE_ENV=test) ───
+   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
+@@ -119,12 +117,8 @@ const api: CluiAPI = {
+   quit: () => ipcRenderer.send(IPC.APP_QUIT),
+ 
+   // ─── Window management ───
+-  resizeHeight: (height) => ipcRenderer.send(IPC.RESIZE_HEIGHT, height),
+-  animateHeight: (from, to, durationMs) =>
+-    ipcRenderer.invoke(IPC.ANIMATE_HEIGHT, { from, to, durationMs }),
+   hideWindow: () => ipcRenderer.send(IPC.HIDE_WINDOW),
+   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
+-  setWindowWidth: (width) => ipcRenderer.send(IPC.SET_WINDOW_WIDTH, width),
+ 
+   // ─── Event listeners ───
+   onEvent: (callback) => {
+@@ -187,13 +181,13 @@ const api: CluiAPI = {
+ 
+   // ─── Showtime data persistence ───
+   dataHydrate: () => ipcRenderer.invoke(IPC.DATA_HYDRATE),
+-  dataSync: (snapshot: any) => ipcRenderer.send(IPC.DATA_SYNC, snapshot),
+-  dataFlush: (snapshot?: any) => ipcRenderer.invoke(IPC.DATA_FLUSH, snapshot),
+-  timelineRecord: (event: any) => ipcRenderer.send(IPC.TIMELINE_RECORD, event),
++  dataSync: (snapshot: ShowStateSnapshot) => ipcRenderer.send(IPC.DATA_SYNC, snapshot),
++  dataFlush: (snapshot?: ShowStateSnapshot) => ipcRenderer.invoke(IPC.DATA_FLUSH, snapshot),
++  timelineRecord: (event: TimelineEventInput) => ipcRenderer.send(IPC.TIMELINE_RECORD, event),
+   getTimelineEvents: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_EVENTS, showId),
+   getTimelineDrift: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT, showId),
+   getTimelineDriftPerAct: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT_PER_ACT, showId),
+-  saveClaudeContext: (ctx: any) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
++  saveClaudeContext: (ctx: ClaudeContextPayload) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
+   getClaudeContext: (showId: string) => ipcRenderer.invoke(IPC.CLAUDE_CONTEXT_GET, showId),
+ 
+   // Test-only IPC (NODE_ENV=test)
+diff --git a/src/renderer/components/MiniRundownStrip.tsx b/src/renderer/components/MiniRundownStrip.tsx
+index 2d77f68..c9d30db 100644
+--- a/src/renderer/components/MiniRundownStrip.tsx
++++ b/src/renderer/components/MiniRundownStrip.tsx
+@@ -1,4 +1,4 @@
+-import { useState, useEffect } from 'react'
++import { useState, useEffect, useMemo } from 'react'
+ import { useShowStore } from '../stores/showStore'
+ import { getCategoryClasses } from '../lib/category-colors'
+ 
+@@ -10,17 +10,20 @@ export function MiniRundownStrip() {
+ 
+   const [nowPercent, setNowPercent] = useState(0)
+ 
+-  // Only render during live/intermission
+-  if (phase !== 'live' && phase !== 'intermission') return null
+-  if (acts.length === 0) return null
++  const shouldRender = (phase === 'live' || phase === 'intermission') && acts.length > 0
+ 
+-  const sortedActs = [...acts].sort((a, b) => a.order - b.order)
+-  const totalPlannedMs = sortedActs.reduce((sum, a) => sum + a.durationMinutes * 60 * 1000, 0)
+-  if (totalPlannedMs === 0) return null
++  const sortedActs = useMemo(
++    () => (shouldRender ? [...acts].sort((a, b) => a.order - b.order) : []),
++    [acts, shouldRender],
++  )
++  const totalPlannedMs = useMemo(
++    () => sortedActs.reduce((sum, a) => sum + a.durationMinutes * 60 * 1000, 0),
++    [sortedActs],
++  )
+ 
+-  // Update NOW marker position
++  // Update NOW marker position — hook must be called unconditionally
+   useEffect(() => {
+-    if (!showStartedAt) return
++    if (!shouldRender || totalPlannedMs === 0 || !showStartedAt) return
+     const update = () => {
+       const elapsed = Date.now() - showStartedAt
+       setNowPercent(Math.min(100, (elapsed / totalPlannedMs) * 100))
+@@ -28,7 +31,9 @@ export function MiniRundownStrip() {
+     update()
+     const interval = setInterval(update, 1000)
+     return () => clearInterval(interval)
+-  }, [showStartedAt, totalPlannedMs])
++  }, [showStartedAt, totalPlannedMs, shouldRender])
++
++  if (!shouldRender || totalPlannedMs === 0) return null
+ 
+   return (
+     <div className="mx-3 mb-1 relative h-1 flex rounded-full overflow-hidden">
+diff --git a/src/renderer/components/PermissionCard.tsx b/src/renderer/components/PermissionCard.tsx
+deleted file mode 100644
+index dc7f3ea..0000000
+--- a/src/renderer/components/PermissionCard.tsx
++++ /dev/null
+@@ -1,142 +0,0 @@
+-import React from 'react'
+-import { motion } from 'framer-motion'
+-import { ShieldWarning, Terminal, PencilSimple, Globe, Wrench } from '@phosphor-icons/react'
+-import { useSessionStore } from '../stores/sessionStore'
+-import type { PermissionRequest } from '../../shared/types'
+-
+-interface Props {
+-  tabId: string
+-  permission: PermissionRequest
+-  queueLength?: number
+-}
+-
+-const TOOL_ICONS: Record<string, React.ReactNode> = {
+-  Bash: <Terminal size={14} />,
+-  Edit: <PencilSimple size={14} />,
+-  Write: <PencilSimple size={14} />,
+-  WebSearch: <Globe size={14} />,
+-  WebFetch: <Globe size={14} />,
+-}
+-
+-function getToolIcon(name: string) {
+-  return TOOL_ICONS[name] || <Wrench size={14} />
+-}
+-
+-const SENSITIVE_FIELD_RE = /token|password|secret|key|auth|credential|api.?key/i
+-
+-function formatInput(input?: Record<string, unknown>): string | null {
+-  if (!input) return null
+-  const entries = Object.entries(input)
+-  if (entries.length === 0) return null
+-
+-  const parts: string[] = []
+-  for (const [key, value] of entries) {
+-    // Defense-in-depth: mask sensitive fields (backend already masks too)
+-    if (SENSITIVE_FIELD_RE.test(key)) {
+-      parts.push(`${key}: ***`)
+-      continue
+-    }
+-    const val = typeof value === 'string' ? value : JSON.stringify(value)
+-    const truncated = val.length > 120 ? val.substring(0, 117) + '...' : val
+-    parts.push(`${key}: ${truncated}`)
+-  }
+-  return parts.join('\n')
+-}
+-
+-function getButtonClasses(isAllow: boolean, isDeny: boolean): string {
+-  const base =
+-    'text-[11px] font-medium px-3 py-1.5 rounded-full transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+-
+-  if (isAllow) {
+-    return `${base} bg-green-500/10 border border-green-500/25 text-green-400 hover:bg-green-500/20`
+-  }
+-  if (isDeny) {
+-    return `${base} bg-red-500/10 border border-red-500/[0.22] text-red-400 hover:bg-red-500/[0.18]`
+-  }
+-  return `${base} bg-accent/10 border border-accent/[0.15] text-accent hover:bg-accent/15`
+-}
+-
+-export function PermissionCard({ tabId, permission, queueLength = 1 }: Props) {
+-  const respondPermission = useSessionStore((s) => s.respondPermission)
+-  const [responded, setResponded] = React.useState(false)
+-
+-  // Reset responded flag when the displayed permission changes (queue advancing)
+-  React.useEffect(() => {
+-    setResponded(false)
+-  }, [permission.questionId])
+-
+-  const handleOption = (optionId: string) => {
+-    if (responded) return // Prevent double-send
+-    setResponded(true)
+-    respondPermission(tabId, permission.questionId, optionId)
+-  }
+-
+-  const inputPreview = formatInput(permission.toolInput)
+-
+-  return (
+-    <motion.div
+-      initial={{ opacity: 0, y: 8, scale: 0.97 }}
+-      animate={{ opacity: 1, y: 0, scale: 1 }}
+-      exit={{ opacity: 0, y: -4, scale: 0.97 }}
+-      transition={{ duration: 0.2 }}
+-      className="mx-4 mt-2 mb-2"
+-    >
+-      <div className="overflow-hidden bg-surface-hover border border-beat/30 rounded-xl">
+-        {/* Header */}
+-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-beat/[0.06] border-b border-beat/[0.12]">
+-          <ShieldWarning size={12} className="text-accent" />
+-          <span className="text-[11px] font-semibold text-accent">
+-            Permission Required
+-          </span>
+-        </div>
+-
+-        <div className="px-3 py-2.5">
+-          <div className="flex items-center gap-1.5 mb-1">
+-            <span className="text-txt-muted">{getToolIcon(permission.toolTitle)}</span>
+-            <span className="text-[12px] font-medium text-txt-primary">
+-              {permission.toolTitle}
+-            </span>
+-          </div>
+-
+-          {permission.toolDescription && (
+-            <p className="text-[11px] leading-[1.4] mb-1.5 text-txt-secondary">
+-              {permission.toolDescription}
+-            </p>
+-          )}
+-
+-          {inputPreview && (
+-            <pre className="text-[10px] leading-[1.4] px-2 py-1.5 rounded-md overflow-x-auto whitespace-pre-wrap break-all mb-2 bg-surface text-txt-secondary max-h-20">
+-              {inputPreview}
+-            </pre>
+-          )}
+-
+-          <div className="flex items-center gap-2 flex-wrap">
+-            {permission.options.map((opt) => {
+-              const isAllow = opt.kind === 'allow' || opt.label.toLowerCase().includes('allow')
+-                || opt.label.toLowerCase().includes('yes')
+-              const isDeny = opt.kind === 'deny' || opt.label.toLowerCase().includes('deny')
+-                || opt.label.toLowerCase().includes('no') || opt.label.toLowerCase().includes('reject')
+-
+-              return (
+-                <button
+-                  key={opt.optionId}
+-                  onClick={() => handleOption(opt.optionId)}
+-                  disabled={responded}
+-                  className={getButtonClasses(isAllow, isDeny)}
+-                >
+-                  {opt.label}
+-                </button>
+-              )
+-            })}
+-
+-            {queueLength > 1 && (
+-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+-                +{queueLength - 1} more
+-              </span>
+-            )}
+-          </div>
+-        </div>
+-      </div>
+-    </motion.div>
+-  )
+-}
+diff --git a/src/renderer/components/ShowVerdict.tsx b/src/renderer/components/ShowVerdict.tsx
+index 7ee7df8..81c1c37 100644
+--- a/src/renderer/components/ShowVerdict.tsx
++++ b/src/renderer/components/ShowVerdict.tsx
+@@ -8,7 +8,7 @@ interface VerdictConfig {
+   message: string
+   colorClass: string
+   animationClass?: string
+-  spotlightGradient?: string
++  spotlightClass?: string
+ }
+ 
+ const VERDICT_CONFIG: Record<ShowVerdictType, VerdictConfig> = {
+@@ -17,7 +17,7 @@ const VERDICT_CONFIG: Record<ShowVerdictType, VerdictConfig> = {
+     message: 'You showed up and you were present.',
+     colorClass: 'text-beat',
+     animationClass: 'animate-golden-glow',
+-    spotlightGradient: 'radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)',
++    spotlightClass: 'spotlight-verdict',
+   },
+   SOLID_SHOW: {
+     headline: 'SOLID SHOW',
+@@ -47,10 +47,9 @@ export function ShowVerdict({ verdict, beatsLocked, beatThreshold }: ShowVerdict
+ 
+   return (
+     <div className="flex flex-col items-center text-center py-8 relative">
+-      {config.spotlightGradient && (
++      {config.spotlightClass && (
+         <div
+-          className="absolute inset-0 pointer-events-none"
+-          style={{ background: config.spotlightGradient }}
++          className={cn('absolute inset-0 pointer-events-none', config.spotlightClass)}
+         />
+       )}
+ 
+diff --git a/src/renderer/index.css b/src/renderer/index.css
+index 8574503..5d3f6b0 100644
+--- a/src/renderer/index.css
++++ b/src/renderer/index.css
+@@ -182,6 +182,10 @@
+   background: radial-gradient(ellipse 300px 200px at 50% 30%, rgba(245,158,11,0.06) 0%, transparent 70%);
+ }
+ 
++.spotlight-verdict {
++  background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);
++}
++
+ /* ─── shadcn/ui CSS Variable Overrides ─── */
+ 
+ :root {
+diff --git a/src/renderer/lib/category-colors.ts b/src/renderer/lib/category-colors.ts
+index 2485841..fcef01d 100644
+--- a/src/renderer/lib/category-colors.ts
++++ b/src/renderer/lib/category-colors.ts
+@@ -100,24 +100,6 @@ export function getCategoryClasses(sketch: string): CategoryClasses {
+   return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).classes
+ }
+ 
+-/** Returns the Tailwind color token name (e.g. `cat-deep`) for a sketch category. */
+-export function getCategoryToken(sketch: string): string {
+-  return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).token
+-}
+-
+-/** Returns the hex color for a sketch category. */
+-export function getCategoryHex(sketch: string): string {
+-  return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).hex
+-}
+-
+-/**
+- * Backwards-compatible map of sketch names to hex colors.
+- * Prefer `getCategoryClasses()` or `getCategoryHex()` in new code.
+- */
+-export const SKETCH_COLORS: Record<string, string> = Object.fromEntries(
+-  Object.entries(CATEGORY_MAP).map(([name, config]) => [name, config.hex]),
+-)
+-
+ /** All known sketch category names. */
+ export const SKETCH_CATEGORIES: SketchCategory[] = [
+   'Deep Work',
+diff --git a/src/renderer/lib/utils.ts b/src/renderer/lib/utils.ts
+index d084cca..55a9e8c 100644
+--- a/src/renderer/lib/utils.ts
++++ b/src/renderer/lib/utils.ts
+@@ -4,3 +4,9 @@ import { twMerge } from "tailwind-merge"
+ export function cn(...inputs: ClassValue[]) {
+   return twMerge(clsx(inputs))
+ }
++
++export function formatDateLabel(): string {
++  return new Date()
++    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
++    .toUpperCase()
++}
+diff --git a/src/renderer/panels/ChatPanel.tsx b/src/renderer/panels/ChatPanel.tsx
+deleted file mode 100644
+index 5d76c7f..0000000
+--- a/src/renderer/panels/ChatPanel.tsx
++++ /dev/null
+@@ -1,121 +0,0 @@
+-import React, { useRef, useEffect, useState, useCallback } from 'react'
+-import { motion } from 'framer-motion'
+-import { PaperPlaneRight } from '@phosphor-icons/react'
+-import ReactMarkdown from 'react-markdown'
+-import remarkGfm from 'remark-gfm'
+-import { useSessionStore } from '../stores/sessionStore'
+-import { useShowStore } from '../stores/showStore'
+-import { tryParseLineup } from '../lib/lineup-parser'
+-
+-export function ChatPanel() {
+-  const tabs = useSessionStore((s) => s.tabs)
+-  const activeTabId = useSessionStore((s) => s.activeTabId)
+-  const sendMessage = useSessionStore((s) => s.sendMessage)
+-  const setLineup = useShowStore((s) => s.setLineup)
+-  const phase = useShowStore((s) => s.phase)
+-  const energy = useShowStore((s) => s.energy)
+-  const acts = useShowStore((s) => s.acts)
+-
+-  const tab = tabs.find((t) => t.id === activeTabId)
+-  const messages = tab?.messages || []
+-  const isRunning = tab?.status === 'running' || tab?.status === 'connecting'
+-
+-  const scrollRef = useRef<HTMLDivElement>(null)
+-  const [input, setInput] = useState('')
+-
+-  useEffect(() => {
+-    if (scrollRef.current) {
+-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+-    }
+-  }, [messages.length])
+-
+-  const lastProcessedRef = useRef<string>('')
+-  useEffect(() => {
+-    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
+-    if (!lastAssistant || lastAssistant.id === lastProcessedRef.current) return
+-
+-    const lineup = tryParseLineup(lastAssistant.content)
+-    if (lineup) {
+-      lastProcessedRef.current = lastAssistant.id
+-      setLineup(lineup)
+-    }
+-  }, [messages, setLineup])
+-
+-  const handleSend = useCallback(() => {
+-    const trimmed = input.trim()
+-    if (!trimmed || isRunning) return
+-
+-    const showContext = buildShowContext()
+-    const fullPrompt = showContext ? `${showContext}\n\nUser message: ${trimmed}` : trimmed
+-    sendMessage(fullPrompt)
+-    setInput('')
+-  }, [input, isRunning, sendMessage, energy, acts, phase])
+-
+-  const handleKeyDown = (e: React.KeyboardEvent) => {
+-    if (e.key === 'Enter' && !e.shiftKey) {
+-      e.preventDefault()
+-      handleSend()
+-    }
+-  }
+-
+-  function buildShowContext(): string {
+-    const parts: string[] = []
+-    if (phase) parts.push(`[Show phase: ${phase}]`)
+-    if (energy) parts.push(`[Energy: ${energy}]`)
+-    if (acts.length > 0) {
+-      const summary = acts.map((a) => `${a.name} (${a.status})`).join(', ')
+-      parts.push(`[Acts: ${summary}]`)
+-    }
+-    return parts.length > 0 ? `[Showtime context: ${parts.join(' ')}]` : ''
+-  }
+-
+-  return (
+-    <div className="flex flex-col h-full border-r border-surface-hover">
+-      {/* Messages */}
+-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5">
+-        {messages.filter((m) => m.role === 'user' || (m.role === 'assistant' && !m.toolName)).map((msg) => (
+-          <div
+-            key={msg.id}
+-            className={`max-w-[85%] px-3 py-2 rounded-xl text-[13px] leading-relaxed text-txt-primary border ${
+-              msg.role === 'user'
+-                ? 'self-end bg-cat-deep/10 border-cat-deep/20'
+-                : 'self-start bg-surface border-surface-hover'
+-            }`}
+-          >
+-            {msg.role === 'assistant' ? (
+-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content.replace(/```showtime-lineup[\s\S]*?```/g, '*(lineup received)*')}</ReactMarkdown>
+-            ) : (
+-              msg.content.replace(/^\[Showtime context:.*?\]\s*\n*User message:\s*/s, '')
+-            )}
+-          </div>
+-        ))}
+-        {isRunning && (
+-          <div className="text-xs text-txt-muted px-2 py-1">
+-            {tab?.currentActivity || 'Thinking...'}
+-          </div>
+-        )}
+-      </div>
+-
+-      {/* Input */}
+-      <div className="p-2 px-3 border-t border-surface-hover flex gap-2 items-end">
+-        <textarea
+-          value={input}
+-          onChange={(e) => setInput(e.target.value)}
+-          onKeyDown={handleKeyDown}
+-          placeholder="Talk to Claude..."
+-          rows={1}
+-          className="flex-1 resize-none border border-surface-hover rounded-[10px] px-3 py-2 text-[13px] text-txt-primary bg-surface outline-none font-body max-h-20"
+-        />
+-        <motion.button
+-          whileHover={{ scale: 1.05 }}
+-          whileTap={{ scale: 0.95 }}
+-          onClick={handleSend}
+-          disabled={!input.trim() || isRunning}
+-          className="w-8 h-8 rounded-lg border-none flex items-center justify-center bg-cat-deep disabled:bg-surface-hover disabled:cursor-default cursor-pointer"
+-        >
+-          <PaperPlaneRight size={16} weight="fill" color="#fff" />
+-        </motion.button>
+-      </div>
+-    </div>
+-  )
+-}
+diff --git a/src/renderer/stores/showStore.ts b/src/renderer/stores/showStore.ts
+index daa5224..c338798 100644
+--- a/src/renderer/stores/showStore.ts
++++ b/src/renderer/stores/showStore.ts
+@@ -169,12 +169,12 @@ function recordTimeline(eventType: string, showId: string, actId?: string | null
+       showId,
+       actId: actId ?? null,
+       eventType,
+-      actualStart: extra?.actualStart ?? null,
+-      actualEnd: extra?.actualEnd ?? null,
+-      plannedStart: extra?.plannedStart ?? null,
+-      plannedEnd: extra?.plannedEnd ?? null,
+-      driftSeconds: extra?.driftSeconds ?? null,
+-      metadata: extra?.metadata ?? null,
++      actualStart: (extra?.actualStart as number | null) ?? null,
++      actualEnd: (extra?.actualEnd as number | null) ?? null,
++      plannedStart: (extra?.plannedStart as number | null) ?? null,
++      plannedEnd: (extra?.plannedEnd as number | null) ?? null,
++      driftSeconds: (extra?.driftSeconds as number | null) ?? null,
++      metadata: (extra?.metadata as Record<string, unknown> | null) ?? null,
+     })
+   } catch { /* ignore if clui not ready */ }
+ }
+@@ -663,14 +663,3 @@ export const useShowStore = create<ShowStore>()(
+ export const selectCurrentAct = (s: ShowStore): Act | undefined =>
+   s.acts.find((a) => a.id === s.currentActId)
+ 
+-export const selectNextAct = (s: ShowStore): Act | undefined =>
+-  s.acts.find((a) => a.status === 'upcoming')
+-
+-export const selectCompletedActs = (s: ShowStore): Act[] =>
+-  s.acts.filter((a) => a.status === 'completed')
+-
+-export const selectSkippedActs = (s: ShowStore): Act[] =>
+-  s.acts.filter((a) => a.status === 'skipped')
+-
+-export const selectBeatsRemaining = (s: ShowStore): number =>
+-  Math.max(0, s.beatThreshold - s.beatsLocked)
+diff --git a/src/renderer/ui/input.tsx b/src/renderer/ui/input.tsx
+deleted file mode 100644
+index bf00bdf..0000000
+--- a/src/renderer/ui/input.tsx
++++ /dev/null
+@@ -1,22 +0,0 @@
+-import * as React from "react"
+-
+-import { cn } from "../lib/utils"
+-
+-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+-  ({ className, type, ...props }, ref) => {
+-    return (
+-      <input
+-        type={type}
+-        className={cn(
+-          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-txt-primary placeholder:text-txt-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+-          className
+-        )}
+-        ref={ref}
+-        {...props}
+-      />
+-    )
+-  }
+-)
+-Input.displayName = "Input"
+-
+-export { Input }
+diff --git a/src/renderer/ui/textarea.tsx b/src/renderer/ui/textarea.tsx
+deleted file mode 100644
+index 1df89ca..0000000
+--- a/src/renderer/ui/textarea.tsx
++++ /dev/null
+@@ -1,22 +0,0 @@
+-import * as React from "react"
+-
+-import { cn } from "../lib/utils"
+-
+-const Textarea = React.forwardRef<
+-  HTMLTextAreaElement,
+-  React.ComponentProps<"textarea">
+->(({ className, ...props }, ref) => {
+-  return (
+-    <textarea
+-      className={cn(
+-        "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-txt-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+-        className
+-      )}
+-      ref={ref}
+-      {...props}
+-    />
+-  )
+-})
+-Textarea.displayName = "Textarea"
+-
+-export { Textarea }
+diff --git a/src/renderer/views/ExpandedView.tsx b/src/renderer/views/ExpandedView.tsx
+index 4bbd6a1..71109c8 100644
+--- a/src/renderer/views/ExpandedView.tsx
++++ b/src/renderer/views/ExpandedView.tsx
+@@ -9,12 +9,7 @@ import { IntermissionView } from '../components/IntermissionView'
+ import { DirectorMode } from '../components/DirectorMode'
+ import { RundownBar } from '../components/RundownBar'
+ import { MuteToggle } from '../components/MuteToggle'
+-
+-function formatDateLabel(): string {
+-  return new Date()
+-    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+-    .toUpperCase()
+-}
++import { formatDateLabel } from '../lib/utils'
+ 
+ function formatStartTime(timestamp: number): string {
+   return new Date(timestamp).toLocaleTimeString('en-US', {
+@@ -38,7 +33,7 @@ export function ExpandedView() {
+ 
+   return (
+     <motion.div
+-      className="w-[560px] min-h-[620px] bg-surface rounded-xl overflow-hidden flex flex-col"
++      className="w-[560px] min-h-[620px] bg-surface overflow-hidden flex flex-col"
+       initial={{ scale: 0.9, opacity: 0, y: 20 }}
+       animate={{ scale: 1, opacity: 1, y: 0 }}
+       exit={{ scale: 0.9, opacity: 0, y: 20 }}
+diff --git a/src/renderer/views/OnboardingView.tsx b/src/renderer/views/OnboardingView.tsx
+index 9d30793..f98a9f1 100644
+--- a/src/renderer/views/OnboardingView.tsx
++++ b/src/renderer/views/OnboardingView.tsx
+@@ -61,7 +61,7 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
+ 
+   return (
+     <div
+-      className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between rounded-xl overflow-hidden relative"
++      className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between overflow-hidden relative"
+     >
+       {/* Invisible drag handle */}
+       <div className="absolute top-0 left-0 right-0 h-8 drag-region z-10" />
+diff --git a/src/renderer/views/StrikeView.tsx b/src/renderer/views/StrikeView.tsx
+index d7de3ef..9bc2085 100644
+--- a/src/renderer/views/StrikeView.tsx
++++ b/src/renderer/views/StrikeView.tsx
+@@ -43,7 +43,7 @@ export function StrikeView() {
+ 
+   return (
+     <motion.div
+-      className="w-[560px] max-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col relative"
++      className="w-[560px] max-h-[680px] bg-surface overflow-hidden flex flex-col relative"
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+diff --git a/src/renderer/views/WritersRoomView.tsx b/src/renderer/views/WritersRoomView.tsx
+index 8dd8d94..2c1fa5e 100644
+--- a/src/renderer/views/WritersRoomView.tsx
++++ b/src/renderer/views/WritersRoomView.tsx
+@@ -6,15 +6,10 @@ import { EnergySelector } from '../components/EnergySelector'
+ import { LineupPanel } from '../panels/LineupPanel'
+ import { Button } from '../ui/button'
+ import { motion, AnimatePresence } from 'framer-motion'
++import { formatDateLabel } from '../lib/utils'
+ 
+ const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
+ 
+-function formatDateLabel(): string {
+-  return new Date()
+-    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+-    .toUpperCase()
+-}
+-
+ export function WritersRoomView() {
+   const energy = useShowStore((s) => s.energy)
+   const writersRoomStep = useShowStore((s) => s.writersRoomStep)
+@@ -129,7 +124,7 @@ ${planText}`
+ 
+   return (
+     <div
+-      className="w-[560px] min-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
++      className="w-[560px] min-h-[680px] bg-surface overflow-hidden flex flex-col"
+     >
+       {/* Title bar */}
+       <div
+diff --git a/src/shared/types.ts b/src/shared/types.ts
+index cd31f01..44d2f6e 100644
+--- a/src/shared/types.ts
++++ b/src/shared/types.ts
+@@ -370,7 +370,6 @@ export const IPC = {
+   RESPOND_PERMISSION: 'clui:respond-permission',
+   INIT_SESSION: 'clui:init-session',
+   RESET_TAB_SESSION: 'clui:reset-tab-session',
+-  ANIMATE_HEIGHT: 'clui:animate-height',
+   LIST_SESSIONS: 'clui:list-sessions',
+   LOAD_SESSION: 'clui:load-session',
+ 
+@@ -387,8 +386,6 @@ export const IPC = {
+   RATE_LIMIT: 'clui:rate-limit',
+ 
+   // Window management
+-  RESIZE_HEIGHT: 'clui:resize-height',
+-  SET_WINDOW_WIDTH: 'clui:set-window-width',
+   HIDE_WINDOW: 'clui:hide-window',
+   WINDOW_SHOWN: 'clui:window-shown',
+   IS_VISIBLE: 'clui:is-visible',
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None
