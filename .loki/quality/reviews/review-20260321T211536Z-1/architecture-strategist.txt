@@ -1,0 +1,5 @@
+VERDICT: PASS
+FINDINGS:
+- Medium: God test file — `e2e/showtime.test.ts` continues to grow (now ~1237 lines) with data-layer, RundownBar, and plan-modification tests appended to a single file instead of being organized by domain (e2e/showtime.test.ts:977)
+- Medium: Missing abstraction for test state setup — raw `localStorage` JSON manipulation is copy-pasted across 6+ tests with identical structure (`JSON.parse`, mutate fields, `JSON.stringify`). A shared helper like `setShowState(overrides)` would reduce coupling to the Zustand persist format and eliminate duplication (e2e/showtime.test.ts:1064, 1107, 1145, 1183)
+- Low: Unconditional-pass anti-pattern — several tests use `if (condition) { expect(condition).toBe(true) }` which silently passes when the feature under test is absent, defeating the purpose of the assertion (e2e/showtime.test.ts:1101, 1222, 1236)

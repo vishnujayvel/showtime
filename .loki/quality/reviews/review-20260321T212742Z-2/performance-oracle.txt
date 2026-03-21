@@ -1,0 +1,5 @@
+VERDICT: PASS
+
+FINDINGS:
+- [Medium] Unused store subscription `currentAct` (line 30) triggers re-renders on every act object change but is never referenced in JSX — remove it to avoid unnecessary re-renders (`src/renderer/components/RundownBar.tsx:30`)
+- [Low] `sortedActs.filter((a) => a.status !== 'skipped')` in the drift badge (line 158) allocates a new array every render; consider memoizing alongside `sortedActs` (`src/renderer/components/RundownBar.tsx:158`)

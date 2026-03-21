@@ -40,3 +40,17 @@
   "user": "vishnu",
   "pid": 71035
 }
+{
+  "timestamp": "2026-03-21T20:47:03Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 2384
+}
+{
+  "timestamp": "2026-03-21T21:29:46Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md",
+  "user": "vishnu",
+  "pid": 2384
+}

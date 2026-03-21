@@ -1,0 +1,8 @@
+{
+  "id": "1b7f9e38",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-21T20:46:55.602Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md"},
+  "version": "1.0"
+}

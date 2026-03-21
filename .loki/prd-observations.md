@@ -1,7 +1,7 @@
 # PRD Analysis Observations
 
 **Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md`
-**Analyzed:** 2026-03-21T20:31:25Z
+**Analyzed:** 2026-03-21T20:47:03Z
 **Quality Score:** 3.6/10
 **Estimated Scope:** enterprise (~32 items detected)
 

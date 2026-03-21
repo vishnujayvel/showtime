@@ -38,3 +38,13 @@
 {"timestamp":"2026-03-21T20:37:20Z","type":"code_review_start","data":{"review_id":"review-20260321T203720Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
 {"timestamp":"2026-03-21T20:38:40Z","type":"code_review_complete","data":{"review_id":"review-20260321T203720Z-1","pass_count":2,"fail_count":1,"has_blocking":false,"iteration":1}}
 {"timestamp":"2026-03-21T20:38:41Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-21T20:47:03Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md","parallel":true,"complexity":"standard","pid":2384}}
+{"timestamp":"2026-03-21T20:47:03Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md"}}
+{"timestamp":"2026-03-21T21:15:33Z","type":"iteration_complete","data":{"iteration":1,"status":"failed","exitCode":141,"provider":"claude"}}
+{"timestamp":"2026-03-21T21:15:36Z","type":"code_review_start","data":{"review_id":"review-20260321T211536Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-21T21:17:47Z","type":"code_review_complete","data":{"review_id":"review-20260321T211536Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-21T21:20:18Z","type":"iteration_start","data":{"iteration":2,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md"}}
+{"timestamp":"2026-03-21T21:27:35Z","type":"iteration_complete","data":{"iteration":2,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T21:27:42Z","type":"code_review_start","data":{"review_id":"review-20260321T212742Z-2","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":2}}
+{"timestamp":"2026-03-21T21:29:45Z","type":"code_review_complete","data":{"review_id":"review-20260321T212742Z-2","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":2}}
+{"timestamp":"2026-03-21T21:29:46Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":2}}
