@@ -1,0 +1,20 @@
+{
+  "id": "sig-5b07b6d0",
+  "type": "workflow_pattern",
+  "source": "cli",
+  "action": "session_start",
+  "context": {},
+  "outcome": "success",
+  "confidence": 0.8,
+  "timestamp": "2026-03-21T05:02:38.318179+00:00Z",
+  "metadata": {},
+  "workflow_name": "loki_session",
+  "steps": [
+    "init",
+    "load_memory",
+    "start_runner"
+  ],
+  "parallel_steps": [],
+  "branching_conditions": {},
+  "total_duration_seconds": 0
+}

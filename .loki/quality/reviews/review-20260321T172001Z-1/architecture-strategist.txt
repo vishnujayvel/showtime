@@ -1,0 +1,11 @@
+
+
+**VERDICT: PASS**
+
+**FINDINGS:**
+
+- [Medium] `OnboardingView` renders 5 mutually-exclusive branches via `currentStep === N` checks instead of using a data-driven approach or step-renderer map — this is a minor Open/Closed Principle concern since adding a step requires editing the JSX switch, but acceptable at 5 steps (`src/renderer/views/OnboardingView.tsx:89-155`)
+- [Low] `App.tsx` is accumulating orchestration responsibilities (theme init, keyboard shortcuts, view routing, onboarding state, help button, dynamic window sizing) — trending toward a god component, but not yet critical (`src/renderer/App.tsx`)
+- [Low] Onboarding persistence is coupled directly to `localStorage` calls scattered across `App.tsx` callbacks rather than abstracted behind a storage interface or the Zustand store — if persistence strategy changes, multiple call sites need updating (`src/renderer/App.tsx:33-34,127,133`)
+
+None of these rise to Critical or High severity. The dependency direction is correct (renderer → store → IPC), the new `VIEW_DIMENSIONS` map in main is a clean Single Responsibility extraction, and the `OnboardingView` component has proper separation of concerns with clear props interface. The architecture is sound for the current scope.

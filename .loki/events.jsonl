@@ -1,0 +1,40 @@
+{"timestamp":"2026-03-21T05:02:45Z","type":"session_start","data":{"provider":"claude","prd":".loki/openspec-prd-normalized.md","parallel":false,"complexity":"standard","pid":5869}}
+{"timestamp":"2026-03-21T05:21:34Z","type":"session_start","data":{"provider":"claude","prd":".loki/openspec-prd-normalized.md","parallel":false,"complexity":"standard","pid":50683}}
+{"timestamp":"2026-03-21T05:21:34Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":".loki/openspec-prd-normalized.md"}}
+{"timestamp":"2026-03-21T06:08:07Z","type":"iteration_complete","data":{"iteration":1,"status":"failed","exitCode":141,"provider":"claude"}}
+{"timestamp":"2026-03-21T06:08:09Z","type":"code_review_start","data":{"review_id":"review-20260321T060809Z-1","reviewers":"architecture-strategist, dependency-analyst, test-coverage-auditor","iteration":1}}
+{"timestamp":"2026-03-21T06:08:40Z","type":"code_review_complete","data":{"review_id":"review-20260321T060809Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-21T06:18:09Z","type":"session_start","data":{"provider":"claude","prd":".loki/openspec-prd-normalized.md","parallel":false,"complexity":"standard","pid":80885}}
+{"timestamp":"2026-03-21T06:18:10Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":".loki/openspec-prd-normalized.md"}}
+{"timestamp":"2026-03-21T06:30:51Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T06:30:56Z","type":"code_review_start","data":{"review_id":"review-20260321T063056Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-21T06:31:45Z","type":"code_review_complete","data":{"review_id":"review-20260321T063056Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-21T06:31:46Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-21T06:49:05Z","type":"session_start","data":{"provider":"claude","prd":".loki/openspec-prd-normalized.md","parallel":true,"complexity":"standard","pid":30957}}
+{"timestamp":"2026-03-21T06:49:06Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":".loki/openspec-prd-normalized.md"}}
+{"timestamp":"2026-03-21T06:57:20Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T06:57:24Z","type":"code_review_start","data":{"review_id":"review-20260321T065724Z-1","reviewers":"architecture-strategist, test-coverage-auditor, dependency-analyst","iteration":1}}
+{"timestamp":"2026-03-21T06:58:44Z","type":"code_review_complete","data":{"review_id":"review-20260321T065724Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-21T06:58:45Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-21T16:44:56Z","type":"session_start","data":{"provider":"claude","prd":".loki/openspec-prd-normalized.md","parallel":true,"complexity":"standard","pid":10478}}
+{"timestamp":"2026-03-21T16:44:56Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":".loki/openspec-prd-normalized.md"}}
+{"timestamp":"2026-03-21T17:19:59Z","type":"iteration_complete","data":{"iteration":1,"status":"failed","exitCode":141,"provider":"claude"}}
+{"timestamp":"2026-03-21T17:20:01Z","type":"code_review_start","data":{"review_id":"review-20260321T172001Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-21T17:21:17Z","type":"code_review_complete","data":{"review_id":"review-20260321T172001Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+{"timestamp":"2026-03-21T17:23:48Z","type":"iteration_start","data":{"iteration":2,"provider":"claude","prd":".loki/openspec-prd-normalized.md"}}
+{"timestamp":"2026-03-21T17:27:36Z","type":"iteration_complete","data":{"iteration":2,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T17:27:38Z","type":"code_review_start","data":{"review_id":"review-20260321T172738Z-2","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":2}}
+{"timestamp":"2026-03-21T17:28:32Z","type":"code_review_complete","data":{"review_id":"review-20260321T172738Z-2","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":2}}
+{"timestamp":"2026-03-21T17:28:33Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":2}}
+{"timestamp":"2026-03-21T19:40:28Z","type":"session_start","data":{"provider":"claude","prd":".loki/openspec-prd-normalized.md","parallel":true,"complexity":"standard","pid":95303}}
+{"timestamp":"2026-03-21T19:40:28Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":".loki/openspec-prd-normalized.md"}}
+{"timestamp":"2026-03-21T19:48:33Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T19:48:40Z","type":"code_review_start","data":{"review_id":"review-20260321T194839Z-1","reviewers":"architecture-strategist, performance-oracle, dependency-analyst","iteration":1}}
+{"timestamp":"2026-03-21T19:50:03Z","type":"code_review_complete","data":{"review_id":"review-20260321T194839Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-21T19:50:04Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-21T20:31:25Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md","parallel":true,"complexity":"standard","pid":71035}}
+{"timestamp":"2026-03-21T20:31:25Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md"}}
+{"timestamp":"2026-03-21T20:37:15Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T20:37:20Z","type":"code_review_start","data":{"review_id":"review-20260321T203720Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-21T20:38:40Z","type":"code_review_complete","data":{"review_id":"review-20260321T203720Z-1","pass_count":2,"fail_count":1,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-21T20:38:41Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}

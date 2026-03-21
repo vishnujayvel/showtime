@@ -1,0 +1,5 @@
+VERDICT: PASS
+FINDINGS:
+- None
+
+The diff is a dead-code cleanup: two unused constants removed (`BAR_WIDTH`, `PILL_HEIGHT`) and comments updated on existing no-op IPC handlers. No functional changes, no performance surface area.

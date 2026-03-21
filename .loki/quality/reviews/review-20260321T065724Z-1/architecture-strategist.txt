@@ -1,0 +1,4 @@
+VERDICT: PASS
+FINDINGS:
+- Low: Repeated localStorage state-manipulation boilerplate across 6 E2E tests — extract a `setShowState(overrides)` helper to reduce coupling to the store's serialization shape (e2e/showtime.test.ts:216-357)
+- Low: Vacuous conditional assertions silently pass when element is absent — `if (count > 0) { expect(count).toBeGreaterThan(0) }` is tautological and never fails (e2e/showtime.test.ts:261, 348)

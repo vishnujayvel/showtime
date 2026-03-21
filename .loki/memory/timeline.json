@@ -1,0 +1,50 @@
+{
+  "version": "1.1.0",
+  "last_updated": "2026-03-21T20:38:40.312878+00:00",
+  "recent_actions": [
+    {
+      "timestamp": "2026-03-21T20:38:40.312294Z",
+      "action": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md",
+      "outcome": "success",
+      "topic_id": "ACT"
+    },
+    {
+      "timestamp": "2026-03-21T19:50:04.006693Z",
+      "action": ".loki/openspec-prd-normalized.md",
+      "outcome": "success",
+      "topic_id": "ACT"
+    },
+    {
+      "timestamp": "2026-03-21T17:28:33.113074Z",
+      "action": ".loki/openspec-prd-normalized.md",
+      "outcome": "success",
+      "topic_id": "REFLECT"
+    },
+    {
+      "timestamp": "2026-03-21T17:21:17.380208Z",
+      "action": ".loki/openspec-prd-normalized.md",
+      "outcome": "failure",
+      "topic_id": "ACT"
+    },
+    {
+      "timestamp": "2026-03-21T06:58:45.054786Z",
+      "action": ".loki/openspec-prd-normalized.md",
+      "outcome": "success",
+      "topic_id": "ACT"
+    },
+    {
+      "timestamp": "2026-03-21T06:31:45.884177Z",
+      "action": ".loki/openspec-prd-normalized.md",
+      "outcome": "success",
+      "topic_id": "ACT"
+    },
+    {
+      "timestamp": "2026-03-21T06:08:40.794047Z",
+      "action": ".loki/openspec-prd-normalized.md",
+      "outcome": "failure",
+      "topic_id": "ACT"
+    }
+  ],
+  "key_decisions": [],
+  "active_context": {}
+}

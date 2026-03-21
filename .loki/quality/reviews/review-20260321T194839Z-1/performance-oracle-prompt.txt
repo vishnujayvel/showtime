@@ -1,0 +1,784 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+CLAUDE.md
+docs/plans/pipeline-journal.md
+e2e/screenshots/01-dark-studio.png
+e2e/screenshots/02-writers-room.png
+e2e/screenshots/03-energy-selected.png
+e2e/screenshots/04-plan-filled.png
+e2e/screenshots/05-lineup-preview.png
+e2e/screenshots/07-expanded-view.png
+e2e/screenshots/08-beat-check.png
+e2e/screenshots/09-intermission.png
+e2e/screenshots/10-strike-verdict.png
+e2e/screenshots/13-final-state.png
+e2e/screenshots/14-going-live-onair.png
+e2e/screenshots/15-beat-celebration.png
+e2e/screenshots/claude-e2e-verification.png
+e2e/screenshots/issue-1-claude.png
+e2e/screenshots/issue-10-dimensions.png
+e2e/screenshots/issue-11-race-guard.png
+e2e/screenshots/issue-14-loading.png
+e2e/screenshots/issue-2-celebration.png
+e2e/screenshots/issue-7-onair.png
+e2e/screenshots/issue-8-spotlight.png
+e2e/screenshots/onboarding-01-welcome.png
+e2e/screenshots/onboarding-02-writers-room.png
+e2e/screenshots/onboarding-03-acts.png
+e2e/screenshots/onboarding-04-beats.png
+e2e/screenshots/onboarding-05-ready.png
+e2e/screenshots/onboarding-06-complete.png
+e2e/screenshots/onboarding-07-skipped.png
+e2e/screenshots/onboarding-08-skip.png
+e2e/screenshots/onboarding-09-back.png
+e2e/screenshots/onboarding-10-help-retrigger.png
+src/main/index.ts
+src/preload/index.ts
+src/renderer/App.tsx
+src/renderer/views/DarkStudioView.tsx
+src/renderer/views/ExpandedView.tsx
+src/renderer/views/OnboardingView.tsx
+src/renderer/views/PillView.tsx
+src/renderer/views/StrikeView.tsx
+src/renderer/views/WritersRoomView.tsx
+src/shared/types.ts
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index 3a0e888..a00d4ee 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,44 +1,31 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T18:00:00Z
++Updated: 2026-03-21T19:48:36Z
+ 
+ ## Current State
+ 
+-- Iteration: 2
+-- Phase: VERIFICATION
+-- RARV Step: VERIFY
++- Iteration: 1
++- Phase: DEVELOPMENT
++- RARV Step: ACT
+ - Provider: claude
+-- Elapsed: 5m
++- Elapsed: 0m
+ 
+ ## Last Completed Task
+ 
+-- Last commit: Clean up dead code (BAR_WIDTH, PILL_HEIGHT) and stale comments in main/index.ts
+-- Quality gate failures from iteration 1 were false positives (syntax errors in App.tsx and OnboardingView.tsx — both compile cleanly)
+-- Removed unused BAR_WIDTH and PILL_HEIGHT constants
+-- Updated stale comments about "fixed height mode" to reference SET_VIEW_MODE
++- Last commit: Implement content-tight window sizing with anchor-based positioning
++- Files changed: CLAUDE.md, src/main/index.ts, src/preload/index.ts, src/renderer/App.tsx, src/renderer/views/DarkStudioView.tsx
++  (+6 more)
+ 
+ ## Active Blockers
+ 
+ - None
+ 
+-## Verified PRD Implementation
++## Next Up
+ 
+-All 4 OpenSpec requirements verified against PRD:
+-
+-1. **Window Management (#10)**: VIEW_DIMENSIONS map with pill/expanded/full sizes. SET_VIEW_MODE handler does real setBounds() with bottom-anchor + horizontal center. createWindow() uses VIEW_DIMENSIONS.expanded for initial sizing. App.tsx useEffect calls setViewMode on phase/isExpanded/goingLiveActive changes.
+-
+-2. **Onboarding (#15)**: OnboardingView with 5 steps, localStorage check, Skip/Back/Next navigation, Help button re-trigger, all Tailwind styling, spring physics animations. E2E tests cover all scenarios.
+-
+-3. **Claude E2E (#6, #13)**: Conditional test with Promise.race (lineup vs error path), validates both paths, 30s timeout, proper selectors for Act cards structure.
+-
+-4. **E2E Tests**: Comprehensive tests for onboarding (7 tests), window bounds (2 tests), Claude verification (1 conditional test).
+-
+-## Mistakes & Learnings
+-
+-- Quality gate flagged "syntax errors" in App.tsx and OnboardingView.tsx but both files compile cleanly with tsc and parse without errors. The static_analysis gate may have had a transient failure.
+-- Dead code (BAR_WIDTH=1040, PILL_HEIGHT=720) and stale comments survived from the old fixed-window approach — cleaned up in iteration 2.
++- Tailwind CSS v4 Configuration & Design Tokens
++- shadcn/ui Setup & Custom Button Variants
++- Font Imports
+ 
+ ## Key Decisions This Session
+ 
+-- Confirmed all PRD requirements are fully implemented
+-- Cleaned up dead code rather than leaving it for future confusion
++- None recorded yet
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index c227083..aebfaa1 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-0
+\ No newline at end of file
++214
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index a130730..02e26e3 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,15 +1,15 @@
+ {
+-  "session_id": "b050c090-c7f6-4bc7-b49a-34b22f7d37f4",
++  "session_id": "e92ef875-7734-4e90-808a-5d864002aa4c",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T17:27:36.131490+00:00",
++  "updated_at": "2026-03-21T19:48:33.768648+00:00",
+   "current": {
+-    "input_tokens": 0,
+-    "output_tokens": 0,
+-    "cache_read_tokens": 0,
+-    "cache_creation_tokens": 0,
+-    "total_tokens": 0,
+-    "context_window_pct": 0.0,
+-    "estimated_cost_usd": 19.7349
++    "input_tokens": 1,
++    "output_tokens": 19519,
++    "cache_read_tokens": 95261,
++    "cache_creation_tokens": 334367,
++    "total_tokens": 95262,
++    "context_window_pct": 47.63,
++    "estimated_cost_usd": 23.8322
+   },
+   "compactions": [
+     {
+@@ -42,9 +42,9 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 13820,
+-    "total_output": 108433,
+-    "total_cost_usd": 19.7349,
++    "total_input": 13962,
++    "total_output": 127952,
++    "total_cost_usd": 23.8322,
+     "compaction_count": 1,
+     "iterations_tracked": 2
+   }
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 8789f07..562c8ef 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -104,16 +104,17 @@ const win = new BrowserWindow({
+   vibrancy: 'under-window',
+   visualEffectState: 'active',
+   backgroundColor: '#00000000',
+-  transparent: true,
+   frame: false,
+   titleBarStyle: 'hiddenInset',
++  hasShadow: true,
+   // ... other settings
+ });
+ win.setWindowButtonPosition({ x: 12, y: 14 });
+ ```
+ 
+ - HTML, body, and React root: `background-color: transparent`
+-- Draggable regions: `-webkit-app-region: drag` on titlebar, `no-drag` on all interactive children
++- Draggable regions: Use CSS classes `.drag-region` and `.no-drag` (defined in `index.css`). **Never** use inline `style={{ WebkitAppRegion: 'drag' }}`.
++- **Do NOT use `setIgnoreMouseEvents`**. Content-tight window sizing eliminates the need for click-through.
+ - Dark mode sync: Listen to `nativeTheme.on('updated')`, broadcast to renderer via IPC
+ - System font fallback: `-apple-system, BlinkMacSystemFont` at root CSS level
+ 
+diff --git a/docs/plans/pipeline-journal.md b/docs/plans/pipeline-journal.md
+index 4c9d9be..31f07c6 100644
+--- a/docs/plans/pipeline-journal.md
++++ b/docs/plans/pipeline-journal.md
+@@ -844,6 +844,16 @@ Loki active (PID 11140, 4% CPU). 2 in-progress, 2 completed. Already creating `O
+ 
+ ---
+ 
++## 2026-03-21 18:05 UTC — All Loki Runs Complete. Manual Hotfixes Applied.
++
++Loki final-polish done (3 completed, 2 failed — quality gate findings). 2 manual hotfixes applied during live demo:
++1. `7eb46d0` — Beat Check modal render gate: `!beatCheckPending` → `!beatCheckPending && !celebrationActive`
++2. `d1b7ca0` — Close/quit ✕ button added to ExpandedView + WritersRoomView title bars
++
++**Session final: 24 commits, 183 tests, 4 Loki runs, 2 manual hotfixes, 1 skill created, 16 GitHub issues filed.**
++
++---
++
+ ## 2026-03-21 17:55 UTC — Loki Final-Polish COMPLETE. Manual Beat Check Fix Applied.
+ 
+ Loki finished with 2 commits: `4ea8b8b` (dynamic window sizing, onboarding, Claude E2E) + `1607f56` (dead code cleanup). 3 completed, 2 failed (quality gate review findings — likely non-blocking). 0 processes.
+diff --git a/e2e/screenshots/01-dark-studio.png b/e2e/screenshots/01-dark-studio.png
+index 74ee89a..c29c796 100644
+Binary files a/e2e/screenshots/01-dark-studio.png and b/e2e/screenshots/01-dark-studio.png differ
+diff --git a/e2e/screenshots/02-writers-room.png b/e2e/screenshots/02-writers-room.png
+index 33030a2..5003776 100644
+Binary files a/e2e/screenshots/02-writers-room.png and b/e2e/screenshots/02-writers-room.png differ
+diff --git a/e2e/screenshots/03-energy-selected.png b/e2e/screenshots/03-energy-selected.png
+index 85a5115..066220e 100644
+Binary files a/e2e/screenshots/03-energy-selected.png and b/e2e/screenshots/03-energy-selected.png differ
+diff --git a/e2e/screenshots/04-plan-filled.png b/e2e/screenshots/04-plan-filled.png
+index 060d852..1e94a16 100644
+Binary files a/e2e/screenshots/04-plan-filled.png and b/e2e/screenshots/04-plan-filled.png differ
+diff --git a/e2e/screenshots/05-lineup-preview.png b/e2e/screenshots/05-lineup-preview.png
+index aa9c4aa..50eca47 100644
+Binary files a/e2e/screenshots/05-lineup-preview.png and b/e2e/screenshots/05-lineup-preview.png differ
+diff --git a/e2e/screenshots/07-expanded-view.png b/e2e/screenshots/07-expanded-view.png
+index 0bfdd8a..3936df8 100644
+Binary files a/e2e/screenshots/07-expanded-view.png and b/e2e/screenshots/07-expanded-view.png differ
+diff --git a/e2e/screenshots/08-beat-check.png b/e2e/screenshots/08-beat-check.png
+index 1f7828a..8b3a007 100644
+Binary files a/e2e/screenshots/08-beat-check.png and b/e2e/screenshots/08-beat-check.png differ
+diff --git a/e2e/screenshots/09-intermission.png b/e2e/screenshots/09-intermission.png
+index e353d76..a137b85 100644
+Binary files a/e2e/screenshots/09-intermission.png and b/e2e/screenshots/09-intermission.png differ
+diff --git a/e2e/screenshots/10-strike-verdict.png b/e2e/screenshots/10-strike-verdict.png
+index e93d45a..58227b9 100644
+Binary files a/e2e/screenshots/10-strike-verdict.png and b/e2e/screenshots/10-strike-verdict.png differ
+diff --git a/e2e/screenshots/13-final-state.png b/e2e/screenshots/13-final-state.png
+index 0686059..af6678d 100644
+Binary files a/e2e/screenshots/13-final-state.png and b/e2e/screenshots/13-final-state.png differ
+diff --git a/e2e/screenshots/14-going-live-onair.png b/e2e/screenshots/14-going-live-onair.png
+index 23ed339..717e9fe 100644
+Binary files a/e2e/screenshots/14-going-live-onair.png and b/e2e/screenshots/14-going-live-onair.png differ
+diff --git a/e2e/screenshots/15-beat-celebration.png b/e2e/screenshots/15-beat-celebration.png
+index 70ef2ba..3a4b5fc 100644
+Binary files a/e2e/screenshots/15-beat-celebration.png and b/e2e/screenshots/15-beat-celebration.png differ
+diff --git a/e2e/screenshots/claude-e2e-verification.png b/e2e/screenshots/claude-e2e-verification.png
+index 83d9130..5d9f8fe 100644
+Binary files a/e2e/screenshots/claude-e2e-verification.png and b/e2e/screenshots/claude-e2e-verification.png differ
+diff --git a/e2e/screenshots/issue-1-claude.png b/e2e/screenshots/issue-1-claude.png
+index 7070ca1..c29c796 100644
+Binary files a/e2e/screenshots/issue-1-claude.png and b/e2e/screenshots/issue-1-claude.png differ
+diff --git a/e2e/screenshots/issue-10-dimensions.png b/e2e/screenshots/issue-10-dimensions.png
+index 23ed339..717e9fe 100644
+Binary files a/e2e/screenshots/issue-10-dimensions.png and b/e2e/screenshots/issue-10-dimensions.png differ
+diff --git a/e2e/screenshots/issue-11-race-guard.png b/e2e/screenshots/issue-11-race-guard.png
+index f976cfe..a5e2a75 100644
+Binary files a/e2e/screenshots/issue-11-race-guard.png and b/e2e/screenshots/issue-11-race-guard.png differ
+diff --git a/e2e/screenshots/issue-14-loading.png b/e2e/screenshots/issue-14-loading.png
+index e016a8c..561e01e 100644
+Binary files a/e2e/screenshots/issue-14-loading.png and b/e2e/screenshots/issue-14-loading.png differ
+diff --git a/e2e/screenshots/issue-2-celebration.png b/e2e/screenshots/issue-2-celebration.png
+index e62693e..c29c796 100644
+Binary files a/e2e/screenshots/issue-2-celebration.png and b/e2e/screenshots/issue-2-celebration.png differ
+diff --git a/e2e/screenshots/issue-7-onair.png b/e2e/screenshots/issue-7-onair.png
+index 35af840..c29c796 100644
+Binary files a/e2e/screenshots/issue-7-onair.png and b/e2e/screenshots/issue-7-onair.png differ
+diff --git a/e2e/screenshots/issue-8-spotlight.png b/e2e/screenshots/issue-8-spotlight.png
+index 23ed339..717e9fe 100644
+Binary files a/e2e/screenshots/issue-8-spotlight.png and b/e2e/screenshots/issue-8-spotlight.png differ
+diff --git a/e2e/screenshots/onboarding-01-welcome.png b/e2e/screenshots/onboarding-01-welcome.png
+index 001f718..850d16a 100644
+Binary files a/e2e/screenshots/onboarding-01-welcome.png and b/e2e/screenshots/onboarding-01-welcome.png differ
+diff --git a/e2e/screenshots/onboarding-02-writers-room.png b/e2e/screenshots/onboarding-02-writers-room.png
+index 047c283..c6bdc35 100644
+Binary files a/e2e/screenshots/onboarding-02-writers-room.png and b/e2e/screenshots/onboarding-02-writers-room.png differ
+diff --git a/e2e/screenshots/onboarding-03-acts.png b/e2e/screenshots/onboarding-03-acts.png
+index af444cf..b9a5299 100644
+Binary files a/e2e/screenshots/onboarding-03-acts.png and b/e2e/screenshots/onboarding-03-acts.png differ
+diff --git a/e2e/screenshots/onboarding-04-beats.png b/e2e/screenshots/onboarding-04-beats.png
+index 7ab1626..98f9112 100644
+Binary files a/e2e/screenshots/onboarding-04-beats.png and b/e2e/screenshots/onboarding-04-beats.png differ
+diff --git a/e2e/screenshots/onboarding-05-ready.png b/e2e/screenshots/onboarding-05-ready.png
+index a8b08a4..6471e7a 100644
+Binary files a/e2e/screenshots/onboarding-05-ready.png and b/e2e/screenshots/onboarding-05-ready.png differ
+diff --git a/e2e/screenshots/onboarding-06-complete.png b/e2e/screenshots/onboarding-06-complete.png
+index 23ed339..717e9fe 100644
+Binary files a/e2e/screenshots/onboarding-06-complete.png and b/e2e/screenshots/onboarding-06-complete.png differ
+diff --git a/e2e/screenshots/onboarding-07-skipped.png b/e2e/screenshots/onboarding-07-skipped.png
+index 74ee89a..c29c796 100644
+Binary files a/e2e/screenshots/onboarding-07-skipped.png and b/e2e/screenshots/onboarding-07-skipped.png differ
+diff --git a/e2e/screenshots/onboarding-08-skip.png b/e2e/screenshots/onboarding-08-skip.png
+index 3f27d73..b7afd9b 100644
+Binary files a/e2e/screenshots/onboarding-08-skip.png and b/e2e/screenshots/onboarding-08-skip.png differ
+diff --git a/e2e/screenshots/onboarding-09-back.png b/e2e/screenshots/onboarding-09-back.png
+index f01443c..c2e620c 100644
+Binary files a/e2e/screenshots/onboarding-09-back.png and b/e2e/screenshots/onboarding-09-back.png differ
+diff --git a/e2e/screenshots/onboarding-10-help-retrigger.png b/e2e/screenshots/onboarding-10-help-retrigger.png
+index 3e856f2..cfae924 100644
+Binary files a/e2e/screenshots/onboarding-10-help-retrigger.png and b/e2e/screenshots/onboarding-10-help-retrigger.png differ
+diff --git a/src/main/index.ts b/src/main/index.ts
+index 3c14fcc..a888d00 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -30,11 +30,18 @@ const controlPlane = new ControlPlane(INTERACTIVE_PTY)
+ 
+ const PILL_BOTTOM_MARGIN = 24
+ 
+-// Fixed canvas — one size for all views. CSS handles content sizing.
+-// Dynamic setBounds() causes: click-through math errors, movability loss,
+-// display-scaling drift. The fixed-canvas pattern (like Raycast) is more reliable.
+-const CANVAS_WIDTH = 600
+-const CANVAS_HEIGHT = 740
++// ─── Content-tight window sizing ───
++// Window resizes to match view content exactly. No transparent dead zones.
++const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
++  pill: { width: 320, height: 48 },
++  expanded: { width: 560, height: 620 },
++  full: { width: 560, height: 740 },
++}
++
++// Anchor-based position tracking: center-bottom point preserved across view transitions and user drags.
++let anchorPoint: { x: number; y: number } | null = null
++let isDragging = false
++let deferredViewMode: string | null = null
+ 
+ // ─── Broadcast to renderer ───
+ 
+@@ -94,32 +101,78 @@ controlPlane.on('error', (tabId: string, error: EnrichedError) => {
+ 
+ // ─── Window Creation ───
+ 
++function computeAnchorFromBounds(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number } {
++  return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }
++}
++
++function computeBoundsFromAnchor(anchor: { x: number; y: number }, dims: { width: number; height: number }): { x: number; y: number; width: number; height: number } {
++  return {
++    x: Math.round(anchor.x - dims.width / 2),
++    y: Math.round(anchor.y - dims.height),
++    width: dims.width,
++    height: dims.height,
++  }
++}
++
++function clampToDisplay(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } {
++  const display = screen.getDisplayMatching(bounds as Electron.Rectangle)
++  const wa = display.workArea
++  return {
++    x: Math.max(wa.x, Math.min(bounds.x, wa.x + wa.width - bounds.width)),
++    y: Math.max(wa.y, Math.min(bounds.y, wa.y + wa.height - bounds.height)),
++    width: bounds.width,
++    height: bounds.height,
++  }
++}
++
++function applyViewMode(mode: string): void {
++  if (!mainWindow || mainWindow.isDestroyed()) return
++  const dims = VIEW_DIMENSIONS[mode]
++  if (!dims) return
++
++  if (isDragging) {
++    deferredViewMode = mode
++    return
++  }
++
++  if (!anchorPoint) {
++    anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
++  }
++
++  const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
++  mainWindow.setBounds(newBounds)
++  anchorPoint = computeAnchorFromBounds(newBounds)
++  log(`Showtime: applyViewMode(${mode}) → bounds=(${newBounds.x},${newBounds.y},${newBounds.width}x${newBounds.height})`)
++}
++
+ function createWindow(): void {
++  const initialDims = VIEW_DIMENSIONS.full
+   const cursor = screen.getCursorScreenPoint()
+   const display = screen.getDisplayNearestPoint(cursor)
+   const { width: screenWidth, height: screenHeight } = display.workAreaSize
+   const { x: dx, y: dy } = display.workArea
+ 
+-  const x = dx + Math.round((screenWidth - CANVAS_WIDTH) / 2)
+-  const y = dy + screenHeight - CANVAS_HEIGHT - PILL_BOTTOM_MARGIN
++  const x = dx + Math.round((screenWidth - initialDims.width) / 2)
++  const y = dy + screenHeight - initialDims.height - PILL_BOTTOM_MARGIN
+ 
+   mainWindow = new BrowserWindow({
+-    width: CANVAS_WIDTH,
+-    height: CANVAS_HEIGHT,
++    width: initialDims.width,
++    height: initialDims.height,
+     x,
+     y,
+-    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),  // NSPanel — non-activating, joins all spaces
++    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
+     frame: false,
+     transparent: true,
+     ...(process.platform === 'darwin' ? {
+       vibrancy: 'under-window' as const,
+       visualEffectState: 'active' as const,
+     } : {}),
++    titleBarStyle: 'hiddenInset',
+     resizable: false,
+     movable: true,
+     alwaysOnTop: true,
+     skipTaskbar: true,
+-    hasShadow: false,
++    hasShadow: true,
+     roundedCorners: true,
+     backgroundColor: '#00000000',
+     show: false,
+@@ -131,17 +184,36 @@ function createWindow(): void {
+     },
+   })
+ 
++  if (process.platform === 'darwin') {
++    mainWindow.setWindowButtonPosition({ x: 12, y: 14 })
++  }
++
++  // Initialize anchor from initial bounds
++  anchorPoint = computeAnchorFromBounds({ x, y, width: initialDims.width, height: initialDims.height })
++
+   // Belt-and-suspenders: panel already joins all spaces and floats,
+   // but explicit flags ensure correct behavior on older Electron builds.
+   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+   mainWindow.setAlwaysOnTop(true, 'screen-saver')
+ 
++  // isDragging guard: track user drags to prevent setBounds during drag
++  mainWindow.on('will-move', () => {
++    isDragging = true
++  })
++  mainWindow.on('moved', () => {
++    isDragging = false
++    if (mainWindow && !mainWindow.isDestroyed()) {
++      anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
++    }
++    if (deferredViewMode) {
++      const mode = deferredViewMode
++      deferredViewMode = null
++      applyViewMode(mode)
++    }
++  })
++
+   mainWindow.once('ready-to-show', () => {
+     mainWindow?.show()
+-    // Enable OS-level click-through for transparent regions.
+-    // { forward: true } ensures mousemove events still reach the renderer
+-    // so it can toggle click-through off when cursor enters interactive UI.
+-    mainWindow?.setIgnoreMouseEvents(true, { forward: true })
+     if (process.env.ELECTRON_RENDERER_URL) {
+       mainWindow?.webContents.openDevTools({ mode: 'detach' })
+     }
+@@ -167,18 +239,28 @@ function showWindow(source = 'unknown'): void {
+   if (!mainWindow) return
+   const toggleId = ++toggleSequence
+ 
+-  // Position on the display where the cursor currently is (not always primary)
+-  const cursor = screen.getCursorScreenPoint()
+-  const display = screen.getDisplayNearestPoint(cursor)
+-  const { width: sw, height: sh } = display.workAreaSize
+-  const { x: dx, y: dy } = display.workArea
+-  // Always use fixed canvas size — never read back getBounds() (causes DIP drift)
+-  mainWindow.setBounds({
+-    x: dx + Math.round((sw - CANVAS_WIDTH) / 2),
+-    y: dy + sh - CANVAS_HEIGHT - PILL_BOTTOM_MARGIN,
+-    width: CANVAS_WIDTH,
+-    height: CANVAS_HEIGHT,
+-  })
++  if (anchorPoint) {
++    // Use stored anchor — window returns to where user last placed it
++    const currentBounds = mainWindow.getBounds()
++    const dims = { width: currentBounds.width, height: currentBounds.height }
++    const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
++    mainWindow.setBounds(newBounds)
++  } else {
++    // First show after launch — center on cursor's display, bottom-aligned
++    const cursor = screen.getCursorScreenPoint()
++    const display = screen.getDisplayNearestPoint(cursor)
++    const { width: sw, height: sh } = display.workAreaSize
++    const { x: dx, y: dy } = display.workArea
++    const dims = VIEW_DIMENSIONS.full
++    const bounds = {
++      x: dx + Math.round((sw - dims.width) / 2),
++      y: dy + sh - dims.height - PILL_BOTTOM_MARGIN,
++      width: dims.width,
++      height: dims.height,
++    }
++    mainWindow.setBounds(bounds)
++    anchorPoint = computeAnchorFromBounds(bounds)
++  }
+ 
+   // Always re-assert space membership — the flag can be lost after hide/show cycles
+   // and must be set before show() so the window joins the active Space, not its
+@@ -186,7 +268,8 @@ function showWindow(source = 'unknown'): void {
+   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+ 
+   if (SPACES_DEBUG) {
+-    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${display.id}`)
++    const currentDisplay = screen.getDisplayMatching(mainWindow.getBounds())
++    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${currentDisplay.id}`)
+     snapshotWindowState(`showWindow#${toggleId} pre-show`)
+   }
+   // As an accessory app (app.dock.hide), show() + focus gives keyboard
+@@ -243,15 +326,6 @@ ipcMain.handle(IPC.IS_VISIBLE, () => {
+   return mainWindow?.isVisible() ?? false
+ })
+ 
+-// OS-level click-through toggle — renderer calls this on mousemove
+-// to enable clicks on interactive UI while passing through transparent areas
+-ipcMain.on(IPC.SET_IGNORE_MOUSE_EVENTS, (event, ignore: boolean, options?: { forward?: boolean }) => {
+-  const win = BrowserWindow.fromWebContents(event.sender)
+-  if (win && !win.isDestroyed()) {
+-    win.setIgnoreMouseEvents(ignore, options || {})
+-  }
+-})
+-
+ // ─── IPC Handlers (typed, strict) ───
+ 
+ ipcMain.handle(IPC.START, async () => {
+@@ -386,9 +460,8 @@ ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
+ })
+ 
+ // ─── Showtime window management ───
+-// SET_VIEW_MODE — no native resize needed. Fixed canvas, CSS handles content sizing.
+ ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
+-  log(`Showtime: setViewMode → ${mode} (CSS-only, no native resize)`)
++  applyViewMode(mode)
+ })
+ 
+ ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
+diff --git a/src/preload/index.ts b/src/preload/index.ts
+index 788445a..0514469 100644
+--- a/src/preload/index.ts
++++ b/src/preload/index.ts
+@@ -43,9 +43,6 @@ export interface CluiAPI {
+   animateHeight(from: number, to: number, durationMs: number): Promise<void>
+   hideWindow(): void
+   isVisible(): Promise<boolean>
+-  /** OS-level click-through for transparent window regions */
+-  setIgnoreMouseEvents(ignore: boolean, options?: { forward?: boolean }): void
+-
+   // ─── Event listeners (main → renderer) ───
+   onEvent(callback: (tabId: string, event: NormalizedEvent) => void): () => void
+   onTabStatusChange(callback: (tabId: string, newStatus: string, oldStatus: string) => void): () => void
+@@ -116,8 +113,6 @@ const api: CluiAPI = {
+     ipcRenderer.invoke(IPC.ANIMATE_HEIGHT, { from, to, durationMs }),
+   hideWindow: () => ipcRenderer.send(IPC.HIDE_WINDOW),
+   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
+-  setIgnoreMouseEvents: (ignore, options) =>
+-    ipcRenderer.send(IPC.SET_IGNORE_MOUSE_EVENTS, ignore, options || {}),
+   setWindowWidth: (width) => ipcRenderer.send(IPC.SET_WINDOW_WIDTH, width),
+ 
+   // ─── Event listeners ───
+diff --git a/src/renderer/App.tsx b/src/renderer/App.tsx
+index 24a2bca..faeaef9 100644
+--- a/src/renderer/App.tsx
++++ b/src/renderer/App.tsx
+@@ -23,6 +23,8 @@ export default function App() {
+   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
+   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
+   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
++  const beatCheckPending = useShowStore((s) => s.beatCheckPending)
++  const setExpanded = useShowStore((s) => s.setExpanded)
+   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
+ 
+   const [showOnboarding, setShowOnboarding] = useState(() => {
+@@ -60,40 +62,6 @@ export default function App() {
+     })
+   }, [])
+ 
+-  // ─── OS-level click-through ───
+-  useEffect(() => {
+-    if (!window.clui?.setIgnoreMouseEvents) return
+-    let lastIgnored: boolean | null = null
+-
+-    const onMouseMove = (e: MouseEvent) => {
+-      const el = document.elementFromPoint(e.clientX, e.clientY)
+-      const isUI = !!(el && el.closest('[data-clui-ui]'))
+-      const shouldIgnore = !isUI
+-      if (shouldIgnore !== lastIgnored) {
+-        lastIgnored = shouldIgnore
+-        if (shouldIgnore) {
+-          window.clui.setIgnoreMouseEvents(true, { forward: true })
+-        } else {
+-          window.clui.setIgnoreMouseEvents(false)
+-        }
+-      }
+-    }
+-
+-    const onMouseLeave = () => {
+-      if (lastIgnored !== true) {
+-        lastIgnored = true
+-        window.clui.setIgnoreMouseEvents(true, { forward: true })
+-      }
+-    }
+-
+-    document.addEventListener('mousemove', onMouseMove)
+-    document.addEventListener('mouseleave', onMouseLeave)
+-    return () => {
+-      document.removeEventListener('mousemove', onMouseMove)
+-      document.removeEventListener('mouseleave', onMouseLeave)
+-    }
+-  }, [])
+-
+   // ─── Dynamic window sizing via IPC ───
+   useEffect(() => {
+     if (!window.clui?.setViewMode) return
+@@ -123,6 +91,14 @@ export default function App() {
+     }
+   }, [phase, isExpanded, goingLiveActive])
+ 
++  // ─── Force-expand on Beat Check ───
++  useEffect(() => {
++    if (beatCheckPending && !isExpanded) {
++      setExpanded(true)
++      window.clui?.setViewMode('expanded')
++    }
++  }, [beatCheckPending, isExpanded, setExpanded])
++
+   // ─── Onboarding completion handler ───
+   const handleOnboardingComplete = useCallback((enterRoom: boolean) => {
+     localStorage.setItem('showtime-onboarding-complete', 'true')
+diff --git a/src/renderer/views/DarkStudioView.tsx b/src/renderer/views/DarkStudioView.tsx
+index 77212ee..b47d124 100644
+--- a/src/renderer/views/DarkStudioView.tsx
++++ b/src/renderer/views/DarkStudioView.tsx
+@@ -7,7 +7,6 @@ export function DarkStudioView() {
+ 
+   return (
+     <div
+-      data-clui-ui
+       className="min-h-screen bg-studio-bg flex flex-col items-center justify-center relative"
+     >
+       {/* Spotlight overlay */}
+diff --git a/src/renderer/views/ExpandedView.tsx b/src/renderer/views/ExpandedView.tsx
+index bdce0ce..b594b38 100644
+--- a/src/renderer/views/ExpandedView.tsx
++++ b/src/renderer/views/ExpandedView.tsx
+@@ -1,4 +1,3 @@
+-import React from 'react'
+ import { motion } from 'framer-motion'
+ import { useShowStore, selectCurrentAct } from '../stores/showStore'
+ import { TimerPanel } from '../panels/TimerPanel'
+@@ -20,7 +19,6 @@ export function ExpandedView() {
+   return (
+     <motion.div
+       className="w-[560px] min-h-[620px] bg-surface rounded-xl overflow-hidden flex flex-col"
+-      data-clui-ui
+       initial={{ scale: 0.9, opacity: 0, y: 20 }}
+       animate={{ scale: 1, opacity: 1, y: 0 }}
+       exit={{ scale: 0.9, opacity: 0, y: 20 }}
+@@ -28,8 +26,7 @@ export function ExpandedView() {
+     >
+       {/* Title Bar */}
+       <div
+-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
+-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
++        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
+       >
+         <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
+           SHOWTIME
+@@ -38,22 +35,19 @@ export function ExpandedView() {
+         <div className="flex items-center gap-1">
+           <button
+             onClick={enterDirector}
+-            className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors"
+-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
++            className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors no-drag"
+           >
+             Director
+           </button>
+           <button
+             onClick={toggleExpanded}
+-            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors"
+-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
++            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
+           >
+             ▼
+           </button>
+           <button
+             onClick={() => window.clui.quit()}
+-            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm"
+-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
++            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm no-drag"
+             title="Quit Showtime"
+           >
+             ✕
+diff --git a/src/renderer/views/OnboardingView.tsx b/src/renderer/views/OnboardingView.tsx
+index 61b9baf..40fdaba 100644
+--- a/src/renderer/views/OnboardingView.tsx
++++ b/src/renderer/views/OnboardingView.tsx
+@@ -61,7 +61,6 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
+ 
+   return (
+     <div
+-      data-clui-ui
+       className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between rounded-xl overflow-hidden relative"
+     >
+       {/* Skip link */}
+diff --git a/src/renderer/views/PillView.tsx b/src/renderer/views/PillView.tsx
+index 8a380f0..0d05a7c 100644
+--- a/src/renderer/views/PillView.tsx
++++ b/src/renderer/views/PillView.tsx
+@@ -70,7 +70,6 @@ export function PillView() {
+         'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+         'cursor-pointer select-none'
+       )}
+-      data-clui-ui
+       onClick={toggleExpanded}
+       initial={{ scale: 0.8, opacity: 0 }}
+       animate={{ scale: 1, opacity: 1 }}
+diff --git a/src/renderer/views/StrikeView.tsx b/src/renderer/views/StrikeView.tsx
+index 8a2afeb..5226a90 100644
+--- a/src/renderer/views/StrikeView.tsx
++++ b/src/renderer/views/StrikeView.tsx
+@@ -19,15 +19,13 @@ export function StrikeView() {
+   return (
+     <motion.div
+       className="w-[560px] max-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
+-      data-clui-ui
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+     >
+       {/* Title bar */}
+       <div
+-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
+-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
++        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
+       >
+         <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
+           SHOWTIME
+diff --git a/src/renderer/views/WritersRoomView.tsx b/src/renderer/views/WritersRoomView.tsx
+index 3dc5718..642f331 100644
+--- a/src/renderer/views/WritersRoomView.tsx
++++ b/src/renderer/views/WritersRoomView.tsx
+@@ -124,20 +124,17 @@ ${planText}`
+   return (
+     <div
+       className="w-[560px] min-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
+-      data-clui-ui
+     >
+       {/* Title bar */}
+       <div
+-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428]"
+-        style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
++        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
+       >
+         <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
+           SHOWTIME
+         </span>
+         <button
+           onClick={() => window.clui.quit()}
+-          className="text-txt-muted hover:text-onair transition-colors text-sm"
+-          style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
++          className="text-txt-muted hover:text-onair transition-colors text-sm no-drag"
+           title="Quit Showtime"
+         >
+           ✕
+diff --git a/src/shared/types.ts b/src/shared/types.ts
+index 3d55467..eb84b2e 100644
+--- a/src/shared/types.ts
++++ b/src/shared/types.ts
+@@ -390,7 +390,6 @@ export const IPC = {
+   SET_WINDOW_WIDTH: 'clui:set-window-width',
+   HIDE_WINDOW: 'clui:hide-window',
+   WINDOW_SHOWN: 'clui:window-shown',
+-  SET_IGNORE_MOUSE_EVENTS: 'clui:set-ignore-mouse-events',
+   IS_VISIBLE: 'clui:is-visible',
+ 
+   // Skill provisioning (main → renderer)
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None

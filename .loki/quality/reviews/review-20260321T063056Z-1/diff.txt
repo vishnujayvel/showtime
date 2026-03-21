@@ -1,0 +1,216 @@
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index ac8db60..6b01247 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,66 +1,30 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T08:15:00Z
++Updated: 2026-03-21T06:30:53Z
+ 
+ ## Current State
+ 
+-- Iteration: 1 — COMPLETE
+-- Phase: DEVELOPMENT → all 7 groups done
++- Iteration: 1
++- Phase: DEVELOPMENT
++- RARV Step: ACT
+ - Provider: claude
+-- **All 35/35 tasks complete**
++- Elapsed: 0m
+ 
+-## Test Suite
++## Last Completed Task
+ 
+-- **128 unit tests** across 6 files — ALL PASSING
+-- **12 Playwright E2E tests** — ALL PASSING
+-- Zero TypeScript errors (tsc --noEmit clean)
+-- Build succeeds (npm run build)
++- Last commit: Fix E2E afterAll to kill orphaned Electron helper processes (#9)
++- Files changed: e2e/showtime.test.ts
+ 
+-## What Was Done This Session
++## Active Blockers
+ 
+-### Groups 1-2 (Foundation, verified from prior session)
+-- Tailwind CSS v4 with @theme design tokens, keyframes, animations
+-- shadcn/ui setup with custom Button variants
+-- Google Fonts (Inter + JetBrains Mono)
+-- Category color utility (getCategoryToken, getCategoryHex)
+-- showStore updates (goingLiveActive, writersRoomStep, breathingPauseEndAt)
+-- Shared types IPC channels
++- None
+ 
+-### Group 3 (Atomic Components)
+-- TallyLight, OnAirIndicator, ClapperboardBadge, BeatCounter, EnergySelector
++## Next Up
+ 
+-### Group 4 (Core Views — 12 components)
+-- DarkStudioView, GoingLiveTransition, WritersRoomView
+-- TimerPanel, LineupPanel, ActCard, BeatCheckModal
+-- IntermissionView, DirectorMode, ShowVerdict
+-- PillView, ExpandedView, StrikeView
++- Tailwind CSS v4 Configuration & Design Tokens
++- shadcn/ui Setup & Custom Button Variants
++- Font Imports
+ 
+-### Group 5 (App Shell)
+-- App.tsx routing: phase-aware view switching
+-- Deleted 8 CLUI dead-weight files
++## Key Decisions This Session
+ 
+-### Group 6 (Cleanup)
+-- sessionStore: removed 294 lines of multi-tab CLUI code
+-- theme.ts: removed 377 lines of Tailwind-duplicated tokens
+-- ChatPanel: converted from inline styles to Tailwind
+-
+-### Group 7 (Testing)
+-- showStore unit tests (103 assertions)
+-- useTimer hook tests (9 tests)
+-- components.test.tsx rewritten for new APIs
+-- 12 Playwright E2E tests covering full show flow
+-
+-## Key Decisions
+-
+-- sessionStore keeps `tabs` array internally (IPC bridge needs tabId) but all multi-tab actions removed
+-- theme.ts retains only PermissionCard runtime colors
+-- E2E tests use `goto(url, { waitUntil: 'commit' })` instead of `reload()` to avoid Google Fonts load timeout
+-- Screenshots wrapped in try/catch for font-loading resilience
+-
+-## Next Steps (Future Sessions)
+-
+-- Polish individual view styling to match mockup (docs/mockups/direction-4-the-show.html)
+-- PermissionCard migration from inline styles to Tailwind
+-- Claude integration for lineup generation (replace mock in WritersRoomView)
+-- Whisper voice input integration
+-- macOS distribution/signing
++- None recorded yet
+diff --git a/docs/plans/pipeline-journal.md b/docs/plans/pipeline-journal.md
+index d182266..7935d4c 100644
+--- a/docs/plans/pipeline-journal.md
++++ b/docs/plans/pipeline-journal.md
+@@ -522,6 +522,94 @@ Key principles:
+ 
+ **Key improvement over v2:** This time we're using real OpenSpec with delta specs (MODIFIED sections with Previously: annotations). Loki's adapter should parse these correctly and generate tasks that include integration-level acceptance criteria, not just UI rewrites.
+ 
++---
++
++## 2026-03-21 07:25 UTC — Loki v2.1 Actively Fixing Bugs, Parallel Agents Confirmed
++
++**Loki v2.1 is working.** 3 tasks in progress, parallel agents dispatching via Task tool.
++
++**Files already modified by Loki v2.1 (uncommitted):**
++
++| File | Issue | What Changed |
++|------|-------|-------------|
++| `WritersRoomView.tsx` | #1 | Being modified — Claude integration replacing mock |
++| `ChatPanel.tsx` | #1 | Modified — likely extracting shared lineup parser |
++| `BeatCheckModal.tsx` | #2 | Modified — celebration delay being added |
++| `showStore.ts` | #2 | Modified — Beat lock timing changes |
++| `main/index.ts` | #3, #4 | Modified — vibrancy added (confirmed: 1 "vibrancy" mention in diff), quit behavior |
++| `GoingLiveTransition.tsx` | #7 | Modified — ON AIR animation |
++| `index.css` | #8 | Modified — spotlight gradient as CSS class |
++
++**New file:** `src/renderer/lib/lineup-parser.ts` — shared utility for parsing `showtime-lineup` JSON blocks (extracted from ChatPanel for reuse in WritersRoom). This matches the design.md spec exactly.
++
++**E2E screenshots being generated:** `02-writers-room.png`, `03-energy-selected.png` — Loki is running Playwright as part of its VERIFY step.
++
++**Issue closure readiness:**
++- #4 (vibrancy): LIKELY CLOSEABLE — `main/index.ts` modified with vibrancy mention
++- #7 (GoingLive animation): IN PROGRESS — file modified
++- #8 (spotlight CSS): LIKELY CLOSEABLE — index.css modified
++- #1 (Claude integration): IN PROGRESS — WritersRoom + ChatPanel + new lineup-parser
++- #2 (Beat celebration): IN PROGRESS — BeatCheckModal + showStore modified
++- #3 (quit/close): IN PROGRESS — main/index.ts modified
++- #5 (PermissionCard): NOT YET VISIBLE
++- #6 (E2E update): IN PROGRESS — screenshots being generated
++- #9 (Playwright cleanup): NOT YET VISIBLE
++
++**Build:** PASSING. CSS 53.87KB, JS 1,035KB. Build time 843ms.
++
++**Loki is using parallel agents** — confirmed from log: "dispatch parallel agents for the independent tasks" and `[Tool: Agent]` invocations. The STATUS shows 3 in-progress tasks simultaneously.
++
++**The `openspec-loki-loop` skill is now live** in the Claude Code skills list. It can be invoked in future sessions for the full propose → spec → execute → verify → loop workflow.
++
++**Assessment:** Loki v2.1 is executing well. The delta specs with MODIFIED sections are guiding it to update existing files (not create new ones). The shared `lineup-parser.ts` extraction shows it understood the design.md instruction to create a shared utility. Expecting a commit within the next few minutes as tasks complete.
++
++---
++
++## 2026-03-21 07:35 UTC — Hiccup #5: Should Have Used --parallel Flag
++
++### The Mistake
++
++Both Loki runs (v2 and v2.1) used the default sequential mode — a single Claude process with internal Task tool subagents for logical parallelism. We should have used `--parallel` for true process-level parallelism via git worktrees.
++
++### Why This Matters
++
++- **V2 (35 tasks):** One Claude process handled everything sequentially with occasional 2-3 subagent dispatches. Groups 3-4 had 17 independent tasks that could have run in 10 parallel processes instead of 3 at a time.
++- **V2.1 (9 tasks):** Same pattern. 3 in-progress tasks via Task tool subagents, but could be running 5-6 truly parallel processes.
++
++### Why We Didn't Use It
++
++I assumed `--parallel` had "overhead" from git worktree setup. This was wrong:
++1. Claude Code natively supports git worktrees — there's even a `superpowers:using-git-worktrees` skill
++2. Worktree creation takes seconds, not minutes
++3. The parallelism gain (5-10x for independent tasks) far exceeds the setup cost
++4. Loki's `--parallel` flag handles the worktree lifecycle automatically (create, execute, auto-merge)
++
++### The Fix
++
++**Default to `--parallel` for all Loki runs.** The `openspec-loki-loop` skill should use:
++
++```bash
++nohup loki start --parallel --openspec openspec/changes/<name> > /tmp/loki.log 2>&1 &
++```
++
++Not:
++```bash
++nohup loki start --openspec openspec/changes/<name> > /tmp/loki.log 2>&1 &
++```
++
++### Impact on Showtime
++
++If v2 had used `--parallel`:
++- Groups 3-4 (17 independent tasks) could have run 10 processes simultaneously
++- Estimated time: 5-8 min instead of 18 min
++- Group 7 (5 test tasks) could have run in parallel too
++
++If v2.1 had used `--parallel`:
++- All 9 bugfix tasks touching different files → near-full parallelism
++- Estimated time: 3-5 min instead of current 10+ min
++
++### Saved as feedback memory and updated in skill.
++
+ ## 2026-03-21 04:18 UTC — Initial Check
+ 
+ **Artifacts status:**
+diff --git a/e2e/screenshots/02-writers-room.png b/e2e/screenshots/02-writers-room.png
+index e168943..a437500 100644
+Binary files a/e2e/screenshots/02-writers-room.png and b/e2e/screenshots/02-writers-room.png differ
+diff --git a/e2e/screenshots/03-energy-selected.png b/e2e/screenshots/03-energy-selected.png
+index 1b7511e..748d3e3 100644
+Binary files a/e2e/screenshots/03-energy-selected.png and b/e2e/screenshots/03-energy-selected.png differ
+diff --git a/e2e/showtime.test.ts b/e2e/showtime.test.ts
+index 20dddeb..be10250 100644
+--- a/e2e/showtime.test.ts
++++ b/e2e/showtime.test.ts
+@@ -38,7 +38,18 @@ test.beforeAll(async () => {
+ })
+ 
+ test.afterAll(async () => {
+-  if (app) await app.close()
++  if (app) {
++    // Kill the process tree to clean up Electron helper processes (GPU, Renderer, Network, Audio)
++    const pid = app.process().pid
++    await app.close().catch(() => {})
++    if (pid) {
++      try {
++        process.kill(pid, 'SIGKILL')
++      } catch {
++        // Process already exited
++      }
++    }
++  }
+ })
+ 
+ // ─── openspec-7.1: App launches successfully ───

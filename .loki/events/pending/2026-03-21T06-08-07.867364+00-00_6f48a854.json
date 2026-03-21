@@ -1,0 +1,13 @@
+{
+  "id": "6f48a854",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-21T06:08:07.867364+00:00",
+  "payload": {
+    "action": "learning_signal",
+    "signal_id": "sig-33fbbd38",
+    "signal_type": "tool_efficiency",
+    "outcome": "failure"
+  },
+  "version": "1.0"
+}

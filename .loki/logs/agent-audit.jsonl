@@ -1,0 +1,19 @@
+{"timestamp": "2026-03-21T05:02:45Z", "action": "session_start", "description": "Session started", "details": "prd=.loki/openspec-prd-normalized.md,provider=claude", "iteration": 0, "pid": 5869}
+{"timestamp": "2026-03-21T05:21:34Z", "action": "session_start", "description": "Session started", "details": "prd=.loki/openspec-prd-normalized.md,provider=claude", "iteration": 0, "pid": 50683}
+{"timestamp": "2026-03-21T05:21:34Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 50683}
+{"timestamp": "2026-03-21T06:18:09Z", "action": "session_start", "description": "Session started", "details": "prd=.loki/openspec-prd-normalized.md,provider=claude", "iteration": 0, "pid": 80885}
+{"timestamp": "2026-03-21T06:18:10Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 80885}
+{"timestamp": "2026-03-21T06:31:46Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 80885}
+{"timestamp": "2026-03-21T06:49:05Z", "action": "session_start", "description": "Session started", "details": "prd=.loki/openspec-prd-normalized.md,provider=claude", "iteration": 0, "pid": 30957}
+{"timestamp": "2026-03-21T06:49:06Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 30957}
+{"timestamp": "2026-03-21T06:58:46Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 30957}
+{"timestamp": "2026-03-21T16:44:56Z", "action": "session_start", "description": "Session started", "details": "prd=.loki/openspec-prd-normalized.md,provider=claude", "iteration": 0, "pid": 10478}
+{"timestamp": "2026-03-21T16:44:56Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 10478}
+{"timestamp": "2026-03-21T17:23:48Z", "action": "cli_invoke", "description": "Starting iteration 2", "details": "provider=claude,tier=development", "iteration": 2, "pid": 10478}
+{"timestamp": "2026-03-21T17:28:34Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=2", "iteration": 2, "pid": 10478}
+{"timestamp": "2026-03-21T19:40:28Z", "action": "session_start", "description": "Session started", "details": "prd=.loki/openspec-prd-normalized.md,provider=claude", "iteration": 0, "pid": 95303}
+{"timestamp": "2026-03-21T19:40:28Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 95303}
+{"timestamp": "2026-03-21T19:50:05Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 95303}
+{"timestamp": "2026-03-21T20:31:25Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md,provider=claude", "iteration": 0, "pid": 71035}
+{"timestamp": "2026-03-21T20:31:26Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 71035}
+{"timestamp": "2026-03-21T20:38:41Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 71035}

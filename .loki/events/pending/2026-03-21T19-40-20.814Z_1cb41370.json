@@ -1,0 +1,8 @@
+{
+  "id": "1cb41370",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-21T19:40:20.814Z",
+  "payload": {"action":"start","provider":"claude","prd_path":".loki/openspec-prd-normalized.md"},
+  "version": "1.0"
+}

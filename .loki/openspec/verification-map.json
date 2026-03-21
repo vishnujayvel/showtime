@@ -1,0 +1,238 @@
+{
+  "scenarios": [
+    {
+      "domain": "window-management",
+      "requirement": "Content-Tight Window Sizing",
+      "scenario": "Renderer sends pill mode on collapse",
+      "given": "",
+      "when": "the renderer calls `window.clui.setViewMode('pill')`",
+      "then": "the main process SHALL call `setBounds()` with width=320, height=48, preserving the anchor point",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Content-Tight Window Sizing",
+      "scenario": "Renderer sends expanded mode on expand during live phase",
+      "given": "",
+      "when": "the renderer calls `window.clui.setViewMode('expanded')` during `phase=live`",
+      "then": "the main process SHALL call `setBounds()` with width=560, height=620, preserving the anchor point",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Content-Tight Window Sizing",
+      "scenario": "Renderer sends full mode for writers room",
+      "given": "",
+      "when": "the renderer calls `window.clui.setViewMode('full')` during `phase=writers_room`",
+      "then": "the main process SHALL call `setBounds()` with width=560, height=740, preserving the anchor point",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Content-Tight Window Sizing",
+      "scenario": "Window creation uses pill dimensions by default",
+      "given": "",
+      "when": "the app first creates the BrowserWindow",
+      "then": "the initial dimensions SHALL NOT use fixed-canvas constants the initial dimensions SHALL be the `full` mode size (560x740) since the app starts in DarkStudioView (expanded=true, phase=no_show)",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Transparent Window Preservation",
+      "scenario": "Pill view has transparent corners",
+      "given": "",
+      "when": "the window is in pill mode (320x48)",
+      "then": "the rounded-full corners of the PillView SHALL show through to the desktop, not black rectangles",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Transparent Window Preservation",
+      "scenario": "No flash on resize",
+      "given": "",
+      "when": "the window transitions from pill (320x48) to expanded (560x620)",
+      "then": "the transparent background SHALL prevent any visible flash or black rectangle during the resize",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Remove Click-Through Toggle Mechanism",
+      "scenario": "Mouse events reach all UI elements without toggle",
+      "given": "",
+      "when": "the user moves the cursor over any part of the Showtime window",
+      "then": "mouse events (click, hover, drag) SHALL be received by the renderer without any `setIgnoreMouseEvents` toggling",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Remove Click-Through Toggle Mechanism",
+      "scenario": "No mousemove handler on document",
+      "given": "",
+      "when": "the App component mounts",
+      "then": "no `mousemove` or `mouseleave` event listeners SHALL be registered on `document` for click-through purposes",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Native Drag via CSS Classes",
+      "scenario": "ExpandedView title bar is draggable via CSS class",
+      "given": "",
+      "when": "the ExpandedView renders its title bar",
+      "then": "the title bar div SHALL have the `drag-region` class the title bar div SHALL NOT have any inline `style` prop for WebkitAppRegion",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Native Drag via CSS Classes",
+      "scenario": "Interactive buttons within drag region use no-drag class",
+      "given": "",
+      "when": "a button (Director, collapse, close) renders inside a drag-region title bar",
+      "then": "the button SHALL have the `no-drag` class the button SHALL NOT have any inline `style` prop for WebkitAppRegion",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Native Drag via CSS Classes",
+      "scenario": "PillView has no drag region",
+      "given": "",
+      "when": "the PillView renders",
+      "then": "no element within PillView SHALL have the `drag-region` class or `-webkit-app-region: drag` the entire PillView SHALL remain click-only (clicking expands to ExpandedView)",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Remove data-clui-ui Attribute",
+      "scenario": "No view renders data-clui-ui",
+      "given": "",
+      "when": "any Showtime view renders (DarkStudioView, StrikeView, PillView, ExpandedView, WritersRoomView, OnboardingView)",
+      "then": "no DOM element SHALL have a `data-clui-ui` attribute",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Anchor-Based Position Tracking",
+      "scenario": "Pill-to-expanded preserves bottom-center",
+      "given": "",
+      "when": "the pill is at screen position where its center-bottom is at (800, 1050)",
+      "then": "after expanding to 560x620, the new bounds SHALL place the center-bottom at (800, 1050) the new x SHALL be 800 - 280 = 520, the new y SHALL be 1050 - 620 = 430",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Anchor-Based Position Tracking",
+      "scenario": "Expanded-to-pill preserves bottom-center",
+      "given": "",
+      "when": "the expanded view's center-bottom is at (800, 1050)",
+      "then": "after collapsing to pill (320x48), the new bounds SHALL place the center-bottom at (800, 1050) the new x SHALL be 800 - 160 = 640, the new y SHALL be 1050 - 48 = 1002",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Anchor-Based Position Tracking",
+      "scenario": "Anchor updates after user drag",
+      "given": "",
+      "when": "the user drags the window to a new position",
+      "then": "the stored anchor point SHALL update to the center-bottom of the new position subsequent view mode transitions SHALL use the updated anchor",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Display Detection via Bounds Matching",
+      "scenario": "Window on secondary display with cursor on primary",
+      "given": "",
+      "when": "the user has dragged the window to a secondary display",
+      "then": "the cursor position SHALL NOT be used for display detection `screen.getDisplayMatching(win.getBounds())` SHALL determine the correct display for clamping",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Display Detection via Bounds Matching",
+      "scenario": "Clamping prevents window from going off-screen",
+      "given": "",
+      "when": "anchor-based positioning would place the window partially off-screen",
+      "then": "the bounds SHALL be clamped to the display's `workArea` so the entire window remains visible",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "isDragging Guard",
+      "scenario": "setViewMode during drag is deferred",
+      "given": "",
+      "when": "the user is actively dragging the window AND a `setViewMode('pill')` IPC message arrives",
+      "then": "the `setBounds()` call SHALL NOT execute immediately after the drag ends (the `moved` event fires), the deferred `setBounds()` SHALL execute with the correct anchor from the new drag position",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "isDragging Guard",
+      "scenario": "Normal setViewMode without drag executes immediately",
+      "given": "",
+      "when": "the user is NOT dragging the window AND a `setViewMode('expanded')` IPC message arrives",
+      "then": "the `setBounds()` call SHALL execute immediately",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Force-Expand on Beat Check",
+      "scenario": "Beat check triggers while in pill view",
+      "given": "",
+      "when": "`beatCheckPending` transitions from false to true AND `isExpanded` is false",
+      "then": "the renderer SHALL set `isExpanded = true` in the showStore the renderer SHALL call `window.clui.setViewMode('expanded')` the BeatCheckModal SHALL render in the 560x620 window",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Force-Expand on Beat Check",
+      "scenario": "Beat check triggers while already expanded",
+      "given": "",
+      "when": "`beatCheckPending` transitions from false to true AND `isExpanded` is true",
+      "then": "no view mode change is needed the BeatCheckModal SHALL render normally as an overlay",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Native macOS Shadow",
+      "scenario": "Window has native shadow",
+      "given": "",
+      "when": "the BrowserWindow is created",
+      "then": "the `hasShadow` option SHALL be `true`",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Window Creation Settings",
+      "scenario": "Window creation on macOS",
+      "given": "",
+      "when": "`createWindow()` executes on macOS",
+      "then": "the BrowserWindow SHALL have all the listed settings `setWindowButtonPosition` SHALL be called with `{ x: 12, y: 14 }` no `setIgnoreMouseEvents` call SHALL occur in `ready-to-show`",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "showWindow Positioning Update",
+      "scenario": "First show after launch centers on cursor display",
+      "given": "",
+      "when": "`showWindow()` is called for the first time (no stored anchor)",
+      "then": "the window SHALL be positioned on the display nearest the cursor, horizontally centered, bottom-aligned with margin",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "showWindow Positioning Update",
+      "scenario": "Subsequent show preserves last anchor",
+      "given": "",
+      "when": "`showWindow()` is called after the user previously dragged the window",
+      "then": "the window SHALL appear at the stored anchor position, not re-centered on the cursor's display",
+      "verified": false
+    },
+    {
+      "domain": "window-management",
+      "requirement": "Update CLAUDE.md Section 4",
+      "scenario": "CLAUDE.md reflects new window management rules",
+      "given": "",
+      "when": "a contributor reads CLAUDE.md Section 4",
+      "then": "the mandatory BrowserWindow settings SHALL include `hasShadow: true` the mandatory BrowserWindow settings SHALL NOT list `transparent: true` (it is still used but not a rule) the drag region guidance SHALL reference `.drag-region` / `.no-drag` CSS classes there SHALL be a note prohibiting `setIgnoreMouseEvents`",
+      "verified": false
+    }
+  ]
+}

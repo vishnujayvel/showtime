@@ -1,0 +1,3 @@
+.loki/CONTINUITY.md
+docs/plans/pipeline-journal.md
+src/main/index.ts

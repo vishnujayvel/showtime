@@ -1,0 +1,5 @@
+.loki/CONTINUITY.md
+.loki/state/orchestrator.json
+docs/plans/pipeline-journal.md
+e2e/screenshots/02-writers-room.png
+e2e/screenshots/03-energy-selected.png
