@@ -844,6 +844,16 @@ Loki active (PID 11140, 4% CPU). 2 in-progress, 2 completed. Already creating `O
 
 ---
 
+## 2026-03-21 18:05 UTC — All Loki Runs Complete. Manual Hotfixes Applied.
+
+Loki final-polish done (3 completed, 2 failed — quality gate findings). 2 manual hotfixes applied during live demo:
+1. `7eb46d0` — Beat Check modal render gate: `!beatCheckPending` → `!beatCheckPending && !celebrationActive`
+2. `d1b7ca0` — Close/quit ✕ button added to ExpandedView + WritersRoomView title bars
+
+**Session final: 24 commits, 183 tests, 4 Loki runs, 2 manual hotfixes, 1 skill created, 16 GitHub issues filed.**
+
+---
+
 ## 2026-03-21 17:55 UTC — Loki Final-Polish COMPLETE. Manual Beat Check Fix Applied.
 
 Loki finished with 2 commits: `4ea8b8b` (dynamic window sizing, onboarding, Claude E2E) + `1607f56` (dead code cleanup). 3 completed, 2 failed (quality gate review findings — likely non-blocking). 0 processes.
@@ -1120,3 +1130,83 @@ These suggest Loki is working on Task 1.2 (shadcn/ui setup) or extending it — 
 3. No commits after ~25 minutes of running. Expected for first iteration (heavy context loading), but should see first commit soon.
 
 **Overall health:** Cautiously positive. Loki is alive, actively calling Claude, and creating files. First commit expected within the next cycle.
+
+---
+
+## Session 2 — 2026-03-21 (afternoon)
+
+**Goal:** Fix critical #10 window management, design day structure / schedule drift feature, architect SQLite data layer.
+
+### Timeline
+
+| Time (PDT) | Event |
+|-------------|-------|
+| ~12:00 | Session starts. Read memory, pipeline journal, issue #10, full codebase context. |
+| ~12:10 | Classified as Architecture work. Created OpenSpec change `window-management-redesign`. |
+| ~12:15 | Wrote proposal + design. Critic review found 16 issues (3 critical): titleBarStyle conflict, transparent removal breaks vibrancy, PillView drag/click conflict. |
+| ~12:25 | Key design pivot: KEEP `transparent: true`, REMOVE `setIgnoreMouseEvents`. Content-tight sizing eliminates click-through need. |
+| ~12:30 | User pushed back on manual artifact generation — "inject into OpenSpec and let Loki do it." |
+| ~12:35 | Spawned parallel agents: specs + design generation via OpenSpec instructions. Tasks generated sequentially after. |
+| ~12:38 | OpenSpec validated: 4/4 artifacts complete. Committed checkpoint `a72a443`. |
+| ~12:40 | **Loki launched** with `--parallel --openspec`. PID 95303. |
+| ~12:48 | **Loki commit `79577a9`**: "Implement content-tight window sizing with anchor-based positioning." 11 files, 42 changed. |
+| ~12:50 | **Loki DONE.** Completion promise fulfilled. Code review with 3 specialist reviewers passed. |
+| ~12:55 | User testing: window draggable (expanded), but ghost native close button visible. Root cause: `titleBarStyle: 'hiddenInset'` + `frame: false` conflict. |
+| ~12:58 | Manual fix: removed `titleBarStyle: 'hiddenInset'` + `setWindowButtonPosition`. Committed `f82a064`. |
+| ~13:00 | User confirms: dragging works in expanded view. Pill not draggable (filed #18). Transparent screen after acts complete (filed #17). |
+| ~13:05 | Brainstorming: day structure / schedule drift feature. 3 UX directions proposed. |
+| ~13:10 | User: "create all three mockups + C4 architecture." 4 agents spawned in parallel. |
+| ~13:25 | All 4 mockups delivered. User chose Direction A (Live Rundown Bar) + C4 Option C (Zustand + SQLite). |
+| ~13:30 | OpenSpec change `showtime-data-layer-rundown` created. Proposal written with full schema + testing strategy. |
+| ~13:35 | Specs + design agents spawned. User went to lunch. Gardening loop started. |
+
+### What Was Accomplished
+
+1. **Window management redesigned and implemented** (commit `79577a9` + `f82a064`)
+   - Removed `setIgnoreMouseEvents` click-through hack entirely
+   - Content-tight window sizing: pill=320x48, expanded=560x620, full=560x740
+   - Anchor-based positioning (center-bottom preserved across transitions)
+   - isDragging guard, force-expand on beatCheckPending
+   - CSS `.drag-region`/`.no-drag` replacing inline WebkitAppRegion styles
+   - `hasShadow: true` for native macOS shadow
+   - 144 unit tests pass, 36/38 E2E pass (2 updated for new sizing)
+
+2. **3 UX mockups created** for day structure / schedule drift feature
+   - Direction A: Live Rundown Bar (horizontal timeline with NOW marker) — **CHOSEN**
+   - Direction B: Full Schedule View (vertical dual-column plan vs actual)
+   - Direction C: Drift Indicator (minimal enhancements to existing views)
+
+3. **C4 architecture designed** for data persistence layer
+   - Hybrid Zustand + SQLite with event-sourced timeline_events — **CHOSEN**
+   - better-sqlite3 + Drizzle ORM in main process
+   - 5 tables: shows, acts, timeline_events, claude_contexts, _migrations
+
+4. **2 bugs filed**: #17 (transparent screen after acts complete), #18 (pill not draggable)
+
+5. **OpenSpec change `showtime-data-layer-rundown`** initiated — specs + design generating, tasks + Loki launch pending.
+
+### Recurring Issues Tracked
+
+| Issue | First Seen | Still Present? | Notes |
+|-------|-----------|----------------|-------|
+| Loki queue shows stale task count | Session 1 | YES | `queue/pending.json` from v2 build never cleaned up. STATUS.txt counts array length, not status field. Design limitation in Loki. |
+| Loki doesn't auto-detect pre-completed work | Session 1 | YES | Must manually update queue when pre-completing tasks. |
+| CLAUDE.md rules conflict with implementation | Session 1 | FIXED | `titleBarStyle: 'hiddenInset'` was mandated but conflicts with `frame: false`. Updated CLAUDE.md. |
+| Loki declares completion too early | Session 2 | NEW | Loki said "completion promise fulfilled" but PillView drag bug and titleBarStyle issue weren't caught. Loki's verification doesn't test dragging or native window chrome. |
+| Mock data shipping | Session 1 | Monitoring | The spec for data-layer-rundown explicitly includes GIVEN/WHEN/THEN for persistence. Watching if Loki implements real SQLite or mocks it. |
+
+### Key Learnings This Session
+
+1. **Critic review before implementation catches design flaws.** The 16-issue review caught the titleBarStyle conflict BEFORE Loki ran. Loki still introduced it because the proposal referenced CLAUDE.md which had the wrong rule. Lesson: update CLAUDE.md BEFORE Loki runs, not as a task for Loki.
+
+2. **OpenSpec's own instruction pipeline is valuable.** When we let OpenSpec generate artifacts via `openspec instructions`, the format was correct and validated on first try. Hand-written specs needed format debugging.
+
+3. **User pushback on over-engineering is correct.** "Why isn't Loki starting from the proposal?" — valid question. Loki can work from a PRD. The full OpenSpec pipeline adds rigor but also latency. For focused changes, proposal → Loki may be faster.
+
+4. **`frame: false` and `titleBarStyle: 'hiddenInset'` are mutually exclusive on Electron.** This isn't documented clearly in Electron docs. `titleBarStyle` shows native traffic lights; `frame: false` removes all native chrome. Together they create ghost elements.
+
+### What's In Progress
+
+- OpenSpec `showtime-data-layer-rundown`: specs + design agents running
+- Next: tasks generation → validate → commit → launch Loki
+- Monitoring loop active (5-min cron)
