@@ -300,6 +300,7 @@ export type ShowPhase = 'no_show' | 'writers_room' | 'live' | 'intermission' | '
 export type EnergyLevel = 'high' | 'medium' | 'low' | 'recovery'
 export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
 export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
+export type WritersRoomStep = 'energy' | 'plan' | 'lineup'
 
 export interface Act {
   id: string
@@ -338,6 +339,10 @@ export interface ShowState {
   verdict: ShowVerdict | null
   isExpanded: boolean
   beatCheckPending: boolean
+  goingLiveActive: boolean
+  writersRoomStep: WritersRoomStep
+  writersRoomEnteredAt: number | null
+  breathingPauseEndAt: number | null
 }
 
 // ─── IPC Channel Names ───
@@ -408,6 +413,15 @@ export const IPC = {
   NOTIFY_ACT_COMPLETE: 'showtime:notify-act-complete',
   NOTIFY_BEAT_CHECK: 'showtime:notify-beat-check',
   NOTIFY_VERDICT: 'showtime:notify-verdict',
+
+  // Showtime window management
+  SET_VIEW_MODE: 'showtime:set-view-mode',
+
+  // Showtime day boundary detection (main → renderer)
+  DAY_BOUNDARY: 'showtime:day-boundary',
+
+  // Showtime expanded toggle (main → renderer, triggered by global hotkey)
+  TOGGLE_EXPANDED: 'showtime:toggle-expanded',
 
   // Legacy (kept for backward compat during migration)
   STREAM_EVENT: 'clui:stream-event',

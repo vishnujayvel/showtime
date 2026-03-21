@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup } from '../../shared/types'
+import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep } from '../../shared/types'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -10,11 +10,24 @@ function generateId(): string {
   return Math.random().toString(36).slice(2, 10)
 }
 
+const VERDICT_MESSAGES: Record<ShowVerdict, string> = {
+  DAY_WON: 'You showed up and you were present.',
+  SOLID_SHOW: 'Not every sketch lands. The show was still great.',
+  GOOD_EFFORT: 'You got on stage. That\'s the hardest part.',
+  SHOW_CALLED_EARLY: 'Sometimes the show is short. The audience still came.',
+}
+
 interface ShowActions {
   // Writer's Room
+  enterWritersRoom: () => void
+  setWritersRoomStep: (step: WritersRoomStep) => void
   setEnergy: (level: EnergyLevel) => void
   setLineup: (lineup: ShowLineup) => void
   startShow: () => void
+
+  // Going Live transition
+  triggerGoingLive: () => void
+  completeGoingLive: () => void
 
   // Act lifecycle
   startAct: (actId: string) => void
@@ -33,7 +46,10 @@ interface ShowActions {
   // Director Mode
   enterDirector: () => void
   exitDirector: () => void
+  skipToNextAct: () => void
   callShowEarly: () => void
+  startBreathingPause: (durationMs?: number) => void
+  endBreathingPause: () => void
 
   // Lineup editing
   reorderAct: (actId: string, direction: 'up' | 'down') => void
@@ -68,6 +84,10 @@ interface ShowStoreState {
   verdict: ShowVerdict | null
   isExpanded: boolean
   beatCheckPending: boolean
+  goingLiveActive: boolean
+  writersRoomStep: WritersRoomStep
+  writersRoomEnteredAt: number | null
+  breathingPauseEndAt: number | null
 }
 
 export type ShowStore = ShowStoreState & ShowActions
@@ -86,6 +106,10 @@ const initialState: ShowStoreState = {
   verdict: null,
   isExpanded: true,
   beatCheckPending: false,
+  goingLiveActive: false,
+  writersRoomStep: 'energy',
+  writersRoomEnteredAt: null,
+  breathingPauseEndAt: null,
 }
 
 export const useShowStore = create<ShowStore>()(
@@ -94,6 +118,14 @@ export const useShowStore = create<ShowStore>()(
       ...initialState,
 
       // ─── Writer's Room ───
+
+      enterWritersRoom: () => set({
+        phase: 'writers_room',
+        writersRoomStep: 'energy',
+        writersRoomEnteredAt: Date.now(),
+      }),
+
+      setWritersRoomStep: (step) => set({ writersRoomStep: step }),
 
       setEnergy: (level) => set({ energy: level }),
 
@@ -132,6 +164,15 @@ export const useShowStore = create<ShowStore>()(
         })
       },
 
+      // ─── Going Live Transition ───
+
+      triggerGoingLive: () => set({ goingLiveActive: true }),
+
+      completeGoingLive: () => {
+        set({ goingLiveActive: false })
+        get().startShow()
+      },
+
       // ─── Act Lifecycle ───
 
       startAct: (actId) => {
@@ -160,8 +201,8 @@ export const useShowStore = create<ShowStore>()(
           timerPausedRemaining: null,
           beatCheckPending: true,
         }))
-        if (act) window.clui.notifyActComplete(act.name)
-        window.clui.notifyBeatCheck()
+        if (act) window.clui.notifyActComplete(act.name, act.sketch)
+        if (act) window.clui.notifyBeatCheck(act.name)
       },
 
       skipAct: (actId) => {
@@ -275,6 +316,18 @@ export const useShowStore = create<ShowStore>()(
         set({ phase: currentActId ? 'live' : 'no_show' })
       },
 
+      skipToNextAct: () => {
+        const { currentActId } = get()
+        if (!currentActId) return
+        get().skipAct(currentActId)
+        // exitDirector to return to live (skipAct already starts next act)
+        const { phase } = get()
+        if (phase === 'director') {
+          const { currentActId: newActId } = get()
+          set({ phase: newActId ? 'live' : 'no_show' })
+        }
+      },
+
       callShowEarly: () => {
         set((s) => ({
           acts: s.acts.map((a) =>
@@ -286,8 +339,34 @@ export const useShowStore = create<ShowStore>()(
           timerEndAt: null,
           timerPausedRemaining: null,
         }))
-        get().strikeTheStage()
+        // Force SHOW_CALLED_EARLY verdict
+        set({
+          phase: 'strike',
+          verdict: 'SHOW_CALLED_EARLY',
+          currentActId: null,
+          timerEndAt: null,
+          timerPausedRemaining: null,
+          isExpanded: true,
+          beatCheckPending: false,
+        })
+        window.clui.notifyVerdict('SHOW_CALLED_EARLY', VERDICT_MESSAGES.SHOW_CALLED_EARLY)
       },
+
+      startBreathingPause: (durationMs) => {
+        const endAt = Date.now() + (durationMs ?? 5 * 60 * 1000) // default 5 minutes
+        const { timerEndAt } = get()
+        const remaining = timerEndAt ? Math.max(0, timerEndAt - Date.now()) : null
+        set({
+          phase: 'intermission',
+          breathingPauseEndAt: endAt,
+          timerEndAt: null,
+          timerPausedRemaining: remaining,
+        })
+      },
+
+      endBreathingPause: () => set({
+        breathingPauseEndAt: null,
+      }),
 
       // ─── Lineup Editing ───
 
@@ -355,7 +434,7 @@ export const useShowStore = create<ShowStore>()(
           isExpanded: true,
           beatCheckPending: false,
         })
-        window.clui.notifyVerdict(verdict)
+        window.clui.notifyVerdict(verdict, VERDICT_MESSAGES[verdict])
       },
 
       // ─── Navigation ───
@@ -375,7 +454,7 @@ export const useShowStore = create<ShowStore>()(
       name: 'showtime-show-state',
       partialize: (state) => {
         // Don't persist transient UI state
-        const { beatCheckPending: _bcp, ...rest } = state
+        const { beatCheckPending: _bcp, goingLiveActive: _gla, ...rest } = state
         return rest
       },
       onRehydrateStorage: () => {

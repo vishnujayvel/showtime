@@ -342,33 +342,51 @@ ipcMain.on(IPC.SET_PERMISSION_MODE, (_event, mode: string) => {
 })
 
 // ─── Showtime notifications ───
-ipcMain.on(IPC.NOTIFY_ACT_COMPLETE, (_event, actName: string) => {
-  log(`Showtime: Act complete — ${actName}`)
+ipcMain.on(IPC.NOTIFY_ACT_COMPLETE, (_event, actName: string, sketch: string) => {
+  log(`Showtime: Act Complete — ${actName} (${sketch})`)
   const { Notification } = require('electron') as typeof import('electron')
   if (Notification.isSupported()) {
-    new Notification({ title: 'Act Complete', body: `${actName} — time for a beat check!` }).show()
+    new Notification({ title: `Act Complete: ${actName}`, body: `${sketch} — time for a Beat check!` }).show()
   }
 })
 
-ipcMain.on(IPC.NOTIFY_BEAT_CHECK, () => {
-  log('Showtime: Beat check')
+ipcMain.on(IPC.NOTIFY_BEAT_CHECK, (_event, actName: string) => {
+  log(`Showtime: Beat check — ${actName}`)
   const { Notification } = require('electron') as typeof import('electron')
   if (Notification.isSupported()) {
-    new Notification({ title: 'Beat Check', body: 'Did you have a moment of presence?' }).show()
+    new Notification({ title: 'Beat Check', body: `Were you present during ${actName}?` }).show()
   }
 })
 
-ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string) => {
+ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
   log(`Showtime: Verdict — ${verdict}`)
   const { Notification } = require('electron') as typeof import('electron')
   if (Notification.isSupported()) {
-    const messages: Record<string, string> = {
-      DAY_WON: 'Standing ovation! What a show!',
-      SOLID_SHOW: 'Almost perfect — solid show!',
-      GOOD_EFFORT: 'Good effort today!',
-      SHOW_CALLED_EARLY: 'Show called early — and that\'s valid.',
+    const fallbackMessages: Record<string, string> = {
+      DAY_WON: 'Standing ovation! You showed up and you were present.',
+      SOLID_SHOW: 'Not every sketch lands. The show was still great.',
+      GOOD_EFFORT: 'You got on stage. That\'s the hardest part.',
+      SHOW_CALLED_EARLY: 'A short show is still a show.',
     }
-    new Notification({ title: verdict.replace(/_/g, ' '), body: messages[verdict] || 'Show complete!' }).show()
+    new Notification({ title: 'Show Complete', body: message || fallbackMessages[verdict] || 'The show is over.' }).show()
+  }
+})
+
+// ─── Showtime window management ───
+ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
+  if (!mainWindow) return
+  log(`Showtime: setViewMode → ${mode}`)
+  // The existing architecture uses a single large transparent window (1040x720)
+  // positioned at screen bottom. The pill/expanded distinction is entirely CSS
+  // within the renderer. No native resize needed.
+  switch (mode) {
+    case 'pill':
+      // No-op: UI renders pill internally within the fixed window
+      break
+    case 'expanded':
+    case 'full':
+      // No-op: window stays at BAR_WIDTH x PILL_HEIGHT — all sizing is CSS
+      break
   }
 })
 
@@ -955,6 +973,20 @@ async function requestPermissions(): Promise<void> {
   // the screenshot feature is actually used.
 }
 
+// ─── Day Boundary Detection ───
+
+function startDayBoundaryCheck(): void {
+  let currentDay = new Date().toISOString().slice(0, 10)
+  setInterval(() => {
+    const now = new Date().toISOString().slice(0, 10)
+    if (now !== currentDay) {
+      log(`Showtime: Day boundary crossed — ${currentDay} → ${now}`)
+      currentDay = now
+      broadcast(IPC.DAY_BOUNDARY)
+    }
+  }, 60_000) // Check every minute
+}
+
 // ─── App Lifecycle ───
 
 app.whenReady().then(async () => {
@@ -976,6 +1008,9 @@ app.whenReady().then(async () => {
 
   createWindow()
   snapshotWindowState('after createWindow')
+
+  // Start day boundary detection (checks every minute for midnight crossing)
+  startDayBoundaryCheck()
 
   if (SPACES_DEBUG) {
     mainWindow?.on('show', () => snapshotWindowState('event window show'))
@@ -1004,8 +1039,17 @@ app.whenReady().then(async () => {
 
 
   // Primary: Option+Space (2 keys, doesn't conflict with shell)
+  // When visible: toggle expanded/pill state in the renderer
+  // When hidden: show the window
   // Fallback: Cmd+Shift+K kept as secondary shortcut
-  const registered = globalShortcut.register('Alt+Space', () => toggleWindow('shortcut Alt+Space'))
+  const registered = globalShortcut.register('Alt+Space', () => {
+    if (mainWindow?.isVisible()) {
+      // Toggle expanded state by broadcasting to renderer
+      broadcast(IPC.TOGGLE_EXPANDED)
+    } else {
+      showWindow('shortcut Alt+Space')
+    }
+  })
   if (!registered) {
     log('Alt+Space shortcut registration failed — macOS input sources may claim it')
   }
