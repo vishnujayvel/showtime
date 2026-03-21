@@ -1,42 +1,66 @@
 # Session Continuity
 
-Updated: 2026-03-21T07:30:00Z
+Updated: 2026-03-21T08:15:00Z
 
 ## Current State
 
-- Iteration: 1
-- Phase: DEVELOPMENT
+- Iteration: 1 — COMPLETE
+- Phase: DEVELOPMENT → all 7 groups done
 - Provider: claude
-- Groups 1-6: COMPLETE (30/35 tasks)
-- Group 7 (E2E tests): PENDING (5 tasks remain)
-
-## Last Completed Tasks
-
-- openspec-2.3: showStore unit tests — all 103 assertions pass
-- openspec-2.4: useTimer hook tests — 9 tests, covers countdown, expiry, progress
-- openspec-6.2: sessionStore simplified — removed 294 lines of multi-tab CLUI code
-- openspec-6.3: theme.ts simplified — removed 377 lines of Tailwind-duplicated tokens
+- **All 35/35 tasks complete**
 
 ## Test Suite
 
-- 128 tests across 6 files — ALL PASSING
+- **128 unit tests** across 6 files — ALL PASSING
+- **12 Playwright E2E tests** — ALL PASSING
 - Zero TypeScript errors (tsc --noEmit clean)
+- Build succeeds (npm run build)
 
-## Active Blockers
+## What Was Done This Session
 
-- None
+### Groups 1-2 (Foundation, verified from prior session)
+- Tailwind CSS v4 with @theme design tokens, keyframes, animations
+- shadcn/ui setup with custom Button variants
+- Google Fonts (Inter + JetBrains Mono)
+- Category color utility (getCategoryToken, getCategoryHex)
+- showStore updates (goingLiveActive, writersRoomStep, breathingPauseEndAt)
+- Shared types IPC channels
 
-## Next Up (Group 7 — Playwright E2E)
+### Group 3 (Atomic Components)
+- TallyLight, OnAirIndicator, ClapperboardBadge, BeatCounter, EnergySelector
 
-- openspec-7.1: App launches successfully
-- openspec-7.2: Dark Studio → Writer's Room transition
-- openspec-7.3: Energy → Plan → Lineup → "We're live!" flow
-- openspec-7.4: Act timer, Beat Check, Intermission flows
-- openspec-7.5: Strike the Stage with verdict
+### Group 4 (Core Views — 12 components)
+- DarkStudioView, GoingLiveTransition, WritersRoomView
+- TimerPanel, LineupPanel, ActCard, BeatCheckModal
+- IntermissionView, DirectorMode, ShowVerdict
+- PillView, ExpandedView, StrikeView
 
-## Key Decisions This Session
+### Group 5 (App Shell)
+- App.tsx routing: phase-aware view switching
+- Deleted 8 CLUI dead-weight files
 
-- sessionStore keeps `tabs` array internally (IPC bridge needs tabId matching) but removes all multi-tab actions
-- theme.ts keeps only PermissionCard-specific runtime colors; all other design tokens in Tailwind @theme
-- ChatPanel converted from inline styles to Tailwind (was dead code, never rendered)
-- useTimer test: when completeAct fires it resets timerEndAt to null, so isComplete becomes false — tested by removing currentActId to prevent completeAct from firing
+### Group 6 (Cleanup)
+- sessionStore: removed 294 lines of multi-tab CLUI code
+- theme.ts: removed 377 lines of Tailwind-duplicated tokens
+- ChatPanel: converted from inline styles to Tailwind
+
+### Group 7 (Testing)
+- showStore unit tests (103 assertions)
+- useTimer hook tests (9 tests)
+- components.test.tsx rewritten for new APIs
+- 12 Playwright E2E tests covering full show flow
+
+## Key Decisions
+
+- sessionStore keeps `tabs` array internally (IPC bridge needs tabId) but all multi-tab actions removed
+- theme.ts retains only PermissionCard runtime colors
+- E2E tests use `goto(url, { waitUntil: 'commit' })` instead of `reload()` to avoid Google Fonts load timeout
+- Screenshots wrapped in try/catch for font-loading resilience
+
+## Next Steps (Future Sessions)
+
+- Polish individual view styling to match mockup (docs/mockups/direction-4-the-show.html)
+- PermissionCard migration from inline styles to Tailwind
+- Claude integration for lineup generation (replace mock in WritersRoomView)
+- Whisper voice input integration
+- macOS distribution/signing
