@@ -13,6 +13,7 @@
   "homepage": "https://github.com/lcoutodemos/clui-cc#readme",
   "main": "dist/main/index.js",
   "scripts": {
+    "pretest": "npm rebuild better-sqlite3 --silent 2>/dev/null || true",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npx playwright test",
