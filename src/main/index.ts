@@ -28,10 +28,6 @@ const INTERACTIVE_PTY = process.env.CLUI_INTERACTIVE_PERMISSIONS_PTY === '1'
 
 const controlPlane = new ControlPlane(INTERACTIVE_PTY)
 
-// Keep native width fixed to avoid renderer animation vs setBounds race.
-// The UI itself still launches in compact mode; extra width is transparent/click-through.
-const BAR_WIDTH = 1040
-const PILL_HEIGHT = 720  // Fixed native window height — extra room for expanded UI + shadow buffers
 const PILL_BOTTOM_MARGIN = 24
 
 const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
@@ -220,15 +216,15 @@ function toggleWindow(source = 'unknown'): void {
 }
 
 // ─── Resize ───
-// Fixed-height mode: ignore renderer resize events to prevent jank.
-// The native window stays at PILL_HEIGHT; all expand/collapse happens inside the renderer.
+// Dynamic sizing is handled by SET_VIEW_MODE via setBounds().
+// These legacy IPC handlers are kept as no-ops for backward compatibility.
 
 ipcMain.on(IPC.RESIZE_HEIGHT, () => {
-  // No-op — fixed height window, no dynamic resize
+  // No-op — sizing handled by SET_VIEW_MODE
 })
 
 ipcMain.on(IPC.SET_WINDOW_WIDTH, () => {
-  // No-op — native width is fixed to keep expand/collapse animation smooth.
+  // No-op — sizing handled by SET_VIEW_MODE
 })
 
 ipcMain.handle(IPC.ANIMATE_HEIGHT, () => {
