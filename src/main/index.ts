@@ -167,7 +167,6 @@ function createWindow(): void {
       vibrancy: 'under-window' as const,
       visualEffectState: 'active' as const,
     } : {}),
-    titleBarStyle: 'hiddenInset',
     resizable: false,
     movable: true,
     alwaysOnTop: true,
@@ -183,10 +182,6 @@ function createWindow(): void {
       nodeIntegration: false,
     },
   })
-
-  if (process.platform === 'darwin') {
-    mainWindow.setWindowButtonPosition({ x: 12, y: 14 })
-  }
 
   // Initialize anchor from initial bounds
   anchorPoint = computeAnchorFromBounds({ x, y, width: initialDims.width, height: initialDims.height })

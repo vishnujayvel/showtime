@@ -105,11 +105,12 @@ const win = new BrowserWindow({
   visualEffectState: 'active',
   backgroundColor: '#00000000',
   frame: false,
-  titleBarStyle: 'hiddenInset',
+  // Do NOT use titleBarStyle: 'hiddenInset' — it conflicts with frame: false
+  // and creates ghost native traffic lights behind custom UI
   hasShadow: true,
+  transparent: true,
   // ... other settings
 });
-win.setWindowButtonPosition({ x: 12, y: 14 });
 ```
 
 - HTML, body, and React root: `background-color: transparent`
