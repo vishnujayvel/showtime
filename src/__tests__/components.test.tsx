@@ -207,6 +207,58 @@ describe('ActCard', () => {
   })
 })
 
+// ─── BeatCheckModal Celebration Display Tests ───
+
+describe('BeatCheckModal — celebration display', () => {
+  let BeatCheckModal: any
+
+  beforeEach(async () => {
+    const mod = await import('../renderer/components/BeatCheckModal')
+    BeatCheckModal = mod.BeatCheckModal
+  })
+
+  it('shows celebration text when celebrationActive is true', () => {
+    useShowStore.setState({
+      beatCheckPending: true,
+      celebrationActive: true,
+      beatsLocked: 1,
+      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
+      currentActId: 'a1',
+      phase: 'live',
+    })
+    render(<BeatCheckModal />)
+    expect(screen.getByText('That moment was real.')).toBeInTheDocument()
+  })
+
+  it('hides lock/skip buttons during celebration', () => {
+    useShowStore.setState({
+      beatCheckPending: true,
+      celebrationActive: true,
+      beatsLocked: 1,
+      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
+      currentActId: 'a1',
+      phase: 'live',
+    })
+    render(<BeatCheckModal />)
+    expect(screen.queryByText(/Lock the Beat/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Not this time')).not.toBeInTheDocument()
+  })
+
+  it('celebration text has animate-beat-ignite class', () => {
+    useShowStore.setState({
+      beatCheckPending: true,
+      celebrationActive: true,
+      beatsLocked: 1,
+      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
+      currentActId: 'a1',
+      phase: 'live',
+    })
+    render(<BeatCheckModal />)
+    const celebrationEl = screen.getByText('That moment was real.')
+    expect(celebrationEl.className).toContain('animate-beat-ignite')
+  })
+})
+
 // ─── ShowVerdict Tests ───
 
 describe('ShowVerdict', () => {

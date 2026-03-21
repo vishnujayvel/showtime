@@ -32,13 +32,7 @@ export function BeatCheckModal() {
           className="w-[380px] p-8 rounded-2xl bg-surface border border-card-border flex flex-col items-center text-center relative"
         >
           {/* Golden spotlight gradient */}
-          <div
-            className="absolute inset-0 rounded-2xl pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(ellipse 300px 200px at 50% 30%, rgba(245,158,11,0.06) 0%, transparent 70%)',
-            }}
-          />
+          <div className="absolute inset-0 rounded-2xl pointer-events-none spotlight-golden" />
 
           {celebrationActive ? (
             <p className="text-beat font-semibold text-lg animate-beat-ignite relative z-10">
