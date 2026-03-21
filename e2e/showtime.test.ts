@@ -106,17 +106,21 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
   })
 
   test('can submit plan and see lineup preview', async () => {
-    // Find and click the submit/next button
-    const nextButton = page.getByText('Show me the lineup')
+    // Find and click the submit button
+    const nextButton = page.getByText('Build my lineup')
     if (await nextButton.isVisible().catch(() => false)) {
       await nextButton.click()
-      await page.waitForTimeout(500)
+      // Wait for Claude to respond or timeout — loading overlay should appear
+      const loadingText = page.getByText('The writers are working...')
+      await expect(loadingText).toBeVisible({ timeout: 5000 }).catch(() => {})
+      // Wait for lineup to appear (Claude response) or timeout
+      await page.waitForTimeout(5000)
     } else {
-      // Try alternative button text patterns
+      // Fallback: try alternative button text patterns
       const altButton = page.locator('button').filter({ hasText: /lineup|next|continue/i }).first()
       if (await altButton.isVisible().catch(() => false)) {
         await altButton.click()
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(5000)
       }
     }
     await screenshot('05-lineup-preview')

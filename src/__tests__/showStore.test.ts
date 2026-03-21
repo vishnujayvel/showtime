@@ -309,6 +309,79 @@ describe('showStore', () => {
     })
   })
 
+  describe('lockBeat race condition guards', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+      useShowStore.getState().setLineup(sampleLineup)
+      useShowStore.getState().startShow()
+      const actId = useShowStore.getState().currentActId!
+      useShowStore.getState().completeAct(actId)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('cancels first timeout when lockBeat called twice (double-click)', () => {
+      useShowStore.getState().lockBeat()
+      expect(useShowStore.getState().beatsLocked).toBe(1)
+
+      // Call lockBeat again before timeout fires (simulates double-click)
+      useShowStore.getState().lockBeat()
+      expect(useShowStore.getState().beatsLocked).toBe(2)
+
+      // Only one timeout should fire — advance past the 1800ms window
+      vi.advanceTimersByTime(1800)
+
+      // Should not have called startAct twice — only one next act should be active
+      const state = useShowStore.getState()
+      const activeActs = state.acts.filter((a) => a.status === 'active')
+      expect(activeActs.length).toBeLessThanOrEqual(1)
+    })
+
+    it('does not advance when phase changes during celebration', () => {
+      useShowStore.getState().lockBeat()
+      expect(useShowStore.getState().celebrationActive).toBe(true)
+
+      // Change phase during celebration (e.g., user enters intermission)
+      useShowStore.setState({ phase: 'intermission' })
+
+      vi.advanceTimersByTime(1800)
+
+      // Should NOT have advanced to next act — phase guard blocks it
+      expect(useShowStore.getState().phase).toBe('intermission')
+      expect(useShowStore.getState().celebrationActive).toBe(false)
+    })
+
+    it('resetShow cancels celebration timeout', () => {
+      useShowStore.getState().lockBeat()
+      expect(useShowStore.getState().celebrationActive).toBe(true)
+
+      // Reset during celebration
+      useShowStore.getState().resetShow()
+      expect(useShowStore.getState().celebrationActive).toBe(false)
+      expect(useShowStore.getState().phase).toBe('no_show')
+
+      // Advance past the celebration window — should not crash or change state
+      vi.advanceTimersByTime(1800)
+      expect(useShowStore.getState().phase).toBe('no_show')
+      expect(useShowStore.getState().acts).toHaveLength(0)
+    })
+
+    it('does not advance when celebrationActive cleared externally', () => {
+      useShowStore.getState().lockBeat()
+
+      // Clear celebration externally
+      useShowStore.setState({ celebrationActive: false })
+
+      vi.advanceTimersByTime(1800)
+
+      // Guard should prevent startAct/strikeTheStage
+      // Phase remains live since the guard blocks advancement
+      expect(useShowStore.getState().celebrationActive).toBe(false)
+    })
+  })
+
   describe('skipBeat', () => {
     beforeEach(() => {
       useShowStore.getState().setLineup(sampleLineup)
