@@ -1,0 +1,16 @@
+VERDICT: FAIL
+
+FINDINGS:
+- [High] `MuteToggle` toggle behavior untested — no test verifies clicking toggles the icon/title between muted/unmuted states, or that `setMuted` is called with the correct value (`src/__tests__/audioAndPolish.test.tsx:105`)
+- [High] `BeatCheckModal` audio integration untested — no test verifies `playAudioCue('beat-check')` fires when `beatCheckPending` transitions to true, or that `playAudioCue('beat-locked')` fires on lock beat click (`src/renderer/components/BeatCheckModal.tsx:18-23`)
+- [High] `GoingLiveTransition` has zero test coverage — `playAudioCue('going-live')` call on mount, `onComplete` callback after 2500ms timeout, and cleanup on unmount are all untested (`src/renderer/views/GoingLiveTransition.tsx:18-21`)
+- [High] `IntermissionView` audio cue untested — no test verifies `playAudioCue('intermission')` fires on mount (`src/renderer/components/IntermissionView.tsx:23-25`)
+- [High] `useTimer` 5-minute warning audio path untested — the new `playAudioCue('timer-warning')` integration at the 5-minute threshold boundary is not covered, including the `warningFired` ref guard preventing duplicate fires and reset on act change (`src/renderer/hooks/useTimer.ts:47-52`)
+- [Medium] `StrikeView` button click handlers untested — tests verify buttons render but don't verify `enterWritersRoom`, `resetShow`, or `setExpanded(false)` are called on click (`src/__tests__/audioAndPolish.test.tsx:168-182`)
+- [Medium] `StrikeView` `playAudioCue('show-complete')` on mount untested — no test verifies the audio cue fires when StrikeView mounts (`src/renderer/views/StrikeView.tsx:40-42`)
+- [Medium] `formatDuration` boundary conditions untested — no test for exactly 0 minutes elapsed, sub-minute durations, or very long durations; `Math.round` could produce `60m` instead of `1h 0m` for edge rounding (`src/renderer/views/StrikeView.tsx:11-18`)
+- [Medium] `StrikeView` confetti rendering with `Math.random()` produces non-deterministic `left` and `animationDelay` values — snapshot or visual regression tests would be flaky without seeding random (`src/renderer/views/StrikeView.tsx:169-180`)
+- [Medium] `MuteToggle` initializes state via `useState(isMuted)` — passes the function reference, not the call result `isMuted()`, so initial state will be the function itself (truthy), meaning the toggle always starts as muted (`src/renderer/components/MuteToggle.tsx:5`)
+- [Low] `useAudio` module tests only verify mock callability, not actual behavior — `isMuted`/`setMuted`/`playAudioCue` are fully mocked so tests at lines 88-101 prove nothing about the real implementation; no unmocked unit tests for localStorage persistence or mute-skips-play logic (`src/__tests__/audioAndPolish.test.tsx:88-101`)
+- [Low] `PillView` intermission and strike phase rendering untested — only `phase: 'live'` is tested; intermission content ("no rush") and strike content ("Show complete!") paths have no coverage (`src/renderer/views/PillView.tsx:50-70`)
+- [Low] `ExpandedView` missing `showStartedAt` path untested — no test verifies that when `showStartedAt` is null, the "Started" label is absent (`src/renderer/views/ExpandedView.tsx:103-109`)

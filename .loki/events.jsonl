@@ -48,3 +48,9 @@
 {"timestamp":"2026-03-21T21:27:42Z","type":"code_review_start","data":{"review_id":"review-20260321T212742Z-2","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":2}}
 {"timestamp":"2026-03-21T21:29:45Z","type":"code_review_complete","data":{"review_id":"review-20260321T212742Z-2","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":2}}
 {"timestamp":"2026-03-21T21:29:46Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":2}}
+{"timestamp":"2026-03-21T21:36:17Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md","parallel":true,"complexity":"standard","pid":65108}}
+{"timestamp":"2026-03-21T21:36:17Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md"}}
+{"timestamp":"2026-03-21T21:51:40Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-21T21:51:57Z","type":"code_review_start","data":{"review_id":"review-20260321T215156Z-1","reviewers":"architecture-strategist, test-coverage-auditor, security-sentinel","iteration":1}}
+{"timestamp":"2026-03-21T21:53:48Z","type":"code_review_complete","data":{"review_id":"review-20260321T215156Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+{"timestamp":"2026-03-21T21:53:49Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}

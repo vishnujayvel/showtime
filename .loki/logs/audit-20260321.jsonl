@@ -54,3 +54,17 @@
   "user": "vishnu",
   "pid": 2384
 }
+{
+  "timestamp": "2026-03-21T21:36:17Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 65108
+}
+{
+  "timestamp": "2026-03-21T21:53:49Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md",
+  "user": "vishnu",
+  "pid": 65108
+}

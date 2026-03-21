@@ -2,9 +2,9 @@
     "retryCount": 2,
     "status": "completion_promise_fulfilled",
     "lastExitCode": 0,
-    "lastRun": "2026-03-21T21:29:46Z",
-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-data-layer-rundown/proposal.md",
-    "pid": 2384,
+    "lastRun": "2026-03-21T21:53:49Z",
+    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/proposal.md",
+    "pid": 65108,
     "maxRetries": 50,
     "baseWait": 60
 }
