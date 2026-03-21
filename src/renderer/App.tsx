@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
@@ -11,6 +11,7 @@ import { GoingLiveTransition } from './views/GoingLiveTransition'
 import { PillView } from './views/PillView'
 import { ExpandedView } from './views/ExpandedView'
 import { StrikeView } from './views/StrikeView'
+import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 
 export default function App() {
@@ -21,7 +22,12 @@ export default function App() {
   const isExpanded = useShowStore((s) => s.isExpanded)
   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
+  const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
+
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return localStorage.getItem('showtime-onboarding-complete') !== 'true'
+  })
 
   // ─── Theme initialization ───
   useEffect(() => {
@@ -88,8 +94,63 @@ export default function App() {
     }
   }, [])
 
+  // ─── Dynamic window sizing via IPC ───
+  useEffect(() => {
+    if (!window.clui?.setViewMode) return
+
+    if (goingLiveActive) {
+      window.clui.setViewMode('full')
+      return
+    }
+
+    if (!isExpanded) {
+      window.clui.setViewMode('pill')
+      return
+    }
+
+    switch (phase) {
+      case 'writers_room':
+      case 'strike':
+        window.clui.setViewMode('full')
+        break
+      case 'no_show':
+      case 'live':
+      case 'intermission':
+      case 'director':
+      default:
+        window.clui.setViewMode('expanded')
+        break
+    }
+  }, [phase, isExpanded, goingLiveActive])
+
+  // ─── Onboarding completion handler ───
+  const handleOnboardingComplete = useCallback((enterRoom: boolean) => {
+    localStorage.setItem('showtime-onboarding-complete', 'true')
+    setShowOnboarding(false)
+    if (enterRoom) {
+      enterWritersRoom()
+    }
+  }, [enterWritersRoom])
+
+  // ─── Help button re-triggers onboarding ───
+  const handleHelpClick = useCallback(() => {
+    localStorage.removeItem('showtime-onboarding-complete')
+    setShowOnboarding(true)
+  }, [])
+
   // ─── View routing ───
   const renderView = () => {
+    // Onboarding takes priority on first launch
+    if (showOnboarding && phase === 'no_show' && isExpanded && !goingLiveActive) {
+      return (
+        <OnboardingView
+          key="onboarding"
+          onComplete={() => handleOnboardingComplete(true)}
+          onSkip={() => handleOnboardingComplete(false)}
+        />
+      )
+    }
+
     // Going Live transition takes priority
     if (goingLiveActive) {
       return <GoingLiveTransition key="going-live" onComplete={completeGoingLive} />
@@ -119,6 +180,15 @@ export default function App() {
 
   return (
     <div className="w-full h-full relative bg-transparent flex flex-col items-center justify-end">
+      {/* Help button — visible on DarkStudio when onboarding was completed */}
+      {!showOnboarding && phase === 'no_show' && isExpanded && !goingLiveActive && (
+        <button
+          onClick={handleHelpClick}
+          className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"
+        >
+          ?
+        </button>
+      )}
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>

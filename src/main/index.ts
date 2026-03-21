@@ -34,6 +34,12 @@ const BAR_WIDTH = 1040
 const PILL_HEIGHT = 720  // Fixed native window height — extra room for expanded UI + shadow buffers
 const PILL_BOTTOM_MARGIN = 24
 
+const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
+  pill: { width: 340, height: 60 },
+  expanded: { width: 580, height: 640 },
+  full: { width: 580, height: 700 },
+}
+
 // ─── Broadcast to renderer ───
 
 function broadcast(channel: string, ...args: unknown[]): void {
@@ -98,12 +104,13 @@ function createWindow(): void {
   const { width: screenWidth, height: screenHeight } = display.workAreaSize
   const { x: dx, y: dy } = display.workArea
 
-  const x = dx + Math.round((screenWidth - BAR_WIDTH) / 2)
-  const y = dy + screenHeight - PILL_HEIGHT - PILL_BOTTOM_MARGIN
+  const initDims = VIEW_DIMENSIONS.expanded
+  const x = dx + Math.round((screenWidth - initDims.width) / 2)
+  const y = dy + screenHeight - initDims.height - PILL_BOTTOM_MARGIN
 
   mainWindow = new BrowserWindow({
-    width: BAR_WIDTH,
-    height: PILL_HEIGHT,
+    width: initDims.width,
+    height: initDims.height,
     x,
     y,
     ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),  // NSPanel — non-activating, joins all spaces
@@ -170,11 +177,13 @@ function showWindow(source = 'unknown'): void {
   const display = screen.getDisplayNearestPoint(cursor)
   const { width: sw, height: sh } = display.workAreaSize
   const { x: dx, y: dy } = display.workArea
+  // Preserve current window size (set by SET_VIEW_MODE), only reposition
+  const { width: curW, height: curH } = mainWindow.getBounds()
   mainWindow.setBounds({
-    x: dx + Math.round((sw - BAR_WIDTH) / 2),
-    y: dy + sh - PILL_HEIGHT - PILL_BOTTOM_MARGIN,
-    width: BAR_WIDTH,
-    height: PILL_HEIGHT,
+    x: dx + Math.round((sw - curW) / 2),
+    y: dy + sh - curH - PILL_BOTTOM_MARGIN,
+    width: curW,
+    height: curH,
   })
 
   // Always re-assert space membership — the flag can be lost after hide/show cycles
@@ -384,18 +393,17 @@ ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
 ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
   if (!mainWindow) return
   log(`Showtime: setViewMode → ${mode}`)
-  // The existing architecture uses a single large transparent window (1040x720)
-  // positioned at screen bottom. The pill/expanded distinction is entirely CSS
-  // within the renderer. No native resize needed.
-  switch (mode) {
-    case 'pill':
-      // No-op: UI renders pill internally within the fixed window
-      break
-    case 'expanded':
-    case 'full':
-      // No-op: window stays at BAR_WIDTH x PILL_HEIGHT — all sizing is CSS
-      break
-  }
+  const dims = VIEW_DIMENSIONS[mode]
+  if (!dims) return
+
+  const cursor = screen.getCursorScreenPoint()
+  const display = screen.getDisplayNearestPoint(cursor)
+  const { x: waX, y: waY, width: waWidth, height: waHeight } = display.workArea
+
+  const x = waX + Math.round((waWidth - dims.width) / 2)
+  const y = waY + waHeight - dims.height - PILL_BOTTOM_MARGIN
+
+  mainWindow.setBounds({ x, y, width: dims.width, height: dims.height })
 })
 
 ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
