@@ -1,53 +1,88 @@
-import React from 'react'
 import { motion } from 'framer-motion'
-import { Lightning, Sun, CloudSun, Moon } from '@phosphor-icons/react'
 import type { EnergyLevel } from '../../shared/types'
-import { useShowStore } from '../stores/showStore'
-import { useColors } from '../theme'
+import { cn } from '../lib/utils'
 
-const ENERGY_OPTIONS: Array<{ level: EnergyLevel; label: string; icon: typeof Lightning; color: string }> = [
-  { level: 'high', label: 'High', icon: Lightning, color: '#f59e0b' },
-  { level: 'medium', label: 'Medium', icon: Sun, color: '#22c55e' },
-  { level: 'low', label: 'Low', icon: CloudSun, color: '#60a5fa' },
-  { level: 'recovery', label: 'Recovery', icon: Moon, color: '#a78bfa' },
+interface EnergySelectorProps {
+  onSelect: (level: EnergyLevel) => void
+}
+
+const ENERGY_OPTIONS: Array<{
+  level: EnergyLevel
+  emoji: string
+  label: string
+  sublabel: string
+  bg: string
+  border: string
+  hover: string
+  labelColor: string
+}> = [
+  {
+    level: 'high',
+    emoji: '⚡',
+    label: 'High Energy',
+    sublabel: 'Ready to crush it',
+    bg: 'bg-amber-500/5',
+    border: 'border-amber-500/20',
+    hover: 'hover:bg-amber-500/10',
+    labelColor: 'text-amber-400',
+  },
+  {
+    level: 'medium',
+    emoji: '☀️',
+    label: 'Medium Energy',
+    sublabel: 'Solid and steady',
+    bg: 'bg-emerald-500/5',
+    border: 'border-emerald-500/20',
+    hover: 'hover:bg-emerald-500/10',
+    labelColor: 'text-emerald-400',
+  },
+  {
+    level: 'low',
+    emoji: '🌙',
+    label: 'Low Energy',
+    sublabel: 'Gentle & light',
+    bg: 'bg-blue-500/5',
+    border: 'border-blue-500/20',
+    hover: 'hover:bg-blue-500/10',
+    labelColor: 'text-blue-400',
+  },
+  {
+    level: 'recovery',
+    emoji: '🛌',
+    label: 'Recovery Day',
+    sublabel: 'Rest is the show',
+    bg: 'bg-purple-500/5',
+    border: 'border-purple-500/20',
+    hover: 'hover:bg-purple-500/10',
+    labelColor: 'text-purple-400',
+  },
 ]
 
-export function EnergySelector() {
-  const energy = useShowStore((s) => s.energy)
-  const setEnergy = useShowStore((s) => s.setEnergy)
-  const colors = useColors()
-
+export function EnergySelector({ onSelect }: EnergySelectorProps) {
   return (
-    <div style={{ display: 'flex', gap: 10 }}>
-      {ENERGY_OPTIONS.map(({ level, label, icon: Icon, color }) => {
-        const isSelected = energy === level
-        return (
-          <motion.button
-            key={level}
-            onClick={() => setEnergy(level)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 6,
-              padding: '12px 16px',
-              borderRadius: 12,
-              border: `2px solid ${isSelected ? color : colors.border}`,
-              background: isSelected ? `${color}18` : colors.cardBg,
-              cursor: 'pointer',
-              transition: 'border-color 0.2s, background 0.2s',
-              minWidth: 72,
-            }}
+    <div className="grid grid-cols-2 gap-3">
+      {ENERGY_OPTIONS.map(({ level, emoji, label, sublabel, bg, border, hover, labelColor }, index) => (
+        <motion.div
+          key={level}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30, delay: index * 0.08 }}
+        >
+          <button
+            onClick={() => onSelect(level)}
+            className={cn(
+              'flex flex-col items-center gap-1.5 rounded-xl p-4 border transition-colors cursor-pointer',
+              bg,
+              border,
+              hover,
+            )}
           >
-            <Icon size={24} weight={isSelected ? 'fill' : 'regular'} color={isSelected ? color : colors.textSecondary} />
-            <span style={{ fontSize: 13, fontWeight: isSelected ? 600 : 400, color: isSelected ? color : colors.textSecondary }}>
-              {label}
-            </span>
-          </motion.button>
-        )
-      })}
+            <span className="text-2xl">{emoji}</span>
+            <span className={cn('font-semibold text-sm', labelColor)}>{label}</span>
+            <span className="text-xs text-txt-muted">{sublabel}</span>
+          </button>
+        </motion.div>
+      ))}
     </div>
   )
 }
