@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Direction 4: The Show</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* === ANIMATIONS === */
+  @keyframes tallyPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px rgba(239,68,68,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 2px 1px rgba(239,68,68,0.2); }
+  }
+  @keyframes onairGlow {
+    0%, 100% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.5), inset 0 0 4px rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 16px 4px rgba(239,68,68,0.8), inset 0 0 8px rgba(239,68,68,0.3); }
+  }
+  @keyframes spotlightFadeIn {
+    0% { opacity: 0; filter: blur(8px); }
+    100% { opacity: 1; filter: blur(0); }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  @keyframes beatIgnite {
+    0% { color: #5a5855; text-shadow: none; }
+    50% { color: #fbbf24; text-shadow: 0 0 20px rgba(245,158,11,0.8); }
+    100% { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  }
+  @keyframes warmPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  @keyframes goldenGlow {
+    0%, 100% { text-shadow: 0 0 30px rgba(245,158,11,0.3); }
+    50% { text-shadow: 0 0 60px rgba(245,158,11,0.6), 0 0 100px rgba(245,158,11,0.2); }
+  }
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .tally-live { animation: tallyPulse 2s ease-in-out infinite; }
+  .onair-glow { animation: onairGlow 2s ease-in-out infinite; }
+  .spotlight-in { animation: spotlightFadeIn 2s ease-out forwards; }
+  .breathe { animation: breathe 4s ease-in-out infinite; }
+  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .beat-dim { color: #5a5855; }
+  .beat-ignite { animation: beatIgnite 0.6s ease-out forwards; }
+  .golden-glow { animation: goldenGlow 3s ease-in-out infinite; }
+  .warm-pulse { animation: warmPulse 2s ease-in-out infinite; }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* ON AIR light box */
+  .onair-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #ef4444;
+    border: 1.5px solid #ef4444;
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .onair-box.live { animation: onairGlow 2s ease-in-out infinite; }
+  .onair-box.off {
+    color: #3a3a3e;
+    border-color: #3a3a3e;
+    box-shadow: none;
+  }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Direction 4</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">The Show</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    The user IS the performer on a live variety show. Every state maps to a moment in a live television production. The UI doesn't just use theater terminology — it recreates the <em>feeling</em> of each production moment.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- 1. DARK STUDIO                                                 -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">Dark Studio</h2>
+    <span class="text-xs text-txt-muted font-mono">Full screen</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The app just opened. An empty studio. Quiet anticipation. Potential.</p>
+
+  <div class="macos-chrome" style="background:#0d0d0f; height:520px; position:relative; overflow:hidden;">
+    <!-- Subtle radial spotlight from above -->
+    <div style="position:absolute; inset:0; background: radial-gradient(ellipse 400px 350px at 50% 35%, rgba(217,119,87,0.06) 0%, transparent 70%);"></div>
+
+    <!-- Traffic lights -->
+    <div class="absolute top-4 left-5 traffic-lights">
+      <div class="traffic-light" style="background:#3a3a3e;"></div>
+      <div class="traffic-light" style="background:#3a3a3e;"></div>
+      <div class="traffic-light" style="background:#3a3a3e;"></div>
+    </div>
+
+    <!-- Center content with spotlight -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center spotlight-in">
+      <!-- Soft overhead spot -->
+      <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:300px; height:400px; background: radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.08) 0%, transparent 70%); pointer-events:none;"></div>
+
+      <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-8">Showtime</p>
+      <p class="text-2xl font-light text-txt-primary mb-2 text-center" style="max-width:340px; line-height:1.5;">
+        Tonight's show<br>hasn't been written yet.
+      </p>
+      <p class="text-sm text-txt-muted mb-10">What will you put on stage?</p>
+
+      <!-- Backstage door button -->
+      <button class="relative px-6 py-3 rounded-lg font-medium text-sm transition-all" style="background: rgba(217,119,87,0.1); border: 1px solid rgba(217,119,87,0.3); color: #d97757;">
+        <span style="position:absolute; inset:0; border-radius:8px; box-shadow: 0 0 20px rgba(217,119,87,0.15); pointer-events:none;"></span>
+        Enter the Writer's Room
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 2. WRITER'S ROOM                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">Writer's Room</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x 680px</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Morning planning. Warm lighting. Collaborative, creative backstage energy.</p>
+
+  <!-- Step A: Energy Check -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Step 1 — Energy Check</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+      <div class="px-8 py-10">
+        <!-- Warm overhead glow -->
+        <div style="position:relative;">
+          <div style="position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:300px; height:200px; background:radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.05) 0%, transparent 70%); pointer-events:none;"></div>
+        </div>
+        <p class="text-xl font-semibold text-txt-primary mb-2">How's your energy tonight?</p>
+        <p class="text-sm text-txt-secondary mb-8">This shapes the show. No wrong answers.</p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- High -->
+          <button class="text-left p-4 rounded-lg border transition-all" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.25);">
+            <span class="text-2xl mb-1 block">&#9889;</span>
+            <span class="font-semibold text-sm" style="color:#f59e0b;">High Energy</span>
+            <p class="text-xs text-txt-muted mt-1">Ready to headline</p>
+          </button>
+          <!-- Medium -->
+          <button class="text-left p-4 rounded-lg border transition-all" style="background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.25);">
+            <span class="text-2xl mb-1 block">&#9728;&#65039;</span>
+            <span class="font-semibold text-sm" style="color:#22c55e;">Medium</span>
+            <p class="text-xs text-txt-muted mt-1">Solid performer tonight</p>
+          </button>
+          <!-- Low -->
+          <button class="text-left p-4 rounded-lg border transition-all" style="background:rgba(96,165,250,0.06); border-color:rgba(96,165,250,0.25);">
+            <span class="text-2xl mb-1 block">&#127780;&#65039;</span>
+            <span class="font-semibold text-sm" style="color:#60a5fa;">Low</span>
+            <p class="text-xs text-txt-muted mt-1">Keep it light tonight</p>
+          </button>
+          <!-- Recovery -->
+          <button class="text-left p-4 rounded-lg border transition-all" style="background:rgba(139,92,246,0.06); border-color:rgba(139,92,246,0.25);">
+            <span class="text-2xl mb-1 block">&#127769;</span>
+            <span class="font-semibold text-sm" style="color:#8b5cf6;">Recovery</span>
+            <p class="text-xs text-txt-muted mt-1">Short set, lots of breaks</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step B: The Dump -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Step 2 — The Dump</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+      <div class="px-8 py-10">
+        <p class="text-xl font-semibold text-txt-primary mb-2">What's on tonight's show?</p>
+        <p class="text-sm text-txt-secondary mb-6">Dump everything. We'll sort the lineup after.</p>
+
+        <!-- Notepad-style textarea -->
+        <div class="rounded-lg overflow-hidden" style="background:#13130f; border:1px solid #2a2a24;">
+          <div class="px-4 py-2 flex items-center gap-2" style="background:#1a1a14; border-bottom:1px solid #2a2a24;">
+            <span class="text-xs font-mono text-txt-muted">TONIGHT'S NOTES</span>
+          </div>
+          <div class="p-4 font-mono text-sm leading-7" style="color:#c8c6b8; min-height:160px; background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(90,88,85,0.15) 27px, rgba(90,88,85,0.15) 28px); background-position: 0 3px;">
+            <span style="color:#d97757;">1.</span> Finish API integration for client dashboard<br>
+            <span style="color:#d97757;">2.</span> Review design mockups from Sarah<br>
+            <span style="color:#d97757;">3.</span> Run — at least 30 min<br>
+            <span style="color:#d97757;">4.</span> Reply to that email from yesterday<br>
+            <span style="color:#d97757;">5.</span> Brainstorm newsletter topic<br>
+            <span class="text-txt-muted">|</span>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+            Build the Lineup &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step C: The Lineup -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Step 3 — The Lineup</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+      <div class="px-8 py-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <p class="text-xl font-semibold text-txt-primary">Tonight's Lineup</p>
+            <p class="text-sm text-txt-secondary mt-1">Drag to reorder. This is your rundown.</p>
+          </div>
+          <span class="font-mono text-xs text-txt-muted">5 ACTS &middot; ~3h 15m</span>
+        </div>
+
+        <div class="space-y-2.5 mb-8">
+          <!-- Act 1 -->
+          <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0s;">
+            <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+            <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6; font-size:10px;">
+                  DEEP WORK <span class="divider">|</span> ACT 1
+                </span>
+              </div>
+              <p class="font-medium text-sm text-txt-primary truncate">API Integration — Client Dashboard</p>
+            </div>
+            <span class="font-mono text-sm text-txt-secondary">45:00</span>
+            <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+              <button class="hover:text-txt-primary">&uarr;</button>
+              <button class="hover:text-txt-primary">&darr;</button>
+            </div>
+          </div>
+
+          <!-- Act 2 -->
+          <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.08s;">
+            <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+            <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b; font-size:10px;">
+                  CREATIVE <span class="divider">|</span> ACT 2
+                </span>
+              </div>
+              <p class="font-medium text-sm text-txt-primary truncate">Review Design Mockups</p>
+            </div>
+            <span class="font-mono text-sm text-txt-secondary">30:00</span>
+            <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+              <button class="hover:text-txt-primary">&uarr;</button>
+              <button class="hover:text-txt-primary">&darr;</button>
+            </div>
+          </div>
+
+          <!-- Act 3 -->
+          <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.16s;">
+            <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+            <div class="w-1 h-10 rounded-full" style="background:#22c55e;"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e; font-size:10px;">
+                  EXERCISE <span class="divider">|</span> ACT 3
+                </span>
+              </div>
+              <p class="font-medium text-sm text-txt-primary truncate">Afternoon Run</p>
+            </div>
+            <span class="font-mono text-sm text-txt-secondary">30:00</span>
+            <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+              <button class="hover:text-txt-primary">&uarr;</button>
+              <button class="hover:text-txt-primary">&darr;</button>
+            </div>
+          </div>
+
+          <!-- Act 4 -->
+          <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.24s;">
+            <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+            <div class="w-1 h-10 rounded-full" style="background:#60a5fa;"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="clap-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa; font-size:10px;">
+                  ADMIN <span class="divider">|</span> ACT 4
+                </span>
+              </div>
+              <p class="font-medium text-sm text-txt-primary truncate">Email Catchup</p>
+            </div>
+            <span class="font-mono text-sm text-txt-secondary">20:00</span>
+            <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+              <button class="hover:text-txt-primary">&uarr;</button>
+              <button class="hover:text-txt-primary">&darr;</button>
+            </div>
+          </div>
+
+          <!-- Act 5 -->
+          <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.32s;">
+            <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+            <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b; font-size:10px;">
+                  CREATIVE <span class="divider">|</span> ACT 5
+                </span>
+              </div>
+              <p class="font-medium text-sm text-txt-primary truncate">Newsletter Brainstorm</p>
+            </div>
+            <span class="font-mono text-sm text-txt-secondary">30:00</span>
+            <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+              <button class="hover:text-txt-primary">&uarr;</button>
+              <button class="hover:text-txt-primary">&darr;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WE'RE LIVE button -->
+        <div class="pt-4" style="border-top:1px solid #2a2a2e;">
+          <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden transition-all" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+            <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+            WE'RE LIVE!
+          </button>
+          <p class="text-center text-xs text-txt-muted mt-3">This starts the show. You've got this.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 3. GOING LIVE TRANSITION                                       -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Going Live — Transition</h2>
+    <span class="text-xs text-txt-muted font-mono">Full screen &middot; 2-3s</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The rush of going on air. The ON AIR light ignites.</p>
+
+  <div class="macos-chrome" style="background:#0d0d0f; height:400px; position:relative; overflow:hidden;">
+    <!-- Dark to warm gradient sweep -->
+    <div style="position:absolute; inset:0; background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(217,119,87,0.08) 0%, transparent 70%);"></div>
+
+    <div class="absolute inset-0 flex flex-col items-center justify-center">
+      <!-- ON AIR light box igniting -->
+      <div class="mb-10 flex items-center gap-3">
+        <div class="onair-box live">
+          <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live"></span>
+          ON AIR
+        </div>
+      </div>
+
+      <p class="text-3xl font-extrabold text-txt-primary mb-3 text-center" style="letter-spacing:-0.01em;">
+        Live from <span style="color:#d97757;">your desk</span>,
+      </p>
+      <p class="text-3xl font-extrabold text-txt-primary text-center" style="letter-spacing:-0.01em;">
+        it's <span class="font-mono" style="color:#d97757;">Friday, March 20th</span>!
+      </p>
+      <p class="text-sm text-txt-muted mt-6 font-mono tracking-wider">5 ACTS &middot; 3 BEATS TO LOCK</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. PILL VIEW                                                   -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">Pill View</h2>
+    <span class="text-xs text-txt-muted font-mono">320 x 48px &middot; Floating</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">A control room monitor. Glanceable. Professional.</p>
+
+  <div class="space-y-6">
+    <!-- Live pill -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">LIVE — ACT IN PROGRESS</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <!-- Tally light -->
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <!-- Act name -->
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">API Integration</span>
+        <!-- Timer -->
+        <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">23:41</span>
+        <!-- Beat progress -->
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Timer < 5 min (amber) -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">LIVE — LESS THAN 5 MINUTES</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">API Integration</span>
+        <span class="font-mono text-sm font-semibold flex-shrink-0 warm-pulse" style="color:#f59e0b;">04:12</span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Intermission pill -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">INTERMISSION</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#3a3a3e;"></span>
+        <span class="text-sm font-medium flex-1" style="color:#8b5cf6;">Intermission</span>
+        <span class="font-mono text-xs text-txt-muted flex-shrink-0">no rush</span>
+        <span class="flex-shrink-0 text-sm tracking-wider" style="opacity:0.4;">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Strike pill -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">SHOW COMPLETE</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(245,158,11,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(245,158,11,0.08);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5);"></span>
+        <span class="text-sm font-medium flex-1" style="color:#f59e0b;">Show Complete!</span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 5. EXPANDED VIEW                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 5</span>
+    <h2 class="text-xl font-bold text-txt-primary">Expanded View — Live Act</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x 620px</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The main working view. You're running a live show.</p>
+
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="text-xs px-2.5 py-1 rounded text-txt-secondary hover:text-txt-primary" style="background:#242428;">&#127916; Director</button>
+        <button class="text-xs text-txt-muted hover:text-txt-primary">&#9660;</button>
+      </div>
+    </div>
+
+    <div class="flex" style="min-height:540px;">
+      <!-- Main content area -->
+      <div class="flex-1 p-6" style="border-right:1px solid #242428;">
+        <!-- Timer Hero Section -->
+        <div class="text-center mb-6">
+          <!-- Clapperboard badge -->
+          <div class="flex justify-center mb-4">
+            <span class="clap-badge" style="border-color:rgba(139,92,246,0.5); color:#8b5cf6;">
+              DEEP WORK <span class="divider">|</span> ACT 3 <span class="divider">|</span> 45:00
+            </span>
+          </div>
+
+          <!-- Act name -->
+          <h2 class="text-lg font-bold text-txt-primary mb-5">API Integration — Client Dashboard</h2>
+
+          <!-- HUGE countdown -->
+          <div class="font-mono font-bold text-txt-primary mb-3" style="font-size:64px; line-height:1; letter-spacing:-0.02em;">
+            23:41
+          </div>
+
+          <!-- Progress bar -->
+          <div class="w-full h-1 rounded-full mb-6" style="background:#242428;">
+            <div class="h-full rounded-full" style="width:47%; background: linear-gradient(90deg, #8b5cf6, #a78bfa);"></div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex justify-center gap-2">
+            <button class="px-4 py-2 rounded-lg text-sm font-medium font-mono" style="background:#242428; color:#9a9890; border:1px solid #333;">+15m</button>
+            <button class="px-5 py-2 rounded-lg text-sm font-medium" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">End Act</button>
+            <button class="px-4 py-2 rounded-lg text-sm font-medium" style="background:rgba(139,92,246,0.1); color:#8b5cf6; border:1px solid rgba(139,92,246,0.25);">Rest</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show Lineup sidebar -->
+      <div class="flex-shrink-0" style="width:200px;">
+        <div class="px-3 py-3">
+          <p class="section-label text-[10px] mb-3">Show Lineup</p>
+
+          <div class="space-y-1.5">
+            <!-- Act 1 — completed, beat locked -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.05);">
+              <span class="text-xs" title="Completed">&#9989;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-secondary truncate">API Integration</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#8b5cf6;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">45m</span>
+                  <span class="beat-lit text-[10px]">&#9733;</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 2 — completed, no beat -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.05);">
+              <span class="text-xs" title="Completed">&#9989;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-secondary truncate">Design Mockups</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">30m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 3 — ACTIVE -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.25);">
+              <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live" title="Live"></span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-txt-primary truncate">Afternoon Run</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#22c55e;"></div>
+                  <span class="font-mono text-[10px] text-txt-primary">23:41</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 4 — upcoming -->
+            <div class="flex items-center gap-2 p-2 rounded-md opacity-60">
+              <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-muted truncate">Email Catchup</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#60a5fa;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">20m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 5 — upcoming -->
+            <div class="flex items-center gap-2 p-2 rounded-md opacity-60">
+              <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-muted truncate">Newsletter Brainstorm</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">30m</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-top:1px solid #242428;">
+      <div class="onair-box live">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-onair tally-live"></span>
+        ON AIR
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span>
+        </span>
+        <span class="text-xs text-txt-muted font-mono">1/3 Beats</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 6. BEAT CHECK MODAL                                            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 6</span>
+    <h2 class="text-xl font-bold text-txt-primary">Beat Check</h2>
+    <span class="text-xs text-txt-muted font-mono">Modal overlay &middot; ~420px card</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The audience applause moment. Did the sketch land?</p>
+
+  <!-- Modal container (simulated) -->
+  <div class="relative rounded-xl overflow-hidden" style="height:480px; background:#0d0d0f;">
+    <!-- Dark scrim with blurred background hint -->
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);"></div>
+
+    <!-- Spotlight from above -->
+    <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:400px; height:350px; background: radial-gradient(ellipse 300px 250px at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%); pointer-events:none;"></div>
+
+    <!-- Modal card -->
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="rounded-2xl p-8 text-center" style="width:380px; background:#1a1a1e; border:1px solid #2a2a2e; box-shadow: 0 24px 80px rgba(0,0,0,0.5);">
+        <!-- Completed Act info -->
+        <span class="clap-badge mb-5 inline-flex" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6; font-size:10px;">
+          DEEP WORK <span class="divider">|</span> ACT 1 <span class="divider">|</span> COMPLETE
+        </span>
+
+        <p class="text-base font-semibold text-txt-primary mb-1">API Integration</p>
+        <p class="text-sm text-txt-muted mb-8">Act completed &middot; 45:00</p>
+
+        <!-- The question -->
+        <p class="text-lg text-txt-primary mb-8" style="line-height:1.5;">
+          Did you have a moment<br>of <span style="color:#f59e0b;">presence</span>?
+        </p>
+
+        <!-- Lock the Beat button -->
+        <button class="w-full py-3.5 rounded-xl font-semibold text-base mb-4 transition-all" style="background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1)); color:#f59e0b; border:1.5px solid rgba(245,158,11,0.4); box-shadow: 0 0 20px rgba(245,158,11,0.1);">
+          &#9733; Yes — Lock the Beat
+        </button>
+
+        <!-- Not this time -->
+        <button class="text-sm text-txt-muted hover:text-txt-secondary transition-colors">
+          Not this time
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beat Locked state -->
+  <div class="mt-6">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">After locking the beat</p>
+    <div class="relative rounded-xl overflow-hidden" style="height:280px; background:#0d0d0f;">
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);"></div>
+      <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:400px; height:250px; background: radial-gradient(ellipse 300px 200px at 50% 0%, rgba(245,158,11,0.12) 0%, transparent 70%); pointer-events:none;"></div>
+
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="text-center">
+          <div class="text-6xl mb-4 beat-ignite" style="text-shadow: 0 0 30px rgba(245,158,11,0.6);">&#9733;</div>
+          <p class="text-xl font-bold" style="color:#f59e0b;">Beat Locked.</p>
+          <p class="text-sm text-txt-secondary mt-2">That moment was real.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 7. INTERMISSION                                                -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 7</span>
+    <h2 class="text-xl font-bold text-txt-primary">Intermission</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x 500px</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The green room. Permission to pause. The show isn't going anywhere.</p>
+
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime</span>
+      </div>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&#9660;</button>
+    </div>
+
+    <!-- Content -->
+    <div class="px-8 py-12" style="background: linear-gradient(180deg, #1a1a1e 0%, #1e1c1a 100%); min-height:420px;">
+      <!-- ON AIR light OFF -->
+      <div class="flex justify-center mb-10">
+        <div class="onair-box off">
+          <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:#3a3a3e;"></span>
+          ON AIR
+        </div>
+      </div>
+
+      <!-- Vintage card -->
+      <div class="mx-auto rounded-xl p-8 text-center" style="max-width:380px; background: rgba(30,28,26,0.8); border: 2px solid rgba(217,119,87,0.15); box-shadow: 0 0 40px rgba(217,119,87,0.04);">
+        <p class="font-mono text-xs tracking-widest uppercase mb-4" style="color:#d97757;">&#9670; &#9670; &#9670;</p>
+        <p class="text-2xl font-bold text-txt-primary mb-2" style="letter-spacing:0.04em;">WE'LL BE RIGHT BACK</p>
+        <div class="w-16 h-px mx-auto my-5" style="background:#d97757; opacity:0.4;"></div>
+        <p class="text-sm italic breathe" style="color:#9a9890; line-height:1.7;">
+          "Rest is free. Always has been."
+        </p>
+      </div>
+
+      <!-- Back to show button -->
+      <div class="text-center mt-10">
+        <button class="px-6 py-2.5 rounded-lg text-sm font-medium" style="background:rgba(217,119,87,0.1); color:#d97757; border:1px solid rgba(217,119,87,0.2);">
+          Back to the show
+        </button>
+      </div>
+
+      <!-- Dimmed beat counter -->
+      <div class="flex justify-center mt-8" style="opacity:0.35;">
+        <div class="flex items-center gap-2">
+          <span class="text-sm tracking-wider">
+            <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+          </span>
+          <span class="text-xs text-txt-muted font-mono">2/3 Beats</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 8. DIRECTOR MODE                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 8</span>
+    <h2 class="text-xl font-bold text-txt-primary">Director Mode</h2>
+    <span class="text-xs text-txt-muted font-mono">Overlay &middot; ~440px card</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">When the show is going off the rails, the Director steps in. No panic. A call.</p>
+
+  <div class="relative rounded-xl overflow-hidden" style="height:560px; background:#0d0d0f;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(12px);"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="rounded-2xl p-8" style="width:420px; background:#1a1a1e; border:1px solid #2a2a2e; box-shadow: 0 24px 80px rgba(0,0,0,0.6);">
+        <!-- Director icon and title -->
+        <div class="text-center mb-8">
+          <span class="text-3xl mb-3 block">&#127916;</span>
+          <p class="text-2xl font-bold text-txt-primary">The Director is here.</p>
+          <p class="text-sm text-txt-secondary mt-2">What's the call?</p>
+        </div>
+
+        <!-- Options -->
+        <div class="space-y-3">
+          <button class="w-full text-left p-4 rounded-lg transition-all" style="background:#242428; border:1px solid #333;">
+            <p class="font-semibold text-sm text-txt-primary mb-1">&#9197; Skip to next Act</p>
+            <p class="text-xs text-txt-muted">Rearrange what's left. The show goes on.</p>
+          </button>
+
+          <button class="w-full text-left p-4 rounded-lg transition-all" style="background:#242428; border:1px solid #333;">
+            <p class="font-semibold text-sm text-txt-primary mb-1">&#127917; Call the show early</p>
+            <p class="text-xs text-txt-muted">Wrap it up. A short show is still a show.</p>
+          </button>
+
+          <button class="w-full text-left p-4 rounded-lg transition-all" style="background:#242428; border:1px solid #333;">
+            <p class="font-semibold text-sm text-txt-primary mb-1">&#9749; Take a longer break</p>
+            <p class="text-xs text-txt-muted">Extended intermission. No clock running.</p>
+          </button>
+
+          <button class="w-full text-left p-4 rounded-lg transition-all" style="background:#242428; border:1px solid #333;">
+            <p class="font-semibold text-sm text-txt-primary mb-1">&#128524; I just need a moment</p>
+            <p class="text-xs text-txt-muted">Five minutes. Breathe. The stage will wait.</p>
+          </button>
+        </div>
+
+        <!-- Dismiss -->
+        <div class="text-center mt-6">
+          <button class="text-sm text-txt-muted hover:text-txt-secondary">
+            Never mind, I'm good
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 9. STRIKE THE STAGE                                            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">View 9</span>
+    <h2 class="text-xl font-bold text-txt-primary">Strike the Stage</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x variable</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Curtain call. Credits rolling. The show is over, and it was YOUR show.</p>
+
+  <!-- DAY WON (3/3 Beats) -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Verdict: Day Won (3/3 Beats)</p>
+    <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
+      <!-- Title bar -->
+      <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+        <div class="flex items-center gap-3">
+          <div class="traffic-lights">
+            <div class="traffic-light" style="background:#ff5f57;"></div>
+            <div class="traffic-light" style="background:#febc2e;"></div>
+            <div class="traffic-light" style="background:#28c840;"></div>
+          </div>
+          <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime</span>
+        </div>
+        <div class="onair-box off">
+          <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:#3a3a3e;"></span>
+          OFF
+        </div>
+      </div>
+
+      <div class="px-8 py-10 text-center" style="background: radial-gradient(ellipse 500px 300px at 50% 30%, rgba(245,158,11,0.06) 0%, transparent 70%);">
+        <!-- Stars -->
+        <div class="text-3xl mb-6 tracking-widest golden-glow">
+          <span class="beat-lit">&#9733;</span>
+          <span class="beat-lit">&#9733;</span>
+          <span class="beat-lit">&#9733;</span>
+        </div>
+
+        <!-- Verdict -->
+        <h2 class="text-5xl font-black mb-3 golden-glow" style="color:#f59e0b; letter-spacing:0.02em;">DAY WON.</h2>
+        <p class="text-base text-txt-secondary mb-10" style="max-width:320px; margin:0 auto; line-height:1.6;">
+          Standing ovation. You showed up and you were present.
+        </p>
+
+        <!-- Stats -->
+        <div class="flex justify-center gap-8 mb-10">
+          <div class="text-center">
+            <p class="font-mono text-3xl font-bold text-txt-primary">5</p>
+            <p class="text-xs text-txt-muted mt-1">Acts Completed</p>
+          </div>
+          <div class="text-center">
+            <p class="font-mono text-3xl font-bold text-txt-primary">0</p>
+            <p class="text-xs text-txt-muted mt-1">Acts Cut</p>
+          </div>
+          <div class="text-center">
+            <p class="font-mono text-3xl font-bold" style="color:#f59e0b;">3</p>
+            <p class="text-xs text-txt-muted mt-1">Beats Locked</p>
+          </div>
+        </div>
+
+        <!-- Act recap (credits) -->
+        <div class="rounded-lg p-4 text-left mb-8" style="background:#151517; border:1px solid #242428;">
+          <p class="section-label text-[10px] mb-3">Show Recap</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-4 rounded-full" style="background:#8b5cf6;"></div>
+                <span class="text-sm text-txt-primary">API Integration</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-txt-muted">45:00</span>
+                <span class="beat-lit text-sm">&#9733;</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-4 rounded-full" style="background:#f59e0b;"></div>
+                <span class="text-sm text-txt-primary">Design Mockups</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-txt-muted">30:00</span>
+                <span class="beat-lit text-sm">&#9733;</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-4 rounded-full" style="background:#22c55e;"></div>
+                <span class="text-sm text-txt-primary">Afternoon Run</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-txt-muted">30:00</span>
+                <span class="beat-lit text-sm">&#9733;</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-4 rounded-full" style="background:#60a5fa;"></div>
+                <span class="text-sm text-txt-primary">Email Catchup</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-txt-muted">20:00</span>
+                <span class="text-sm text-txt-muted">&#8212;</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-1.5">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-4 rounded-full" style="background:#f59e0b;"></div>
+                <span class="text-sm text-txt-primary">Newsletter Brainstorm</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs text-txt-muted">30:00</span>
+                <span class="text-sm text-txt-muted">&#8212;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-center gap-3">
+          <button class="px-6 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">
+            New Show
+          </button>
+          <button class="px-6 py-2.5 rounded-lg font-medium text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLID SHOW (2/3 Beats) -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Verdict: Solid Show (2/3 Beats)</p>
+    <div class="rounded-xl p-8 text-center" style="width:560px; background:#1a1a1e; border:1px solid #2a2a2e;">
+      <div class="text-2xl mb-4 tracking-widest">
+        <span class="beat-lit">&#9733;</span>
+        <span class="beat-lit">&#9733;</span>
+        <span class="beat-dim">&#9734;</span>
+      </div>
+      <h2 class="text-4xl font-black mb-3" style="color:#d97757; letter-spacing:0.02em;">SOLID SHOW.</h2>
+      <p class="text-sm text-txt-secondary" style="max-width:300px; margin:0 auto; line-height:1.6;">
+        Not every sketch lands. The show was still great.
+      </p>
+    </div>
+  </div>
+
+  <!-- GOOD EFFORT (1/3 Beats) -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Verdict: Good Effort (1/3 Beats)</p>
+    <div class="rounded-xl p-8 text-center" style="width:560px; background:#1a1a1e; border:1px solid #2a2a2e;">
+      <div class="text-2xl mb-4 tracking-widest">
+        <span class="beat-lit">&#9733;</span>
+        <span class="beat-dim">&#9734;</span>
+        <span class="beat-dim">&#9734;</span>
+      </div>
+      <h2 class="text-4xl font-black mb-3" style="color:#60a5fa; letter-spacing:0.02em;">GOOD EFFORT.</h2>
+      <p class="text-sm text-txt-secondary" style="max-width:300px; margin:0 auto; line-height:1.6;">
+        You got on stage. That's the hardest part.
+      </p>
+    </div>
+  </div>
+
+  <!-- SHOW CALLED EARLY (0/3 Beats) -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Verdict: Show Called Early (0/3 Beats)</p>
+    <div class="rounded-xl p-8 text-center" style="width:560px; background:#1a1a1e; border:1px solid #2a2a2e;">
+      <div class="text-2xl mb-4 tracking-widest">
+        <span class="beat-dim">&#9734;</span>
+        <span class="beat-dim">&#9734;</span>
+        <span class="beat-dim">&#9734;</span>
+      </div>
+      <h2 class="text-4xl font-black mb-3" style="color:#9a9890; letter-spacing:0.02em;">SHOW CALLED EARLY.</h2>
+      <p class="text-sm text-txt-secondary" style="max-width:320px; margin:0 auto; line-height:1.6;">
+        Sometimes the show is short. The audience still came.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DESIGN SYSTEM REFERENCE                                        -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24" style="border-top:1px solid #242428; padding-top:48px;">
+  <div class="mb-8">
+    <span class="section-label">Reference</span>
+    <h2 class="text-2xl font-bold text-txt-primary mt-2">Design System</h2>
+  </div>
+
+  <!-- Colors -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Color Palette</h3>
+    <div class="grid grid-cols-2 gap-x-8 gap-y-3">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#0d0d0f; border:1px solid #333;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#0d0d0f</p>
+          <p class="text-xs text-txt-muted">Background — Dark studio</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#1a1a1e;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#1a1a1e</p>
+          <p class="text-xs text-txt-muted">Surface — Cards, panels</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#242428;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#242428</p>
+          <p class="text-xs text-txt-muted">Surface hover</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#d97757;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#d97757</p>
+          <p class="text-xs text-txt-muted">Primary accent — Stage lighting</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#ef4444;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#ef4444</p>
+          <p class="text-xs text-txt-muted">ON AIR red</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#f59e0b;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#f59e0b</p>
+          <p class="text-xs text-txt-muted">Beat gold</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#e8e6e0;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#e8e6e0</p>
+          <p class="text-xs text-txt-muted">Text primary — Warm white</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md" style="background:#9a9890;"></div>
+        <div>
+          <p class="text-sm text-txt-primary font-mono">#9a9890</p>
+          <p class="text-xs text-txt-muted">Text secondary</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Colors -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Category Colors</h3>
+    <div class="flex gap-4">
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-lg mx-auto mb-2" style="background:#8b5cf6;"></div>
+        <p class="text-xs text-txt-muted">Deep Work</p>
+        <p class="text-[10px] font-mono text-txt-muted">#8b5cf6</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-lg mx-auto mb-2" style="background:#22c55e;"></div>
+        <p class="text-xs text-txt-muted">Exercise</p>
+        <p class="text-[10px] font-mono text-txt-muted">#22c55e</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-lg mx-auto mb-2" style="background:#60a5fa;"></div>
+        <p class="text-xs text-txt-muted">Admin</p>
+        <p class="text-[10px] font-mono text-txt-muted">#60a5fa</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-lg mx-auto mb-2" style="background:#f59e0b;"></div>
+        <p class="text-xs text-txt-muted">Creative</p>
+        <p class="text-[10px] font-mono text-txt-muted">#f59e0b</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-lg mx-auto mb-2" style="background:#ec4899;"></div>
+        <p class="text-xs text-txt-muted">Social</p>
+        <p class="text-[10px] font-mono text-txt-muted">#ec4899</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Typography -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Typography</h3>
+    <div class="space-y-4">
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="text-xs text-txt-muted mb-2">JetBrains Mono — Timers, data, labels</p>
+        <p class="font-mono text-4xl text-txt-primary">23:41</p>
+        <p class="font-mono text-sm text-txt-secondary mt-1">DEEP WORK | ACT 3 | 45:00</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="text-xs text-txt-muted mb-2">Inter — Body, descriptions, headings</p>
+        <p class="text-2xl font-bold text-txt-primary">How's your energy tonight?</p>
+        <p class="text-sm text-txt-secondary mt-1">This shapes the show. No wrong answers.</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="text-xs text-txt-muted mb-2">Inter Black (900) — Verdicts</p>
+        <p class="text-5xl font-black" style="color:#f59e0b; letter-spacing:0.02em;">DAY WON.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key UI Components -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Key UI Components</h3>
+    <div class="space-y-4">
+      <!-- ON AIR states -->
+      <div class="p-4 rounded-lg flex items-center gap-6" style="background:#1a1a1e;">
+        <div>
+          <p class="text-xs text-txt-muted mb-2">ON AIR — Live</p>
+          <div class="onair-box live">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-onair tally-live"></span>
+            ON AIR
+          </div>
+        </div>
+        <div>
+          <p class="text-xs text-txt-muted mb-2">ON AIR — Off</p>
+          <div class="onair-box off">
+            <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:#3a3a3e;"></span>
+            ON AIR
+          </div>
+        </div>
+        <div>
+          <p class="text-xs text-txt-muted mb-2">Tally Light</p>
+          <span class="inline-block w-3 h-3 rounded-full bg-onair tally-live"></span>
+        </div>
+      </div>
+
+      <!-- Clapperboard badges -->
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="text-xs text-txt-muted mb-3">Clapperboard Badges</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="clap-badge" style="border-color:rgba(139,92,246,0.5); color:#8b5cf6;">
+            DEEP WORK <span class="divider">|</span> ACT 1
+          </span>
+          <span class="clap-badge" style="border-color:rgba(34,197,94,0.5); color:#22c55e;">
+            EXERCISE <span class="divider">|</span> ACT 3
+          </span>
+          <span class="clap-badge" style="border-color:rgba(245,158,11,0.5); color:#f59e0b;">
+            CREATIVE <span class="divider">|</span> ACT 5 <span class="divider">|</span> 30:00
+          </span>
+        </div>
+      </div>
+
+      <!-- Beat stars -->
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="text-xs text-txt-muted mb-3">Beat Stars</p>
+        <div class="flex items-center gap-6">
+          <div>
+            <p class="text-[10px] text-txt-muted mb-1">0/3</p>
+            <span class="text-xl tracking-wider"><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+          <div>
+            <p class="text-[10px] text-txt-muted mb-1">1/3</p>
+            <span class="text-xl tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+          <div>
+            <p class="text-[10px] text-txt-muted mb-1">2/3</p>
+            <span class="text-xl tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+          <div>
+            <p class="text-[10px] text-txt-muted mb-1">3/3</p>
+            <span class="text-xl tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Button styles -->
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="text-xs text-txt-muted mb-3">Button Styles</p>
+        <div class="flex flex-wrap items-center gap-3">
+          <button class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background: linear-gradient(135deg, #d97757, #c4613e); color:#fff; box-shadow: 0 0 20px rgba(217,119,87,0.2);">Primary CTA</button>
+          <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">Secondary</button>
+          <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Beat Action</button>
+          <button class="px-4 py-2 rounded-lg font-medium text-sm font-mono" style="background:#242428; color:#9a9890; border:1px solid #333;">Neutral</button>
+          <button class="text-sm text-txt-muted">Text Link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Animations -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Animations (CSS)</h3>
+    <div class="rounded-lg p-4" style="background:#1a1a1e;">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="p-3 rounded" style="background:#242428;">
+          <p class="text-xs text-txt-muted mb-2">Tally Pulse</p>
+          <span class="inline-block w-3 h-3 rounded-full bg-onair tally-live"></span>
+          <p class="text-[10px] font-mono text-txt-muted mt-2">2s ease-in-out infinite</p>
+        </div>
+        <div class="p-3 rounded" style="background:#242428;">
+          <p class="text-xs text-txt-muted mb-2">ON AIR Glow</p>
+          <div class="onair-box live" style="display:inline-flex;">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-onair tally-live"></span>
+            ON AIR
+          </div>
+          <p class="text-[10px] font-mono text-txt-muted mt-2">2s box-shadow pulse</p>
+        </div>
+        <div class="p-3 rounded" style="background:#242428;">
+          <p class="text-xs text-txt-muted mb-2">Breathe (Intermission)</p>
+          <span class="text-sm italic breathe" style="color:#9a9890;">Rest is free.</span>
+          <p class="text-[10px] font-mono text-txt-muted mt-2">4s ease-in-out infinite</p>
+        </div>
+        <div class="p-3 rounded" style="background:#242428;">
+          <p class="text-xs text-txt-muted mb-2">Golden Verdict Glow</p>
+          <span class="text-lg font-black golden-glow" style="color:#f59e0b;">DAY WON.</span>
+          <p class="text-[10px] font-mono text-txt-muted mt-2">3s text-shadow pulse</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theatrical Moment Map -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Theatrical Moment Map</h3>
+    <div class="rounded-lg overflow-hidden" style="background:#1a1a1e; border:1px solid #242428;">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="background:#151517;">
+            <th class="text-left px-4 py-3 text-xs font-mono text-txt-muted font-normal uppercase tracking-wider">App State</th>
+            <th class="text-left px-4 py-3 text-xs font-mono text-txt-muted font-normal uppercase tracking-wider">Production Moment</th>
+            <th class="text-left px-4 py-3 text-xs font-mono text-txt-muted font-normal uppercase tracking-wider">Feeling</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Dark Studio</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Empty studio, lights off</td>
+            <td class="px-4 py-2.5 text-txt-muted">Quiet anticipation</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Writer's Room</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Pre-show planning</td>
+            <td class="px-4 py-2.5 text-txt-muted">Creative, backstage</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Going Live</td>
+            <td class="px-4 py-2.5 text-txt-secondary">ON AIR light ignites</td>
+            <td class="px-4 py-2.5 text-txt-muted">Rush, excitement</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Live Act</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Performing a sketch</td>
+            <td class="px-4 py-2.5 text-txt-muted">Focused, professional</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Beat Check</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Audience applause</td>
+            <td class="px-4 py-2.5 text-txt-muted">Did it land?</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Intermission</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Commercial break</td>
+            <td class="px-4 py-2.5 text-txt-muted">Permission to pause</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Director Mode</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Director steps in</td>
+            <td class="px-4 py-2.5 text-txt-muted">Calm authority</td>
+          </tr>
+          <tr style="border-top:1px solid #242428;">
+            <td class="px-4 py-2.5 text-txt-primary">Strike</td>
+            <td class="px-4 py-2.5 text-txt-secondary">Curtain call, credits</td>
+            <td class="px-4 py-2.5 text-txt-muted">Reflection, closure</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design Principles -->
+  <div>
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Design Principles</h3>
+    <div class="space-y-3">
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="font-semibold text-sm text-txt-primary mb-1">The metaphor is the mechanic</p>
+        <p class="text-sm text-txt-muted">Every UI state maps to a production moment. Not decoration — the theatrical framing IS the information architecture.</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="font-semibold text-sm text-txt-primary mb-1">Warm, never cold</p>
+        <p class="text-sm text-txt-muted">Amber-orange accent, warm white text, dark surfaces with just enough warmth. This is a theater, not a lab.</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="font-semibold text-sm text-txt-primary mb-1">Permission is built in</p>
+        <p class="text-sm text-txt-muted">Intermission has no timer. Director Mode has no guilt. Beat Check has no judgment. The app never makes you feel bad.</p>
+      </div>
+      <div class="p-4 rounded-lg" style="background:#1a1a1e;">
+        <p class="font-semibold text-sm text-txt-primary mb-1">Glanceable, not demanding</p>
+        <p class="text-sm text-txt-muted">The pill is 48px. The timer is the hero. The lineup is a sidebar. Nothing screams — the show state is always clear at a glance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="max-w-3xl mx-auto px-6 pb-16 text-center">
+  <div class="w-16 h-px mx-auto mb-6" style="background:#333;"></div>
+  <p class="text-xs text-txt-muted">
+    Showtime — Direction 4: The Show<br>
+    <span class="font-mono">March 2026</span>
+  </p>
+</footer>
+
+</body>
+</html>

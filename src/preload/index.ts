@@ -49,6 +49,11 @@ export interface CluiAPI {
   onError(callback: (tabId: string, error: EnrichedError) => void): () => void
   onSkillStatus(callback: (status: { name: string; state: string; error?: string; reason?: string }) => void): () => void
   onWindowShown(callback: () => void): () => void
+
+  // ─── Showtime notifications ───
+  notifyActComplete(actName: string): void
+  notifyBeatCheck(): void
+  notifyVerdict(verdict: string): void
 }
 
 const api: CluiAPI = {
@@ -138,6 +143,11 @@ const api: CluiAPI = {
     ipcRenderer.on(IPC.WINDOW_SHOWN, handler)
     return () => ipcRenderer.removeListener(IPC.WINDOW_SHOWN, handler)
   },
+
+  // ─── Showtime notifications ───
+  notifyActComplete: (actName: string) => ipcRenderer.send(IPC.NOTIFY_ACT_COMPLETE, actName),
+  notifyBeatCheck: () => ipcRenderer.send(IPC.NOTIFY_BEAT_CHECK),
+  notifyVerdict: (verdict: string) => ipcRenderer.send(IPC.NOTIFY_VERDICT, verdict),
 }
 
 contextBridge.exposeInMainWorld('clui', api)

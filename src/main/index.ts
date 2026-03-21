@@ -341,6 +341,37 @@ ipcMain.on(IPC.SET_PERMISSION_MODE, (_event, mode: string) => {
   controlPlane.setPermissionMode(mode)
 })
 
+// ─── Showtime notifications ───
+ipcMain.on(IPC.NOTIFY_ACT_COMPLETE, (_event, actName: string) => {
+  log(`Showtime: Act complete — ${actName}`)
+  const { Notification } = require('electron') as typeof import('electron')
+  if (Notification.isSupported()) {
+    new Notification({ title: 'Act Complete', body: `${actName} — time for a beat check!` }).show()
+  }
+})
+
+ipcMain.on(IPC.NOTIFY_BEAT_CHECK, () => {
+  log('Showtime: Beat check')
+  const { Notification } = require('electron') as typeof import('electron')
+  if (Notification.isSupported()) {
+    new Notification({ title: 'Beat Check', body: 'Did you have a moment of presence?' }).show()
+  }
+})
+
+ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string) => {
+  log(`Showtime: Verdict — ${verdict}`)
+  const { Notification } = require('electron') as typeof import('electron')
+  if (Notification.isSupported()) {
+    const messages: Record<string, string> = {
+      DAY_WON: 'Standing ovation! What a show!',
+      SOLID_SHOW: 'Almost perfect — solid show!',
+      GOOD_EFFORT: 'Good effort today!',
+      SHOW_CALLED_EARLY: 'Show called early — and that\'s valid.',
+    }
+    new Notification({ title: verdict.replace(/_/g, ' '), body: messages[verdict] || 'Show complete!' }).show()
+  }
+})
+
 ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
   log(`IPC RESPOND_PERMISSION: tab=${tabId} question=${questionId} option=${optionId}`)
   return controlPlane.respondToPermission(tabId, questionId, optionId)
@@ -490,7 +521,7 @@ ipcMain.handle(IPC.SELECT_DIRECTORY, async () => {
   // Unparented avoids modal dimming on the transparent overlay.
   // Activation is fine here — user is actively interacting with CLUI.
   if (process.platform === 'darwin') app.focus()
-  const options = { properties: ['openDirectory'] as const }
+  const options = { properties: ['openDirectory'] as ('openDirectory' | 'openFile')[] }
   const result = process.platform === 'darwin'
     ? await dialog.showOpenDialog(options)
     : await dialog.showOpenDialog(mainWindow, options)
@@ -513,7 +544,7 @@ ipcMain.handle(IPC.ATTACH_FILES, async () => {
   // macOS: activate app so unparented dialog appears on top
   if (process.platform === 'darwin') app.focus()
   const options = {
-    properties: ['openFile', 'multiSelections'],
+    properties: ['openFile', 'multiSelections'] as ('openDirectory' | 'openFile' | 'multiSelections')[],
     filters: [
       { name: 'All Files', extensions: ['*'] },
       { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] },

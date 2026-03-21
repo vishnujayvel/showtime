@@ -1,7 +1,7 @@
 {
-  "name": "clui",
+  "name": "showtime",
   "version": "0.1.0",
-  "description": "Clui CC — Command Line User Interface for Claude Code",
+  "description": "Showtime — SNL Day Planner for ADHD-friendly task management with Claude Code",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,6 +13,9 @@
   "homepage": "https://github.com/lcoutodemos/clui-cc#readme",
   "main": "dist/main/index.js",
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "npx playwright test",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
@@ -29,8 +32,8 @@
     "zustand": "^5.0.0"
   },
   "build": {
-    "appId": "com.clui.app",
-    "productName": "Clui CC",
+    "appId": "com.showtime.app",
+    "productName": "Showtime",
     "directories": {
       "output": "release"
     },
@@ -46,12 +49,16 @@
       "entitlements": "resources/entitlements.mac.plist",
       "entitlementsInherit": "resources/entitlements.mac.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Clui CC uses your microphone to transcribe voice input locally with Whisper."
+        "NSMicrophoneUsageDescription": "Showtime uses your microphone to transcribe voice input locally with Whisper."
       }
     }
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
@@ -59,11 +66,13 @@
     "electron": "^35.7.5",
     "electron-builder": "^26.8.1",
     "electron-vite": "^3.0.0",
+    "jsdom": "^29.0.1",
     "postcss": "^8.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.7.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^4.1.0"
   }
 }
