@@ -1,0 +1,497 @@
+{
+  "version": "1.0.0",
+  "prdPath": ".loki/openspec-prd-normalized.md",
+  "createdAt": "2026-03-20T12:00:00Z",
+  "lastVerified": null,
+  "categories": {
+    "foundation": {
+      "label": "Group 1: Foundation",
+      "items": [
+        {
+          "id": "chk-1.1",
+          "taskId": "openspec-1.1",
+          "title": "Tailwind CSS v4 Configuration & Design Tokens",
+          "description": "index.css with @import tailwindcss, @theme design tokens, keyframes, shadcn CSS vars, global styles, scrollbar",
+          "priority": "critical",
+          "status": "pass",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/index.css"},
+            {"type": "file_contains", "target": "src/renderer/index.css", "pattern": "@import \"tailwindcss\""},
+            {"type": "file_contains", "target": "src/renderer/index.css", "pattern": "@theme"},
+            {"type": "file_contains", "target": "src/renderer/index.css", "pattern": "--color-studio-bg"},
+            {"type": "file_contains", "target": "src/renderer/index.css", "pattern": "@keyframes tallyPulse"},
+            {"type": "file_contains", "target": "src/renderer/index.css", "pattern": "@keyframes goldenGlow"},
+            {"type": "file_contains", "target": "src/renderer/index.css", "pattern": "--animate-slide-up"},
+            {"type": "file_contains", "target": "electron.vite.config.ts", "pattern": "@tailwindcss/vite"},
+            {"type": "command", "cmd": "npm run build", "expect": "exit 0"}
+          ]
+        },
+        {
+          "id": "chk-1.2",
+          "taskId": "openspec-1.2",
+          "title": "shadcn/ui Setup & Custom Button Variants",
+          "description": "components.json, utils.ts, button/dialog/card/input/textarea/progress components with custom variants",
+          "priority": "critical",
+          "status": "pass",
+          "verification": [
+            {"type": "file_exists", "target": "components.json"},
+            {"type": "file_exists", "target": "src/renderer/lib/utils.ts"},
+            {"type": "file_exists", "target": "src/renderer/ui/button.tsx"},
+            {"type": "file_exists", "target": "src/renderer/ui/dialog.tsx"},
+            {"type": "file_exists", "target": "src/renderer/ui/card.tsx"},
+            {"type": "file_exists", "target": "src/renderer/ui/input.tsx"},
+            {"type": "file_exists", "target": "src/renderer/ui/textarea.tsx"},
+            {"type": "file_exists", "target": "src/renderer/ui/progress.tsx"},
+            {"type": "file_contains", "target": "src/renderer/ui/button.tsx", "pattern": "primary"},
+            {"type": "file_contains", "target": "src/renderer/ui/button.tsx", "pattern": "accent"},
+            {"type": "file_contains", "target": "src/renderer/ui/button.tsx", "pattern": "beat-large"},
+            {"type": "file_contains", "target": "src/renderer/ui/button.tsx", "pattern": "ghost_muted"},
+            {"type": "file_contains", "target": "src/renderer/lib/utils.ts", "pattern": "cn("}
+          ]
+        },
+        {
+          "id": "chk-1.3",
+          "taskId": "openspec-1.3",
+          "title": "Font Imports",
+          "description": "Google Fonts preconnect and links for Inter (300-900) and JetBrains Mono (400-700)",
+          "priority": "critical",
+          "status": "pass",
+          "verification": [
+            {"type": "file_contains", "target": "src/renderer/index.html", "pattern": "fonts.googleapis.com"},
+            {"type": "file_contains", "target": "src/renderer/index.html", "pattern": "fonts.gstatic.com"},
+            {"type": "file_contains", "target": "src/renderer/index.html", "pattern": "Inter"},
+            {"type": "file_contains", "target": "src/renderer/index.html", "pattern": "JetBrains+Mono"}
+          ]
+        },
+        {
+          "id": "chk-1.4",
+          "taskId": "openspec-1.4",
+          "title": "Category Color Utility",
+          "description": "SketchCategory type, CATEGORY_CONFIG, getCategoryToken(), getCategoryHex()",
+          "priority": "major",
+          "status": "pass",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/lib/category-colors.ts"},
+            {"type": "file_contains", "target": "src/renderer/lib/category-colors.ts", "pattern": "SketchCategory"},
+            {"type": "file_contains", "target": "src/renderer/lib/category-colors.ts", "pattern": "getCategoryToken"},
+            {"type": "file_contains", "target": "src/renderer/lib/category-colors.ts", "pattern": "getCategoryHex"}
+          ]
+        }
+      ]
+    },
+    "store_types": {
+      "label": "Group 2: Store & Types",
+      "items": [
+        {
+          "id": "chk-2.1",
+          "taskId": "openspec-2.1",
+          "title": "showStore Updates — New Fields & Actions",
+          "description": "goingLiveActive, writersRoomStep, breathingPauseEndAt fields + new actions",
+          "priority": "critical",
+          "status": "pass",
+          "verification": [
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "goingLiveActive"},
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "writersRoomStep"},
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "breathingPauseEndAt"},
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "enterWritersRoom"},
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "triggerGoingLive"},
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "completeGoingLive"},
+            {"type": "file_contains", "target": "src/renderer/stores/showStore.ts", "pattern": "startBreathingPause"}
+          ]
+        },
+        {
+          "id": "chk-2.2",
+          "taskId": "openspec-2.2",
+          "title": "Shared Types — IPC Channel Constants",
+          "description": "SET_VIEW_MODE, REGISTER_HOTKEY, DAY_BOUNDARY IPC channels",
+          "priority": "major",
+          "status": "pass",
+          "verification": [
+            {"type": "grep_codebase", "pattern": "SET_VIEW_MODE|showtime:set-view-mode", "target": "src/shared/types.ts"}
+          ]
+        },
+        {
+          "id": "chk-2.3",
+          "taskId": "openspec-2.3",
+          "title": "showStore Vitest Unit Tests",
+          "description": "Phase transitions, beat tracking, verdict computation, timer state tests",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/__tests__/stores/showStore.test.ts"},
+            {"type": "command", "cmd": "npx vitest run src/__tests__/stores/showStore.test.ts", "expect": "exit 0"}
+          ]
+        },
+        {
+          "id": "chk-2.4",
+          "taskId": "openspec-2.4",
+          "title": "useTimer Hook Vitest Tests",
+          "description": "Timer formatting, isRunning, progress, auto-completion tests",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/__tests__/hooks/useTimer.test.ts"},
+            {"type": "command", "cmd": "npx vitest run src/__tests__/hooks/useTimer.test.ts", "expect": "exit 0"}
+          ]
+        }
+      ]
+    },
+    "atomic_components": {
+      "label": "Group 3: Atomic Components",
+      "items": [
+        {
+          "id": "chk-3.1",
+          "taskId": "openspec-3.1",
+          "title": "TallyLight Component",
+          "description": "isLive prop, size variants, pulsing animation, Tailwind only",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/TallyLight.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/TallyLight.tsx", "pattern": "isLive"},
+            {"type": "grep_codebase", "pattern": "style=\\{\\{", "target": "src/renderer/components/TallyLight.tsx", "expect": "no_match"}
+          ]
+        },
+        {
+          "id": "chk-3.2",
+          "taskId": "openspec-3.2",
+          "title": "OnAirIndicator Component",
+          "description": "ON AIR text, live/off states, pulsing glow, tally dot",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/OnAirIndicator.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/OnAirIndicator.tsx", "pattern": "ON AIR"},
+            {"type": "grep_codebase", "pattern": "style=\\{\\{", "target": "src/renderer/components/OnAirIndicator.tsx", "expect": "no_match"}
+          ]
+        },
+        {
+          "id": "chk-3.3",
+          "taskId": "openspec-3.3",
+          "title": "ClapperboardBadge Component",
+          "description": "Category-colored badge with act number, duration, status",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/ClapperboardBadge.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/ClapperboardBadge.tsx", "pattern": "getCategoryToken"},
+            {"type": "grep_codebase", "pattern": "style=\\{\\{", "target": "src/renderer/components/ClapperboardBadge.tsx", "expect": "no_match"}
+          ]
+        },
+        {
+          "id": "chk-3.4",
+          "taskId": "openspec-3.4",
+          "title": "BeatCounter Component",
+          "description": "Star rendering, size variants, dimmed mode, beat ignite animation",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/BeatCounter.tsx"},
+            {"type": "grep_codebase", "pattern": "style=\\{\\{", "target": "src/renderer/components/BeatCounter.tsx", "expect": "no_match"}
+          ]
+        },
+        {
+          "id": "chk-3.5",
+          "taskId": "openspec-3.5",
+          "title": "EnergySelector Component",
+          "description": "2x2 energy grid, staggered animation, Tailwind only",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/EnergySelector.tsx"},
+            {"type": "grep_codebase", "pattern": "style=\\{\\{", "target": "src/renderer/components/EnergySelector.tsx", "expect": "no_match"}
+          ]
+        }
+      ]
+    },
+    "core_views": {
+      "label": "Group 4: Core Views",
+      "items": [
+        {
+          "id": "chk-4.1",
+          "taskId": "openspec-4.1",
+          "title": "DarkStudioView",
+          "description": "Empty stage with spotlight, CTA button, blur entrance animation",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/views/DarkStudioView.tsx"},
+            {"type": "file_contains", "target": "src/renderer/views/DarkStudioView.tsx", "pattern": "enterWritersRoom"}
+          ]
+        },
+        {
+          "id": "chk-4.2",
+          "taskId": "openspec-4.2",
+          "title": "GoingLiveTransition",
+          "description": "ON AIR ignite, date headline, auto-dismiss overlay",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/views/GoingLiveTransition.tsx"},
+            {"type": "file_contains", "target": "src/renderer/views/GoingLiveTransition.tsx", "pattern": "onComplete"}
+          ]
+        },
+        {
+          "id": "chk-4.3",
+          "taskId": "openspec-4.3",
+          "title": "IntermissionView",
+          "description": "WE'LL BE RIGHT BACK card, rotating affirmation, no timer",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/IntermissionView.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/IntermissionView.tsx", "pattern": "INTERMISSION"}
+          ]
+        },
+        {
+          "id": "chk-4.4",
+          "taskId": "openspec-4.4",
+          "title": "ShowVerdict Component",
+          "description": "Four verdict states with colors and animations",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/ShowVerdict.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/ShowVerdict.tsx", "pattern": "DAY_WON"}
+          ]
+        },
+        {
+          "id": "chk-4.5",
+          "taskId": "openspec-4.5",
+          "title": "DirectorMode Component",
+          "description": "Modal overlay, 4 compassionate options, no confirmation",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/DirectorMode.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/DirectorMode.tsx", "pattern": "Director"}
+          ]
+        },
+        {
+          "id": "chk-4.6",
+          "taskId": "openspec-4.6",
+          "title": "BeatCheckModal Component",
+          "description": "Presence question, lock/skip, golden spotlight, auto-dismiss",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/BeatCheckModal.tsx"},
+            {"type": "file_contains", "target": "src/renderer/components/BeatCheckModal.tsx", "pattern": "beatCheckPending"}
+          ]
+        },
+        {
+          "id": "chk-4.7",
+          "taskId": "openspec-4.7",
+          "title": "TimerPanel",
+          "description": "64px timer, clapperboard badge, progress bar, action buttons",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/panels/TimerPanel.tsx"},
+            {"type": "file_contains", "target": "src/renderer/panels/TimerPanel.tsx", "pattern": "useTimer"}
+          ]
+        },
+        {
+          "id": "chk-4.8",
+          "taskId": "openspec-4.8",
+          "title": "LineupPanel & ActCard",
+          "description": "Full/sidebar variants, status-aware rows, reorder/remove",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/panels/LineupPanel.tsx"},
+            {"type": "file_exists", "target": "src/renderer/components/ActCard.tsx"}
+          ]
+        },
+        {
+          "id": "chk-4.9",
+          "taskId": "openspec-4.9",
+          "title": "PillView",
+          "description": "320x48 floating pill, tally light, timer, beat counter",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/views/PillView.tsx"},
+            {"type": "file_contains", "target": "src/renderer/views/PillView.tsx", "pattern": "toggleExpanded"}
+          ]
+        },
+        {
+          "id": "chk-4.10",
+          "taskId": "openspec-4.10",
+          "title": "ExpandedView",
+          "description": "560x620 two-column layout composing all panels",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/views/ExpandedView.tsx"},
+            {"type": "file_contains", "target": "src/renderer/views/ExpandedView.tsx", "pattern": "TimerPanel"}
+          ]
+        },
+        {
+          "id": "chk-4.11",
+          "taskId": "openspec-4.11",
+          "title": "WritersRoomView",
+          "description": "3-step flow: energy, plan dump, lineup preview with Claude integration",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/views/WritersRoomView.tsx"},
+            {"type": "file_contains", "target": "src/renderer/views/WritersRoomView.tsx", "pattern": "writersRoomStep"}
+          ]
+        },
+        {
+          "id": "chk-4.12",
+          "taskId": "openspec-4.12",
+          "title": "StrikeView",
+          "description": "Verdict display, stats, act recap, new show button",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/views/StrikeView.tsx"},
+            {"type": "file_contains", "target": "src/renderer/views/StrikeView.tsx", "pattern": "verdict"}
+          ]
+        }
+      ]
+    },
+    "app_shell": {
+      "label": "Group 5: App Shell & Integration",
+      "items": [
+        {
+          "id": "chk-5.1",
+          "taskId": "openspec-5.1",
+          "title": "App.tsx View Router & Tailwind Migration",
+          "description": "AnimatePresence view routing, all inline styles replaced",
+          "priority": "critical",
+          "status": "pending",
+          "verification": [
+            {"type": "file_contains", "target": "src/renderer/App.tsx", "pattern": "AnimatePresence"},
+            {"type": "file_contains", "target": "src/renderer/App.tsx", "pattern": "DarkStudioView"},
+            {"type": "grep_codebase", "pattern": "style=\\{\\{", "target": "src/renderer/App.tsx", "expect": "no_match"}
+          ]
+        },
+        {
+          "id": "chk-5.2",
+          "taskId": "openspec-5.2",
+          "title": "IPC Bridge Updates",
+          "description": "setViewMode, onDayBoundary, vibrancy settings, global hotkey",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_contains", "target": "src/preload/index.ts", "pattern": "setViewMode"},
+            {"type": "file_contains", "target": "src/main/index.ts", "pattern": "vibrancy"}
+          ]
+        }
+      ]
+    },
+    "clui_cleanup": {
+      "label": "Group 6: CLUI Cleanup",
+      "items": [
+        {
+          "id": "chk-6.1",
+          "taskId": "openspec-6.1",
+          "title": "Delete CLUI Dead Weight Files",
+          "description": "Remove ConversationView, InputBar, AttachmentChips, SlashCommandMenu, PopoverLayer, PermissionDeniedCard, CalendarPanel",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "src/renderer/components/ConversationView.tsx", "expect": "not_exists"},
+            {"type": "file_exists", "target": "src/renderer/components/InputBar.tsx", "expect": "not_exists"},
+            {"type": "command", "cmd": "npm run build", "expect": "exit 0"}
+          ]
+        },
+        {
+          "id": "chk-6.2",
+          "taskId": "openspec-6.2",
+          "title": "Simplify sessionStore to Single Session",
+          "description": "Remove tab array, single session object",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "grep_codebase", "pattern": "tabs\\[", "target": "src/renderer/stores/sessionStore.ts", "expect": "no_match"}
+          ]
+        },
+        {
+          "id": "chk-6.3",
+          "taskId": "openspec-6.3",
+          "title": "Simplify theme.ts",
+          "description": "Remove Tailwind-duplicated constants, keep runtime-only values",
+          "priority": "minor",
+          "status": "pending",
+          "verification": [
+            {"type": "command", "cmd": "npm run build", "expect": "exit 0"}
+          ]
+        }
+      ]
+    },
+    "testing": {
+      "label": "Group 7: Testing",
+      "items": [
+        {
+          "id": "chk-7.1",
+          "taskId": "openspec-7.1",
+          "title": "Vitest Component Unit Tests",
+          "description": "BeatCounter, ClapperboardBadge, OnAirIndicator, verdict logic tests",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "command", "cmd": "npx vitest run src/__tests__/components/", "expect": "exit 0"}
+          ]
+        },
+        {
+          "id": "chk-7.2",
+          "taskId": "openspec-7.2",
+          "title": "Playwright E2E — App Launch & Dark Studio",
+          "description": "App launches, Dark Studio visible, Writer's Room transition",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "e2e/app-launch.spec.ts"},
+            {"type": "file_exists", "target": "e2e/dark-studio.spec.ts"}
+          ]
+        },
+        {
+          "id": "chk-7.3",
+          "taskId": "openspec-7.3",
+          "title": "Playwright E2E — Writer's Room Flow",
+          "description": "Energy selection, plan dump, lineup preview, Going Live transition",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "e2e/writers-room.spec.ts"}
+          ]
+        },
+        {
+          "id": "chk-7.4",
+          "taskId": "openspec-7.4",
+          "title": "Playwright E2E — Live Show & Beat Check",
+          "description": "Timer, act completion, beat check modal, pill/expanded toggle",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "e2e/act-timer.spec.ts"},
+            {"type": "file_exists", "target": "e2e/beat-check.spec.ts"}
+          ]
+        },
+        {
+          "id": "chk-7.5",
+          "taskId": "openspec-7.5",
+          "title": "Playwright E2E — Intermission, Director & Strike",
+          "description": "Intermission flow, director options, all verdict states",
+          "priority": "major",
+          "status": "pending",
+          "verification": [
+            {"type": "file_exists", "target": "e2e/intermission.spec.ts"},
+            {"type": "file_exists", "target": "e2e/director-mode.spec.ts"},
+            {"type": "file_exists", "target": "e2e/strike.spec.ts"}
+          ]
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total": 35,
+    "pass": 7,
+    "pending": 28,
+    "fail": 0
+  }
+}
