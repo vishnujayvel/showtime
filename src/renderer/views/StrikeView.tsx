@@ -43,7 +43,7 @@ export function StrikeView() {
 
   return (
     <motion.div
-      className="w-[560px] max-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col relative"
+      className="w-[560px] max-h-[680px] bg-surface overflow-hidden flex flex-col relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}

@@ -100,24 +100,6 @@ export function getCategoryClasses(sketch: string): CategoryClasses {
   return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).classes
 }
 
-/** Returns the Tailwind color token name (e.g. `cat-deep`) for a sketch category. */
-export function getCategoryToken(sketch: string): string {
-  return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).token
-}
-
-/** Returns the hex color for a sketch category. */
-export function getCategoryHex(sketch: string): string {
-  return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).hex
-}
-
-/**
- * Backwards-compatible map of sketch names to hex colors.
- * Prefer `getCategoryClasses()` or `getCategoryHex()` in new code.
- */
-export const SKETCH_COLORS: Record<string, string> = Object.fromEntries(
-  Object.entries(CATEGORY_MAP).map(([name, config]) => [name, config.hex]),
-)
-
 /** All known sketch category names. */
 export const SKETCH_CATEGORIES: SketchCategory[] = [
   'Deep Work',

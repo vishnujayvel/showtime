@@ -169,12 +169,12 @@ function recordTimeline(eventType: string, showId: string, actId?: string | null
       showId,
       actId: actId ?? null,
       eventType,
-      actualStart: extra?.actualStart ?? null,
-      actualEnd: extra?.actualEnd ?? null,
-      plannedStart: extra?.plannedStart ?? null,
-      plannedEnd: extra?.plannedEnd ?? null,
-      driftSeconds: extra?.driftSeconds ?? null,
-      metadata: extra?.metadata ?? null,
+      actualStart: (extra?.actualStart as number | null) ?? null,
+      actualEnd: (extra?.actualEnd as number | null) ?? null,
+      plannedStart: (extra?.plannedStart as number | null) ?? null,
+      plannedEnd: (extra?.plannedEnd as number | null) ?? null,
+      driftSeconds: (extra?.driftSeconds as number | null) ?? null,
+      metadata: (extra?.metadata as Record<string, unknown> | null) ?? null,
     })
   } catch { /* ignore if clui not ready */ }
 }
@@ -663,14 +663,3 @@ export const useShowStore = create<ShowStore>()(
 export const selectCurrentAct = (s: ShowStore): Act | undefined =>
   s.acts.find((a) => a.id === s.currentActId)
 
-export const selectNextAct = (s: ShowStore): Act | undefined =>
-  s.acts.find((a) => a.status === 'upcoming')
-
-export const selectCompletedActs = (s: ShowStore): Act[] =>
-  s.acts.filter((a) => a.status === 'completed')
-
-export const selectSkippedActs = (s: ShowStore): Act[] =>
-  s.acts.filter((a) => a.status === 'skipped')
-
-export const selectBeatsRemaining = (s: ShowStore): number =>
-  Math.max(0, s.beatThreshold - s.beatsLocked)

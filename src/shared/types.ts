@@ -370,7 +370,6 @@ export const IPC = {
   RESPOND_PERMISSION: 'clui:respond-permission',
   INIT_SESSION: 'clui:init-session',
   RESET_TAB_SESSION: 'clui:reset-tab-session',
-  ANIMATE_HEIGHT: 'clui:animate-height',
   LIST_SESSIONS: 'clui:list-sessions',
   LOAD_SESSION: 'clui:load-session',
 
@@ -387,8 +386,6 @@ export const IPC = {
   RATE_LIMIT: 'clui:rate-limit',
 
   // Window management
-  RESIZE_HEIGHT: 'clui:resize-height',
-  SET_WINDOW_WIDTH: 'clui:set-window-width',
   HIDE_WINDOW: 'clui:hide-window',
   WINDOW_SHOWN: 'clui:window-shown',
   IS_VISIBLE: 'clui:is-visible',

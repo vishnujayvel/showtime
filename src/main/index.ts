@@ -292,20 +292,6 @@ function toggleWindow(source = 'unknown'): void {
 }
 
 // ─── Resize ───
-// Dynamic sizing is handled by SET_VIEW_MODE via setBounds().
-// These legacy IPC handlers are kept as no-ops for backward compatibility.
-
-ipcMain.on(IPC.RESIZE_HEIGHT, () => {
-  // No-op — sizing handled by SET_VIEW_MODE
-})
-
-ipcMain.on(IPC.SET_WINDOW_WIDTH, () => {
-  // No-op — sizing handled by SET_VIEW_MODE
-})
-
-ipcMain.handle(IPC.ANIMATE_HEIGHT, () => {
-  // No-op — kept for API compat, animation handled purely in renderer
-})
 
 ipcMain.on(IPC.HIDE_WINDOW, () => {
   mainWindow?.hide()

@@ -9,12 +9,7 @@ import { IntermissionView } from '../components/IntermissionView'
 import { DirectorMode } from '../components/DirectorMode'
 import { RundownBar } from '../components/RundownBar'
 import { MuteToggle } from '../components/MuteToggle'
-
-function formatDateLabel(): string {
-  return new Date()
-    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    .toUpperCase()
-}
+import { formatDateLabel } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -38,7 +33,7 @@ export function ExpandedView() {
 
   return (
     <motion.div
-      className="w-[560px] min-h-[620px] bg-surface rounded-xl overflow-hidden flex flex-col"
+      className="w-[560px] min-h-[620px] bg-surface overflow-hidden flex flex-col"
       initial={{ scale: 0.9, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 20 }}
