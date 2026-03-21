@@ -409,11 +409,11 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
     expect(bgColor).toMatch(/^#0{6}(00)?$/)
   })
 
-  test('#10 window uses fixed canvas size', async () => {
+  test('#10 window uses content-tight sizing', async () => {
     const bwHandle = await app.browserWindow(page)
     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    // Fixed canvas: 600x740 — CSS handles content sizing inside
-    expect(bounds.width).toBe(600)
+    // Content-tight: DarkStudio/Onboarding launch in 'full' mode (560x740)
+    expect(bounds.width).toBe(560)
     expect(bounds.height).toBe(740)
   })
 
@@ -947,8 +947,8 @@ test.describe('Onboarding (#15)', () => {
 // ─── Dynamic Window Bounds (#10) ───
 
 test.describe('Dynamic Window Bounds (#10)', () => {
-  test('window maintains fixed canvas across view changes', async () => {
-    // Fixed canvas: 600x740 regardless of which view is rendered
+  test('window resizes to match view content', async () => {
+    // Content-tight sizing: window matches view dimensions
     await page.evaluate(() => {
       localStorage.setItem('showtime-onboarding-complete', 'true')
       localStorage.removeItem('showtime-show-state')
@@ -958,10 +958,11 @@ test.describe('Dynamic Window Bounds (#10)', () => {
 
     const bwHandle = await app.browserWindow(page)
     const bounds = await bwHandle.evaluate((bw) => bw.getBounds())
-    expect(bounds.width).toBe(600)
-    expect(bounds.height).toBe(740)
+    // DarkStudio launches in 'expanded' mode (560x620) or 'full' (560x740)
+    expect(bounds.width).toBe(560)
+    expect([620, 740]).toContain(bounds.height)
 
-    // Transition to Writer's Room — canvas size should NOT change
+    // Transition to Writer's Room — window stays 'full' (560x740)
     const cta = page.getByText("Enter the Writer's Room")
     if (await cta.isVisible({ timeout: 5000 }).catch(() => false)) {
       await cta.click()
@@ -969,7 +970,7 @@ test.describe('Dynamic Window Bounds (#10)', () => {
     }
 
     const boundsAfter = await bwHandle.evaluate((bw) => bw.getBounds())
-    expect(boundsAfter.width).toBe(600)
+    expect(boundsAfter.width).toBe(560)
     expect(boundsAfter.height).toBe(740)
   })
 })
