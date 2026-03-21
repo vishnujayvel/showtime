@@ -8,7 +8,7 @@ interface VerdictConfig {
   message: string
   colorClass: string
   animationClass?: string
-  spotlightGradient?: string
+  spotlightClass?: string
 }
 
 const VERDICT_CONFIG: Record<ShowVerdictType, VerdictConfig> = {
@@ -17,7 +17,7 @@ const VERDICT_CONFIG: Record<ShowVerdictType, VerdictConfig> = {
     message: 'You showed up and you were present.',
     colorClass: 'text-beat',
     animationClass: 'animate-golden-glow',
-    spotlightGradient: 'radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)',
+    spotlightClass: 'spotlight-verdict',
   },
   SOLID_SHOW: {
     headline: 'SOLID SHOW',
@@ -47,10 +47,9 @@ export function ShowVerdict({ verdict, beatsLocked, beatThreshold }: ShowVerdict
 
   return (
     <div className="flex flex-col items-center text-center py-8 relative">
-      {config.spotlightGradient && (
+      {config.spotlightClass && (
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: config.spotlightGradient }}
+          className={cn('absolute inset-0 pointer-events-none', config.spotlightClass)}
         />
       )}
 

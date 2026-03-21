@@ -6,14 +6,9 @@ import { EnergySelector } from '../components/EnergySelector'
 import { LineupPanel } from '../panels/LineupPanel'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
+import { formatDateLabel } from '../lib/utils'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
-
-function formatDateLabel(): string {
-  return new Date()
-    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    .toUpperCase()
-}
 
 export function WritersRoomView() {
   const energy = useShowStore((s) => s.energy)
@@ -129,7 +124,7 @@ ${planText}`
 
   return (
     <div
-      className="w-[560px] min-h-[680px] bg-surface rounded-xl overflow-hidden flex flex-col"
+      className="w-[560px] min-h-[680px] bg-surface overflow-hidden flex flex-col"
     >
       {/* Title bar */}
       <div

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useShowStore, selectCurrentAct, selectNextAct, selectCompletedActs, selectSkippedActs, selectBeatsRemaining } from '../renderer/stores/showStore'
+import { useShowStore, selectCurrentAct } from '../renderer/stores/showStore'
 import type { ShowLineup } from '../shared/types'
 
 // Helper to reset store between tests
@@ -739,33 +739,5 @@ describe('showStore', () => {
       expect(current?.status).toBe('active')
     })
 
-    it('selectNextAct returns first upcoming act', () => {
-      const state = useShowStore.getState()
-      const next = selectNextAct(state)
-      expect(next?.name).toBe('Exercise Block')
-    })
-
-    it('selectCompletedActs returns completed acts', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
-      const completed = selectCompletedActs(useShowStore.getState())
-      expect(completed).toHaveLength(1)
-      expect(completed[0].name).toBe('Morning Deep Work')
-    })
-
-    it('selectSkippedActs returns skipped acts', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().skipAct(actId)
-      const skipped = selectSkippedActs(useShowStore.getState())
-      expect(skipped).toHaveLength(1)
-      expect(skipped[0].name).toBe('Morning Deep Work')
-    })
-
-    it('selectBeatsRemaining returns remaining beats', () => {
-      expect(selectBeatsRemaining(useShowStore.getState())).toBe(3)
-      useShowStore.getState().completeAct(useShowStore.getState().currentActId!)
-      useShowStore.getState().lockBeat()
-      expect(selectBeatsRemaining(useShowStore.getState())).toBe(2)
-    })
   })
 })

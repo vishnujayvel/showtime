@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { getCategoryClasses } from '../lib/category-colors'
 
@@ -10,17 +10,20 @@ export function MiniRundownStrip() {
 
   const [nowPercent, setNowPercent] = useState(0)
 
-  // Only render during live/intermission
-  if (phase !== 'live' && phase !== 'intermission') return null
-  if (acts.length === 0) return null
+  const shouldRender = (phase === 'live' || phase === 'intermission') && acts.length > 0
 
-  const sortedActs = [...acts].sort((a, b) => a.order - b.order)
-  const totalPlannedMs = sortedActs.reduce((sum, a) => sum + a.durationMinutes * 60 * 1000, 0)
-  if (totalPlannedMs === 0) return null
+  const sortedActs = useMemo(
+    () => (shouldRender ? [...acts].sort((a, b) => a.order - b.order) : []),
+    [acts, shouldRender],
+  )
+  const totalPlannedMs = useMemo(
+    () => sortedActs.reduce((sum, a) => sum + a.durationMinutes * 60 * 1000, 0),
+    [sortedActs],
+  )
 
-  // Update NOW marker position
+  // Update NOW marker position — hook must be called unconditionally
   useEffect(() => {
-    if (!showStartedAt) return
+    if (!shouldRender || totalPlannedMs === 0 || !showStartedAt) return
     const update = () => {
       const elapsed = Date.now() - showStartedAt
       setNowPercent(Math.min(100, (elapsed / totalPlannedMs) * 100))
@@ -28,7 +31,9 @@ export function MiniRundownStrip() {
     update()
     const interval = setInterval(update, 1000)
     return () => clearInterval(interval)
-  }, [showStartedAt, totalPlannedMs])
+  }, [showStartedAt, totalPlannedMs, shouldRender])
+
+  if (!shouldRender || totalPlannedMs === 0) return null
 
   return (
     <div className="mx-3 mb-1 relative h-1 flex rounded-full overflow-hidden">

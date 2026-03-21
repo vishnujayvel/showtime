@@ -61,7 +61,7 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
 
   return (
     <div
-      className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between rounded-xl overflow-hidden relative"
+      className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between overflow-hidden relative"
     >
       {/* Invisible drag handle */}
       <div className="absolute top-0 left-0 right-0 h-8 drag-region z-10" />

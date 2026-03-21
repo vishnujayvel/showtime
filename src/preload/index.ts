@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
 import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, Attachment, SessionMeta, CatalogPlugin, SessionLoadMessage } from '../shared/types'
+import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload } from '../main/data/types'
 
 export interface CluiAPI {
   // ─── Request-response (renderer → main) ───
@@ -38,9 +39,6 @@ export interface CluiAPI {
   quit(): void
 
   // ─── Window management ───
-  resizeHeight(height: number): void
-  setWindowWidth(width: number): void
-  animateHeight(from: number, to: number, durationMs: number): Promise<void>
   hideWindow(): void
   isVisible(): Promise<boolean>
   // ─── Event listeners (main → renderer) ───
@@ -61,15 +59,15 @@ export interface CluiAPI {
   onToggleExpanded(callback: () => void): () => void
 
   // ─── Showtime data persistence ───
-  dataHydrate(): Promise<any | null>
-  dataSync(snapshot: any): void
-  dataFlush(snapshot?: any): Promise<void>
-  timelineRecord(event: any): void
-  getTimelineEvents(showId: string): Promise<any[]>
+  dataHydrate(): Promise<ShowStateSnapshot | null>
+  dataSync(snapshot: ShowStateSnapshot): void
+  dataFlush(snapshot?: ShowStateSnapshot): Promise<void>
+  timelineRecord(event: TimelineEventInput): void
+  getTimelineEvents(showId: string): Promise<TimelineEventInput[]>
   getTimelineDrift(showId: string): Promise<number>
-  getTimelineDriftPerAct(showId: string): Promise<any[]>
-  saveClaudeContext(ctx: any): void
-  getClaudeContext(showId: string): Promise<any | null>
+  getTimelineDriftPerAct(showId: string): Promise<ActDriftResult[]>
+  saveClaudeContext(ctx: ClaudeContextPayload): void
+  getClaudeContext(showId: string): Promise<ClaudeContextPayload | null>
 
   // ─── Test-only (NODE_ENV=test) ───
   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
@@ -119,12 +117,8 @@ const api: CluiAPI = {
   quit: () => ipcRenderer.send(IPC.APP_QUIT),
 
   // ─── Window management ───
-  resizeHeight: (height) => ipcRenderer.send(IPC.RESIZE_HEIGHT, height),
-  animateHeight: (from, to, durationMs) =>
-    ipcRenderer.invoke(IPC.ANIMATE_HEIGHT, { from, to, durationMs }),
   hideWindow: () => ipcRenderer.send(IPC.HIDE_WINDOW),
   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
-  setWindowWidth: (width) => ipcRenderer.send(IPC.SET_WINDOW_WIDTH, width),
 
   // ─── Event listeners ───
   onEvent: (callback) => {
@@ -187,13 +181,13 @@ const api: CluiAPI = {
 
   // ─── Showtime data persistence ───
   dataHydrate: () => ipcRenderer.invoke(IPC.DATA_HYDRATE),
-  dataSync: (snapshot: any) => ipcRenderer.send(IPC.DATA_SYNC, snapshot),
-  dataFlush: (snapshot?: any) => ipcRenderer.invoke(IPC.DATA_FLUSH, snapshot),
-  timelineRecord: (event: any) => ipcRenderer.send(IPC.TIMELINE_RECORD, event),
+  dataSync: (snapshot: ShowStateSnapshot) => ipcRenderer.send(IPC.DATA_SYNC, snapshot),
+  dataFlush: (snapshot?: ShowStateSnapshot) => ipcRenderer.invoke(IPC.DATA_FLUSH, snapshot),
+  timelineRecord: (event: TimelineEventInput) => ipcRenderer.send(IPC.TIMELINE_RECORD, event),
   getTimelineEvents: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_EVENTS, showId),
   getTimelineDrift: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT, showId),
   getTimelineDriftPerAct: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT_PER_ACT, showId),
-  saveClaudeContext: (ctx: any) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
+  saveClaudeContext: (ctx: ClaudeContextPayload) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
   getClaudeContext: (showId: string) => ipcRenderer.invoke(IPC.CLAUDE_CONTEXT_GET, showId),
 
   // Test-only IPC (NODE_ENV=test)
