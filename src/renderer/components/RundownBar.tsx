@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { getCategoryClasses } from '../lib/category-colors'
@@ -34,25 +34,26 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
   const [driftSeconds, setDriftSeconds] = useState(0)
   const [nowPercent, setNowPercent] = useState(0)
 
-  // Only render during live/intermission/director phases
-  if (phase !== 'live' && phase !== 'intermission' && phase !== 'director' && phase !== 'strike') {
-    return null
-  }
-  if (acts.length === 0) return null
+  const isVisible = (phase === 'live' || phase === 'intermission' || phase === 'director' || phase === 'strike') && acts.length > 0
 
-  const sortedActs = [...acts].sort((a, b) => a.order - b.order)
-  const totalPlannedMs = sortedActs.reduce((sum, a) => sum + a.durationMinutes * 60 * 1000, 0)
-  if (totalPlannedMs === 0) return null
-
+  const sortedActs = useMemo(
+    () => [...acts].sort((a, b) => a.order - b.order),
+    [acts],
+  )
+  const totalPlannedMs = useMemo(
+    () => sortedActs.reduce((sum, a) => sum + a.durationMinutes * 60 * 1000, 0),
+    [sortedActs],
+  )
   const currentActIndex = sortedActs.findIndex((a) => a.id === currentActId)
 
   // Fetch drift on act lifecycle changes
   const fetchDrift = useCallback(async () => {
+    if (!isVisible) return
     try {
       const d = await window.clui.getTimelineDrift(showDate)
       setDriftSeconds(d)
     } catch { /* ignore */ }
-  }, [showDate])
+  }, [showDate, isVisible])
 
   useEffect(() => {
     fetchDrift()
@@ -60,7 +61,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
 
   // Update NOW marker position on a 1-second interval
   useEffect(() => {
-    if (!showStartedAt || phase === 'strike') return
+    if (!showStartedAt || phase === 'strike' || !isVisible || totalPlannedMs === 0) return
     const update = () => {
       const elapsed = Date.now() - showStartedAt
       const pct = Math.min(100, (elapsed / totalPlannedMs) * 100)
@@ -69,7 +70,10 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
     update()
     const interval = setInterval(update, 1000)
     return () => clearInterval(interval)
-  }, [showStartedAt, totalPlannedMs, phase])
+  }, [showStartedAt, totalPlannedMs, phase, isVisible])
+
+  // All hooks above — conditional returns below
+  if (!isVisible || totalPlannedMs === 0) return null
 
   return (
     <div className={variant === 'full' ? 'px-4 my-2' : ''} data-testid="rundown-bar">
