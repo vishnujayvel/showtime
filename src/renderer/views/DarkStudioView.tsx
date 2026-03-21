@@ -9,14 +9,11 @@ export function DarkStudioView() {
     <div
       className="min-h-screen bg-studio-bg flex flex-col items-center justify-center relative"
     >
+      {/* Invisible drag handle */}
+      <div className="absolute top-0 left-0 right-0 h-8 drag-region" />
+
       {/* Spotlight overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 400px 350px at 50% 35%, rgba(217,119,87,0.06) 0%, transparent 70%)',
-        }}
-      />
+      <div className="absolute inset-0 pointer-events-none spotlight-accent" />
 
       <motion.div
         initial={{ opacity: 0, filter: 'blur(8px)' }}

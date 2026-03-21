@@ -261,3 +261,9 @@ textarea:focus {
 .no-drag {
   -webkit-app-region: no-drag;
 }
+
+/* ─── Spotlight Accent Gradient ─── */
+
+.spotlight-accent {
+  background: radial-gradient(ellipse 400px 350px at 50% 35%, rgba(217,119,87,0.06) 0%, transparent 70%);
+}

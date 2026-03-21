@@ -10,6 +10,7 @@ import { log as _log, LOG_FILE, flushLogs } from './logger'
 import { getCliEnv } from './cli-env'
 import { IPC } from '../shared/types'
 import type { RunOptions, NormalizedEvent, EnrichedError } from '../shared/types'
+import { computeAnchorFromBounds, computeBoundsFromAnchor, clampToWorkArea } from './window-geometry'
 
 const DEBUG_MODE = process.env.CLUI_DEBUG === '1'
 const SPACES_DEBUG = DEBUG_MODE || process.env.CLUI_SPACES_DEBUG === '1'
@@ -101,28 +102,9 @@ controlPlane.on('error', (tabId: string, error: EnrichedError) => {
 
 // ─── Window Creation ───
 
-function computeAnchorFromBounds(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number } {
-  return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }
-}
-
-function computeBoundsFromAnchor(anchor: { x: number; y: number }, dims: { width: number; height: number }): { x: number; y: number; width: number; height: number } {
-  return {
-    x: Math.round(anchor.x - dims.width / 2),
-    y: Math.round(anchor.y - dims.height),
-    width: dims.width,
-    height: dims.height,
-  }
-}
-
 function clampToDisplay(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } {
   const display = screen.getDisplayMatching(bounds as Electron.Rectangle)
-  const wa = display.workArea
-  return {
-    x: Math.max(wa.x, Math.min(bounds.x, wa.x + wa.width - bounds.width)),
-    y: Math.max(wa.y, Math.min(bounds.y, wa.y + wa.height - bounds.height)),
-    width: bounds.width,
-    height: bounds.height,
-  }
+  return clampToWorkArea(bounds, display.workArea)
 }
 
 function applyViewMode(mode: string): void {
@@ -192,10 +174,25 @@ function createWindow(): void {
   mainWindow.setAlwaysOnTop(true, 'screen-saver')
 
   // isDragging guard: track user drags to prevent setBounds during drag
+  let dragTimeout: ReturnType<typeof setTimeout> | null = null
   mainWindow.on('will-move', () => {
     isDragging = true
+    // Safety valve: if 'moved' never fires, reset after 5 seconds
+    if (dragTimeout) clearTimeout(dragTimeout)
+    dragTimeout = setTimeout(() => {
+      if (isDragging) {
+        log('Showtime: isDragging safety valve triggered (5s timeout)')
+        isDragging = false
+        if (deferredViewMode) {
+          const mode = deferredViewMode
+          deferredViewMode = null
+          applyViewMode(mode)
+        }
+      }
+    }, 5000)
   })
   mainWindow.on('moved', () => {
+    if (dragTimeout) { clearTimeout(dragTimeout); dragTimeout = null }
     isDragging = false
     if (mainWindow && !mainWindow.isDestroyed()) {
       anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
