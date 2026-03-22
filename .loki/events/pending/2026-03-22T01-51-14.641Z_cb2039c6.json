@@ -1,0 +1,8 @@
+{
+  "id": "cb2039c6",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-22T01:51:14.641Z",
+  "payload": {"action":"load","count":"0","prd_provided":"true"},
+  "version": "1.0"
+}
