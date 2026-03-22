@@ -101,21 +101,22 @@ These BrowserWindow settings are **mandatory**:
 
 ```typescript
 const win = new BrowserWindow({
-  vibrancy: 'under-window',
-  visualEffectState: 'active',
   backgroundColor: '#00000000',
   frame: false,
-  // Do NOT use titleBarStyle: 'hiddenInset' — it conflicts with frame: false
-  // and creates ghost native traffic lights behind custom UI
-  hasShadow: true,
   transparent: true,
+  hasShadow: true,
+  // Do NOT use vibrancy — it creates a native NSVisualEffectView that bleeds
+  // through as a visible gray border around content. Paint backgrounds in CSS.
+  // Do NOT use titleBarStyle: 'hiddenInset' — conflicts with frame: false
   // ... other settings
 });
 ```
 
 - HTML, body, and React root: `background-color: transparent`
+- **All views must use `w-full h-full`** to fill the window edge-to-edge. Never use hardcoded `w-[560px]`. The window IS the content — no gaps.
 - Draggable regions: Use CSS classes `.drag-region` and `.no-drag` (defined in `index.css`). **Never** use inline `style={{ WebkitAppRegion: 'drag' }}`.
 - **Do NOT use `setIgnoreMouseEvents`**. Content-tight window sizing eliminates the need for click-through.
+- **Do NOT use Electron `vibrancy`**. It creates visible borders. Use CSS backgrounds instead.
 - Dark mode sync: Listen to `nativeTheme.on('updated')`, broadcast to renderer via IPC
 - System font fallback: `-apple-system, BlinkMacSystemFont` at root CSS level
 
