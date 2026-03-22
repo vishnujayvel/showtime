@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-22T01:45:42Z
+Updated: 2026-03-22T02:04:49Z
 
 ## Current State
 
@@ -12,9 +12,9 @@ Updated: 2026-03-22T01:45:42Z
 
 ## Last Completed Task
 
-- Last commit: fix: remove vibrancy border bug + make views fill window edge-to-edge
-- Files changed: src/main/index.ts, src/renderer/App.tsx, src/renderer/views/DarkStudioView.tsx, src/renderer/views/ExpandedView.tsx, src/renderer/views/OnboardingView.tsx
-  (+2 more)
+- Last commit: feat: wave 2 — multi-size pill, history view, planning language (#28, #26, #27)
+- Files changed: e2e/showtime.test.ts, src/__tests__/audioAndPolish.test.tsx, src/__tests__/components.test.tsx, src/__tests__/showStore.test.ts, src/__tests__/stateMachine.test.ts
+  (+17 more)
 
 ## Active Blockers
 

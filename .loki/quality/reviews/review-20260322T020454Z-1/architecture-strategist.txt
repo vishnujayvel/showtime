@@ -1,0 +1,10 @@
+VERDICT: FAIL
+
+FINDINGS:
+
+- [High] Renderer imports type directly from main process (`../../main/data/types`), violating Electron's process boundary. `ShowHistoryEntry` should live in `shared/types.ts` where both processes can safely reference it. (src/renderer/views/HistoryView.tsx:6)
+- [Medium] `prevViewTier` is exported but never imported or called anywhere — dead code shipped in the shared types module. (src/shared/types.ts:312)
+- [Medium] `selectIsExpanded` re-derives the old boolean abstraction from `viewTier`, and new code in App.tsx depends on it (onboarding guard). New code should use `viewTier` directly rather than building on the backward-compat shim. (src/renderer/stores/showStore.ts:691, src/renderer/App.tsx:109)
+- [Medium] Six redundant `as ViewTier` casts in showStore — the store's generic typing should infer `ViewTier` from `initialState` without manual assertions. These casts suppress type errors rather than fixing them. (src/renderer/stores/showStore.ts:236, 488, 594, 602, 619, 679)
+- [Low] `tierToViewMode` accepts `phase: string` instead of `ShowPhase`, losing type narrowing at the call site. (src/renderer/App.tsx:17)
+- [Low] Unused import: `count` is imported from `drizzle-orm` but never referenced. (src/main/data/ShowRepository.ts:1)

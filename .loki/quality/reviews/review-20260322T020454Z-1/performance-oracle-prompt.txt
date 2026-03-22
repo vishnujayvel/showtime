@@ -1,0 +1,2119 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/STATUS.txt
+.loki/app-runner/detection.json
+.loki/autonomy-state.json
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+.loki/council/state.json
+.loki/dashboard-state.json
+.loki/dashboard/dashboard.pid
+.loki/events.jsonl
+.loki/logs/agent-audit.jsonl
+.loki/logs/audit-20260321.jsonl
+.loki/metrics/efficiency/iteration-1.json
+.loki/pids/79933.json
+.loki/prd-observations.md
+.loki/quality/gate-failure-count.json
+.loki/quality/static-analysis.json
+.loki/quality/test-results.json
+.loki/queue/completed.json
+.loki/state/checkpoints/index.jsonl
+.loki/state/resources.json
+e2e/showtime.test.ts
+src/__tests__/audioAndPolish.test.tsx
+src/__tests__/components.test.tsx
+src/__tests__/showStore.test.ts
+src/__tests__/stateMachine.test.ts
+src/__tests__/useTimer.test.ts
+src/__tests__/verdictLogic.test.ts
+src/__tests__/viewTier.test.ts
+src/main/data/ShowRepository.ts
+src/main/data/types.ts
+src/main/index.ts
+src/preload/index.ts
+src/renderer/App.tsx
+src/renderer/stores/showStore.ts
+src/renderer/views/CompactView.tsx
+src/renderer/views/DarkStudioView.tsx
+src/renderer/views/DashboardView.tsx
+src/renderer/views/ExpandedView.tsx
+src/renderer/views/HistoryView.tsx
+src/renderer/views/PillView.tsx
+src/renderer/views/StrikeView.tsx
+src/shared/types.ts
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index d89846c..a2b770a 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,6 +1,6 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-22T01:45:42Z
++Updated: 2026-03-22T02:04:49Z
+ 
+ ## Current State
+ 
+@@ -12,9 +12,9 @@ Updated: 2026-03-22T01:45:42Z
+ 
+ ## Last Completed Task
+ 
+-- Last commit: fix: remove vibrancy border bug + make views fill window edge-to-edge
+-- Files changed: src/main/index.ts, src/renderer/App.tsx, src/renderer/views/DarkStudioView.tsx, src/renderer/views/ExpandedView.tsx, src/renderer/views/OnboardingView.tsx
+-  (+2 more)
++- Last commit: feat: wave 2 — multi-size pill, history view, planning language (#28, #26, #27)
++- Files changed: e2e/showtime.test.ts, src/__tests__/audioAndPolish.test.tsx, src/__tests__/components.test.tsx, src/__tests__/showStore.test.ts, src/__tests__/stateMachine.test.ts
++  (+17 more)
+ 
+ ## Active Blockers
+ 
+diff --git a/.loki/STATUS.txt b/.loki/STATUS.txt
+index c4aab81..2b6d333 100644
+--- a/.loki/STATUS.txt
++++ b/.loki/STATUS.txt
+@@ -2,14 +2,14 @@
+ ║                    LOKI MODE STATUS                            ║
+ ╚════════════════════════════════════════════════════════════════╝
+ 
+-Updated: Sat Mar 21 18:46:47 PDT 2026
++Updated: Sat Mar 21 19:04:52 PDT 2026
+ 
+ Phase: DEVELOPMENT
+ 
+ Tasks:
+   ├─ Pending:     0
+   ├─ In Progress: 0
+-  ├─ Completed:   11
++  ├─ Completed:   12
+   └─ Failed:      3
+ 
+ Monitor: watch -n 2 cat .loki/STATUS.txt
+diff --git a/.loki/app-runner/detection.json b/.loki/app-runner/detection.json
+index d79bc30..36c5884 100644
+--- a/.loki/app-runner/detection.json
++++ b/.loki/app-runner/detection.json
+@@ -3,5 +3,5 @@
+     "command": "npm run dev",
+     "port": 5173,
+     "is_docker": false,
+-    "detected_at": "2026-03-22T01:45:41Z"
++    "detected_at": "2026-03-22T02:04:48Z"
+ }
+diff --git a/.loki/autonomy-state.json b/.loki/autonomy-state.json
+index 2c60c06..2ae2dc5 100644
+--- a/.loki/autonomy-state.json
++++ b/.loki/autonomy-state.json
+@@ -1,10 +1,10 @@
+ {
+     "retryCount": 2,
+-    "status": "completion_promise_fulfilled",
++    "status": "exited",
+     "lastExitCode": 0,
+-    "lastRun": "2026-03-22T01:46:47Z",
+-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md",
+-    "pid": 79650,
++    "lastRun": "2026-03-22T02:04:48Z",
++    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md",
++    "pid": 22331,
+     "maxRetries": 50,
+     "baseWait": 60
+ }
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index c227083..5ca234c 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-0
+\ No newline at end of file
++345
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index e54b855..cea727b 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,15 +1,15 @@
+ {
+-  "session_id": "9672c951-1089-437e-ac3b-d70c93e7b287",
++  "session_id": "e6f10daf-431e-4139-9985-f639109f4bf7",
+   "provider": "claude",
+-  "updated_at": "2026-03-22T01:45:41.065072+00:00",
++  "updated_at": "2026-03-22T02:04:48.646191+00:00",
+   "current": {
+-    "input_tokens": 0,
+-    "output_tokens": 0,
+-    "cache_read_tokens": 0,
+-    "cache_creation_tokens": 0,
+-    "total_tokens": 0,
+-    "context_window_pct": 0.0,
+-    "estimated_cost_usd": 44.3045
++    "input_tokens": 1,
++    "output_tokens": 38059,
++    "cache_read_tokens": 151617,
++    "cache_creation_tokens": 434155,
++    "total_tokens": 151618,
++    "context_window_pct": 75.81,
++    "estimated_cost_usd": 53.0779
+   },
+   "compactions": [
+     {
+@@ -48,9 +48,9 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 73393,
+-    "total_output": 248851,
+-    "total_cost_usd": 44.3045,
++    "total_input": 74818,
++    "total_output": 286910,
++    "total_cost_usd": 53.0779,
+     "compaction_count": 2,
+     "iterations_tracked": 2
+   }
+diff --git a/.loki/council/state.json b/.loki/council/state.json
+index e0ed49a..eaaa60b 100644
+--- a/.loki/council/state.json
++++ b/.loki/council/state.json
+@@ -1,15 +1,12 @@
+ {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 62
+-}
+\ No newline at end of file
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
++}
+diff --git a/.loki/dashboard-state.json b/.loki/dashboard-state.json
+index bd0e58b..44f4244 100644
+--- a/.loki/dashboard-state.json
++++ b/.loki/dashboard-state.json
+@@ -1,5 +1,5 @@
+ {
+-  "timestamp": "2026-03-22T01:46:47Z",
++  "timestamp": "2026-03-22T02:04:53Z",
+   "version": "unknown",
+   "project": {
+     "name": "showtime",
+@@ -118,6 +118,15 @@
+     "completedAt": "2026-03-22T01:45:41Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T02:04:48Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ],
+     "failed": [
+@@ -154,8 +163,8 @@
+   "metrics": {
+     "tasksCompleted": 0,
+     "tasksFailed": 0,
+-    "cpuUsage": 86,
+-    "memoryUsage": 69,
++    "cpuUsage": 95,
++    "memoryUsage": 70,
+     "resourceStatus": "warning"
+   },
+   "memory": {
+@@ -165,19 +174,16 @@
+   },
+   "qualityGates": null,
+   "council": {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 62
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
+ },
+   "checklist": null,
+   "appRunner": {
+@@ -186,7 +192,7 @@
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-21T23:33:14Z",
++    "started_at": "2026-03-22T01:46:48Z",
+     "restart_count": 1,
+     "status": "stopped",
+     "last_health": {"ok": false},
+@@ -195,17 +201,17 @@
+   "playwright": null,
+   "budget": null,
+   "context": {
+-  "session_id": "9672c951-1089-437e-ac3b-d70c93e7b287",
++  "session_id": "e6f10daf-431e-4139-9985-f639109f4bf7",
+   "provider": "claude",
+-  "updated_at": "2026-03-22T01:45:41.065072+00:00",
++  "updated_at": "2026-03-22T02:04:48.646191+00:00",
+   "current": {
+-    "input_tokens": 0,
+-    "output_tokens": 0,
+-    "cache_read_tokens": 0,
+-    "cache_creation_tokens": 0,
+-    "total_tokens": 0,
+-    "context_window_pct": 0.0,
+-    "estimated_cost_usd": 44.3045
++    "input_tokens": 1,
++    "output_tokens": 38059,
++    "cache_read_tokens": 151617,
++    "cache_creation_tokens": 434155,
++    "total_tokens": 151618,
++    "context_window_pct": 75.81,
++    "estimated_cost_usd": 53.0779
+   },
+   "compactions": [
+     {
+@@ -244,13 +250,13 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 73393,
+-    "total_output": 248851,
+-    "total_cost_usd": 44.3045,
++    "total_input": 74818,
++    "total_output": 286910,
++    "total_cost_usd": 53.0779,
+     "compaction_count": 2,
+     "iterations_tracked": 2
+   }
+ },
+-  "tokens": {"input": 73393, "output": 248851, "cost_usd": 44.3045},
++  "tokens": {"input": 74818, "output": 286910, "cost_usd": 53.0779},
+   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
+ }
+diff --git a/.loki/dashboard/dashboard.pid b/.loki/dashboard/dashboard.pid
+index 52903bf..2190835 100644
+--- a/.loki/dashboard/dashboard.pid
++++ b/.loki/dashboard/dashboard.pid
+@@ -1 +1 @@
+-79933
++22600
+diff --git a/.loki/events.jsonl b/.loki/events.jsonl
+index cec59c8..f94d14b 100644
+--- a/.loki/events.jsonl
++++ b/.loki/events.jsonl
+@@ -78,3 +78,6 @@
+ {"timestamp":"2026-03-22T01:45:45Z","type":"code_review_start","data":{"review_id":"review-20260322T014545Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+ {"timestamp":"2026-03-22T01:46:46Z","type":"code_review_complete","data":{"review_id":"review-20260322T014545Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+ {"timestamp":"2026-03-22T01:46:47Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
++{"timestamp":"2026-03-22T01:51:25Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md","parallel":true,"complexity":"standard","pid":22331}}
++{"timestamp":"2026-03-22T01:51:25Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md"}}
++{"timestamp":"2026-03-22T02:04:48Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+diff --git a/.loki/logs/agent-audit.jsonl b/.loki/logs/agent-audit.jsonl
+index 05e0a26..60fc35b 100644
+--- a/.loki/logs/agent-audit.jsonl
++++ b/.loki/logs/agent-audit.jsonl
+@@ -36,3 +36,5 @@
+ {"timestamp": "2026-03-22T01:35:04Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md,provider=claude", "iteration": 0, "pid": 79650}
+ {"timestamp": "2026-03-22T01:35:07Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 79650}
+ {"timestamp": "2026-03-22T01:46:48Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 79650}
++{"timestamp": "2026-03-22T01:51:25Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md,provider=claude", "iteration": 0, "pid": 22331}
++{"timestamp": "2026-03-22T01:51:26Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 22331}
+diff --git a/.loki/logs/audit-20260321.jsonl b/.loki/logs/audit-20260321.jsonl
+index 68f44a0..2748736 100644
+--- a/.loki/logs/audit-20260321.jsonl
++++ b/.loki/logs/audit-20260321.jsonl
+@@ -124,3 +124,10 @@
+   "user": "vishnu",
+   "pid": 79650
+ }
++{
++  "timestamp": "2026-03-22T01:51:25Z",
++  "event": "SESSION_START",
++  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md,dashboard=true,staged_autonomy=false,parallel=true",
++  "user": "vishnu",
++  "pid": 22331
++}
+diff --git a/.loki/metrics/efficiency/iteration-1.json b/.loki/metrics/efficiency/iteration-1.json
+index 460a679..e6c7b1d 100644
+--- a/.loki/metrics/efficiency/iteration-1.json
++++ b/.loki/metrics/efficiency/iteration-1.json
+@@ -2,11 +2,11 @@
+   "iteration": 1,
+   "model": "opus",
+   "phase": "DEVELOPMENT",
+-  "duration_ms": 636000,
++  "duration_ms": 803000,
+   "provider": "claude",
+   "status": "completed",
+   "input_tokens": 2891,
+   "output_tokens": 80165,
+   "cost_usd": 13.4582,
+-  "timestamp": "2026-03-22T01:45:41Z"
++  "timestamp": "2026-03-22T02:04:48Z"
+ }
+diff --git a/.loki/pids/79933.json b/.loki/pids/79933.json
+deleted file mode 100644
+index 5c52c72..0000000
+--- a/.loki/pids/79933.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{"pid":79933,"label":"dashboard","started":"2026-03-22T01:34:54Z","ppid":79650,"extra":"port=57374"}
+diff --git a/.loki/prd-observations.md b/.loki/prd-observations.md
+index 84b6422..a109465 100644
+--- a/.loki/prd-observations.md
++++ b/.loki/prd-observations.md
+@@ -1,29 +1,31 @@
+ # PRD Analysis Observations
+ 
+-**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md`
+-**Analyzed:** 2026-03-22T01:35:05Z
+-**Quality Score:** 2.9/10
+-**Estimated Scope:** medium (~7 items detected)
++**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md`
++**Analyzed:** 2026-03-22T01:51:25Z
++**Quality Score:** 1.9/10
++**Estimated Scope:** medium (~6 items detected)
+ 
+ ## Strengths
+ 
+ - **Feature List**: Partially covered (mentioned but lacks dedicated section)
+ - **Tech Stack**: Partially covered (mentioned but lacks dedicated section)
+-- **User Stories / Flows**: Partially covered (mentioned but lacks dedicated section)
+ - **Data Model / Schema**: Partially covered (mentioned but lacks dedicated section)
+-- **Deployment Requirements**: Partially covered (mentioned but lacks dedicated section)
+ 
+ ## Missing or Unclear
+ 
++- **User Stories / Flows**: User stories, personas, or user flow descriptions
+ - **Acceptance Criteria**: Measurable completion criteria or checklists
+ - **API Specifications**: API endpoints, request/response formats
++- **Deployment Requirements**: Deployment targets, CI/CD, and infrastructure
+ - **Error Handling**: Error handling, edge cases, and failure modes
+ - **Security Requirements**: Authentication, authorization, and security measures
+ 
+ ## Assumptions Made
+ 
++- Will derive user flows from feature descriptions
+ - Will generate acceptance criteria from requirements
+ - Will define API endpoints based on feature set
++- Will use standard containerized deployment
+ - Will implement standard error handling patterns
+ - Will apply baseline security (input validation, auth if applicable)
+ 
+@@ -31,10 +33,10 @@
+ 
+ - Add a dedicated **Feature List** section with more detail
+ - Add a dedicated **Tech Stack** section with more detail
+-- Add a dedicated **User Stories / Flows** section with more detail
++- Add **User Stories / Flows** section: User stories, personas, or user flow descriptions
+ - Add **Acceptance Criteria** section: Measurable completion criteria or checklists
+ - Add a dedicated **Data Model / Schema** section with more detail
+ - Add **API Specifications** section: API endpoints, request/response formats
+-- Add a dedicated **Deployment Requirements** section with more detail
++- Add **Deployment Requirements** section: Deployment targets, CI/CD, and infrastructure
+ - Add **Error Handling** section: Error handling, edge cases, and failure modes
+ - Add **Security Requirements** section: Authentication, authorization, and security measures
+diff --git a/.loki/quality/gate-failure-count.json b/.loki/quality/gate-failure-count.json
+index ef1b406..9207c55 100644
+--- a/.loki/quality/gate-failure-count.json
++++ b/.loki/quality/gate-failure-count.json
+@@ -2,7 +2,7 @@
+   "timestamp": "2026-03-21T22:11:48Z",
+   "gate_failures": [],
+   "pass": true,
+-  "static_analysis": 1,
++  "static_analysis": 2,
+   "test_coverage": 0,
+   "code_review": 0
+ }
+\ No newline at end of file
+diff --git a/.loki/quality/static-analysis.json b/.loki/quality/static-analysis.json
+index 1f640e4..02838c4 100644
+--- a/.loki/quality/static-analysis.json
++++ b/.loki/quality/static-analysis.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-22T01:45:43Z","files_checked":7,"findings":6,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DarkStudioView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/OnboardingView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/WritersRoomView.tsx. ","pass":false}
++{"timestamp":"2026-03-22T02:04:51Z","files_checked":22,"findings":10,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/__tests__/audioAndPolish.test.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/__tests__/components.test.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/CompactView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DarkStudioView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DashboardView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/HistoryView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/PillView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. ","pass":false}
+diff --git a/.loki/quality/test-results.json b/.loki/quality/test-results.json
+index e1b971e..90b088a 100644
+--- a/.loki/quality/test-results.json
++++ b/.loki/quality/test-results.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-22T01:45:45Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':69,'numPassedTestSuites':69,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':184,'numPassedTests':184,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774143943658,'success':true,'testResults':[{'asse"}
++{"timestamp":"2026-03-22T02:04:54Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':75,'numPassedTestSuites':75,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':196,'numPassedTests':196,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774145092068,'success':true,'testResults':[{'asse"}
+diff --git a/.loki/queue/completed.json b/.loki/queue/completed.json
+index f39361c..a8b0727 100644
+--- a/.loki/queue/completed.json
++++ b/.loki/queue/completed.json
+@@ -97,5 +97,14 @@
+     "completedAt": "2026-03-22T01:45:41Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T02:04:48Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ]
+\ No newline at end of file
+diff --git a/.loki/state/checkpoints/index.jsonl b/.loki/state/checkpoints/index.jsonl
+index 2b2e377..35a5d5d 100644
+--- a/.loki/state/checkpoints/index.jsonl
++++ b/.loki/state/checkpoints/index.jsonl
+@@ -26,3 +26,4 @@
+ {"id": "cp-1-1774135994", "ts": "2026-03-21T23:33:14Z", "iter": 1, "task": "session end (iterations=1)", "sha": "d758b3c9af7342e12921de02351d4bf0a3a00eb2"}
+ {"id": "cp-1-1774143942", "ts": "2026-03-22T01:45:42Z", "iter": 1, "task": "iteration-1 complete", "sha": "6e10a5c6dcb9a70b336c8c4135a7f659f50bf630"}
+ {"id": "cp-1-1774144007", "ts": "2026-03-22T01:46:47Z", "iter": 1, "task": "session end (iterations=1)", "sha": "6e10a5c6dcb9a70b336c8c4135a7f659f50bf630"}
++{"id": "cp-1-1774145090", "ts": "2026-03-22T02:04:50Z", "iter": 1, "task": "iteration-1 complete", "sha": "1a61e274f60631f2fd524e8c1561ab681cf4fa93"}
+diff --git a/.loki/state/resources.json b/.loki/state/resources.json
+index e1a9b65..65e29af 100644
+--- a/.loki/state/resources.json
++++ b/.loki/state/resources.json
+@@ -1,15 +1,15 @@
+ {
+-  "timestamp": "2026-03-22T01:45:10Z",
++  "timestamp": "2026-03-22T02:01:30Z",
+   "cpu": {
+-    "usage_percent": 86,
++    "usage_percent": 95,
+     "threshold_percent": 80,
+     "status": "high"
+   },
+   "memory": {
+-    "usage_percent": 69,
++    "usage_percent": 70,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+   "overall_status": "warning",
+-  "warning_message": "CPU usage is 86% (threshold: 80%). Consider reducing parallel agent count or pausing non-critical tasks."
++  "warning_message": "CPU usage is 95% (threshold: 80%). Consider reducing parallel agent count or pausing non-critical tasks."
+ }
+diff --git a/e2e/showtime.test.ts b/e2e/showtime.test.ts
+index 3800cbd..da4e44f 100644
+--- a/e2e/showtime.test.ts
++++ b/e2e/showtime.test.ts
+@@ -197,7 +197,7 @@ test.describe('7.5 — Strike the Stage', () => {
+         parsed.state.verdict = 'SOLID_SHOW'
+         parsed.state.beatsLocked = 2
+         parsed.state.beatThreshold = 3
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -228,7 +228,7 @@ test.describe('Visual Validation', () => {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'writers_room'
+         parsed.state.writersRoomStep = 'energy'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -260,7 +260,7 @@ test.describe('Visual Validation', () => {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'writers_room'
+         parsed.state.goingLiveActive = true
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -283,7 +283,7 @@ test.describe('Visual Validation', () => {
+         parsed.state.phase = 'live'
+         parsed.state.beatCheckPending = true
+         parsed.state.celebrationActive = true
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.beatsLocked = 1
+         parsed.state.currentActId = parsed.state.acts?.[0]?.id || null
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+@@ -310,7 +310,7 @@ test.describe('Visual Validation', () => {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'writers_room'
+         parsed.state.writersRoomStep = 'energy'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.goingLiveActive = false
+         parsed.state.beatCheckPending = false
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+@@ -343,7 +343,7 @@ test.describe('Visual Validation', () => {
+         parsed.state.beatCheckPending = true
+         parsed.state.celebrationActive = false
+         parsed.state.phase = 'live'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -366,7 +366,7 @@ test.describe('Pill ↔ Expanded', () => {
+       if (raw) {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'live'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.verdict = null
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+@@ -451,7 +451,7 @@ test.describe('Issue-Specific UI Verification', () => {
+         parsed.state.phase = 'writers_room'
+         parsed.state.writersRoomStep = 'plan'
+         parsed.state.energy = 'high'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.goingLiveActive = false
+         parsed.state.beatCheckPending = false
+         parsed.state.celebrationActive = false
+@@ -492,7 +492,7 @@ test.describe('Issue-Specific UI Verification', () => {
+         parsed.state.phase = 'live'
+         parsed.state.celebrationActive = true
+         parsed.state.beatCheckPending = true
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.beatsLocked = 1
+         parsed.state.currentActId = parsed.state.acts?.[0]?.id || null
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+@@ -515,7 +515,7 @@ test.describe('Issue-Specific UI Verification', () => {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'writers_room'
+         parsed.state.goingLiveActive = true
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -572,7 +572,7 @@ test.describe('Issue-Specific UI Verification', () => {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'writers_room'
+         parsed.state.writersRoomStep = 'energy'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.goingLiveActive = false
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+@@ -598,7 +598,7 @@ test.describe('Issue-Specific UI Verification', () => {
+         parsed.state.phase = 'writers_room'
+         parsed.state.writersRoomStep = 'plan'
+         parsed.state.energy = 'high'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -637,7 +637,7 @@ test.describe('Race Condition Guards (#11)', () => {
+         parsed.state.phase = 'live'
+         parsed.state.beatCheckPending = true
+         parsed.state.celebrationActive = false
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.beatsLocked = 0
+         // Ensure we have acts with one active
+         if (!parsed.state.acts || parsed.state.acts.length === 0) {
+@@ -687,7 +687,7 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
+         parsed.state.phase = 'writers_room'
+         parsed.state.writersRoomStep = 'plan'
+         parsed.state.energy = 'high'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.goingLiveActive = false
+         parsed.state.beatCheckPending = false
+         parsed.state.celebrationActive = false
+@@ -998,7 +998,7 @@ test.describe('Reset Show (#16)', () => {
+       if (raw) {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'director'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.beatsLocked = 1
+         parsed.state.beatCheckPending = false
+         parsed.state.celebrationActive = false
+@@ -1152,7 +1152,7 @@ test.describe('RundownBar + MiniRundownStrip', () => {
+       if (raw) {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'live'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.beatCheckPending = false
+         parsed.state.celebrationActive = false
+         parsed.state.goingLiveActive = false
+@@ -1197,7 +1197,7 @@ test.describe('RundownBar + MiniRundownStrip', () => {
+       if (raw) {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'live'
+-        parsed.state.isExpanded = false
++        parsed.state.viewTier = 'micro'
+         parsed.state.beatCheckPending = false
+         parsed.state.celebrationActive = false
+         parsed.state.goingLiveActive = false
+@@ -1220,7 +1220,7 @@ test.describe('RundownBar + MiniRundownStrip', () => {
+       if (raw) {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'no_show'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+       }
+     })
+@@ -1263,7 +1263,7 @@ test.describe('Plan Modification (Live)', () => {
+       if (raw) {
+         const parsed = JSON.parse(raw)
+         parsed.state.phase = 'live'
+-        parsed.state.isExpanded = true
++        parsed.state.viewTier = 'expanded'
+         parsed.state.beatCheckPending = false
+         parsed.state.celebrationActive = false
+         parsed.state.goingLiveActive = false
+diff --git a/src/__tests__/audioAndPolish.test.tsx b/src/__tests__/audioAndPolish.test.tsx
+index ccfab1d..4e6069c 100644
+--- a/src/__tests__/audioAndPolish.test.tsx
++++ b/src/__tests__/audioAndPolish.test.tsx
+@@ -63,7 +63,7 @@ function resetStore() {
+     showDate: new Date().toISOString().slice(0, 10),
+     showStartedAt: null,
+     verdict: null,
+-    isExpanded: true,
++    viewTier: 'expanded',
+     beatCheckPending: false,
+     celebrationActive: false,
+     goingLiveActive: false,
+@@ -128,7 +128,7 @@ describe('PillView drag zones', () => {
+       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
+       currentActId: 'a1',
+       timerEndAt: Date.now() + 30 * 60 * 1000,
+-      isExpanded: false,
++      viewTier: 'micro',
+     })
+     const { container } = render(<PillView />)
+     const dragZone = container.querySelector('.drag-region')
+@@ -137,21 +137,21 @@ describe('PillView drag zones', () => {
+     expect(noDragZone).toBeInTheDocument()
+   })
+ 
+-  it('click zone triggers toggleExpanded', () => {
+-    const toggleSpy = vi.fn()
++  it('click zone triggers expandViewTier', () => {
++    const expandSpy = vi.fn()
+     useShowStore.setState({
+       phase: 'live',
+       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
+       currentActId: 'a1',
+       timerEndAt: Date.now() + 30 * 60 * 1000,
+-      isExpanded: false,
+-      toggleExpanded: toggleSpy,
++      viewTier: 'micro',
++      expandViewTier: expandSpy,
+     })
+     const { container } = render(<PillView />)
+     const noDragZone = container.querySelector('.no-drag')
+     expect(noDragZone).toBeInTheDocument()
+     fireEvent.click(noDragZone!)
+-    expect(toggleSpy).toHaveBeenCalled()
++    expect(expandSpy).toHaveBeenCalled()
+   })
+ })
+ 
+@@ -173,7 +173,7 @@ describe('StrikeView celebration', () => {
+       beatsLocked: 1,
+       beatThreshold: 3,
+       showStartedAt: Date.now() - 60 * 60 * 1000,
+-      isExpanded: true,
++      viewTier: 'expanded',
+     })
+     render(<StrikeView />)
+     expect(screen.getByTestId('encore-btn')).toBeInTheDocument()
+@@ -189,7 +189,7 @@ describe('StrikeView celebration', () => {
+       beatsLocked: 0,
+       beatThreshold: 3,
+       showStartedAt: Date.now() - 2 * 60 * 60 * 1000,
+-      isExpanded: true,
++      viewTier: 'expanded',
+     })
+     render(<StrikeView />)
+     const duration = screen.getByTestId('show-duration')
+@@ -205,7 +205,7 @@ describe('StrikeView celebration', () => {
+       beatsLocked: 3,
+       beatThreshold: 3,
+       showStartedAt: Date.now() - 60 * 60 * 1000,
+-      isExpanded: true,
++      viewTier: 'expanded',
+     })
+     render(<StrikeView />)
+     expect(screen.getByText('Standing ovation.')).toBeInTheDocument()
+@@ -223,7 +223,7 @@ describe('Temporal context', () => {
+       currentActId: 'a1',
+       timerEndAt: Date.now() + 30 * 60 * 1000,
+       showStartedAt: Date.now(),
+-      isExpanded: true,
++      viewTier: 'expanded',
+     })
+     render(<ExpandedView />)
+     const dateLabel = screen.getByTestId('date-label')
+@@ -240,7 +240,7 @@ describe('Temporal context', () => {
+       currentActId: 'a1',
+       timerEndAt: Date.now() + 30 * 60 * 1000,
+       showStartedAt: Date.now(),
+-      isExpanded: true,
++      viewTier: 'expanded',
+     })
+     render(<ExpandedView />)
+     const startedAt = screen.getByTestId('started-at')
+diff --git a/src/__tests__/components.test.tsx b/src/__tests__/components.test.tsx
+index b1cee95..907ef1e 100644
+--- a/src/__tests__/components.test.tsx
++++ b/src/__tests__/components.test.tsx
+@@ -40,7 +40,7 @@ function resetStore() {
+     claudeSessionId: null,
+     showDate: new Date().toISOString().slice(0, 10),
+     verdict: null,
+-    isExpanded: true,
++    viewTier: 'expanded',
+     beatCheckPending: false,
+     goingLiveActive: false,
+     writersRoomStep: 'energy',
+diff --git a/src/__tests__/showStore.test.ts b/src/__tests__/showStore.test.ts
+index a9fe571..4c76e6f 100644
+--- a/src/__tests__/showStore.test.ts
++++ b/src/__tests__/showStore.test.ts
+@@ -16,7 +16,7 @@ function resetStore() {
+     claudeSessionId: null,
+     showDate: new Date().toISOString().slice(0, 10),
+     verdict: null,
+-    isExpanded: true,
++    viewTier: 'expanded',
+     beatCheckPending: false,
+     celebrationActive: false,
+   })
+@@ -155,7 +155,7 @@ describe('showStore', () => {
+     it('collapses to pill view', () => {
+       useShowStore.getState().setLineup(sampleLineup)
+       useShowStore.getState().startShow()
+-      expect(useShowStore.getState().isExpanded).toBe(false)
++      expect(useShowStore.getState().viewTier).toBe('micro')
+     })
+ 
+     it('leaves other acts as upcoming', () => {
+@@ -593,7 +593,7 @@ describe('showStore', () => {
+ 
+     it('expands view', () => {
+       useShowStore.getState().strikeTheStage()
+-      expect(useShowStore.getState().isExpanded).toBe(true)
++      expect(useShowStore.getState().viewTier).toBe('expanded')
+     })
+ 
+     it('sends verdict notification', () => {
+@@ -602,15 +602,73 @@ describe('showStore', () => {
+     })
+   })
+ 
+-  // ─── Navigation ───
++  // ─── Navigation (view tier) ───
+ 
+   describe('toggleExpanded', () => {
+-    it('toggles isExpanded', () => {
+-      expect(useShowStore.getState().isExpanded).toBe(true)
++    it('toggles between micro and expanded', () => {
++      expect(useShowStore.getState().viewTier).toBe('expanded')
+       useShowStore.getState().toggleExpanded()
+-      expect(useShowStore.getState().isExpanded).toBe(false)
++      expect(useShowStore.getState().viewTier).toBe('micro')
+       useShowStore.getState().toggleExpanded()
+-      expect(useShowStore.getState().isExpanded).toBe(true)
++      expect(useShowStore.getState().viewTier).toBe('expanded')
++    })
++  })
++
++  describe('viewTier navigation', () => {
++    it('cycleViewTier cycles through all 4 tiers', () => {
++      useShowStore.setState({ viewTier: 'micro' })
++      useShowStore.getState().cycleViewTier()
++      expect(useShowStore.getState().viewTier).toBe('compact')
++      useShowStore.getState().cycleViewTier()
++      expect(useShowStore.getState().viewTier).toBe('dashboard')
++      useShowStore.getState().cycleViewTier()
++      expect(useShowStore.getState().viewTier).toBe('expanded')
++      useShowStore.getState().cycleViewTier()
++      expect(useShowStore.getState().viewTier).toBe('micro')
++    })
++
++    it('expandViewTier goes up one tier', () => {
++      useShowStore.setState({ viewTier: 'micro' })
++      useShowStore.getState().expandViewTier()
++      expect(useShowStore.getState().viewTier).toBe('compact')
++      useShowStore.getState().expandViewTier()
++      expect(useShowStore.getState().viewTier).toBe('dashboard')
++      useShowStore.getState().expandViewTier()
++      expect(useShowStore.getState().viewTier).toBe('expanded')
++    })
++
++    it('expandViewTier clamps at expanded', () => {
++      useShowStore.setState({ viewTier: 'expanded' })
++      useShowStore.getState().expandViewTier()
++      expect(useShowStore.getState().viewTier).toBe('expanded')
++    })
++
++    it('collapseViewTier goes down one tier', () => {
++      useShowStore.setState({ viewTier: 'expanded' })
++      useShowStore.getState().collapseViewTier()
++      expect(useShowStore.getState().viewTier).toBe('dashboard')
++      useShowStore.getState().collapseViewTier()
++      expect(useShowStore.getState().viewTier).toBe('compact')
++      useShowStore.getState().collapseViewTier()
++      expect(useShowStore.getState().viewTier).toBe('micro')
++    })
++
++    it('collapseViewTier clamps at micro', () => {
++      useShowStore.setState({ viewTier: 'micro' })
++      useShowStore.getState().collapseViewTier()
++      expect(useShowStore.getState().viewTier).toBe('micro')
++    })
++
++    it('setViewTier sets directly', () => {
++      useShowStore.getState().setViewTier('dashboard')
++      expect(useShowStore.getState().viewTier).toBe('dashboard')
++    })
++
++    it('setExpanded maps true to expanded, false to micro', () => {
++      useShowStore.getState().setExpanded(false)
++      expect(useShowStore.getState().viewTier).toBe('micro')
++      useShowStore.getState().setExpanded(true)
++      expect(useShowStore.getState().viewTier).toBe('expanded')
+     })
+   })
+ 
+@@ -628,7 +686,7 @@ describe('showStore', () => {
+       expect(state.acts).toHaveLength(0)
+       expect(state.verdict).toBeNull()
+       expect(state.beatsLocked).toBe(0)
+-      expect(state.isExpanded).toBe(true)
++      expect(state.viewTier).toBe('expanded')
+     })
+   })
+ 
+diff --git a/src/__tests__/stateMachine.test.ts b/src/__tests__/stateMachine.test.ts
+index 1a19c1a..6dff253 100644
+--- a/src/__tests__/stateMachine.test.ts
++++ b/src/__tests__/stateMachine.test.ts
+@@ -15,7 +15,7 @@ function resetStore() {
+     claudeSessionId: null,
+     showDate: new Date().toISOString().slice(0, 10),
+     verdict: null,
+-    isExpanded: true,
++    viewTier: 'expanded',
+     beatCheckPending: false,
+     celebrationActive: false,
+   })
+diff --git a/src/__tests__/useTimer.test.ts b/src/__tests__/useTimer.test.ts
+index 28de8a7..0003538 100644
+--- a/src/__tests__/useTimer.test.ts
++++ b/src/__tests__/useTimer.test.ts
+@@ -18,7 +18,7 @@ function resetStore() {
+     claudeSessionId: null,
+     showDate: new Date().toISOString().slice(0, 10),
+     verdict: null,
+-    isExpanded: true,
++    viewTier: 'expanded',
+     beatCheckPending: false,
+     goingLiveActive: false,
+     writersRoomStep: 'energy',
+diff --git a/src/__tests__/verdictLogic.test.ts b/src/__tests__/verdictLogic.test.ts
+index 53e965a..849ea78 100644
+--- a/src/__tests__/verdictLogic.test.ts
++++ b/src/__tests__/verdictLogic.test.ts
+@@ -16,7 +16,7 @@ function resetStore() {
+     claudeSessionId: null,
+     showDate: new Date().toISOString().slice(0, 10),
+     verdict: null,
+-    isExpanded: true,
++    viewTier: 'expanded',
+     beatCheckPending: false,
+     celebrationActive: false,
+   })
+diff --git a/src/__tests__/viewTier.test.ts b/src/__tests__/viewTier.test.ts
+new file mode 100644
+index 0000000..3a7af1a
+--- /dev/null
++++ b/src/__tests__/viewTier.test.ts
+@@ -0,0 +1,38 @@
++import { describe, it, expect } from 'vitest'
++import { nextViewTier, expandTier, collapseTier } from '../shared/types'
++import type { ViewTier } from '../shared/types'
++
++describe('ViewTier helpers', () => {
++  describe('nextViewTier', () => {
++    it('cycles micro → compact → dashboard → expanded → micro', () => {
++      expect(nextViewTier('micro')).toBe('compact')
++      expect(nextViewTier('compact')).toBe('dashboard')
++      expect(nextViewTier('dashboard')).toBe('expanded')
++      expect(nextViewTier('expanded')).toBe('micro')
++    })
++  })
++
++  describe('expandTier', () => {
++    it('goes up one tier', () => {
++      expect(expandTier('micro')).toBe('compact')
++      expect(expandTier('compact')).toBe('dashboard')
++      expect(expandTier('dashboard')).toBe('expanded')
++    })
++
++    it('clamps at expanded', () => {
++      expect(expandTier('expanded')).toBe('expanded')
++    })
++  })
++
++  describe('collapseTier', () => {
++    it('goes down one tier', () => {
++      expect(collapseTier('expanded')).toBe('dashboard')
++      expect(collapseTier('dashboard')).toBe('compact')
++      expect(collapseTier('compact')).toBe('micro')
++    })
++
++    it('clamps at micro', () => {
++      expect(collapseTier('micro')).toBe('micro')
++    })
++  })
++})
+diff --git a/src/main/data/ShowRepository.ts b/src/main/data/ShowRepository.ts
+index 789269c..914fc10 100644
+--- a/src/main/data/ShowRepository.ts
++++ b/src/main/data/ShowRepository.ts
+@@ -1,6 +1,7 @@
+-import { eq } from 'drizzle-orm'
++import { eq, desc, sql, count } from 'drizzle-orm'
+ import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+-import { shows } from './schema'
++import { shows, acts } from './schema'
++import type { ShowHistoryEntry } from './types'
+ 
+ export type ShowRow = typeof shows.$inferSelect
+ export type ShowInsert = typeof shows.$inferInsert
+@@ -43,4 +44,26 @@ export class ShowRepository {
+   updateVerdict(dateId: string, verdict: string): void {
+     this.db.update(shows).set({ verdict }).where(eq(shows.id, dateId)).run()
+   }
++
++  getRecentShows(limit = 30): ShowHistoryEntry[] {
++    const rows = this.db
++      .select({
++        showId: shows.id,
++        phase: shows.phase,
++        energy: shows.energy,
++        verdict: shows.verdict,
++        beatsLocked: shows.beatsLocked,
++        beatThreshold: shows.beatThreshold,
++        startedAt: shows.startedAt,
++        endedAt: shows.endedAt,
++        actCount: sql<number>`(SELECT COUNT(*) FROM acts WHERE acts.show_id = ${shows.id})`,
++        completedActCount: sql<number>`(SELECT COUNT(*) FROM acts WHERE acts.show_id = ${shows.id} AND acts.status = 'completed')`,
++      })
++      .from(shows)
++      .orderBy(desc(shows.id))
++      .limit(limit)
++      .all()
++
++    return rows as ShowHistoryEntry[]
++  }
+ }
+diff --git a/src/main/data/types.ts b/src/main/data/types.ts
+index e736226..fe40c81 100644
+--- a/src/main/data/types.ts
++++ b/src/main/data/types.ts
+@@ -54,3 +54,16 @@ export interface ActDriftResult {
+   plannedMs: number
+   actualMs: number
+ }
++
++export interface ShowHistoryEntry {
++  showId: string
++  phase: string
++  energy: string | null
++  verdict: string | null
++  beatsLocked: number
++  beatThreshold: number
++  startedAt: number | null
++  endedAt: number | null
++  actCount: number
++  completedActCount: number
++}
+diff --git a/src/main/index.ts b/src/main/index.ts
+index e7f7ad0..80644ab 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -37,7 +37,9 @@ const PILL_BOTTOM_MARGIN = 24
+ // ─── Content-tight window sizing ───
+ // Window resizes to match view content exactly. No transparent dead zones.
+ const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
+-  pill: { width: 320, height: 48 },
++  pill: { width: 320, height: 56 },
++  compact: { width: 340, height: 140 },
++  dashboard: { width: 400, height: 320 },
+   expanded: { width: 560, height: 620 },
+   full: { width: 560, height: 740 },
+ }
+@@ -527,6 +529,16 @@ ipcMain.handle(IPC.CLAUDE_CONTEXT_GET, (_event, showId: string) => {
+   }
+ })
+ 
++ipcMain.handle(IPC.SHOW_HISTORY, (_event, limit?: number) => {
++  try {
++    const data = DataService.getInstance()
++    return data.shows.getRecentShows(limit ?? 30)
++  } catch (err: any) {
++    log(`SHOW_HISTORY error: ${err.message}`)
++    return []
++  }
++})
++
+ ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
+   log(`IPC RESPOND_PERMISSION: tab=${tabId} question=${questionId} option=${optionId}`)
+   return controlPlane.respondToPermission(tabId, questionId, optionId)
+diff --git a/src/preload/index.ts b/src/preload/index.ts
+index dde598f..6fdc757 100644
+--- a/src/preload/index.ts
++++ b/src/preload/index.ts
+@@ -1,7 +1,7 @@
+ import { contextBridge, ipcRenderer } from 'electron'
+ import { IPC } from '../shared/types'
+ import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, Attachment, SessionMeta, CatalogPlugin, SessionLoadMessage } from '../shared/types'
+-import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload } from '../main/data/types'
++import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry } from '../main/data/types'
+ 
+ export interface CluiAPI {
+   // ─── Request-response (renderer → main) ───
+@@ -54,7 +54,7 @@ export interface CluiAPI {
+   notifyVerdict(verdict: string, message: string): void
+ 
+   // ─── Showtime window management ───
+-  setViewMode(mode: 'pill' | 'expanded' | 'full'): void
++  setViewMode(mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'): void
+   onDayBoundary(callback: () => void): () => void
+   onToggleExpanded(callback: () => void): () => void
+   onResetShow(callback: () => void): () => void
+@@ -69,6 +69,7 @@ export interface CluiAPI {
+   getTimelineDriftPerAct(showId: string): Promise<ActDriftResult[]>
+   saveClaudeContext(ctx: ClaudeContextPayload): void
+   getClaudeContext(showId: string): Promise<ClaudeContextPayload | null>
++  getShowHistory(limit?: number): Promise<ShowHistoryEntry[]>
+ 
+   // ─── Test-only (NODE_ENV=test) ───
+   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
+@@ -196,6 +197,7 @@ const api: CluiAPI = {
+   getTimelineDriftPerAct: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT_PER_ACT, showId),
+   saveClaudeContext: (ctx: ClaudeContextPayload) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
+   getClaudeContext: (showId: string) => ipcRenderer.invoke(IPC.CLAUDE_CONTEXT_GET, showId),
++  getShowHistory: (limit?: number) => ipcRenderer.invoke(IPC.SHOW_HISTORY, limit),
+ 
+   // Test-only IPC (NODE_ENV=test)
+   ...(process.env.NODE_ENV === 'test' ? {
+diff --git a/src/renderer/App.tsx b/src/renderer/App.tsx
+index f2ef627..f9f826d 100644
+--- a/src/renderer/App.tsx
++++ b/src/renderer/App.tsx
+@@ -3,36 +3,57 @@ import { AnimatePresence } from 'framer-motion'
+ import { useClaudeEvents } from './hooks/useClaudeEvents'
+ import { useHealthReconciliation } from './hooks/useHealthReconciliation'
+ import { useSessionStore } from './stores/sessionStore'
+-import { useShowStore } from './stores/showStore'
++import { useShowStore, selectIsExpanded } from './stores/showStore'
+ import { useThemeStore } from './theme'
+ import { DarkStudioView } from './views/DarkStudioView'
+ import { WritersRoomView } from './views/WritersRoomView'
+ import { ColdOpenTransition } from './views/ColdOpenTransition'
+ import { GoingLiveTransition } from './views/GoingLiveTransition'
+ import { PillView } from './views/PillView'
++import { CompactView } from './views/CompactView'
++import { DashboardView } from './views/DashboardView'
+ import { ExpandedView } from './views/ExpandedView'
+ import { StrikeView } from './views/StrikeView'
++import { HistoryView } from './views/HistoryView'
+ import { OnboardingView } from './views/OnboardingView'
+ import { BeatCheckModal } from './components/BeatCheckModal'
++import type { ViewTier } from '../shared/types'
++
++// Map viewTier + phase to the IPC view mode that determines window size
++function tierToViewMode(tier: ViewTier, phase: string): string {
++  // Full-screen phases always use 'full' regardless of tier
++  if (phase === 'no_show' || phase === 'writers_room' || phase === 'strike') {
++    return 'full'
++  }
++  const map: Record<ViewTier, string> = {
++    micro: 'pill',
++    compact: 'compact',
++    dashboard: 'dashboard',
++    expanded: 'expanded',
++  }
++  return map[tier]
++}
+ 
+ export default function App() {
+   useClaudeEvents()
+   useHealthReconciliation()
+ 
+   const phase = useShowStore((s) => s.phase)
+-  const isExpanded = useShowStore((s) => s.isExpanded)
++  const viewTier = useShowStore((s) => s.viewTier)
++  const isExpanded = useShowStore(selectIsExpanded)
+   const coldOpenActive = useShowStore((s) => s.coldOpenActive)
+   const completeColdOpen = useShowStore((s) => s.completeColdOpen)
+   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
+   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
+   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
+   const beatCheckPending = useShowStore((s) => s.beatCheckPending)
+-  const setExpanded = useShowStore((s) => s.setExpanded)
++  const setViewTier = useShowStore((s) => s.setViewTier)
+   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
+ 
+   const [showOnboarding, setShowOnboarding] = useState(() => {
+     return localStorage.getItem('showtime-onboarding-complete') !== 'true'
+   })
++  const [showHistory, setShowHistory] = useState(false)
+ 
+   // ─── Listen for tray-triggered reset ───
+   const resetShow = useShowStore((s) => s.resetShow)
+@@ -81,33 +102,22 @@ export default function App() {
+       return
+     }
+ 
+-    if (!isExpanded) {
+-      window.clui.setViewMode('pill')
++    // History view is full-screen
++    if (showHistory) {
++      window.clui.setViewMode('full')
+       return
+     }
+ 
+-    switch (phase) {
+-      case 'no_show':
+-      case 'writers_room':
+-      case 'strike':
+-        window.clui.setViewMode('full')
+-        break
+-      case 'live':
+-      case 'intermission':
+-      case 'director':
+-      default:
+-        window.clui.setViewMode('expanded')
+-        break
+-    }
+-  }, [phase, isExpanded, coldOpenActive, goingLiveActive])
++    const mode = tierToViewMode(viewTier, phase)
++    window.clui.setViewMode(mode as any)
++  }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory])
+ 
+   // ─── Force-expand on Beat Check ───
+   useEffect(() => {
+-    if (beatCheckPending && !isExpanded) {
+-      setExpanded(true)
+-      window.clui?.setViewMode('expanded')
++    if (beatCheckPending && (viewTier === 'micro' || viewTier === 'compact')) {
++      setViewTier('dashboard')
+     }
+-  }, [beatCheckPending, isExpanded, setExpanded])
++  }, [beatCheckPending, viewTier, setViewTier])
+ 
+   // ─── Onboarding completion handler ───
+   const handleOnboardingComplete = useCallback((enterRoom: boolean) => {
+@@ -126,6 +136,11 @@ export default function App() {
+ 
+   // ─── View routing ───
+   const renderView = () => {
++    // History overlay
++    if (showHistory) {
++      return <HistoryView key="history" onBack={() => setShowHistory(false)} />
++    }
++
+     // Onboarding takes priority on first launch
+     if (showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive) {
+       return (
+@@ -147,32 +162,34 @@ export default function App() {
+       return <GoingLiveTransition key="going-live" onComplete={completeGoingLive} />
+     }
+ 
+-    // Pill view when collapsed
+-    if (!isExpanded) {
+-      return <PillView key="pill" />
+-    }
+-
+-    // Phase-based routing
++    // Full-screen phases render regardless of viewTier
+     switch (phase) {
+       case 'no_show':
+-        return <DarkStudioView key="dark-studio" />
++        return <DarkStudioView key="dark-studio" onShowHistory={() => setShowHistory(true)} />
+       case 'writers_room':
+         return <WritersRoomView key="writers-room" />
+       case 'strike':
+-        return <StrikeView key="strike" />
+-      case 'live':
+-      case 'intermission':
+-      case 'director':
+-        return <ExpandedView key="expanded" />
++        return <StrikeView key="strike" onShowHistory={() => setShowHistory(true)} />
++    }
++
++    // Live/intermission/director — tier-based routing
++    switch (viewTier) {
++      case 'micro':
++        return <PillView key="pill" />
++      case 'compact':
++        return <CompactView key="compact" />
++      case 'dashboard':
++        return <DashboardView key="dashboard" />
++      case 'expanded':
+       default:
+-        return <DarkStudioView key="dark-studio-default" />
++        return <ExpandedView key="expanded" />
+     }
+   }
+ 
+   return (
+     <div className="w-full h-full relative bg-transparent flex flex-col">
+       {/* Help button — visible on DarkStudio when onboarding was completed */}
+-      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && (
++      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && !showHistory && (
+         <button
+           onClick={handleHelpClick}
+           className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"
+diff --git a/src/renderer/stores/showStore.ts b/src/renderer/stores/showStore.ts
+index e2a14eb..14b0454 100644
+--- a/src/renderer/stores/showStore.ts
++++ b/src/renderer/stores/showStore.ts
+@@ -1,6 +1,7 @@
+ import { create } from 'zustand'
+ import { persist } from 'zustand/middleware'
+-import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep } from '../../shared/types'
++import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep, ViewTier } from '../../shared/types'
++import { nextViewTier, expandTier, collapseTier } from '../../shared/types'
+ 
+ function today(): string {
+   return new Date().toISOString().slice(0, 10)
+@@ -63,7 +64,12 @@ interface ShowActions {
+   // Strike
+   strikeTheStage: () => void
+ 
+-  // Navigation
++  // Navigation (view tier)
++  cycleViewTier: () => void
++  expandViewTier: () => void
++  collapseViewTier: () => void
++  setViewTier: (tier: ViewTier) => void
++  // Backward compat — maps to viewTier
+   toggleExpanded: () => void
+   setExpanded: (expanded: boolean) => void
+ 
+@@ -90,7 +96,7 @@ interface ShowStoreState {
+   showDate: string
+   showStartedAt: number | null
+   verdict: ShowVerdict | null
+-  isExpanded: boolean
++  viewTier: ViewTier
+   beatCheckPending: boolean
+   celebrationActive: boolean
+   coldOpenActive: boolean
+@@ -118,7 +124,7 @@ const initialState: ShowStoreState = {
+   showDate: today(),
+   showStartedAt: null,
+   verdict: null,
+-  isExpanded: true,
++  viewTier: 'expanded' as ViewTier,
+   beatCheckPending: false,
+   celebrationActive: false,
+   coldOpenActive: false,
+@@ -227,7 +233,7 @@ export const useShowStore = create<ShowStore>()(
+         const now = Date.now()
+         set({
+           phase: 'live',
+-          isExpanded: false,
++          viewTier: 'micro' as ViewTier,
+           currentActId: firstAct.id,
+           timerEndAt: now + firstAct.durationMinutes * 60 * 1000,
+           showDate: today(),
+@@ -479,7 +485,7 @@ export const useShowStore = create<ShowStore>()(
+           currentActId: null,
+           timerEndAt: null,
+           timerPausedRemaining: null,
+-          isExpanded: true,
++          viewTier: 'expanded' as ViewTier,
+           beatCheckPending: false,
+         })
+         window.clui.notifyVerdict('SHOW_CALLED_EARLY', VERDICT_MESSAGES.SHOW_CALLED_EARLY)
+@@ -585,7 +591,7 @@ export const useShowStore = create<ShowStore>()(
+           currentActId: null,
+           timerEndAt: null,
+           timerPausedRemaining: null,
+-          isExpanded: true,
++          viewTier: 'expanded' as ViewTier,
+           beatCheckPending: false,
+         })
+         recordTimeline('show_ended', get().showDate, null, { actualEnd: Date.now() })
+@@ -593,10 +599,15 @@ export const useShowStore = create<ShowStore>()(
+         window.clui.notifyVerdict(verdict, VERDICT_MESSAGES[verdict])
+       },
+ 
+-      // ─── Navigation ───
++      // ─── Navigation (view tier) ───
+ 
+-      toggleExpanded: () => set((s) => ({ isExpanded: !s.isExpanded })),
+-      setExpanded: (expanded) => set({ isExpanded: expanded }),
++      cycleViewTier: () => set((s) => ({ viewTier: nextViewTier(s.viewTier) })),
++      expandViewTier: () => set((s) => ({ viewTier: expandTier(s.viewTier) })),
++      collapseViewTier: () => set((s) => ({ viewTier: collapseTier(s.viewTier) })),
++      setViewTier: (tier) => set({ viewTier: tier }),
++      // Backward compat
++      toggleExpanded: () => set((s) => ({ viewTier: s.viewTier === 'micro' ? 'expanded' as ViewTier : 'micro' as ViewTier })),
++      setExpanded: (expanded) => set({ viewTier: (expanded ? 'expanded' : 'micro') as ViewTier }),
+ 
+       // ─── Reset ───
+ 
+@@ -605,7 +616,7 @@ export const useShowStore = create<ShowStore>()(
+           clearTimeout(celebrationTimeout)
+           celebrationTimeout = null
+         }
+-        set({ ...initialState, showDate: today(), showStartedAt: null, isExpanded: true })
++        set({ ...initialState, showDate: today(), showStartedAt: null, viewTier: 'expanded' as ViewTier })
+       },
+ 
+       // ─── Session ───
+@@ -665,7 +676,7 @@ export const useShowStore = create<ShowStore>()(
+           if (!rehydratedState) return
+           // Day boundary: if show date isn't today, reset
+           if (rehydratedState.showDate !== today()) {
+-            Object.assign(rehydratedState, { ...initialState, showDate: today(), isExpanded: true })
++            Object.assign(rehydratedState, { ...initialState, showDate: today(), viewTier: 'expanded' as ViewTier })
+           }
+         }
+       },
+@@ -678,3 +689,6 @@ export const useShowStore = create<ShowStore>()(
+ export const selectCurrentAct = (s: ShowStore): Act | undefined =>
+   s.acts.find((a) => a.id === s.currentActId)
+ 
++export const selectIsExpanded = (s: ShowStore): boolean =>
++  s.viewTier !== 'micro'
++
+diff --git a/src/renderer/views/CompactView.tsx b/src/renderer/views/CompactView.tsx
+new file mode 100644
+index 0000000..8d2ebf9
+--- /dev/null
++++ b/src/renderer/views/CompactView.tsx
+@@ -0,0 +1,117 @@
++import { motion } from 'framer-motion'
++import { useShowStore, selectCurrentAct } from '../stores/showStore'
++import { useTimer } from '../hooks/useTimer'
++import { TallyLight } from '../components/TallyLight'
++import { BeatCounter } from '../components/BeatCounter'
++import { OnAirIndicator } from '../components/OnAirIndicator'
++import { RundownBar } from '../components/RundownBar'
++import { cn } from '../lib/utils'
++
++function formatStartTime(timestamp: number): string {
++  return new Date(timestamp).toLocaleTimeString('en-US', {
++    hour: 'numeric',
++    minute: '2-digit',
++    hour12: true,
++  })
++}
++
++export function CompactView() {
++  const phase = useShowStore((s) => s.phase)
++  const verdict = useShowStore((s) => s.verdict)
++  const currentAct = useShowStore(selectCurrentAct)
++  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
++  const expandViewTier = useShowStore((s) => s.expandViewTier)
++  const showStartedAt = useShowStore((s) => s.showStartedAt)
++  const { minutes, seconds, isRunning } = useTimer()
++
++  const isUrgent = minutes < 5 && isRunning
++  const timerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
++
++  return (
++    <motion.div
++      className={cn(
++        'w-full h-full rounded-2xl flex flex-col overflow-hidden',
++        'bg-surface/90 backdrop-blur-[20px]',
++        'border border-white/[0.06]',
++        'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
++        'select-none'
++      )}
++      initial={{ scale: 0.9, opacity: 0, y: 10 }}
++      animate={{ scale: 1, opacity: 1, y: 0 }}
++      exit={{ scale: 0.95, opacity: 0, y: -5 }}
++      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
++    >
++      {/* Header Row (32px) — drag region */}
++      <div className="flex items-center gap-2 px-3 py-2 drag-region">
++        <TallyLight isLive={phase === 'live'} size="sm" />
++        {phase === 'live' && (
++          <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-onair uppercase">
++            TALLY
++          </span>
++        )}
++        <div
++          className="flex items-center gap-2 flex-1 cursor-pointer no-drag min-w-0"
++          onClick={expandViewTier}
++        >
++          {phase === 'live' && (
++            <>
++              <span className="font-body text-[13px] font-semibold text-txt-primary truncate flex-1">
++                {currentAct?.name}
++              </span>
++              <span
++                className={cn(
++                  'font-mono text-sm font-semibold tabular-nums shrink-0',
++                  isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
++                )}
++              >
++                {timerText}
++              </span>
++            </>
++          )}
++          {phase === 'intermission' && (
++            <>
++              <span className="font-body text-[13px] text-txt-secondary flex-1">
++                Intermission
++              </span>
++              <span className="font-body text-xs text-txt-muted shrink-0">no rush</span>
++            </>
++          )}
++          {phase === 'strike' && (
++            <>
++              <span className="font-body text-[13px] text-txt-primary flex-1">
++                Show complete!
++              </span>
++              <BeatCounter size="sm" />
++            </>
++          )}
++        </div>
++        <button
++          onClick={collapseViewTier}
++          className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
++        >
++          ▼
++        </button>
++      </div>
++
++      {/* RundownBar section */}
++      <div className="px-2">
++        <RundownBar variant="compact" />
++      </div>
++
++      {/* Status Bar (bottom) */}
++      <div className="flex items-center justify-between px-3 py-1.5 mt-auto">
++        <div className="flex items-center gap-2">
++          <BeatCounter size="sm" showLabel />
++        </div>
++        <div className="flex items-center gap-2">
++          {phase === 'live' && <OnAirIndicator isLive />}
++          {showStartedAt && (
++            <span className="font-mono text-[10px] text-txt-muted">
++              Started {formatStartTime(showStartedAt)}
++            </span>
++          )}
++        </div>
++      </div>
++    </motion.div>
++  )
++}
+diff --git a/src/renderer/views/DarkStudioView.tsx b/src/renderer/views/DarkStudioView.tsx
+index b9d3862..80c7641 100644
+--- a/src/renderer/views/DarkStudioView.tsx
++++ b/src/renderer/views/DarkStudioView.tsx
+@@ -1,9 +1,35 @@
++import { useMemo } from 'react'
+ import { motion } from 'framer-motion'
+ import { useShowStore } from '../stores/showStore'
+ import { Button } from '../ui/button'
+ 
+-export function DarkStudioView() {
++function getTemporalGreeting(): { heading: string; sub: string } {
++  const hour = new Date().getHours()
++  if (hour < 12) {
++    return {
++      heading: "Today's show hasn't been written yet.",
++      sub: 'The morning stage is yours.',
++    }
++  }
++  if (hour < 18) {
++    return {
++      heading: "Today's show hasn't been written yet.",
++      sub: 'There\u2019s still time to make it a great one.',
++    }
++  }
++  return {
++    heading: "Tomorrow's show hasn't been written yet.",
++    sub: 'Plan ahead — the best shows are written the night before.',
++  }
++}
++
++interface DarkStudioViewProps {
++  onShowHistory?: () => void
++}
++
++export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
+   const triggerColdOpen = useShowStore((s) => s.triggerColdOpen)
++  const greeting = useMemo(getTemporalGreeting, [])
+ 
+   return (
+     <div
+@@ -21,21 +47,26 @@ export function DarkStudioView() {
+         transition={{ type: 'spring', stiffness: 80, damping: 20 }}
+       >
+         <h1 className="font-body text-2xl font-light text-txt-primary tracking-tight">
+-          Tonight's show hasn't been written yet.
++          {greeting.heading}
+         </h1>
+         <p className="font-body text-sm text-txt-muted mt-3">
+-          Every great show starts somewhere.
++          {greeting.sub}
+         </p>
+ 
+         <motion.div
+-          className="mt-8"
++          className="mt-8 flex items-center gap-3"
+           initial={{ opacity: 0, y: 12 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 1.2 }}
+         >
+           <Button variant="accent" onClick={triggerColdOpen}>
+-            Enter the Writer's Room
++            Enter the Writer&apos;s Room
+           </Button>
++          {onShowHistory && (
++            <Button variant="ghost_muted" onClick={onShowHistory}>
++              Past Shows
++            </Button>
++          )}
+         </motion.div>
+       </motion.div>
+     </div>
+diff --git a/src/renderer/views/DashboardView.tsx b/src/renderer/views/DashboardView.tsx
+new file mode 100644
+index 0000000..fc042c3
+--- /dev/null
++++ b/src/renderer/views/DashboardView.tsx
+@@ -0,0 +1,184 @@
++import { useMemo } from 'react'
++import { motion } from 'framer-motion'
++import { useShowStore, selectCurrentAct } from '../stores/showStore'
++import { useTimer } from '../hooks/useTimer'
++import { TallyLight } from '../components/TallyLight'
++import { BeatCounter } from '../components/BeatCounter'
++import { OnAirIndicator } from '../components/OnAirIndicator'
++import { RundownBar } from '../components/RundownBar'
++import { ClapperboardBadge } from '../components/ClapperboardBadge'
++import { MuteToggle } from '../components/MuteToggle'
++import { cn } from '../lib/utils'
++import { formatDateLabel } from '../lib/utils'
++import { getCategoryClasses } from '../lib/category-colors'
++
++function formatStartTime(timestamp: number): string {
++  return new Date(timestamp).toLocaleTimeString('en-US', {
++    hour: 'numeric',
++    minute: '2-digit',
++    hour12: true,
++  })
++}
++
++export function DashboardView() {
++  const phase = useShowStore((s) => s.phase)
++  const acts = useShowStore((s) => s.acts)
++  const currentAct = useShowStore(selectCurrentAct)
++  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
++  const expandViewTier = useShowStore((s) => s.expandViewTier)
++  const enterDirector = useShowStore((s) => s.enterDirector)
++  const showStartedAt = useShowStore((s) => s.showStartedAt)
++  const { minutes, seconds, isRunning, progress } = useTimer()
++
++  const dateLabel = useMemo(formatDateLabel, [])
++
++  const isUrgent = minutes < 5 && isRunning
++  const timerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
++
++  // Upcoming acts (next 2 after current)
++  const upcomingActs = useMemo(() => {
++    const sorted = [...acts].sort((a, b) => a.order - b.order)
++    return sorted.filter((a) => a.status === 'upcoming').slice(0, 2)
++  }, [acts])
++
++  const currentActIndex = currentAct
++    ? acts.sort((a, b) => a.order - b.order).findIndex((a) => a.id === currentAct.id)
++    : -1
++
++  return (
++    <motion.div
++      className={cn(
++        'w-full h-full rounded-xl flex flex-col overflow-hidden',
++        'bg-surface/95 backdrop-blur-[16px]',
++        'border border-white/[0.06]',
++        'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
++        'select-none'
++      )}
++      initial={{ scale: 0.9, opacity: 0, y: 10 }}
++      animate={{ scale: 1, opacity: 1, y: 0 }}
++      exit={{ scale: 0.95, opacity: 0, y: -5 }}
++      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
++    >
++      {/* Title Bar (36px) — drag region */}
++      <div className="flex items-center gap-2 px-3 py-2 drag-region border-b border-white/[0.04]">
++        <TallyLight isLive={phase === 'live'} size="sm" />
++        <span className="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">
++          SHOWTIME
++        </span>
++        <span className="font-mono text-[9px] tracking-wider text-txt-muted/60">
++          {dateLabel}
++        </span>
++        <div className="flex-1" />
++        <MuteToggle />
++        <button
++          onClick={enterDirector}
++          className="px-2 py-1 rounded-md bg-surface-hover text-txt-secondary text-[11px] font-medium hover:text-txt-primary transition-colors no-drag"
++        >
++          Director
++        </button>
++        <button
++          onClick={collapseViewTier}
++          className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
++        >
++          ▼
++        </button>
++        <button
++          onClick={() => window.clui.quit()}
++          className="px-1 py-0.5 text-txt-muted hover:text-onair transition-colors text-xs no-drag"
++          title="Quit Showtime"
++        >
++          ✕
++        </button>
++      </div>
++
++      {/* RundownBar section */}
++      <div className="px-2 pt-1">
++        <RundownBar variant="full" />
++      </div>
++
++      {/* Timer Section — the hero area */}
++      <div
++        className="flex-1 flex flex-col items-center justify-center px-4 cursor-pointer no-drag"
++        onClick={expandViewTier}
++      >
++        {phase === 'live' && currentAct && (
++          <>
++            <ClapperboardBadge
++              sketch={currentAct.sketch}
++              actNumber={currentActIndex + 1}
++              size="sm"
++            />
++            <p className="font-body text-base font-bold text-txt-primary mt-2 truncate max-w-full">
++              {currentAct.name}
++            </p>
++            <p
++              className={cn(
++                'font-mono text-4xl font-bold tabular-nums mt-1',
++                isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
++              )}
++            >
++              {timerText}
++            </p>
++            {/* Progress bar */}
++            <div className="w-full max-w-[280px] h-1 bg-surface-hover rounded-full mt-2 overflow-hidden">
++              <div
++                className="h-full bg-accent rounded-full transition-all"
++                style={{ width: `${Math.round(progress * 100)}%` }}
++              />
++            </div>
++          </>
++        )}
++        {phase === 'intermission' && (
++          <p className="font-body text-lg text-txt-secondary font-medium">
++            WE&apos;LL BE RIGHT BACK
++          </p>
++        )}
++        {phase === 'strike' && (
++          <p className="font-body text-lg text-beat font-medium animate-golden-glow">
++            Show complete!
++          </p>
++        )}
++      </div>
++
++      {/* Coming Up Section */}
++      {upcomingActs.length > 0 && phase !== 'strike' && (
++        <div className="px-3 pb-1">
++          <p className="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted mb-1">
++            COMING UP
++          </p>
++          {upcomingActs.map((act) => {
++            const catClasses = getCategoryClasses(act.sketch)
++            return (
++              <div key={act.id} className="flex items-center gap-2 py-1">
++                <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', catClasses.bg)} />
++                <span className="font-body text-[13px] text-txt-secondary truncate flex-1">
++                  {act.name}
++                </span>
++                <span className="font-mono text-[11px] text-txt-muted shrink-0">
++                  {act.durationMinutes}m
++                </span>
++                <span className={cn('font-mono text-[10px] shrink-0', catClasses.text)}>
++                  {act.sketch}
++                </span>
++              </div>
++            )
++          })}
++          {upcomingActs.length === 0 && phase === 'live' && (
++            <p className="font-body text-xs text-txt-muted py-1">Final act!</p>
++          )}
++        </div>
++      )}
++
++      {/* Status Bar (bottom) */}
++      <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.04]">
++        <OnAirIndicator isLive={phase === 'live'} />
++        <BeatCounter size="sm" showLabel />
++        {showStartedAt && (
++          <span className="font-mono text-[10px] text-txt-muted">
++            Started {formatStartTime(showStartedAt)}
++          </span>
++        )}
++      </div>
++    </motion.div>
++  )
++}
+diff --git a/src/renderer/views/ExpandedView.tsx b/src/renderer/views/ExpandedView.tsx
+index 51601b5..f5c05c7 100644
+--- a/src/renderer/views/ExpandedView.tsx
++++ b/src/renderer/views/ExpandedView.tsx
+@@ -25,7 +25,7 @@ export function ExpandedView() {
+   const currentAct = useShowStore(selectCurrentAct)
+   const beatsLocked = useShowStore((s) => s.beatsLocked)
+   const beatThreshold = useShowStore((s) => s.beatThreshold)
+-  const toggleExpanded = useShowStore((s) => s.toggleExpanded)
++  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
+   const enterDirector = useShowStore((s) => s.enterDirector)
+   const showStartedAt = useShowStore((s) => s.showStartedAt)
+ 
+@@ -61,7 +61,7 @@ export function ExpandedView() {
+             Director
+           </button>
+           <button
+-            onClick={toggleExpanded}
++            onClick={collapseViewTier}
+             className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
+           >
+             ▼
+diff --git a/src/renderer/views/HistoryView.tsx b/src/renderer/views/HistoryView.tsx
+new file mode 100644
+index 0000000..a55e196
+--- /dev/null
++++ b/src/renderer/views/HistoryView.tsx
+@@ -0,0 +1,131 @@
++import { useEffect, useState } from 'react'
++import { motion } from 'framer-motion'
++import { Button } from '../ui/button'
++import { cn } from '../lib/utils'
++import type { ShowHistoryEntry } from '../../main/data/types'
++
++interface HistoryViewProps {
++  onBack: () => void
++}
++
++const VERDICT_LABELS: Record<string, { label: string; color: string }> = {
++  DAY_WON: { label: 'Day Won', color: 'text-beat' },
++  SOLID_SHOW: { label: 'Solid Show', color: 'text-emerald-400' },
++  GOOD_EFFORT: { label: 'Good Effort', color: 'text-txt-secondary' },
++  SHOW_CALLED_EARLY: { label: 'Called Early', color: 'text-txt-muted' },
++}
++
++function formatShowDate(dateId: string): string {
++  const d = new Date(dateId + 'T12:00:00')
++  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
++}
++
++export function HistoryView({ onBack }: HistoryViewProps) {
++  const [history, setHistory] = useState<ShowHistoryEntry[]>([])
++  const [loading, setLoading] = useState(true)
++
++  useEffect(() => {
++    window.clui.getShowHistory(30).then((entries) => {
++      setHistory(entries)
++      setLoading(false)
++    }).catch(() => setLoading(false))
++  }, [])
++
++  return (
++    <motion.div
++      className="w-full h-full bg-surface overflow-hidden flex flex-col"
++      initial={{ opacity: 0 }}
++      animate={{ opacity: 1 }}
++      exit={{ opacity: 0 }}
++      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
++    >
++      {/* Title bar */}
++      <div className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region">
++        <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
++          PAST SHOWS
++        </span>
++        <button
++          onClick={onBack}
++          className="text-txt-muted hover:text-txt-secondary text-sm no-drag transition-colors"
++        >
++          Back
++        </button>
++      </div>
++
++      {/* Content */}
++      <div className="flex-1 overflow-y-auto px-5 py-4">
++        {loading && (
++          <p className="text-sm text-txt-muted text-center py-8">Loading...</p>
++        )}
++
++        {!loading && history.length === 0 && (
++          <p className="text-sm text-txt-muted text-center py-8">
++            No past shows yet. Your history will appear here after your first show.
++          </p>
++        )}
++
++        {!loading && history.map((show, i) => {
++          const verdictInfo = show.verdict ? VERDICT_LABELS[show.verdict] : null
++          return (
++            <motion.div
++              key={show.showId}
++              className="flex items-center gap-3 py-3 border-b border-[#242428] last:border-b-0"
++              initial={{ opacity: 0, x: -8 }}
++              animate={{ opacity: 1, x: 0 }}
++              transition={{ type: 'spring', stiffness: 200, damping: 25, delay: i * 0.03 }}
++            >
++              {/* Date */}
++              <div className="w-[100px] shrink-0">
++                <p className="font-body text-sm text-txt-primary font-medium">
++                  {formatShowDate(show.showId)}
++                </p>
++              </div>
++
++              {/* Verdict badge */}
++              <div className="w-[90px] shrink-0">
++                {verdictInfo ? (
++                  <span className={cn('font-mono text-[10px] font-bold uppercase tracking-wider', verdictInfo.color)}>
++                    {verdictInfo.label}
++                  </span>
++                ) : (
++                  <span className="font-mono text-[10px] text-txt-muted">
++                    {show.phase === 'strike' ? 'Complete' : 'In Progress'}
++                  </span>
++                )}
++              </div>
++
++              {/* Acts */}
++              <div className="flex-1">
++                <span className="font-mono text-xs text-txt-secondary">
++                  {show.completedActCount}/{show.actCount} acts
++                </span>
++              </div>
++
++              {/* Beats */}
++              <div className="shrink-0 flex items-center gap-0.5">
++                {Array.from({ length: show.beatThreshold }, (_, j) => (
++                  <span
++                    key={j}
++                    className={cn(
++                      'text-sm',
++                      j < show.beatsLocked ? 'text-beat' : 'text-txt-muted'
++                    )}
++                  >
++                    {j < show.beatsLocked ? '\u2605' : '\u2606'}
++                  </span>
++                ))}
++              </div>
++            </motion.div>
++          )
++        })}
++      </div>
++
++      {/* Footer */}
++      <div className="px-5 py-4 border-t border-[#242428]">
++        <Button variant="neutral" onClick={onBack}>
++          Back to Stage
++        </Button>
++      </div>
++    </motion.div>
++  )
++}
+diff --git a/src/renderer/views/PillView.tsx b/src/renderer/views/PillView.tsx
+index db4bff9..4cf04d9 100644
+--- a/src/renderer/views/PillView.tsx
++++ b/src/renderer/views/PillView.tsx
+@@ -8,7 +8,7 @@ import { cn } from '../lib/utils'
+ 
+ export function PillView() {
+   const phase = useShowStore((s) => s.phase)
+-  const toggleExpanded = useShowStore((s) => s.toggleExpanded)
++  const expandViewTier = useShowStore((s) => s.expandViewTier)
+   const currentAct = useShowStore(selectCurrentAct)
+   const { minutes, seconds, isRunning } = useTimer()
+ 
+@@ -44,7 +44,7 @@ export function PillView() {
+         {/* Rest: click to expand */}
+         <div
+           className="flex items-center gap-3 flex-1 cursor-pointer no-drag"
+-          onClick={toggleExpanded}
++          onClick={expandViewTier}
+         >
+           {phase === 'live' && (
+             <>
+diff --git a/src/renderer/views/StrikeView.tsx b/src/renderer/views/StrikeView.tsx
+index e7730e7..855bb51 100644
+--- a/src/renderer/views/StrikeView.tsx
++++ b/src/renderer/views/StrikeView.tsx
+@@ -17,13 +17,17 @@ function formatDuration(startMs: number): string {
+   return `${hours}h ${mins}m`
+ }
+ 
+-export function StrikeView() {
++interface StrikeViewProps {
++  onShowHistory?: () => void
++}
++
++export function StrikeView({ onShowHistory }: StrikeViewProps) {
+   const verdict = useShowStore((s) => s.verdict)
+   const acts = useShowStore((s) => s.acts)
+   const beatsLocked = useShowStore((s) => s.beatsLocked)
+   const beatThreshold = useShowStore((s) => s.beatThreshold)
+   const resetShow = useShowStore((s) => s.resetShow)
+-  const setExpanded = useShowStore((s) => s.setExpanded)
++  const setViewTier = useShowStore((s) => s.setViewTier)
+   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
+   const showStartedAt = useShowStore((s) => s.showStartedAt)
+ 
+@@ -192,7 +196,7 @@ export function StrikeView() {
+             Standing ovation.
+           </motion.p>
+         )}
+-        <div className="flex items-center gap-3">
++        <div className="flex items-center gap-3 flex-wrap">
+           <Button
+             variant="accent"
+             onClick={enterWritersRoom}
+@@ -209,11 +213,20 @@ export function StrikeView() {
+           </Button>
+           <Button
+             variant="neutral"
+-            onClick={() => setExpanded(false)}
++            onClick={() => setViewTier('micro')}
+             data-testid="thats-a-wrap-btn"
+           >
+             That&apos;s a Wrap
+           </Button>
++          {onShowHistory && (
++            <Button
++              variant="ghost_muted"
++              onClick={onShowHistory}
++              data-testid="view-history-btn"
++            >
++              View Past Shows
++            </Button>
++          )}
+         </div>
+       </div>
+     </motion.div>
+diff --git a/src/shared/types.ts b/src/shared/types.ts
+index 8a639fd..498aa10 100644
+--- a/src/shared/types.ts
++++ b/src/shared/types.ts
+@@ -301,6 +301,29 @@ export type EnergyLevel = 'high' | 'medium' | 'low' | 'recovery'
+ export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
+ export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
+ export type WritersRoomStep = 'energy' | 'plan' | 'lineup'
++export type ViewTier = 'micro' | 'compact' | 'dashboard' | 'expanded'
++
++const VIEW_TIER_ORDER: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
++
++export function nextViewTier(current: ViewTier): ViewTier {
++  const idx = VIEW_TIER_ORDER.indexOf(current)
++  return VIEW_TIER_ORDER[(idx + 1) % VIEW_TIER_ORDER.length]
++}
++
++export function prevViewTier(current: ViewTier): ViewTier {
++  const idx = VIEW_TIER_ORDER.indexOf(current)
++  return VIEW_TIER_ORDER[(idx - 1 + VIEW_TIER_ORDER.length) % VIEW_TIER_ORDER.length]
++}
++
++export function expandTier(current: ViewTier): ViewTier {
++  const idx = VIEW_TIER_ORDER.indexOf(current)
++  return idx < VIEW_TIER_ORDER.length - 1 ? VIEW_TIER_ORDER[idx + 1] : current
++}
++
++export function collapseTier(current: ViewTier): ViewTier {
++  const idx = VIEW_TIER_ORDER.indexOf(current)
++  return idx > 0 ? VIEW_TIER_ORDER[idx - 1] : current
++}
+ 
+ export interface Act {
+   id: string
+@@ -338,7 +361,7 @@ export interface ShowState {
+   showDate: string
+   showStartedAt: number | null
+   verdict: ShowVerdict | null
+-  isExpanded: boolean
++  viewTier: ViewTier
+   beatCheckPending: boolean
+   goingLiveActive: boolean
+   writersRoomStep: WritersRoomStep
+@@ -431,6 +454,7 @@ export const IPC = {
+   TIMELINE_DRIFT_PER_ACT: 'showtime:timeline-drift-per-act',
+   CLAUDE_CONTEXT_SAVE: 'showtime:claude-context-save',
+   CLAUDE_CONTEXT_GET: 'showtime:claude-context-get',
++  SHOW_HISTORY: 'showtime:show-history',
+ 
+   // App lifecycle
+   APP_QUIT: 'app:quit',
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None
