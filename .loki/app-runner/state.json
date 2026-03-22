@@ -4,7 +4,7 @@
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-22T02:30:22Z",
+    "started_at": "2026-03-22T06:43:39Z",
     "restart_count": 1,
     "status": "stopped",
     "last_health": {"ok": false},

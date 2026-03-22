@@ -2,7 +2,7 @@
   "timestamp": "2026-03-21T22:11:48Z",
   "gate_failures": [],
   "pass": true,
-  "static_analysis": 3,
+  "static_analysis": 0,
   "test_coverage": 0,
-  "code_review": 2
+  "code_review": 3
 }

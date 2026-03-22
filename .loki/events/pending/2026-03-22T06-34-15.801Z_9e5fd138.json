@@ -1,0 +1,8 @@
+{
+  "id": "9e5fd138",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-22T06:34:15.801Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md"},
+  "version": "1.0"
+}

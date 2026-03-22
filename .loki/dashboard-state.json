@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-22T02:30:21Z",
+  "timestamp": "2026-03-22T06:43:38Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
@@ -136,6 +136,15 @@
     "completedAt": "2026-03-22T02:29:14Z",
     "exitCode": 0,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "completed",
+    "completedAt": "2026-03-22T06:40:56Z",
+    "exitCode": 0,
+    "provider": "claude"
   }
 ],
     "failed": [
@@ -172,8 +181,8 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 52,
-    "memoryUsage": 72,
+    "cpuUsage": 50,
+    "memoryUsage": 69,
     "resourceStatus": "ok"
   },
   "memory": {
@@ -183,19 +192,16 @@
   },
   "qualityGates": null,
   "council": {
-  "initialized": true,
-  "enabled": true,
-  "total_votes": 0,
-  "approve_votes": 0,
-  "reject_votes": 0,
-  "last_check_iteration": 0,
-  "consecutive_no_change": 0,
-  "done_signals": 1,
-  "convergence_history": [],
-  "verdicts": [],
-  "total_done_signals": 1,
-  "last_track_iteration": 1,
-  "files_changed": 22
+    "initialized": true,
+    "enabled": true,
+    "total_votes": 0,
+    "approve_votes": 0,
+    "reject_votes": 0,
+    "last_check_iteration": 0,
+    "consecutive_no_change": 0,
+    "done_signals": 0,
+    "convergence_history": [],
+    "verdicts": []
 },
   "checklist": null,
   "appRunner": {
@@ -204,7 +210,7 @@
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-22T02:06:13Z",
+    "started_at": "2026-03-22T02:30:22Z",
     "restart_count": 1,
     "status": "stopped",
     "last_health": {"ok": false},
@@ -213,17 +219,17 @@
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
+  "session_id": "74fd4685-d420-4fb0-bd99-7b103f91f772",
   "provider": "claude",
-  "updated_at": "2026-03-22T02:29:14.352235+00:00",
+  "updated_at": "2026-03-22T06:40:56.436239+00:00",
   "current": {
-    "input_tokens": 0,
-    "output_tokens": 0,
-    "cache_read_tokens": 0,
-    "cache_creation_tokens": 0,
-    "total_tokens": 0,
-    "context_window_pct": 0.0,
-    "estimated_cost_usd": 53.0779
+    "input_tokens": 1,
+    "output_tokens": 17043,
+    "cache_read_tokens": 79454,
+    "cache_creation_tokens": 263185,
+    "total_tokens": 79455,
+    "context_window_pct": 39.73,
+    "estimated_cost_usd": 55.4441
   },
   "compactions": [
     {
@@ -262,13 +268,13 @@
     }
   ],
   "totals": {
-    "total_input": 74818,
-    "total_output": 286910,
-    "total_cost_usd": 53.0779,
+    "total_input": 95935,
+    "total_output": 303953,
+    "total_cost_usd": 55.4441,
     "compaction_count": 2,
     "iterations_tracked": 2
   }
 },
-  "tokens": {"input": 74818, "output": 286910, "cost_usd": 53.0779},
+  "tokens": {"input": 95935, "output": 303953, "cost_usd": 55.4441},
   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
 }
