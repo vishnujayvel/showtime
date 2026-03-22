@@ -440,6 +440,7 @@ export const IPC = {
   CLAUDE_CONTEXT_SAVE: 'showtime:claude-context-save',
   CLAUDE_CONTEXT_GET: 'showtime:claude-context-get',
   SHOW_HISTORY: 'showtime:show-history',
+  SHOW_DETAIL: 'showtime:show-detail',
 
   // App lifecycle
   APP_QUIT: 'app:quit',

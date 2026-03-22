@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { Button } from '../ui/button'
+import { getTemporalShowLabel } from '../lib/utils'
 import { motion } from 'framer-motion'
 import {
   Dialog,
@@ -82,7 +83,7 @@ export function DirectorMode() {
             className="w-full py-3 rounded-xl bg-txt-muted/10 text-txt-muted text-sm font-medium border border-txt-muted/20 hover:bg-txt-muted/15 transition-colors"
             onClick={() => setConfirmReset(true)}
           >
-            Reset tonight's show
+            Reset {getTemporalShowLabel()} show
           </Button>
         </div>
       </motion.div>
@@ -90,7 +91,7 @@ export function DirectorMode() {
       <Dialog open={confirmReset} onOpenChange={setConfirmReset}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Reset tonight's show?</DialogTitle>
+            <DialogTitle>Reset {getTemporalShowLabel()} show?</DialogTitle>
             <DialogDescription>
               This clears your lineup, timer, and beats. It can't be undone.
             </DialogDescription>

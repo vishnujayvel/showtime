@@ -8,6 +8,7 @@
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import fc from 'fast-check'
+import { getTemporalShowLabel, getTemporalShowLabelUpper } from '../../renderer/lib/utils'
 
 // ─── Temporal helpers (extracted from DarkStudioView / WritersRoomView patterns) ───
 
@@ -114,6 +115,37 @@ describe('Layer 2b: Temporal Property Tests', () => {
           expect(month).toBeLessThanOrEqual(12)
           expect(day).toBeGreaterThanOrEqual(1)
           expect(day).toBeLessThanOrEqual(31)
+        }
+      )
+    )
+  })
+
+  it('getTemporalShowLabel returns correct label for time of day', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 23 }),
+        (hour) => {
+          const date = new Date(2026, 0, 15, hour, 30, 0)
+          const label = getTemporalShowLabel(date)
+          if (hour < 12) {
+            expect(label).toBe("today's")
+          } else if (hour < 18) {
+            expect(label).toBe("your next")
+          } else {
+            expect(label).toBe("tomorrow's")
+          }
+        }
+      )
+    )
+  })
+
+  it('getTemporalShowLabelUpper is uppercase version of getTemporalShowLabel', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 23 }),
+        (hour) => {
+          const date = new Date(2026, 0, 15, hour, 30, 0)
+          expect(getTemporalShowLabelUpper(date)).toBe(getTemporalShowLabel(date).toUpperCase())
         }
       )
     )

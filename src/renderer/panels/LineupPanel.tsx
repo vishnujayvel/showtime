@@ -3,6 +3,7 @@ import { useShowStore } from '../stores/showStore'
 import { ActCard } from '../components/ActCard'
 import { motion } from 'framer-motion'
 import type { Act } from '../../shared/types'
+import { getTemporalShowLabelUpper } from '../lib/utils'
 
 interface LineupPanelProps {
   variant: 'full' | 'sidebar'
@@ -120,7 +121,7 @@ function SidebarLineupPanel() {
   return (
     <div className="flex flex-col">
       <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted mb-2">
-        TONIGHT&apos;S LINEUP
+        {getTemporalShowLabelUpper()} LINEUP
       </span>
       {sorted.map((act, index) => {
         const times = projectedTimes.get(act.id)
