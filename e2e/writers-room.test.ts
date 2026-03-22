@@ -109,7 +109,7 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
     await expect(loadingText).toBeVisible({ timeout: 2000 }).catch(() => {})
 
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
-    const retryButton = page.getByText('Try again')
+    const retryButton = page.getByRole('button', { name: 'Try again' })
 
     let claudePath: 'lineup' | 'unavailable' = 'unavailable'
 

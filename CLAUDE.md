@@ -103,7 +103,6 @@ These BrowserWindow settings are **mandatory**:
 const win = new BrowserWindow({
   backgroundColor: '#00000000',
   frame: false,
-  transparent: true,
   hasShadow: true,
   // Do NOT use vibrancy — it creates a native NSVisualEffectView that bleeds
   // through as a visible gray border around content. Paint backgrounds in CSS.
@@ -111,6 +110,8 @@ const win = new BrowserWindow({
   // ... other settings
 });
 ```
+
+> **Note:** `transparent: true` is retained in the actual code for pill rounded corners and resize smoothness, but is an implementation detail — not a mandatory rule for contributors.
 
 - HTML, body, and React root: `background-color: transparent`
 - **All views must use `w-full h-full`** to fill the window edge-to-edge. Never use hardcoded `w-[560px]`. The window IS the content — no gaps.
