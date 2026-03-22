@@ -19,13 +19,16 @@ import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 import type { ViewTier } from '../shared/types'
 
+// View modes that the IPC bridge accepts for window sizing
+type ViewMode = 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'
+
 // Map viewTier + phase to the IPC view mode that determines window size
-function tierToViewMode(tier: ViewTier, phase: string): string {
+function tierToViewMode(tier: ViewTier, phase: string): ViewMode {
   // Full-screen phases always use 'full' regardless of tier
   if (phase === 'no_show' || phase === 'writers_room' || phase === 'strike') {
     return 'full'
   }
-  const map: Record<ViewTier, string> = {
+  const map: Record<ViewTier, ViewMode> = {
     micro: 'pill',
     compact: 'compact',
     dashboard: 'dashboard',
@@ -109,7 +112,7 @@ export default function App() {
     }
 
     const mode = tierToViewMode(viewTier, phase)
-    window.clui.setViewMode(mode as any)
+    window.clui.setViewMode(mode)
   }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory])
 
   // ─── Force-expand on Beat Check ───

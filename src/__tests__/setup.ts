@@ -21,13 +21,7 @@ if (typeof window !== 'undefined') {
     closeTab: vi.fn().mockResolvedValue(undefined),
     isVisible: vi.fn().mockResolvedValue(true),
     respondPermission: vi.fn().mockResolvedValue(undefined),
-    setPermissionMode: vi.fn(),
     resetTabSession: vi.fn(),
-    loadSession: vi.fn().mockResolvedValue([]),
-    fetchMarketplace: vi.fn().mockResolvedValue({ plugins: [], error: null }),
-    listInstalledPlugins: vi.fn().mockResolvedValue([]),
-    installPlugin: vi.fn().mockResolvedValue({ ok: true }),
-    uninstallPlugin: vi.fn().mockResolvedValue({ ok: true }),
     // Data persistence
     dataHydrate: vi.fn().mockResolvedValue(null),
     dataSync: vi.fn(),

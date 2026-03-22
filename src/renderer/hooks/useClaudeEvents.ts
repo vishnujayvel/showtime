@@ -36,7 +36,7 @@ export function useClaudeEvents() {
         // Buffer text chunks and flush on next animation frame
         const buffer = chunkBufferRef.current
         const existing = buffer.get(tabId) || ''
-        buffer.set(tabId, existing + (event as any).text)
+        buffer.set(tabId, existing + (event.type === 'text_chunk' ? event.text : ''))
 
         if (!rafIdRef.current) {
           rafIdRef.current = requestAnimationFrame(flushChunks)
