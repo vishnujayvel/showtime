@@ -112,3 +112,6 @@
 {"timestamp":"2026-03-22T17:52:57Z","type":"code_review_start","data":{"review_id":"review-20260322T175257Z-2","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":2}}
 {"timestamp":"2026-03-22T17:55:21Z","type":"code_review_complete","data":{"review_id":"review-20260322T175257Z-2","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":2}}
 {"timestamp":"2026-03-22T17:57:52Z","type":"iteration_start","data":{"iteration":3,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/layer3-proposal.md"}}
+{"timestamp":"2026-03-22T18:18:48Z","type":"iteration_complete","data":{"iteration":3,"status":"failed","exitCode":137,"provider":"claude"}}
+{"timestamp":"2026-03-22T18:18:54Z","type":"code_review_start","data":{"review_id":"review-20260322T181854Z-3","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":3}}
+{"timestamp":"2026-03-22T18:19:08Z","type":"code_review_complete","data":{"review_id":"review-20260322T181854Z-3","pass_count":0,"fail_count":0,"has_blocking":false,"iteration":3}}
