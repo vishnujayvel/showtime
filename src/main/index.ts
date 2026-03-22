@@ -148,10 +148,8 @@ function createWindow(): void {
     ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
     frame: false,
     transparent: true,
-    ...(process.platform === 'darwin' ? {
-      vibrancy: 'under-window' as const,
-      visualEffectState: 'active' as const,
-    } : {}),
+    // Do NOT use vibrancy — it creates a native NSVisualEffectView that bleeds
+    // through as a visible gray border around content. Paint backgrounds in CSS.
     resizable: false,
     movable: true,
     alwaysOnTop: true,

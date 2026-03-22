@@ -170,7 +170,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-full relative bg-transparent flex flex-col items-center justify-end">
+    <div className="w-full h-full relative bg-transparent flex flex-col">
       {/* Help button — visible on DarkStudio when onboarding was completed */}
       {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && (
         <button
