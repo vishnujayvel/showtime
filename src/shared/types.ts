@@ -363,6 +363,7 @@ export interface ShowState {
   verdict: ShowVerdict | null
   viewTier: ViewTier
   beatCheckPending: boolean
+  celebrationActive: boolean
   goingLiveActive: boolean
   writersRoomStep: WritersRoomStep
   writersRoomEnteredAt: number | null
@@ -382,19 +383,9 @@ export const IPC = {
   STATUS: 'clui:status',
   TAB_HEALTH: 'clui:tab-health',
   CLOSE_TAB: 'clui:close-tab',
-  SELECT_DIRECTORY: 'clui:select-directory',
-  OPEN_EXTERNAL: 'clui:open-external',
-  OPEN_IN_TERMINAL: 'clui:open-in-terminal',
-  ATTACH_FILES: 'clui:attach-files',
-  TAKE_SCREENSHOT: 'clui:take-screenshot',
-  TRANSCRIBE_AUDIO: 'clui:transcribe-audio',
-  PASTE_IMAGE: 'clui:paste-image',
-  GET_DIAGNOSTICS: 'clui:get-diagnostics',
   RESPOND_PERMISSION: 'clui:respond-permission',
   INIT_SESSION: 'clui:init-session',
   RESET_TAB_SESSION: 'clui:reset-tab-session',
-  LIST_SESSIONS: 'clui:list-sessions',
-  LOAD_SESSION: 'clui:load-session',
 
   // One-way events (main → renderer)
   TEXT_CHUNK: 'clui:text-chunk',
@@ -419,12 +410,6 @@ export const IPC = {
   // Theme
   GET_THEME: 'clui:get-theme',
   THEME_CHANGED: 'clui:theme-changed',
-
-  // Marketplace
-  MARKETPLACE_FETCH: 'clui:marketplace-fetch',
-  MARKETPLACE_INSTALLED: 'clui:marketplace-installed',
-  MARKETPLACE_INSTALL: 'clui:marketplace-install',
-  MARKETPLACE_UNINSTALL: 'clui:marketplace-uninstall',
 
   // Permission mode
   SET_PERMISSION_MODE: 'clui:set-permission-mode',
@@ -459,8 +444,4 @@ export const IPC = {
   // App lifecycle
   APP_QUIT: 'app:quit',
 
-  // Legacy (kept for backward compat during migration)
-  STREAM_EVENT: 'clui:stream-event',
-  RUN_COMPLETE: 'clui:run-complete',
-  RUN_ERROR: 'clui:run-error',
 } as const

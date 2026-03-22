@@ -29,12 +29,10 @@ interface State {
   isExpanded: boolean
   staticInfo: StaticInfo | null
   preferredModel: string | null
-  permissionMode: 'ask' | 'auto'
 
   // Actions
   initStaticInfo: () => Promise<void>
   setPreferredModel: (model: string | null) => void
-  setPermissionMode: (mode: 'ask' | 'auto') => void
   createTab: () => Promise<string>
   toggleExpanded: () => void
   addSystemMessage: (content: string) => void
@@ -105,7 +103,6 @@ export const useSessionStore = create<State>((set, get) => ({
   isExpanded: false,
   staticInfo: null,
   preferredModel: null,
-  permissionMode: 'ask',
 
   initStaticInfo: async () => {
     try {
@@ -124,11 +121,6 @@ export const useSessionStore = create<State>((set, get) => ({
 
   setPreferredModel: (model) => {
     set({ preferredModel: model })
-  },
-
-  setPermissionMode: (mode) => {
-    set({ permissionMode: mode })
-    window.clui.setPermissionMode(mode)
   },
 
   createTab: async () => {
