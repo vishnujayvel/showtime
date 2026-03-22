@@ -1,0 +1,739 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/STATUS.txt
+.loki/app-runner/detection.json
+.loki/autonomy-state.json
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+.loki/council/state.json
+.loki/dashboard-state.json
+.loki/dashboard/dashboard.pid
+.loki/events.jsonl
+.loki/logs/agent-audit.jsonl
+.loki/logs/audit-20260321.jsonl
+.loki/metrics/efficiency/iteration-1.json
+.loki/pids/22164.json
+.loki/prd-observations.md
+.loki/pricing.json
+.loki/quality/gate-failure-count.json
+.loki/quality/static-analysis.json
+.loki/quality/static-analysis.pass
+.loki/quality/test-results.json
+.loki/queue/completed.json
+.loki/state/checkpoints/index.jsonl
+.loki/state/resources.json
+e2e/screenshots/01-dark-studio.png
+e2e/screenshots/02-writers-room.png
+e2e/screenshots/03-energy-selected.png
+e2e/screenshots/04-plan-filled.png
+e2e/screenshots/05-lineup-preview.png
+e2e/screenshots/07-expanded-view.png
+e2e/screenshots/08-beat-check.png
+e2e/screenshots/09-intermission.png
+e2e/screenshots/10-strike-verdict.png
+e2e/screenshots/13-final-state.png
+e2e/screenshots/14-going-live-onair.png
+e2e/screenshots/15-beat-celebration.png
+e2e/screenshots/20-rundown-bar-live.png
+e2e/screenshots/21-mini-rundown-strip.png
+e2e/screenshots/22-no-rundown-in-dark-studio.png
+e2e/screenshots/23-encore-button.png
+e2e/screenshots/24-encore-added.png
+e2e/screenshots/25-projected-times.png
+e2e/screenshots/claude-e2e-verification.png
+e2e/screenshots/issue-1-claude.png
+e2e/screenshots/issue-10-dimensions.png
+e2e/screenshots/issue-11-race-guard.png
+e2e/screenshots/issue-14-loading.png
+e2e/screenshots/issue-2-celebration.png
+e2e/screenshots/issue-7-onair.png
+e2e/screenshots/issue-8-spotlight.png
+e2e/screenshots/onboarding-01-welcome.png
+e2e/screenshots/onboarding-02-writers-room.png
+e2e/screenshots/onboarding-03-acts.png
+e2e/screenshots/onboarding-04-beats.png
+e2e/screenshots/onboarding-05-ready.png
+e2e/screenshots/onboarding-06-complete.png
+e2e/screenshots/onboarding-07-skipped.png
+e2e/screenshots/onboarding-08-skip.png
+e2e/screenshots/onboarding-09-back.png
+e2e/screenshots/onboarding-10-help-retrigger.png
+e2e/screenshots/reset-show-complete.png
+e2e/screenshots/reset-show-confirm.png
+src/main/index.ts
+src/renderer/App.tsx
+src/renderer/views/DarkStudioView.tsx
+src/renderer/views/ExpandedView.tsx
+src/renderer/views/OnboardingView.tsx
+src/renderer/views/StrikeView.tsx
+src/renderer/views/WritersRoomView.tsx
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index 5a41ac6..d89846c 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,6 +1,6 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-21T23:31:55Z
++Updated: 2026-03-22T01:45:42Z
+ 
+ ## Current State
+ 
+@@ -12,8 +12,9 @@ Updated: 2026-03-21T23:31:55Z
+ 
+ ## Last Completed Task
+ 
+-- Last commit: test: add Reset Show E2E tests and update tray menu assertion (#16)
+-- Files changed: e2e/showtime.test.ts
++- Last commit: fix: remove vibrancy border bug + make views fill window edge-to-edge
++- Files changed: src/main/index.ts, src/renderer/App.tsx, src/renderer/views/DarkStudioView.tsx, src/renderer/views/ExpandedView.tsx, src/renderer/views/OnboardingView.tsx
++  (+2 more)
+ 
+ ## Active Blockers
+ 
+diff --git a/.loki/STATUS.txt b/.loki/STATUS.txt
+index f003a78..287e40c 100644
+--- a/.loki/STATUS.txt
++++ b/.loki/STATUS.txt
+@@ -2,14 +2,14 @@
+ ║                    LOKI MODE STATUS                            ║
+ ╚════════════════════════════════════════════════════════════════╝
+ 
+-Updated: Sat Mar 21 16:33:12 PDT 2026
++Updated: Sat Mar 21 18:45:44 PDT 2026
+ 
+ Phase: DEVELOPMENT
+ 
+ Tasks:
+   ├─ Pending:     0
+   ├─ In Progress: 0
+-  ├─ Completed:   10
++  ├─ Completed:   11
+   └─ Failed:      3
+ 
+ Monitor: watch -n 2 cat .loki/STATUS.txt
+diff --git a/.loki/app-runner/detection.json b/.loki/app-runner/detection.json
+index bef1b68..d79bc30 100644
+--- a/.loki/app-runner/detection.json
++++ b/.loki/app-runner/detection.json
+@@ -3,5 +3,5 @@
+     "command": "npm run dev",
+     "port": 5173,
+     "is_docker": false,
+-    "detected_at": "2026-03-21T23:31:51Z"
++    "detected_at": "2026-03-22T01:45:41Z"
+ }
+diff --git a/.loki/autonomy-state.json b/.loki/autonomy-state.json
+index 30ce1a5..51c4771 100644
+--- a/.loki/autonomy-state.json
++++ b/.loki/autonomy-state.json
+@@ -1,10 +1,10 @@
+ {
+     "retryCount": 2,
+-    "status": "completion_promise_fulfilled",
++    "status": "exited",
+     "lastExitCode": 0,
+-    "lastRun": "2026-03-21T23:33:13Z",
+-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-4-proposal.md",
+-    "pid": 21785,
++    "lastRun": "2026-03-22T01:45:40Z",
++    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md",
++    "pid": 79650,
+     "maxRetries": 50,
+     "baseWait": 60
+ }
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index a6b4ce8..c227083 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-176
+\ No newline at end of file
++0
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index 1b1b0eb..e54b855 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,14 +1,14 @@
+ {
+-  "session_id": "af104f38-f9ff-4838-9535-57032b0e1372",
++  "session_id": "9672c951-1089-437e-ac3b-d70c93e7b287",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T23:31:50.931365+00:00",
++  "updated_at": "2026-03-22T01:45:41.065072+00:00",
+   "current": {
+-    "input_tokens": 1,
+-    "output_tokens": 14890,
+-    "cache_read_tokens": 96598,
+-    "cache_creation_tokens": 234208,
+-    "total_tokens": 96599,
+-    "context_window_pct": 48.3,
++    "input_tokens": 0,
++    "output_tokens": 0,
++    "cache_read_tokens": 0,
++    "cache_creation_tokens": 0,
++    "total_tokens": 0,
++    "context_window_pct": 0.0,
+     "estimated_cost_usd": 44.3045
+   },
+   "compactions": [
+diff --git a/.loki/council/state.json b/.loki/council/state.json
+index 33b6bc9..eaaa60b 100644
+--- a/.loki/council/state.json
++++ b/.loki/council/state.json
+@@ -1,15 +1,12 @@
+ {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 48
+-}
+\ No newline at end of file
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
++}
+diff --git a/.loki/dashboard-state.json b/.loki/dashboard-state.json
+index 0b08e77..1c3daa5 100644
+--- a/.loki/dashboard-state.json
++++ b/.loki/dashboard-state.json
+@@ -1,5 +1,5 @@
+ {
+-  "timestamp": "2026-03-21T23:33:12Z",
++  "timestamp": "2026-03-22T01:45:45Z",
+   "version": "unknown",
+   "project": {
+     "name": "showtime",
+@@ -109,6 +109,15 @@
+     "completedAt": "2026-03-21T23:31:51Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T01:45:41Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ],
+     "failed": [
+@@ -145,12 +154,12 @@
+   "metrics": {
+     "tasksCompleted": 0,
+     "tasksFailed": 0,
+-    "cpuUsage": 49,
+-    "memoryUsage": 71,
+-    "resourceStatus": "ok"
++    "cpuUsage": 86,
++    "memoryUsage": 69,
++    "resourceStatus": "warning"
+   },
+   "memory": {
+-    "episodic": 12,
++    "episodic": 13,
+     "semantic": 2,
+     "procedural": 0
+   },
+@@ -169,12 +178,12 @@
+ },
+   "checklist": null,
+   "appRunner": {
+-    "main_pid": 67680,
+-    "process_group": "-67680",
++    "main_pid": 0,
++    "process_group": "-0",
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-21T23:31:54Z",
++    "started_at": "2026-03-21T23:33:14Z",
+     "restart_count": 1,
+     "status": "stopped",
+     "last_health": {"ok": false},
+@@ -183,16 +192,16 @@
+   "playwright": null,
+   "budget": null,
+   "context": {
+-  "session_id": "af104f38-f9ff-4838-9535-57032b0e1372",
++  "session_id": "9672c951-1089-437e-ac3b-d70c93e7b287",
+   "provider": "claude",
+-  "updated_at": "2026-03-21T23:31:50.931365+00:00",
++  "updated_at": "2026-03-22T01:45:41.065072+00:00",
+   "current": {
+-    "input_tokens": 1,
+-    "output_tokens": 14890,
+-    "cache_read_tokens": 96598,
+-    "cache_creation_tokens": 234208,
+-    "total_tokens": 96599,
+-    "context_window_pct": 48.3,
++    "input_tokens": 0,
++    "output_tokens": 0,
++    "cache_read_tokens": 0,
++    "cache_creation_tokens": 0,
++    "total_tokens": 0,
++    "context_window_pct": 0.0,
+     "estimated_cost_usd": 44.3045
+   },
+   "compactions": [
+diff --git a/.loki/dashboard/dashboard.pid b/.loki/dashboard/dashboard.pid
+index 7f90f69..52903bf 100644
+--- a/.loki/dashboard/dashboard.pid
++++ b/.loki/dashboard/dashboard.pid
+@@ -1 +1 @@
+-22164
++79933
+diff --git a/.loki/events.jsonl b/.loki/events.jsonl
+index a8340c5..4597308 100644
+--- a/.loki/events.jsonl
++++ b/.loki/events.jsonl
+@@ -72,3 +72,6 @@
+ {"timestamp":"2026-03-21T23:31:57Z","type":"code_review_start","data":{"review_id":"review-20260321T233157Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+ {"timestamp":"2026-03-21T23:33:13Z","type":"code_review_complete","data":{"review_id":"review-20260321T233157Z-1","pass_count":2,"fail_count":1,"has_blocking":false,"iteration":1}}
+ {"timestamp":"2026-03-21T23:33:14Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
++{"timestamp":"2026-03-22T01:35:04Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md","parallel":true,"complexity":"standard","pid":79650}}
++{"timestamp":"2026-03-22T01:35:05Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md"}}
++{"timestamp":"2026-03-22T01:45:41Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+diff --git a/.loki/logs/agent-audit.jsonl b/.loki/logs/agent-audit.jsonl
+index 9a78d9c..82fffb1 100644
+--- a/.loki/logs/agent-audit.jsonl
++++ b/.loki/logs/agent-audit.jsonl
+@@ -33,3 +33,5 @@
+ {"timestamp": "2026-03-21T23:19:51Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-4-proposal.md,provider=claude", "iteration": 0, "pid": 21785}
+ {"timestamp": "2026-03-21T23:19:54Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 21785}
+ {"timestamp": "2026-03-21T23:33:14Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 21785}
++{"timestamp": "2026-03-22T01:35:04Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md,provider=claude", "iteration": 0, "pid": 79650}
++{"timestamp": "2026-03-22T01:35:07Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 79650}
+diff --git a/.loki/logs/audit-20260321.jsonl b/.loki/logs/audit-20260321.jsonl
+index 21f8875..ef71377 100644
+--- a/.loki/logs/audit-20260321.jsonl
++++ b/.loki/logs/audit-20260321.jsonl
+@@ -110,3 +110,10 @@
+   "user": "vishnu",
+   "pid": 21785
+ }
++{
++  "timestamp": "2026-03-22T01:35:04Z",
++  "event": "SESSION_START",
++  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
++  "user": "vishnu",
++  "pid": 79650
++}
+diff --git a/.loki/metrics/efficiency/iteration-1.json b/.loki/metrics/efficiency/iteration-1.json
+index 34d2dd3..460a679 100644
+--- a/.loki/metrics/efficiency/iteration-1.json
++++ b/.loki/metrics/efficiency/iteration-1.json
+@@ -2,11 +2,11 @@
+   "iteration": 1,
+   "model": "opus",
+   "phase": "DEVELOPMENT",
+-  "duration_ms": 718000,
++  "duration_ms": 636000,
+   "provider": "claude",
+   "status": "completed",
+   "input_tokens": 2891,
+   "output_tokens": 80165,
+   "cost_usd": 13.4582,
+-  "timestamp": "2026-03-21T23:31:50Z"
++  "timestamp": "2026-03-22T01:45:41Z"
+ }
+diff --git a/.loki/pids/22164.json b/.loki/pids/22164.json
+deleted file mode 100644
+index 84fec6b..0000000
+--- a/.loki/pids/22164.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{"pid":22164,"label":"dashboard","started":"2026-03-21T23:19:34Z","ppid":21785,"extra":"port=57374"}
+diff --git a/.loki/prd-observations.md b/.loki/prd-observations.md
+index c12a314..84b6422 100644
+--- a/.loki/prd-observations.md
++++ b/.loki/prd-observations.md
+@@ -1,9 +1,9 @@
+ # PRD Analysis Observations
+ 
+-**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-4-proposal.md`
+-**Analyzed:** 2026-03-21T23:19:52Z
++**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md`
++**Analyzed:** 2026-03-22T01:35:05Z
+ **Quality Score:** 2.9/10
+-**Estimated Scope:** medium (~6 items detected)
++**Estimated Scope:** medium (~7 items detected)
+ 
+ ## Strengths
+ 
+@@ -11,20 +11,20 @@
+ - **Tech Stack**: Partially covered (mentioned but lacks dedicated section)
+ - **User Stories / Flows**: Partially covered (mentioned but lacks dedicated section)
+ - **Data Model / Schema**: Partially covered (mentioned but lacks dedicated section)
+-- **Error Handling**: Partially covered (mentioned but lacks dedicated section)
++- **Deployment Requirements**: Partially covered (mentioned but lacks dedicated section)
+ 
+ ## Missing or Unclear
+ 
+ - **Acceptance Criteria**: Measurable completion criteria or checklists
+ - **API Specifications**: API endpoints, request/response formats
+-- **Deployment Requirements**: Deployment targets, CI/CD, and infrastructure
++- **Error Handling**: Error handling, edge cases, and failure modes
+ - **Security Requirements**: Authentication, authorization, and security measures
+ 
+ ## Assumptions Made
+ 
+ - Will generate acceptance criteria from requirements
+ - Will define API endpoints based on feature set
+-- Will use standard containerized deployment
++- Will implement standard error handling patterns
+ - Will apply baseline security (input validation, auth if applicable)
+ 
+ ## Recommended Additions
+@@ -35,6 +35,6 @@
+ - Add **Acceptance Criteria** section: Measurable completion criteria or checklists
+ - Add a dedicated **Data Model / Schema** section with more detail
+ - Add **API Specifications** section: API endpoints, request/response formats
+-- Add **Deployment Requirements** section: Deployment targets, CI/CD, and infrastructure
+-- Add a dedicated **Error Handling** section with more detail
++- Add a dedicated **Deployment Requirements** section with more detail
++- Add **Error Handling** section: Error handling, edge cases, and failure modes
+ - Add **Security Requirements** section: Authentication, authorization, and security measures
+diff --git a/.loki/pricing.json b/.loki/pricing.json
+index 2a27eaa..fdc9beb 100644
+--- a/.loki/pricing.json
++++ b/.loki/pricing.json
+@@ -1,6 +1,6 @@
+ {
+   "provider": "claude",
+-  "updated": "2026-03-21",
++  "updated": "2026-03-22",
+   "source": "static",
+   "models": {
+     "opus":            {"input": 5.00,  "output": 25.00, "label": "Opus (latest)",   "provider": "claude"},
+diff --git a/.loki/quality/gate-failure-count.json b/.loki/quality/gate-failure-count.json
+index c83e969..ef1b406 100644
+--- a/.loki/quality/gate-failure-count.json
++++ b/.loki/quality/gate-failure-count.json
+@@ -2,7 +2,7 @@
+   "timestamp": "2026-03-21T22:11:48Z",
+   "gate_failures": [],
+   "pass": true,
+-  "static_analysis": 0,
++  "static_analysis": 1,
+   "test_coverage": 0,
+   "code_review": 0
+ }
+\ No newline at end of file
+diff --git a/.loki/quality/static-analysis.json b/.loki/quality/static-analysis.json
+index 73b65be..1f640e4 100644
+--- a/.loki/quality/static-analysis.json
++++ b/.loki/quality/static-analysis.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-21T23:31:55Z","files_checked":1,"findings":0,"summary":"","pass":true}
++{"timestamp":"2026-03-22T01:45:43Z","files_checked":7,"findings":6,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DarkStudioView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/OnboardingView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/WritersRoomView.tsx. ","pass":false}
+diff --git a/.loki/quality/static-analysis.pass b/.loki/quality/static-analysis.pass
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/.loki/quality/test-results.json b/.loki/quality/test-results.json
+index a4cd696..e1b971e 100644
+--- a/.loki/quality/test-results.json
++++ b/.loki/quality/test-results.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-21T23:31:57Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':69,'numPassedTestSuites':69,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':184,'numPassedTests':184,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774135916111,'success':true,'testResults':[{'asse"}
++{"timestamp":"2026-03-22T01:45:45Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':69,'numPassedTestSuites':69,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':184,'numPassedTests':184,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774143943658,'success':true,'testResults':[{'asse"}
+diff --git a/.loki/queue/completed.json b/.loki/queue/completed.json
+index 411e8cb..f39361c 100644
+--- a/.loki/queue/completed.json
++++ b/.loki/queue/completed.json
+@@ -88,5 +88,14 @@
+     "completedAt": "2026-03-21T23:31:51Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T01:45:41Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ]
+\ No newline at end of file
+diff --git a/.loki/state/checkpoints/index.jsonl b/.loki/state/checkpoints/index.jsonl
+index 50f1b51..1d72f29 100644
+--- a/.loki/state/checkpoints/index.jsonl
++++ b/.loki/state/checkpoints/index.jsonl
+@@ -24,3 +24,4 @@
+ {"id": "cp-1-1774135000", "ts": "2026-03-21T23:16:40Z", "iter": 1, "task": "session end (iterations=1)", "sha": "de144d64effcf38d72425c1a96e279093d3b3b79"}
+ {"id": "cp-1-1774135915", "ts": "2026-03-21T23:31:55Z", "iter": 1, "task": "iteration-1 complete", "sha": "d758b3c9af7342e12921de02351d4bf0a3a00eb2"}
+ {"id": "cp-1-1774135994", "ts": "2026-03-21T23:33:14Z", "iter": 1, "task": "session end (iterations=1)", "sha": "d758b3c9af7342e12921de02351d4bf0a3a00eb2"}
++{"id": "cp-1-1774143942", "ts": "2026-03-22T01:45:42Z", "iter": 1, "task": "iteration-1 complete", "sha": "6e10a5c6dcb9a70b336c8c4135a7f659f50bf630"}
+diff --git a/.loki/state/resources.json b/.loki/state/resources.json
+index 9b98089..e1a9b65 100644
+--- a/.loki/state/resources.json
++++ b/.loki/state/resources.json
+@@ -1,15 +1,15 @@
+ {
+-  "timestamp": "2026-03-21T23:29:56Z",
++  "timestamp": "2026-03-22T01:45:10Z",
+   "cpu": {
+-    "usage_percent": 49,
++    "usage_percent": 86,
+     "threshold_percent": 80,
+-    "status": "ok"
++    "status": "high"
+   },
+   "memory": {
+-    "usage_percent": 71,
++    "usage_percent": 69,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+-  "overall_status": "ok",
+-  "warning_message": ""
++  "overall_status": "warning",
++  "warning_message": "CPU usage is 86% (threshold: 80%). Consider reducing parallel agent count or pausing non-critical tasks."
+ }
+diff --git a/e2e/screenshots/01-dark-studio.png b/e2e/screenshots/01-dark-studio.png
+index a0e0a12..8467860 100644
+Binary files a/e2e/screenshots/01-dark-studio.png and b/e2e/screenshots/01-dark-studio.png differ
+diff --git a/e2e/screenshots/02-writers-room.png b/e2e/screenshots/02-writers-room.png
+index c48dc26..fc8ab3d 100644
+Binary files a/e2e/screenshots/02-writers-room.png and b/e2e/screenshots/02-writers-room.png differ
+diff --git a/e2e/screenshots/03-energy-selected.png b/e2e/screenshots/03-energy-selected.png
+index ce57b41..5adedb9 100644
+Binary files a/e2e/screenshots/03-energy-selected.png and b/e2e/screenshots/03-energy-selected.png differ
+diff --git a/e2e/screenshots/04-plan-filled.png b/e2e/screenshots/04-plan-filled.png
+index 49e3e84..99c4ec7 100644
+Binary files a/e2e/screenshots/04-plan-filled.png and b/e2e/screenshots/04-plan-filled.png differ
+diff --git a/e2e/screenshots/05-lineup-preview.png b/e2e/screenshots/05-lineup-preview.png
+index 37f790d..112a426 100644
+Binary files a/e2e/screenshots/05-lineup-preview.png and b/e2e/screenshots/05-lineup-preview.png differ
+diff --git a/e2e/screenshots/07-expanded-view.png b/e2e/screenshots/07-expanded-view.png
+index aa4ce67..f80bc8d 100644
+Binary files a/e2e/screenshots/07-expanded-view.png and b/e2e/screenshots/07-expanded-view.png differ
+diff --git a/e2e/screenshots/08-beat-check.png b/e2e/screenshots/08-beat-check.png
+index 1b2f66f..d01e09b 100644
+Binary files a/e2e/screenshots/08-beat-check.png and b/e2e/screenshots/08-beat-check.png differ
+diff --git a/e2e/screenshots/09-intermission.png b/e2e/screenshots/09-intermission.png
+index 19fce95..91ae502 100644
+Binary files a/e2e/screenshots/09-intermission.png and b/e2e/screenshots/09-intermission.png differ
+diff --git a/e2e/screenshots/10-strike-verdict.png b/e2e/screenshots/10-strike-verdict.png
+index 678c157..42dd298 100644
+Binary files a/e2e/screenshots/10-strike-verdict.png and b/e2e/screenshots/10-strike-verdict.png differ
+diff --git a/e2e/screenshots/13-final-state.png b/e2e/screenshots/13-final-state.png
+index 296ec0c..22726b6 100644
+Binary files a/e2e/screenshots/13-final-state.png and b/e2e/screenshots/13-final-state.png differ
+diff --git a/e2e/screenshots/14-going-live-onair.png b/e2e/screenshots/14-going-live-onair.png
+index c48dc26..fc8ab3d 100644
+Binary files a/e2e/screenshots/14-going-live-onair.png and b/e2e/screenshots/14-going-live-onair.png differ
+diff --git a/e2e/screenshots/15-beat-celebration.png b/e2e/screenshots/15-beat-celebration.png
+index e5cc510..90de338 100644
+Binary files a/e2e/screenshots/15-beat-celebration.png and b/e2e/screenshots/15-beat-celebration.png differ
+diff --git a/e2e/screenshots/20-rundown-bar-live.png b/e2e/screenshots/20-rundown-bar-live.png
+index 35236af..cb6d65b 100644
+Binary files a/e2e/screenshots/20-rundown-bar-live.png and b/e2e/screenshots/20-rundown-bar-live.png differ
+diff --git a/e2e/screenshots/21-mini-rundown-strip.png b/e2e/screenshots/21-mini-rundown-strip.png
+index be89d54..c92565d 100644
+Binary files a/e2e/screenshots/21-mini-rundown-strip.png and b/e2e/screenshots/21-mini-rundown-strip.png differ
+diff --git a/e2e/screenshots/22-no-rundown-in-dark-studio.png b/e2e/screenshots/22-no-rundown-in-dark-studio.png
+index a0e0a12..8467860 100644
+Binary files a/e2e/screenshots/22-no-rundown-in-dark-studio.png and b/e2e/screenshots/22-no-rundown-in-dark-studio.png differ
+diff --git a/e2e/screenshots/23-encore-button.png b/e2e/screenshots/23-encore-button.png
+index 33f614e..00f7e84 100644
+Binary files a/e2e/screenshots/23-encore-button.png and b/e2e/screenshots/23-encore-button.png differ
+diff --git a/e2e/screenshots/24-encore-added.png b/e2e/screenshots/24-encore-added.png
+index 32d0c14..45ec313 100644
+Binary files a/e2e/screenshots/24-encore-added.png and b/e2e/screenshots/24-encore-added.png differ
+diff --git a/e2e/screenshots/25-projected-times.png b/e2e/screenshots/25-projected-times.png
+index 9dfd49b..0c3cc61 100644
+Binary files a/e2e/screenshots/25-projected-times.png and b/e2e/screenshots/25-projected-times.png differ
+diff --git a/e2e/screenshots/claude-e2e-verification.png b/e2e/screenshots/claude-e2e-verification.png
+index 43d05bc..d79958c 100644
+Binary files a/e2e/screenshots/claude-e2e-verification.png and b/e2e/screenshots/claude-e2e-verification.png differ
+diff --git a/e2e/screenshots/issue-1-claude.png b/e2e/screenshots/issue-1-claude.png
+index a0e0a12..7727271 100644
+Binary files a/e2e/screenshots/issue-1-claude.png and b/e2e/screenshots/issue-1-claude.png differ
+diff --git a/e2e/screenshots/issue-10-dimensions.png b/e2e/screenshots/issue-10-dimensions.png
+index c48dc26..fc8ab3d 100644
+Binary files a/e2e/screenshots/issue-10-dimensions.png and b/e2e/screenshots/issue-10-dimensions.png differ
+diff --git a/e2e/screenshots/issue-11-race-guard.png b/e2e/screenshots/issue-11-race-guard.png
+index cd939de..f05c549 100644
+Binary files a/e2e/screenshots/issue-11-race-guard.png and b/e2e/screenshots/issue-11-race-guard.png differ
+diff --git a/e2e/screenshots/issue-14-loading.png b/e2e/screenshots/issue-14-loading.png
+index 301d7a1..9cbbd8e 100644
+Binary files a/e2e/screenshots/issue-14-loading.png and b/e2e/screenshots/issue-14-loading.png differ
+diff --git a/e2e/screenshots/issue-2-celebration.png b/e2e/screenshots/issue-2-celebration.png
+index a0e0a12..7727271 100644
+Binary files a/e2e/screenshots/issue-2-celebration.png and b/e2e/screenshots/issue-2-celebration.png differ
+diff --git a/e2e/screenshots/issue-7-onair.png b/e2e/screenshots/issue-7-onair.png
+index a0e0a12..7727271 100644
+Binary files a/e2e/screenshots/issue-7-onair.png and b/e2e/screenshots/issue-7-onair.png differ
+diff --git a/e2e/screenshots/issue-8-spotlight.png b/e2e/screenshots/issue-8-spotlight.png
+index 54b1d9f..75861f0 100644
+Binary files a/e2e/screenshots/issue-8-spotlight.png and b/e2e/screenshots/issue-8-spotlight.png differ
+diff --git a/e2e/screenshots/onboarding-01-welcome.png b/e2e/screenshots/onboarding-01-welcome.png
+index 1636223..e564045 100644
+Binary files a/e2e/screenshots/onboarding-01-welcome.png and b/e2e/screenshots/onboarding-01-welcome.png differ
+diff --git a/e2e/screenshots/onboarding-02-writers-room.png b/e2e/screenshots/onboarding-02-writers-room.png
+index 0247ac0..be671ce 100644
+Binary files a/e2e/screenshots/onboarding-02-writers-room.png and b/e2e/screenshots/onboarding-02-writers-room.png differ
+diff --git a/e2e/screenshots/onboarding-03-acts.png b/e2e/screenshots/onboarding-03-acts.png
+index 27327ef..ab0e0ee 100644
+Binary files a/e2e/screenshots/onboarding-03-acts.png and b/e2e/screenshots/onboarding-03-acts.png differ
+diff --git a/e2e/screenshots/onboarding-04-beats.png b/e2e/screenshots/onboarding-04-beats.png
+index cd75e13..aa1931a 100644
+Binary files a/e2e/screenshots/onboarding-04-beats.png and b/e2e/screenshots/onboarding-04-beats.png differ
+diff --git a/e2e/screenshots/onboarding-05-ready.png b/e2e/screenshots/onboarding-05-ready.png
+index cfc6e2e..f4b1bfb 100644
+Binary files a/e2e/screenshots/onboarding-05-ready.png and b/e2e/screenshots/onboarding-05-ready.png differ
+diff --git a/e2e/screenshots/onboarding-06-complete.png b/e2e/screenshots/onboarding-06-complete.png
+index c48dc26..fc8ab3d 100644
+Binary files a/e2e/screenshots/onboarding-06-complete.png and b/e2e/screenshots/onboarding-06-complete.png differ
+diff --git a/e2e/screenshots/onboarding-07-skipped.png b/e2e/screenshots/onboarding-07-skipped.png
+index a0e0a12..8467860 100644
+Binary files a/e2e/screenshots/onboarding-07-skipped.png and b/e2e/screenshots/onboarding-07-skipped.png differ
+diff --git a/e2e/screenshots/onboarding-08-skip.png b/e2e/screenshots/onboarding-08-skip.png
+index 1c7f310..f58ecd9 100644
+Binary files a/e2e/screenshots/onboarding-08-skip.png and b/e2e/screenshots/onboarding-08-skip.png differ
+diff --git a/e2e/screenshots/onboarding-09-back.png b/e2e/screenshots/onboarding-09-back.png
+index ff02dfa..83b0fbf 100644
+Binary files a/e2e/screenshots/onboarding-09-back.png and b/e2e/screenshots/onboarding-09-back.png differ
+diff --git a/e2e/screenshots/onboarding-10-help-retrigger.png b/e2e/screenshots/onboarding-10-help-retrigger.png
+index d8accb8..74b1999 100644
+Binary files a/e2e/screenshots/onboarding-10-help-retrigger.png and b/e2e/screenshots/onboarding-10-help-retrigger.png differ
+diff --git a/e2e/screenshots/reset-show-complete.png b/e2e/screenshots/reset-show-complete.png
+index 154127d..df3096b 100644
+Binary files a/e2e/screenshots/reset-show-complete.png and b/e2e/screenshots/reset-show-complete.png differ
+diff --git a/e2e/screenshots/reset-show-confirm.png b/e2e/screenshots/reset-show-confirm.png
+index 8aa6db2..8ca3ee4 100644
+Binary files a/e2e/screenshots/reset-show-confirm.png and b/e2e/screenshots/reset-show-confirm.png differ
+diff --git a/src/main/index.ts b/src/main/index.ts
+index 7795098..e7f7ad0 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -148,10 +148,8 @@ function createWindow(): void {
+     ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
+     frame: false,
+     transparent: true,
+-    ...(process.platform === 'darwin' ? {
+-      vibrancy: 'under-window' as const,
+-      visualEffectState: 'active' as const,
+-    } : {}),
++    // Do NOT use vibrancy — it creates a native NSVisualEffectView that bleeds
++    // through as a visible gray border around content. Paint backgrounds in CSS.
+     resizable: false,
+     movable: true,
+     alwaysOnTop: true,
+diff --git a/src/renderer/App.tsx b/src/renderer/App.tsx
+index f7f7807..f2ef627 100644
+--- a/src/renderer/App.tsx
++++ b/src/renderer/App.tsx
+@@ -170,7 +170,7 @@ export default function App() {
+   }
+ 
+   return (
+-    <div className="w-full h-full relative bg-transparent flex flex-col items-center justify-end">
++    <div className="w-full h-full relative bg-transparent flex flex-col">
+       {/* Help button — visible on DarkStudio when onboarding was completed */}
+       {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && (
+         <button
+diff --git a/src/renderer/views/DarkStudioView.tsx b/src/renderer/views/DarkStudioView.tsx
+index 695a445..b9d3862 100644
+--- a/src/renderer/views/DarkStudioView.tsx
++++ b/src/renderer/views/DarkStudioView.tsx
+@@ -7,7 +7,7 @@ export function DarkStudioView() {
+ 
+   return (
+     <div
+-      className="min-h-screen bg-studio-bg flex flex-col items-center justify-center relative"
++      className="w-full h-full bg-studio-bg flex flex-col items-center justify-center relative"
+     >
+       {/* Invisible drag handle */}
+       <div className="absolute top-0 left-0 right-0 h-8 drag-region" />
+diff --git a/src/renderer/views/ExpandedView.tsx b/src/renderer/views/ExpandedView.tsx
+index 71109c8..51601b5 100644
+--- a/src/renderer/views/ExpandedView.tsx
++++ b/src/renderer/views/ExpandedView.tsx
+@@ -33,7 +33,7 @@ export function ExpandedView() {
+ 
+   return (
+     <motion.div
+-      className="w-[560px] min-h-[620px] bg-surface overflow-hidden flex flex-col"
++      className="w-full h-full bg-surface overflow-hidden flex flex-col"
+       initial={{ scale: 0.9, opacity: 0, y: 20 }}
+       animate={{ scale: 1, opacity: 1, y: 0 }}
+       exit={{ scale: 0.9, opacity: 0, y: 20 }}
+diff --git a/src/renderer/views/OnboardingView.tsx b/src/renderer/views/OnboardingView.tsx
+index dce1357..499b53f 100644
+--- a/src/renderer/views/OnboardingView.tsx
++++ b/src/renderer/views/OnboardingView.tsx
+@@ -61,7 +61,7 @@ export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
+ 
+   return (
+     <div
+-      className="bg-studio-bg w-[560px] min-h-[620px] flex flex-col items-center justify-between overflow-hidden relative"
++      className="bg-studio-bg w-full h-full flex flex-col items-center justify-between overflow-hidden relative"
+     >
+       {/* Invisible drag handle */}
+       <div className="absolute top-0 left-0 right-0 h-8 drag-region z-10" />
+diff --git a/src/renderer/views/StrikeView.tsx b/src/renderer/views/StrikeView.tsx
+index 9bc2085..e7730e7 100644
+--- a/src/renderer/views/StrikeView.tsx
++++ b/src/renderer/views/StrikeView.tsx
+@@ -43,7 +43,7 @@ export function StrikeView() {
+ 
+   return (
+     <motion.div
+-      className="w-[560px] max-h-[680px] bg-surface overflow-hidden flex flex-col relative"
++      className="w-full h-full bg-surface overflow-hidden flex flex-col relative"
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+diff --git a/src/renderer/views/WritersRoomView.tsx b/src/renderer/views/WritersRoomView.tsx
+index 2c1fa5e..7f9058d 100644
+--- a/src/renderer/views/WritersRoomView.tsx
++++ b/src/renderer/views/WritersRoomView.tsx
+@@ -124,7 +124,7 @@ ${planText}`
+ 
+   return (
+     <div
+-      className="w-[560px] min-h-[680px] bg-surface overflow-hidden flex flex-col"
++      className="w-full h-full bg-surface overflow-hidden flex flex-col"
+     >
+       {/* Title bar */}
+       <div
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None

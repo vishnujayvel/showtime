@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-21T23:31:55Z
+Updated: 2026-03-22T01:45:42Z
 
 ## Current State
 
@@ -12,8 +12,9 @@ Updated: 2026-03-21T23:31:55Z
 
 ## Last Completed Task
 
-- Last commit: test: add Reset Show E2E tests and update tray menu assertion (#16)
-- Files changed: e2e/showtime.test.ts
+- Last commit: fix: remove vibrancy border bug + make views fill window edge-to-edge
+- Files changed: src/main/index.ts, src/renderer/App.tsx, src/renderer/views/DarkStudioView.tsx, src/renderer/views/ExpandedView.tsx, src/renderer/views/OnboardingView.tsx
+  (+2 more)
 
 ## Active Blockers
 

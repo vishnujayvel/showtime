@@ -1,0 +1,22 @@
+{
+  "id": "sig-c4137b6b",
+  "type": "workflow_pattern",
+  "source": "cli",
+  "action": "session_complete",
+  "context": {},
+  "outcome": "success",
+  "confidence": 0.8,
+  "timestamp": "2026-03-22T01:46:47.937898+00:00Z",
+  "metadata": {},
+  "workflow_name": "loki_session",
+  "steps": [
+    "prerequisites",
+    "setup",
+    "autonomous_loop",
+    "learnings",
+    "cleanup"
+  ],
+  "parallel_steps": [],
+  "branching_conditions": {},
+  "total_duration_seconds": 0
+}
