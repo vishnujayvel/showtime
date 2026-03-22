@@ -1,0 +1,2930 @@
+You are performance-oracle. Your SOLE focus is: N+1 queries, memory leaks, caching, bundle size, lazy loading.
+
+Review ONLY for: N+1 queries, unbounded loops, memory leaks, missing caching, excessive re-renders, large bundle imports, missing pagination.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/STATUS.txt
+.loki/app-runner/detection.json
+.loki/autonomy-state.json
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+.loki/council/state.json
+.loki/dashboard-state.json
+.loki/dashboard/dashboard.pid
+.loki/events.jsonl
+.loki/logs/agent-audit.jsonl
+.loki/logs/audit-20260321.jsonl
+.loki/metrics/efficiency/iteration-1.json
+.loki/pids/22600.json
+.loki/prd-observations.md
+.loki/quality/gate-failure-count.json
+.loki/quality/static-analysis.json
+.loki/quality/test-results.json
+.loki/queue/completed.json
+.loki/state/checkpoints/index.jsonl
+.loki/state/resources.json
+src/__tests__/setup.ts
+src/main/day-boundary.ts
+src/main/index.ts
+src/main/ipc/core.ts
+src/main/ipc/showtime.ts
+src/main/permissions.ts
+src/main/process-manager.ts
+src/main/shortcuts.ts
+src/main/state.ts
+src/main/tray.ts
+src/main/window.ts
+src/preload/index.ts
+src/renderer/App.tsx
+src/renderer/hooks/useClaudeEvents.ts
+src/renderer/stores/sessionStore.ts
+src/shared/types.ts
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index a2b770a..8a52c9b 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,6 +1,6 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-22T02:04:49Z
++Updated: 2026-03-22T02:29:15Z
+ 
+ ## Current State
+ 
+@@ -12,9 +12,9 @@ Updated: 2026-03-22T02:04:49Z
+ 
+ ## Last Completed Task
+ 
+-- Last commit: feat: wave 2 — multi-size pill, history view, planning language (#28, #26, #27)
+-- Files changed: e2e/showtime.test.ts, src/__tests__/audioAndPolish.test.tsx, src/__tests__/components.test.tsx, src/__tests__/showStore.test.ts, src/__tests__/stateMachine.test.ts
+-  (+17 more)
++- Last commit: refactor: decompose main process + delete CLUI dead code
++- Files changed: src/__tests__/setup.ts, src/main/day-boundary.ts, src/main/index.ts, src/main/ipc/core.ts, src/main/ipc/showtime.ts
++  (+11 more)
+ 
+ ## Active Blockers
+ 
+diff --git a/.loki/STATUS.txt b/.loki/STATUS.txt
+index 97a113e..97609ed 100644
+--- a/.loki/STATUS.txt
++++ b/.loki/STATUS.txt
+@@ -2,14 +2,14 @@
+ ║                    LOKI MODE STATUS                            ║
+ ╚════════════════════════════════════════════════════════════════╝
+ 
+-Updated: Sat Mar 21 19:06:13 PDT 2026
++Updated: Sat Mar 21 19:29:17 PDT 2026
+ 
+ Phase: DEVELOPMENT
+ 
+ Tasks:
+   ├─ Pending:     0
+   ├─ In Progress: 0
+-  ├─ Completed:   12
++  ├─ Completed:   13
+   └─ Failed:      3
+ 
+ Monitor: watch -n 2 cat .loki/STATUS.txt
+diff --git a/.loki/app-runner/detection.json b/.loki/app-runner/detection.json
+index 36c5884..573aa1f 100644
+--- a/.loki/app-runner/detection.json
++++ b/.loki/app-runner/detection.json
+@@ -3,5 +3,5 @@
+     "command": "npm run dev",
+     "port": 5173,
+     "is_docker": false,
+-    "detected_at": "2026-03-22T02:04:48Z"
++    "detected_at": "2026-03-22T02:29:14Z"
+ }
+diff --git a/.loki/autonomy-state.json b/.loki/autonomy-state.json
+index 90d79da..e2f5b11 100644
+--- a/.loki/autonomy-state.json
++++ b/.loki/autonomy-state.json
+@@ -1,10 +1,10 @@
+ {
+     "retryCount": 2,
+-    "status": "completion_promise_fulfilled",
++    "status": "exited",
+     "lastExitCode": 0,
+-    "lastRun": "2026-03-22T02:06:13Z",
+-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md",
+-    "pid": 22331,
++    "lastRun": "2026-03-22T02:29:14Z",
++    "prdPath": "/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md",
++    "pid": 69309,
+     "maxRetries": 50,
+     "baseWait": 60
+ }
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index 5ca234c..c227083 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-345
+\ No newline at end of file
++0
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index cea727b..85af5a3 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,14 +1,14 @@
+ {
+-  "session_id": "e6f10daf-431e-4139-9985-f639109f4bf7",
++  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
+   "provider": "claude",
+-  "updated_at": "2026-03-22T02:04:48.646191+00:00",
++  "updated_at": "2026-03-22T02:29:14.352235+00:00",
+   "current": {
+-    "input_tokens": 1,
+-    "output_tokens": 38059,
+-    "cache_read_tokens": 151617,
+-    "cache_creation_tokens": 434155,
+-    "total_tokens": 151618,
+-    "context_window_pct": 75.81,
++    "input_tokens": 0,
++    "output_tokens": 0,
++    "cache_read_tokens": 0,
++    "cache_creation_tokens": 0,
++    "total_tokens": 0,
++    "context_window_pct": 0.0,
+     "estimated_cost_usd": 53.0779
+   },
+   "compactions": [
+diff --git a/.loki/council/state.json b/.loki/council/state.json
+index 3c6b6e0..eaaa60b 100644
+--- a/.loki/council/state.json
++++ b/.loki/council/state.json
+@@ -1,15 +1,12 @@
+ {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 23
+-}
+\ No newline at end of file
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
++}
+diff --git a/.loki/dashboard-state.json b/.loki/dashboard-state.json
+index c9d5099..031dc78 100644
+--- a/.loki/dashboard-state.json
++++ b/.loki/dashboard-state.json
+@@ -1,5 +1,5 @@
+ {
+-  "timestamp": "2026-03-22T02:06:13Z",
++  "timestamp": "2026-03-22T02:29:18Z",
+   "version": "unknown",
+   "project": {
+     "name": "showtime",
+@@ -127,6 +127,15 @@
+     "completedAt": "2026-03-22T02:04:48Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T02:29:14Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ],
+     "failed": [
+@@ -163,9 +172,9 @@
+   "metrics": {
+     "tasksCompleted": 0,
+     "tasksFailed": 0,
+-    "cpuUsage": 95,
+-    "memoryUsage": 70,
+-    "resourceStatus": "warning"
++    "cpuUsage": 49,
++    "memoryUsage": 68,
++    "resourceStatus": "ok"
+   },
+   "memory": {
+     "episodic": 15,
+@@ -174,19 +183,16 @@
+   },
+   "qualityGates": null,
+   "council": {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 0,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 0,
+-  "last_track_iteration": 1,
+-  "files_changed": 23
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
+ },
+   "checklist": null,
+   "appRunner": {
+@@ -195,7 +201,7 @@
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-22T01:46:48Z",
++    "started_at": "2026-03-22T02:06:13Z",
+     "restart_count": 1,
+     "status": "stopped",
+     "last_health": {"ok": false},
+@@ -204,16 +210,16 @@
+   "playwright": null,
+   "budget": null,
+   "context": {
+-  "session_id": "e6f10daf-431e-4139-9985-f639109f4bf7",
++  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
+   "provider": "claude",
+-  "updated_at": "2026-03-22T02:04:48.646191+00:00",
++  "updated_at": "2026-03-22T02:29:14.352235+00:00",
+   "current": {
+-    "input_tokens": 1,
+-    "output_tokens": 38059,
+-    "cache_read_tokens": 151617,
+-    "cache_creation_tokens": 434155,
+-    "total_tokens": 151618,
+-    "context_window_pct": 75.81,
++    "input_tokens": 0,
++    "output_tokens": 0,
++    "cache_read_tokens": 0,
++    "cache_creation_tokens": 0,
++    "total_tokens": 0,
++    "context_window_pct": 0.0,
+     "estimated_cost_usd": 53.0779
+   },
+   "compactions": [
+diff --git a/.loki/dashboard/dashboard.pid b/.loki/dashboard/dashboard.pid
+index 2190835..00550c6 100644
+--- a/.loki/dashboard/dashboard.pid
++++ b/.loki/dashboard/dashboard.pid
+@@ -1 +1 @@
+-22600
++69582
+diff --git a/.loki/events.jsonl b/.loki/events.jsonl
+index 09d58be..e5b23c1 100644
+--- a/.loki/events.jsonl
++++ b/.loki/events.jsonl
+@@ -84,3 +84,6 @@
+ {"timestamp":"2026-03-22T02:04:54Z","type":"code_review_start","data":{"review_id":"review-20260322T020454Z-1","reviewers":"architecture-strategist, performance-oracle, security-sentinel","iteration":1}}
+ {"timestamp":"2026-03-22T02:06:12Z","type":"code_review_complete","data":{"review_id":"review-20260322T020454Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+ {"timestamp":"2026-03-22T02:06:13Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
++{"timestamp":"2026-03-22T02:09:34Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md","parallel":true,"complexity":"standard","pid":69309}}
++{"timestamp":"2026-03-22T02:09:35Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md"}}
++{"timestamp":"2026-03-22T02:29:14Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+diff --git a/.loki/logs/agent-audit.jsonl b/.loki/logs/agent-audit.jsonl
+index 7629f4b..2f3e771 100644
+--- a/.loki/logs/agent-audit.jsonl
++++ b/.loki/logs/agent-audit.jsonl
+@@ -39,3 +39,5 @@
+ {"timestamp": "2026-03-22T01:51:25Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md,provider=claude", "iteration": 0, "pid": 22331}
+ {"timestamp": "2026-03-22T01:51:26Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 22331}
+ {"timestamp": "2026-03-22T02:06:13Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 22331}
++{"timestamp": "2026-03-22T02:09:34Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md,provider=claude", "iteration": 0, "pid": 69309}
++{"timestamp": "2026-03-22T02:09:35Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 69309}
+diff --git a/.loki/logs/audit-20260321.jsonl b/.loki/logs/audit-20260321.jsonl
+index a45312c..7f3574e 100644
+--- a/.loki/logs/audit-20260321.jsonl
++++ b/.loki/logs/audit-20260321.jsonl
+@@ -138,3 +138,10 @@
+   "user": "vishnu",
+   "pid": 22331
+ }
++{
++  "timestamp": "2026-03-22T02:09:34Z",
++  "event": "SESSION_START",
++  "data": "prd=/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md,dashboard=true,staged_autonomy=false,parallel=true",
++  "user": "vishnu",
++  "pid": 69309
++}
+diff --git a/.loki/metrics/efficiency/iteration-1.json b/.loki/metrics/efficiency/iteration-1.json
+index e6c7b1d..321bcb7 100644
+--- a/.loki/metrics/efficiency/iteration-1.json
++++ b/.loki/metrics/efficiency/iteration-1.json
+@@ -2,11 +2,11 @@
+   "iteration": 1,
+   "model": "opus",
+   "phase": "DEVELOPMENT",
+-  "duration_ms": 803000,
++  "duration_ms": 1179000,
+   "provider": "claude",
+   "status": "completed",
+   "input_tokens": 2891,
+   "output_tokens": 80165,
+   "cost_usd": 13.4582,
+-  "timestamp": "2026-03-22T02:04:48Z"
++  "timestamp": "2026-03-22T02:29:14Z"
+ }
+diff --git a/.loki/pids/22600.json b/.loki/pids/22600.json
+deleted file mode 100644
+index 4b71db5..0000000
+--- a/.loki/pids/22600.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{"pid":22600,"label":"dashboard","started":"2026-03-22T01:51:16Z","ppid":22331,"extra":"port=57374"}
+diff --git a/.loki/prd-observations.md b/.loki/prd-observations.md
+index a109465..580f6e1 100644
+--- a/.loki/prd-observations.md
++++ b/.loki/prd-observations.md
+@@ -1,42 +1,36 @@
+ # PRD Analysis Observations
+ 
+-**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md`
+-**Analyzed:** 2026-03-22T01:51:25Z
+-**Quality Score:** 1.9/10
+-**Estimated Scope:** medium (~6 items detected)
++**Source:** `/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md`
++**Analyzed:** 2026-03-22T02:09:35Z
++**Quality Score:** 5.0/10
++**Estimated Scope:** large (~19 items detected)
+ 
+ ## Strengths
+ 
+ - **Feature List**: Partially covered (mentioned but lacks dedicated section)
+ - **Tech Stack**: Partially covered (mentioned but lacks dedicated section)
++- **User Stories / Flows**: Partially covered (mentioned but lacks dedicated section)
++- **Acceptance Criteria**: Well-defined with dedicated section and content
+ - **Data Model / Schema**: Partially covered (mentioned but lacks dedicated section)
++- **Deployment Requirements**: Partially covered (mentioned but lacks dedicated section)
++- **Error Handling**: Partially covered (mentioned but lacks dedicated section)
++- **Security Requirements**: Partially covered (mentioned but lacks dedicated section)
+ 
+ ## Missing or Unclear
+ 
+-- **User Stories / Flows**: User stories, personas, or user flow descriptions
+-- **Acceptance Criteria**: Measurable completion criteria or checklists
+ - **API Specifications**: API endpoints, request/response formats
+-- **Deployment Requirements**: Deployment targets, CI/CD, and infrastructure
+-- **Error Handling**: Error handling, edge cases, and failure modes
+-- **Security Requirements**: Authentication, authorization, and security measures
+ 
+ ## Assumptions Made
+ 
+-- Will derive user flows from feature descriptions
+-- Will generate acceptance criteria from requirements
+ - Will define API endpoints based on feature set
+-- Will use standard containerized deployment
+-- Will implement standard error handling patterns
+-- Will apply baseline security (input validation, auth if applicable)
+ 
+ ## Recommended Additions
+ 
+ - Add a dedicated **Feature List** section with more detail
+ - Add a dedicated **Tech Stack** section with more detail
+-- Add **User Stories / Flows** section: User stories, personas, or user flow descriptions
+-- Add **Acceptance Criteria** section: Measurable completion criteria or checklists
++- Add a dedicated **User Stories / Flows** section with more detail
+ - Add a dedicated **Data Model / Schema** section with more detail
+ - Add **API Specifications** section: API endpoints, request/response formats
+-- Add **Deployment Requirements** section: Deployment targets, CI/CD, and infrastructure
+-- Add **Error Handling** section: Error handling, edge cases, and failure modes
+-- Add **Security Requirements** section: Authentication, authorization, and security measures
++- Add a dedicated **Deployment Requirements** section with more detail
++- Add a dedicated **Error Handling** section with more detail
++- Add a dedicated **Security Requirements** section with more detail
+diff --git a/.loki/quality/gate-failure-count.json b/.loki/quality/gate-failure-count.json
+index 634d3f3..9054a79 100644
+--- a/.loki/quality/gate-failure-count.json
++++ b/.loki/quality/gate-failure-count.json
+@@ -2,7 +2,7 @@
+   "timestamp": "2026-03-21T22:11:48Z",
+   "gate_failures": [],
+   "pass": true,
+-  "static_analysis": 2,
++  "static_analysis": 3,
+   "test_coverage": 0,
+   "code_review": 1
+ }
+\ No newline at end of file
+diff --git a/.loki/quality/static-analysis.json b/.loki/quality/static-analysis.json
+index 02838c4..2eadef3 100644
+--- a/.loki/quality/static-analysis.json
++++ b/.loki/quality/static-analysis.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-22T02:04:51Z","files_checked":22,"findings":10,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/__tests__/audioAndPolish.test.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/__tests__/components.test.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/CompactView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DarkStudioView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DashboardView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ExpandedView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/HistoryView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/PillView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/StrikeView.tsx. ","pass":false}
++{"timestamp":"2026-03-22T02:29:16Z","files_checked":15,"findings":1,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. ","pass":false}
+diff --git a/.loki/quality/test-results.json b/.loki/quality/test-results.json
+index 90b088a..8b1d92d 100644
+--- a/.loki/quality/test-results.json
++++ b/.loki/quality/test-results.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-22T02:04:54Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':75,'numPassedTestSuites':75,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':196,'numPassedTests':196,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774145092068,'success':true,'testResults':[{'asse"}
++{"timestamp":"2026-03-22T02:29:19Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':75,'numPassedTestSuites':75,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':196,'numPassedTests':196,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774146557359,'success':true,'testResults':[{'asse"}
+diff --git a/.loki/queue/completed.json b/.loki/queue/completed.json
+index a8b0727..8222129 100644
+--- a/.loki/queue/completed.json
++++ b/.loki/queue/completed.json
+@@ -106,5 +106,14 @@
+     "completedAt": "2026-03-22T02:04:48Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T02:29:14Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ]
+\ No newline at end of file
+diff --git a/.loki/state/checkpoints/index.jsonl b/.loki/state/checkpoints/index.jsonl
+index f573152..7b029dc 100644
+--- a/.loki/state/checkpoints/index.jsonl
++++ b/.loki/state/checkpoints/index.jsonl
+@@ -28,3 +28,4 @@
+ {"id": "cp-1-1774144007", "ts": "2026-03-22T01:46:47Z", "iter": 1, "task": "session end (iterations=1)", "sha": "6e10a5c6dcb9a70b336c8c4135a7f659f50bf630"}
+ {"id": "cp-1-1774145090", "ts": "2026-03-22T02:04:50Z", "iter": 1, "task": "iteration-1 complete", "sha": "1a61e274f60631f2fd524e8c1561ab681cf4fa93"}
+ {"id": "cp-1-1774145173", "ts": "2026-03-22T02:06:13Z", "iter": 1, "task": "session end (iterations=1)", "sha": "1a61e274f60631f2fd524e8c1561ab681cf4fa93"}
++{"id": "cp-1-1774146555", "ts": "2026-03-22T02:29:15Z", "iter": 1, "task": "iteration-1 complete", "sha": "77343abfd08fb085838b4744dbfb6f72ea2b31a5"}
+diff --git a/.loki/state/resources.json b/.loki/state/resources.json
+index 65e29af..5c73469 100644
+--- a/.loki/state/resources.json
++++ b/.loki/state/resources.json
+@@ -1,15 +1,15 @@
+ {
+-  "timestamp": "2026-03-22T02:01:30Z",
++  "timestamp": "2026-03-22T02:24:42Z",
+   "cpu": {
+-    "usage_percent": 95,
++    "usage_percent": 49,
+     "threshold_percent": 80,
+-    "status": "high"
++    "status": "ok"
+   },
+   "memory": {
+-    "usage_percent": 70,
++    "usage_percent": 68,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+-  "overall_status": "warning",
+-  "warning_message": "CPU usage is 95% (threshold: 80%). Consider reducing parallel agent count or pausing non-critical tasks."
++  "overall_status": "ok",
++  "warning_message": ""
+ }
+diff --git a/src/__tests__/setup.ts b/src/__tests__/setup.ts
+index 8b116df..ab1ce3c 100644
+--- a/src/__tests__/setup.ts
++++ b/src/__tests__/setup.ts
+@@ -21,13 +21,7 @@ if (typeof window !== 'undefined') {
+     closeTab: vi.fn().mockResolvedValue(undefined),
+     isVisible: vi.fn().mockResolvedValue(true),
+     respondPermission: vi.fn().mockResolvedValue(undefined),
+-    setPermissionMode: vi.fn(),
+     resetTabSession: vi.fn(),
+-    loadSession: vi.fn().mockResolvedValue([]),
+-    fetchMarketplace: vi.fn().mockResolvedValue({ plugins: [], error: null }),
+-    listInstalledPlugins: vi.fn().mockResolvedValue([]),
+-    installPlugin: vi.fn().mockResolvedValue({ ok: true }),
+-    uninstallPlugin: vi.fn().mockResolvedValue({ ok: true }),
+     // Data persistence
+     dataHydrate: vi.fn().mockResolvedValue(null),
+     dataSync: vi.fn(),
+diff --git a/src/main/day-boundary.ts b/src/main/day-boundary.ts
+new file mode 100644
+index 0000000..1cddf30
+--- /dev/null
++++ b/src/main/day-boundary.ts
+@@ -0,0 +1,16 @@
++import { broadcast, log } from './state'
++import { IPC } from '../shared/types'
++
++// ─── Day Boundary Detection ───
++
++export function startDayBoundaryCheck(): void {
++  let currentDay = new Date().toISOString().slice(0, 10)
++  setInterval(() => {
++    const now = new Date().toISOString().slice(0, 10)
++    if (now !== currentDay) {
++      log(`Showtime: Day boundary crossed — ${currentDay} → ${now}`)
++      currentDay = now
++      broadcast(IPC.DAY_BOUNDARY)
++    }
++  }, 60_000) // Check every minute
++}
+diff --git a/src/main/index.ts b/src/main/index.ts
+index 80644ab..de3f83d 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -1,95 +1,19 @@
+-import { app, BrowserWindow, ipcMain, dialog, screen, globalShortcut, Tray, Menu, nativeImage, nativeTheme, shell, systemPreferences } from 'electron'
+-import { join } from 'path'
+-import { existsSync, readdirSync, statSync, createReadStream } from 'fs'
+-import { createInterface } from 'readline'
+-import { homedir } from 'os'
+-import { ControlPlane } from './claude/control-plane'
++import { app, globalShortcut, ipcMain, screen } from 'electron'
+ import { ensureSkills, type SkillStatus } from './skills/installer'
+-import { fetchCatalog, listInstalled, installPlugin, uninstallPlugin } from './marketplace/catalog'
+-import { log as _log, LOG_FILE, flushLogs } from './logger'
+-import { getCliEnv } from './cli-env'
+-import { IPC } from '../shared/types'
+-import type { RunOptions, NormalizedEvent, EnrichedError } from '../shared/types'
+-import { computeAnchorFromBounds, computeBoundsFromAnchor, clampToWorkArea } from './window-geometry'
++import { flushLogs } from './logger'
+ import { DataService } from './data/DataService'
+ import { SyncEngine } from './data/SyncEngine'
++import type { NormalizedEvent, EnrichedError } from '../shared/types'
++import { IPC } from '../shared/types'
+ 
+-const DEBUG_MODE = process.env.CLUI_DEBUG === '1'
+-const SPACES_DEBUG = DEBUG_MODE || process.env.CLUI_SPACES_DEBUG === '1'
+-
+-function log(msg: string): void {
+-  _log('main', msg)
+-}
+-
+-let mainWindow: BrowserWindow | null = null
+-let tray: Tray | null = null
+-let syncEngine: SyncEngine | null = null
+-let screenshotCounter = 0
+-let toggleSequence = 0
+-
+-// Feature flag: enable PTY interactive permissions transport
+-const INTERACTIVE_PTY = process.env.CLUI_INTERACTIVE_PERMISSIONS_PTY === '1'
+-
+-const controlPlane = new ControlPlane(INTERACTIVE_PTY)
+-
+-const PILL_BOTTOM_MARGIN = 24
+-
+-// ─── Content-tight window sizing ───
+-// Window resizes to match view content exactly. No transparent dead zones.
+-const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
+-  pill: { width: 320, height: 56 },
+-  compact: { width: 340, height: 140 },
+-  dashboard: { width: 400, height: 320 },
+-  expanded: { width: 560, height: 620 },
+-  full: { width: 560, height: 740 },
+-}
+-
+-// Anchor-based position tracking: center-bottom point preserved across view transitions and user drags.
+-let anchorPoint: { x: number; y: number } | null = null
+-let isDragging = false
+-let deferredViewMode: string | null = null
+-
+-// ─── Broadcast to renderer ───
+-
+-function broadcast(channel: string, ...args: unknown[]): void {
+-  if (mainWindow && !mainWindow.isDestroyed()) {
+-    mainWindow.webContents.send(channel, ...args)
+-  }
+-}
+-
+-function snapshotWindowState(reason: string): void {
+-  if (!SPACES_DEBUG) return
+-  if (!mainWindow || mainWindow.isDestroyed()) {
+-    log(`[spaces] ${reason} window=none`)
+-    return
+-  }
+-
+-  const b = mainWindow.getBounds()
+-  const cursor = screen.getCursorScreenPoint()
+-  const display = screen.getDisplayNearestPoint(cursor)
+-  const visibleOnAll = mainWindow.isVisibleOnAllWorkspaces()
+-  const wcFocused = mainWindow.webContents.isFocused()
+-
+-  log(
+-    `[spaces] ${reason} ` +
+-    `vis=${mainWindow.isVisible()} focused=${mainWindow.isFocused()} wcFocused=${wcFocused} ` +
+-    `alwaysOnTop=${mainWindow.isAlwaysOnTop()} allWs=${visibleOnAll} ` +
+-    `bounds=(${b.x},${b.y},${b.width}x${b.height}) ` +
+-    `cursor=(${cursor.x},${cursor.y}) display=${display.id} ` +
+-    `workArea=(${display.workArea.x},${display.workArea.y},${display.workArea.width}x${display.workArea.height})`
+-  )
+-}
+-
+-function scheduleToggleSnapshots(toggleId: number, phase: 'show' | 'hide'): void {
+-  if (!SPACES_DEBUG) return
+-  const probes = [0, 100, 400, 1200]
+-  for (const delay of probes) {
+-    setTimeout(() => {
+-      snapshotWindowState(`toggle#${toggleId} ${phase} +${delay}ms`)
+-    }, delay)
+-  }
+-}
+-
++import { controlPlane, getMainWindow, getSyncEngine, setSyncEngine, SPACES_DEBUG, log, broadcast } from './state'
++import { createWindow, showWindow, toggleWindow, snapshotWindowState } from './window'
++import { registerCoreIpc } from './ipc/core'
++import { registerShowtimeIpc } from './ipc/showtime'
++import { createTray } from './tray'
++import { registerShortcuts } from './shortcuts'
++import { requestPermissions } from './permissions'
++import { startDayBoundaryCheck } from './day-boundary'
+ 
+ // ─── Wire ControlPlane events → renderer ───
+ 
+@@ -105,1037 +29,6 @@ controlPlane.on('error', (tabId: string, error: EnrichedError) => {
+   broadcast('clui:enriched-error', tabId, error)
+ })
+ 
+-// ─── Window Creation ───
+-
+-function clampToDisplay(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } {
+-  const display = screen.getDisplayMatching(bounds as Electron.Rectangle)
+-  return clampToWorkArea(bounds, display.workArea)
+-}
+-
+-function applyViewMode(mode: string): void {
+-  if (!mainWindow || mainWindow.isDestroyed()) return
+-  const dims = VIEW_DIMENSIONS[mode]
+-  if (!dims) return
+-
+-  if (isDragging) {
+-    deferredViewMode = mode
+-    return
+-  }
+-
+-  if (!anchorPoint) {
+-    anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
+-  }
+-
+-  const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
+-  mainWindow.setBounds(newBounds)
+-  anchorPoint = computeAnchorFromBounds(newBounds)
+-  log(`Showtime: applyViewMode(${mode}) → bounds=(${newBounds.x},${newBounds.y},${newBounds.width}x${newBounds.height})`)
+-}
+-
+-function createWindow(): void {
+-  const initialDims = VIEW_DIMENSIONS.full
+-  const cursor = screen.getCursorScreenPoint()
+-  const display = screen.getDisplayNearestPoint(cursor)
+-  const { width: screenWidth, height: screenHeight } = display.workAreaSize
+-  const { x: dx, y: dy } = display.workArea
+-
+-  const x = dx + Math.round((screenWidth - initialDims.width) / 2)
+-  const y = dy + screenHeight - initialDims.height - PILL_BOTTOM_MARGIN
+-
+-  mainWindow = new BrowserWindow({
+-    width: initialDims.width,
+-    height: initialDims.height,
+-    x,
+-    y,
+-    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
+-    frame: false,
+-    transparent: true,
+-    // Do NOT use vibrancy — it creates a native NSVisualEffectView that bleeds
+-    // through as a visible gray border around content. Paint backgrounds in CSS.
+-    resizable: false,
+-    movable: true,
+-    alwaysOnTop: true,
+-    skipTaskbar: true,
+-    hasShadow: true,
+-    roundedCorners: true,
+-    backgroundColor: '#00000000',
+-    show: false,
+-    icon: join(__dirname, '../../resources/icon.icns'),
+-    webPreferences: {
+-      preload: join(__dirname, '../preload/index.js'),
+-      contextIsolation: true,
+-      nodeIntegration: false,
+-    },
+-  })
+-
+-  // Initialize anchor from initial bounds
+-  anchorPoint = computeAnchorFromBounds({ x, y, width: initialDims.width, height: initialDims.height })
+-
+-  // Belt-and-suspenders: panel already joins all spaces and floats,
+-  // but explicit flags ensure correct behavior on older Electron builds.
+-  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+-  mainWindow.setAlwaysOnTop(true, 'screen-saver')
+-
+-  // isDragging guard: track user drags to prevent setBounds during drag
+-  let dragTimeout: ReturnType<typeof setTimeout> | null = null
+-  mainWindow.on('will-move', () => {
+-    isDragging = true
+-    // Safety valve: if 'moved' never fires, reset after 5 seconds
+-    if (dragTimeout) clearTimeout(dragTimeout)
+-    dragTimeout = setTimeout(() => {
+-      if (isDragging) {
+-        log('Showtime: isDragging safety valve triggered (5s timeout)')
+-        isDragging = false
+-        if (deferredViewMode) {
+-          const mode = deferredViewMode
+-          deferredViewMode = null
+-          applyViewMode(mode)
+-        }
+-      }
+-    }, 5000)
+-  })
+-  mainWindow.on('moved', () => {
+-    if (dragTimeout) { clearTimeout(dragTimeout); dragTimeout = null }
+-    isDragging = false
+-    if (mainWindow && !mainWindow.isDestroyed()) {
+-      anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
+-    }
+-    if (deferredViewMode) {
+-      const mode = deferredViewMode
+-      deferredViewMode = null
+-      applyViewMode(mode)
+-    }
+-  })
+-
+-  mainWindow.once('ready-to-show', () => {
+-    mainWindow?.show()
+-    if (process.env.ELECTRON_RENDERER_URL) {
+-      mainWindow?.webContents.openDevTools({ mode: 'detach' })
+-    }
+-  })
+-
+-  let forceQuit = false
+-  app.on('before-quit', () => { forceQuit = true })
+-  mainWindow.on('close', (e) => {
+-    if (!forceQuit) {
+-      e.preventDefault()
+-      mainWindow?.hide()
+-    }
+-  })
+-
+-  if (process.env.ELECTRON_RENDERER_URL) {
+-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+-  } else {
+-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+-  }
+-}
+-
+-function showWindow(source = 'unknown'): void {
+-  if (!mainWindow) return
+-  const toggleId = ++toggleSequence
+-
+-  if (anchorPoint) {
+-    // Use stored anchor — window returns to where user last placed it
+-    const currentBounds = mainWindow.getBounds()
+-    const dims = { width: currentBounds.width, height: currentBounds.height }
+-    const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
+-    mainWindow.setBounds(newBounds)
+-  } else {
+-    // First show after launch — center on cursor's display, bottom-aligned
+-    const cursor = screen.getCursorScreenPoint()
+-    const display = screen.getDisplayNearestPoint(cursor)
+-    const { width: sw, height: sh } = display.workAreaSize
+-    const { x: dx, y: dy } = display.workArea
+-    const dims = VIEW_DIMENSIONS.full
+-    const bounds = {
+-      x: dx + Math.round((sw - dims.width) / 2),
+-      y: dy + sh - dims.height - PILL_BOTTOM_MARGIN,
+-      width: dims.width,
+-      height: dims.height,
+-    }
+-    mainWindow.setBounds(bounds)
+-    anchorPoint = computeAnchorFromBounds(bounds)
+-  }
+-
+-  // Always re-assert space membership — the flag can be lost after hide/show cycles
+-  // and must be set before show() so the window joins the active Space, not its
+-  // last-known Space.
+-  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+-
+-  if (SPACES_DEBUG) {
+-    const currentDisplay = screen.getDisplayMatching(mainWindow.getBounds())
+-    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${currentDisplay.id}`)
+-    snapshotWindowState(`showWindow#${toggleId} pre-show`)
+-  }
+-  // As an accessory app (app.dock.hide), show() + focus gives keyboard
+-  // without deactivating the active app — hover preserved everywhere.
+-  mainWindow.show()
+-  mainWindow.webContents.focus()
+-  broadcast(IPC.WINDOW_SHOWN)
+-  if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'show')
+-}
+-
+-function toggleWindow(source = 'unknown'): void {
+-  if (!mainWindow) return
+-  const toggleId = ++toggleSequence
+-  if (SPACES_DEBUG) {
+-    log(`[spaces] toggle#${toggleId} source=${source} start`)
+-    snapshotWindowState(`toggle#${toggleId} pre`)
+-  }
+-
+-  if (mainWindow.isVisible()) {
+-    mainWindow.hide()
+-    if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'hide')
+-  } else {
+-    showWindow(source)
+-  }
+-}
+-
+-// ─── Resize ───
+-
+-ipcMain.on(IPC.HIDE_WINDOW, () => {
+-  mainWindow?.hide()
+-})
+-
+-ipcMain.on(IPC.APP_QUIT, () => {
+-  // Hide window first to avoid black flash during quit
+-  mainWindow?.hide()
+-  setTimeout(() => app.quit(), 100)
+-})
+-
+-ipcMain.handle(IPC.IS_VISIBLE, () => {
+-  return mainWindow?.isVisible() ?? false
+-})
+-
+-// ─── IPC Handlers (typed, strict) ───
+-
+-ipcMain.handle(IPC.START, async () => {
+-  log('IPC START — fetching static CLI info')
+-  const { execSync } = require('child_process')
+-
+-  let version = 'unknown'
+-  try {
+-    version = execSync('claude -v', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
+-  } catch {}
+-
+-  let auth: { email?: string; subscriptionType?: string; authMethod?: string } = {}
+-  try {
+-    const raw = execSync('claude auth status', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
+-    auth = JSON.parse(raw)
+-  } catch {}
+-
+-  let mcpServers: string[] = []
+-  try {
+-    const raw = execSync('claude mcp list', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
+-    if (raw) mcpServers = raw.split('\n').filter(Boolean)
+-  } catch {}
+-
+-  return { version, auth, mcpServers, projectPath: process.cwd(), homePath: require('os').homedir() }
+-})
+-
+-ipcMain.handle(IPC.CREATE_TAB, () => {
+-  const tabId = controlPlane.createTab()
+-  log(`IPC CREATE_TAB → ${tabId}`)
+-  return { tabId }
+-})
+-
+-ipcMain.on(IPC.INIT_SESSION, (_event, tabId: string) => {
+-  log(`IPC INIT_SESSION: ${tabId}`)
+-  controlPlane.initSession(tabId)
+-})
+-
+-ipcMain.on(IPC.RESET_TAB_SESSION, (_event, tabId: string) => {
+-  log(`IPC RESET_TAB_SESSION: ${tabId}`)
+-  controlPlane.resetTabSession(tabId)
+-})
+-
+-ipcMain.handle(IPC.PROMPT, async (_event, { tabId, requestId, options }: { tabId: string; requestId: string; options: RunOptions }) => {
+-  if (DEBUG_MODE) {
+-    log(`IPC PROMPT: tab=${tabId} req=${requestId} prompt="${options.prompt.substring(0, 100)}"`)
+-  } else {
+-    log(`IPC PROMPT: tab=${tabId} req=${requestId}`)
+-  }
+-
+-  if (!tabId) {
+-    throw new Error('No tabId provided — prompt rejected')
+-  }
+-  if (!requestId) {
+-    throw new Error('No requestId provided — prompt rejected')
+-  }
+-
+-  try {
+-    await controlPlane.submitPrompt(tabId, requestId, options)
+-  } catch (err: unknown) {
+-    const msg = err instanceof Error ? err.message : String(err)
+-    log(`PROMPT error: ${msg}`)
+-    throw err
+-  }
+-})
+-
+-ipcMain.handle(IPC.CANCEL, (_event, requestId: string) => {
+-  log(`IPC CANCEL: ${requestId}`)
+-  return controlPlane.cancel(requestId)
+-})
+-
+-ipcMain.handle(IPC.STOP_TAB, (_event, tabId: string) => {
+-  log(`IPC STOP_TAB: ${tabId}`)
+-  return controlPlane.cancelTab(tabId)
+-})
+-
+-ipcMain.handle(IPC.RETRY, async (_event, { tabId, requestId, options }: { tabId: string; requestId: string; options: RunOptions }) => {
+-  log(`IPC RETRY: tab=${tabId} req=${requestId}`)
+-  return controlPlane.retry(tabId, requestId, options)
+-})
+-
+-ipcMain.handle(IPC.STATUS, () => {
+-  return controlPlane.getHealth()
+-})
+-
+-ipcMain.handle(IPC.TAB_HEALTH, () => {
+-  return controlPlane.getHealth()
+-})
+-
+-ipcMain.handle(IPC.CLOSE_TAB, (_event, tabId: string) => {
+-  log(`IPC CLOSE_TAB: ${tabId}`)
+-  controlPlane.closeTab(tabId)
+-})
+-
+-ipcMain.on(IPC.SET_PERMISSION_MODE, (_event, mode: string) => {
+-  if (mode !== 'ask' && mode !== 'auto') {
+-    log(`IPC SET_PERMISSION_MODE: invalid mode "${mode}" — ignoring`)
+-    return
+-  }
+-  log(`IPC SET_PERMISSION_MODE: ${mode}`)
+-  controlPlane.setPermissionMode(mode)
+-})
+-
+-// ─── Showtime notifications ───
+-ipcMain.on(IPC.NOTIFY_ACT_COMPLETE, (_event, actName: string, sketch: string) => {
+-  log(`Showtime: Act Complete — ${actName} (${sketch})`)
+-  const { Notification } = require('electron') as typeof import('electron')
+-  if (Notification.isSupported()) {
+-    new Notification({ title: `Act Complete: ${actName}`, body: `${sketch} — time for a Beat check!` }).show()
+-  }
+-})
+-
+-ipcMain.on(IPC.NOTIFY_BEAT_CHECK, (_event, actName: string) => {
+-  log(`Showtime: Beat check — ${actName}`)
+-  const { Notification } = require('electron') as typeof import('electron')
+-  if (Notification.isSupported()) {
+-    new Notification({ title: 'Beat Check', body: `Were you present during ${actName}?` }).show()
+-  }
+-})
+-
+-ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
+-  log(`Showtime: Verdict — ${verdict}`)
+-  const { Notification } = require('electron') as typeof import('electron')
+-  if (Notification.isSupported()) {
+-    const fallbackMessages: Record<string, string> = {
+-      DAY_WON: 'Standing ovation! You showed up and you were present.',
+-      SOLID_SHOW: 'Not every sketch lands. The show was still great.',
+-      GOOD_EFFORT: 'You got on stage. That\'s the hardest part.',
+-      SHOW_CALLED_EARLY: 'A short show is still a show.',
+-    }
+-    new Notification({ title: 'Show Complete', body: message || fallbackMessages[verdict] || 'The show is over.' }).show()
+-  }
+-})
+-
+-// ─── Showtime window management ───
+-ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
+-  applyViewMode(mode)
+-})
+-
+-// ─── Showtime data persistence IPC ───
+-
+-ipcMain.handle(IPC.DATA_HYDRATE, () => {
+-  try {
+-    return syncEngine?.hydrate() ?? null
+-  } catch (err: any) {
+-    log(`DATA_HYDRATE error: ${err.message}`)
+-    return null
+-  }
+-})
+-
+-ipcMain.on(IPC.DATA_SYNC, (_event, snapshot: any) => {
+-  try {
+-    syncEngine?.queueSync(snapshot)
+-  } catch (err: any) {
+-    log(`DATA_SYNC error: ${err.message}`)
+-  }
+-})
+-
+-ipcMain.handle(IPC.DATA_FLUSH, (_event, snapshot?: any) => {
+-  try {
+-    syncEngine?.flush(snapshot)
+-  } catch (err: any) {
+-    log(`DATA_FLUSH error: ${err.message}`)
+-  }
+-})
+-
+-ipcMain.on(IPC.TIMELINE_RECORD, (_event, event: any) => {
+-  try {
+-    syncEngine?.recordAndFlush(event)
+-  } catch (err: any) {
+-    log(`TIMELINE_RECORD error: ${err.message}`)
+-  }
+-})
+-
+-ipcMain.handle(IPC.TIMELINE_EVENTS, (_event, showId: string) => {
+-  try {
+-    const data = DataService.getInstance()
+-    return data.timeline.getEventsForShow(showId)
+-  } catch (err: any) {
+-    log(`TIMELINE_EVENTS error: ${err.message}`)
+-    return []
+-  }
+-})
+-
+-ipcMain.handle(IPC.TIMELINE_DRIFT, (_event, showId: string) => {
+-  try {
+-    const data = DataService.getInstance()
+-    return data.timeline.computeDrift(showId)
+-  } catch (err: any) {
+-    log(`TIMELINE_DRIFT error: ${err.message}`)
+-    return 0
+-  }
+-})
+-
+-ipcMain.handle(IPC.TIMELINE_DRIFT_PER_ACT, (_event, showId: string) => {
+-  try {
+-    const data = DataService.getInstance()
+-    return data.timeline.getDriftPerAct(showId)
+-  } catch (err: any) {
+-    log(`TIMELINE_DRIFT_PER_ACT error: ${err.message}`)
+-    return []
+-  }
+-})
+-
+-ipcMain.on(IPC.CLAUDE_CONTEXT_SAVE, (_event, ctx: any) => {
+-  try {
+-    const data = DataService.getInstance()
+-    data.claudeCtx.saveContext(ctx)
+-  } catch (err: any) {
+-    log(`CLAUDE_CONTEXT_SAVE error: ${err.message}`)
+-  }
+-})
+-
+-ipcMain.handle(IPC.CLAUDE_CONTEXT_GET, (_event, showId: string) => {
+-  try {
+-    const data = DataService.getInstance()
+-    return data.claudeCtx.getLatestContext(showId) ?? null
+-  } catch (err: any) {
+-    log(`CLAUDE_CONTEXT_GET error: ${err.message}`)
+-    return null
+-  }
+-})
+-
+-ipcMain.handle(IPC.SHOW_HISTORY, (_event, limit?: number) => {
+-  try {
+-    const data = DataService.getInstance()
+-    return data.shows.getRecentShows(limit ?? 30)
+-  } catch (err: any) {
+-    log(`SHOW_HISTORY error: ${err.message}`)
+-    return []
+-  }
+-})
+-
+-ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
+-  log(`IPC RESPOND_PERMISSION: tab=${tabId} question=${questionId} option=${optionId}`)
+-  return controlPlane.respondToPermission(tabId, questionId, optionId)
+-})
+-
+-ipcMain.handle(IPC.LIST_SESSIONS, async (_e, projectPath?: string) => {
+-  log(`IPC LIST_SESSIONS ${projectPath ? `(path=${projectPath})` : ''}`)
+-  try {
+-    const cwd = projectPath || process.cwd()
+-    // Claude stores project sessions at ~/.claude/projects/<encoded-path>/
+-    // Path encoding: replace all '/' with '-' (leading '/' becomes leading '-')
+-    const encodedPath = cwd.replace(/\//g, '-')
+-    const sessionsDir = join(homedir(), '.claude', 'projects', encodedPath)
+-    if (!existsSync(sessionsDir)) {
+-      log(`LIST_SESSIONS: directory not found: ${sessionsDir}`)
+-      return []
+-    }
+-    const files = readdirSync(sessionsDir).filter((f: string) => f.endsWith('.jsonl'))
+-
+-    const sessions: Array<{ sessionId: string; slug: string | null; firstMessage: string | null; lastTimestamp: string; size: number }> = []
+-
+-    // UUID v4 regex — only consider files named as valid UUIDs
+-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+-
+-    for (const file of files) {
+-      // The filename (without .jsonl) IS the canonical resume ID for `claude --resume`
+-      const fileSessionId = file.replace(/\.jsonl$/, '')
+-      if (!UUID_RE.test(fileSessionId)) continue // skip non-UUID files
+-
+-      const filePath = join(sessionsDir, file)
+-      const stat = statSync(filePath)
+-      if (stat.size < 100) continue // skip trivially small files
+-
+-      // Read lines to extract metadata and validate transcript schema
+-      const meta: { validated: boolean; slug: string | null; firstMessage: string | null; lastTimestamp: string | null } = {
+-        validated: false, slug: null, firstMessage: null, lastTimestamp: null,
+-      }
+-
+-      await new Promise<void>((resolve) => {
+-        const rl = createInterface({ input: createReadStream(filePath) })
+-        rl.on('line', (line: string) => {
+-          try {
+-            const obj = JSON.parse(line)
+-            // Validate: must have expected Claude transcript fields
+-            if (!meta.validated && obj.type && obj.uuid && obj.timestamp) {
+-              meta.validated = true
+-            }
+-            if (obj.slug && !meta.slug) meta.slug = obj.slug
+-            if (obj.timestamp) meta.lastTimestamp = obj.timestamp
+-            if (obj.type === 'user' && !meta.firstMessage) {
+-              const content = obj.message?.content
+-              if (typeof content === 'string') {
+-                meta.firstMessage = content.substring(0, 100)
+-              } else if (Array.isArray(content)) {
+-                const textPart = content.find((p: any) => p.type === 'text')
+-                meta.firstMessage = textPart?.text?.substring(0, 100) || null
+-              }
+-            }
+-          } catch {}
+-          // Read all lines to get the last timestamp
+-        })
+-        rl.on('close', () => resolve())
+-      })
+-
+-      if (meta.validated) {
+-        sessions.push({
+-          sessionId: fileSessionId,
+-          slug: meta.slug,
+-          firstMessage: meta.firstMessage,
+-          lastTimestamp: meta.lastTimestamp || stat.mtime.toISOString(),
+-          size: stat.size,
+-        })
+-      }
+-    }
+-
+-    // Sort by last timestamp, most recent first
+-    sessions.sort((a, b) => new Date(b.lastTimestamp).getTime() - new Date(a.lastTimestamp).getTime())
+-    return sessions.slice(0, 20) // Return top 20
+-  } catch (err) {
+-    log(`LIST_SESSIONS error: ${err}`)
+-    return []
+-  }
+-})
+-
+-// Load conversation history from a session's JSONL file
+-ipcMain.handle(IPC.LOAD_SESSION, async (_e, arg: { sessionId: string; projectPath?: string } | string) => {
+-  const sessionId = typeof arg === 'string' ? arg : arg.sessionId
+-  const projectPath = typeof arg === 'string' ? undefined : arg.projectPath
+-  log(`IPC LOAD_SESSION ${sessionId}${projectPath ? ` (path=${projectPath})` : ''}`)
+-  try {
+-    const cwd = projectPath || process.cwd()
+-    const encodedPath = cwd.replace(/\//g, '-')
+-    const filePath = join(homedir(), '.claude', 'projects', encodedPath, `${sessionId}.jsonl`)
+-    if (!existsSync(filePath)) return []
+-
+-    const messages: Array<{ role: string; content: string; toolName?: string; timestamp: number }> = []
+-    await new Promise<void>((resolve) => {
+-      const rl = createInterface({ input: createReadStream(filePath) })
+-      rl.on('line', (line: string) => {
+-        try {
+-          const obj = JSON.parse(line)
+-          if (obj.type === 'user') {
+-            const content = obj.message?.content
+-            let text = ''
+-            if (typeof content === 'string') {
+-              text = content
+-            } else if (Array.isArray(content)) {
+-              text = content
+-                .filter((b: any) => b.type === 'text')
+-                .map((b: any) => b.text)
+-                .join('\n')
+-            }
+-            if (text) {
+-              messages.push({ role: 'user', content: text, timestamp: new Date(obj.timestamp).getTime() })
+-            }
+-          } else if (obj.type === 'assistant') {
+-            const content = obj.message?.content
+-            if (Array.isArray(content)) {
+-              for (const block of content) {
+-                if (block.type === 'text' && block.text) {
+-                  messages.push({ role: 'assistant', content: block.text, timestamp: new Date(obj.timestamp).getTime() })
+-                } else if (block.type === 'tool_use' && block.name) {
+-                  messages.push({
+-                    role: 'tool',
+-                    content: '',
+-                    toolName: block.name,
+-                    timestamp: new Date(obj.timestamp).getTime(),
+-                  })
+-                }
+-              }
+-            }
+-          }
+-        } catch {}
+-      })
+-      rl.on('close', () => resolve())
+-    })
+-    return messages
+-  } catch (err) {
+-    log(`LOAD_SESSION error: ${err}`)
+-    return []
+-  }
+-})
+-
+-ipcMain.handle(IPC.SELECT_DIRECTORY, async () => {
+-  if (!mainWindow) return null
+-  // macOS: activate app so unparented dialog appears on top (not behind other apps).
+-  // Unparented avoids modal dimming on the transparent overlay.
+-  // Activation is fine here — user is actively interacting with CLUI.
+-  if (process.platform === 'darwin') app.focus()
+-  const options = { properties: ['openDirectory'] as ('openDirectory' | 'openFile')[] }
+-  const result = process.platform === 'darwin'
+-    ? await dialog.showOpenDialog(options)
+-    : await dialog.showOpenDialog(mainWindow, options)
+-  return result.canceled ? null : result.filePaths[0]
+-})
+-
+-ipcMain.handle(IPC.OPEN_EXTERNAL, async (_event, url: string) => {
+-  try {
+-    // Only allow http(s) links from markdown content.
+-    if (!/^https?:\/\//i.test(url)) return false
+-    await shell.openExternal(url)
+-    return true
+-  } catch {
+-    return false
+-  }
+-})
+-
+-ipcMain.handle(IPC.ATTACH_FILES, async () => {
+-  if (!mainWindow) return null
+-  // macOS: activate app so unparented dialog appears on top
+-  if (process.platform === 'darwin') app.focus()
+-  const options = {
+-    properties: ['openFile', 'multiSelections'] as ('openDirectory' | 'openFile' | 'multiSelections')[],
+-    filters: [
+-      { name: 'All Files', extensions: ['*'] },
+-      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] },
+-      { name: 'Code', extensions: ['ts', 'tsx', 'js', 'jsx', 'py', 'rs', 'go', 'md', 'json', 'yaml', 'toml'] },
+-    ],
+-  }
+-  const result = process.platform === 'darwin'
+-    ? await dialog.showOpenDialog(options)
+-    : await dialog.showOpenDialog(mainWindow, options)
+-  if (result.canceled || result.filePaths.length === 0) return null
+-
+-  const { basename, extname } = require('path')
+-  const { readFileSync, statSync } = require('fs')
+-
+-  const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'])
+-  const mimeMap: Record<string, string> = {
+-    '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+-    '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml',
+-    '.pdf': 'application/pdf', '.txt': 'text/plain', '.md': 'text/markdown',
+-    '.json': 'application/json', '.yaml': 'text/yaml', '.toml': 'text/toml',
+-  }
+-
+-  return result.filePaths.map((fp: string) => {
+-    const ext = extname(fp).toLowerCase()
+-    const mime = mimeMap[ext] || 'application/octet-stream'
+-    const stat = statSync(fp)
+-    let dataUrl: string | undefined
+-
+-    // Generate preview data URL for images (max 2MB to keep IPC fast)
+-    if (IMAGE_EXTS.has(ext) && stat.size < 2 * 1024 * 1024) {
+-      try {
+-        const buf = readFileSync(fp)
+-        dataUrl = `data:${mime};base64,${buf.toString('base64')}`
+-      } catch {}
+-    }
+-
+-    return {
+-      id: crypto.randomUUID(),
+-      type: IMAGE_EXTS.has(ext) ? 'image' : 'file',
+-      name: basename(fp),
+-      path: fp,
+-      mimeType: mime,
+-      dataUrl,
+-      size: stat.size,
+-    }
+-  })
+-})
+-
+-ipcMain.handle(IPC.TAKE_SCREENSHOT, async () => {
+-  if (!mainWindow) return null
+-
+-  if (SPACES_DEBUG) snapshotWindowState('screenshot pre-hide')
+-  mainWindow.hide()
+-  await new Promise((r) => setTimeout(r, 300))
+-
+-  try {
+-    const { execSync } = require('child_process')
+-    const { join } = require('path')
+-    const { tmpdir } = require('os')
+-    const { readFileSync, existsSync } = require('fs')
+-
+-    const timestamp = Date.now()
+-    const screenshotPath = join(tmpdir(), `clui-screenshot-${timestamp}.png`)
+-
+-    execSync(`/usr/sbin/screencapture -i "${screenshotPath}"`, {
+-      timeout: 30000,
+-      stdio: 'ignore',
+-    })
+-
+-    if (!existsSync(screenshotPath)) {
+-      return null
+-    }
+-
+-    // Return structured attachment with data URL preview
+-    const buf = readFileSync(screenshotPath)
+-    return {
+-      id: crypto.randomUUID(),
+-      type: 'image',
+-      name: `screenshot ${++screenshotCounter}.png`,
+-      path: screenshotPath,
+-      mimeType: 'image/png',
+-      dataUrl: `data:image/png;base64,${buf.toString('base64')}`,
+-      size: buf.length,
+-    }
+-  } catch {
+-    return null
+-  } finally {
+-    if (mainWindow) {
+-      mainWindow.show()
+-      mainWindow.webContents.focus()
+-    }
+-    broadcast(IPC.WINDOW_SHOWN)
+-    if (SPACES_DEBUG) {
+-      log('[spaces] screenshot restore show+focus')
+-      snapshotWindowState('screenshot restore immediate')
+-      setTimeout(() => snapshotWindowState('screenshot restore +200ms'), 200)
+-    }
+-  }
+-})
+-
+-let pasteCounter = 0
+-ipcMain.handle(IPC.PASTE_IMAGE, async (_event, dataUrl: string) => {
+-  try {
+-    const { writeFileSync } = require('fs')
+-    const { join } = require('path')
+-    const { tmpdir } = require('os')
+-
+-    // Parse data URL: "data:image/png;base64,..."
+-    const match = dataUrl.match(/^data:(image\/(\w+));base64,(.+)$/)
+-    if (!match) return null
+-
+-    const [, mimeType, ext, base64Data] = match
+-    const buf = Buffer.from(base64Data, 'base64')
+-    const timestamp = Date.now()
+-    const filePath = join(tmpdir(), `clui-paste-${timestamp}.${ext}`)
+-    writeFileSync(filePath, buf)
+-
+-    return {
+-      id: crypto.randomUUID(),
+-      type: 'image',
+-      name: `pasted image ${++pasteCounter}.${ext}`,
+-      path: filePath,
+-      mimeType,
+-      dataUrl,
+-      size: buf.length,
+-    }
+-  } catch {
+-    return null
+-  }
+-})
+-
+-ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_event, audioBase64: string) => {
+-  const { writeFileSync, existsSync, unlinkSync, readFileSync } = require('fs')
+-  const { execSync } = require('child_process')
+-  const { join } = require('path')
+-  const { tmpdir } = require('os')
+-
+-  const tmpWav = join(tmpdir(), `clui-voice-${Date.now()}.wav`)
+-  try {
+-    const buf = Buffer.from(audioBase64, 'base64')
+-    writeFileSync(tmpWav, buf)
+-
+-    // Find whisper backend in priority order: whisperkit-cli (Apple Silicon CoreML) → whisper-cli (whisper-cpp) → whisper (python)
+-    const candidates = [
+-      '/opt/homebrew/bin/whisperkit-cli',
+-      '/usr/local/bin/whisperkit-cli',
+-      '/opt/homebrew/bin/whisper-cli',
+-      '/usr/local/bin/whisper-cli',
+-      '/opt/homebrew/bin/whisper',
+-      '/usr/local/bin/whisper',
+-      join(homedir(), '.local/bin/whisper'),
+-    ]
+-
+-    let whisperBin = ''
+-    for (const c of candidates) {
+-      if (existsSync(c)) { whisperBin = c; break }
+-    }
+-
+-    if (!whisperBin) {
+-      for (const name of ['whisperkit-cli', 'whisper-cli', 'whisper']) {
+-        try {
+-          whisperBin = execSync(`/bin/zsh -lc "whence -p ${name}"`, { encoding: 'utf-8' }).trim()
+-          if (whisperBin) break
+-        } catch {}
+-      }
+-    }
+-
+-    if (!whisperBin) {
+-      const hint = process.arch === 'arm64'
+-        ? 'brew install whisperkit-cli   (or: brew install whisper-cpp)'
+-        : 'brew install whisper-cpp'
+-      return {
+-        error: `Whisper not found. Install with:\n  ${hint}`,
+-        transcript: null,
+-      }
+-    }
+-
+-    const isWhisperKit = whisperBin.includes('whisperkit-cli')
+-    const isWhisperCpp = !isWhisperKit && whisperBin.includes('whisper-cli')
+-
+-    log(`Transcribing with: ${whisperBin} (backend: ${isWhisperKit ? 'WhisperKit' : isWhisperCpp ? 'whisper-cpp' : 'Python whisper'})`)
+-
+-    let output: string
+-    if (isWhisperKit) {
+-      // WhisperKit (Apple Silicon CoreML) — auto-downloads models on first run
+-      // Use --report to produce a JSON file with a top-level "text" field for deterministic parsing
+-      const reportDir = tmpdir()
+-      execSync(
+-        `"${whisperBin}" transcribe --audio-path "${tmpWav}" --model tiny --without-timestamps --skip-special-tokens --report --report-path "${reportDir}"`,
+-        { encoding: 'utf-8', timeout: 60000 }
+-      )
+-      // WhisperKit writes <audioFileName>.json (filename without extension)
+-      const wavBasename = require('path').basename(tmpWav, '.wav')
+-      const reportPath = join(reportDir, `${wavBasename}.json`)
+-      if (existsSync(reportPath)) {
+-        try {
+-          const report = JSON.parse(readFileSync(reportPath, 'utf-8'))
+-          const transcript = (report.text || '').trim()
+-          try { unlinkSync(reportPath) } catch {}
+-          // Also clean up .srt that --report creates
+-          const srtPath = join(reportDir, `${wavBasename}.srt`)
+-          try { unlinkSync(srtPath) } catch {}
+-          return { error: null, transcript }
+-        } catch (parseErr: any) {
+-          log(`WhisperKit JSON parse failed: ${parseErr.message}, falling back to stdout`)
+-          try { unlinkSync(reportPath) } catch {}
+-        }
+-      }
+-      // Fallback: re-run without --report, stdout is plain text when --verbose is not set
+-      output = execSync(
+-        `"${whisperBin}" transcribe --audio-path "${tmpWav}" --model tiny --without-timestamps --skip-special-tokens`,
+-        { encoding: 'utf-8', timeout: 60000 }
+-      )
+-    } else if (isWhisperCpp) {
+-      // whisper-cpp: whisper-cli -m model -f file --no-timestamps
+-      // Find model file — prefer multilingual (auto-detect language) over .en (English-only)
+-      const modelCandidates = [
+-        join(homedir(), '.local/share/whisper/ggml-base.bin'),
+-        join(homedir(), '.local/share/whisper/ggml-tiny.bin'),
+-        '/opt/homebrew/share/whisper-cpp/models/ggml-base.bin',
+-        '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.bin',
+-        join(homedir(), '.local/share/whisper/ggml-base.en.bin'),
+-        join(homedir(), '.local/share/whisper/ggml-tiny.en.bin'),
+-        '/opt/homebrew/share/whisper-cpp/models/ggml-base.en.bin',
+-        '/opt/homebrew/share/whisper-cpp/models/ggml-tiny.en.bin',
+-      ]
+-
+-      let modelPath = ''
+-      for (const m of modelCandidates) {
+-        if (existsSync(m)) { modelPath = m; break }
+-      }
+-
+-      if (!modelPath) {
+-        return {
+-          error: 'Whisper model not found. Download with:\n  mkdir -p ~/.local/share/whisper && curl -L -o ~/.local/share/whisper/ggml-tiny.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin',
+-          transcript: null,
+-        }
+-      }
+-
+-      const isEnglishOnly = modelPath.includes('.en.')
+-      const langFlag = isEnglishOnly ? '-l en' : '-l auto'
+-      output = execSync(
+-        `"${whisperBin}" -m "${modelPath}" -f "${tmpWav}" --no-timestamps ${langFlag}`,
+-        { encoding: 'utf-8', timeout: 30000 }
+-      )
+-    } else {
+-      // Python whisper
+-      output = execSync(
+-        `"${whisperBin}" "${tmpWav}" --model tiny --output_format txt --output_dir "${tmpdir()}"`,
+-        { encoding: 'utf-8', timeout: 30000 }
+-      )
+-      // Python whisper writes .txt file
+-      const txtPath = tmpWav.replace('.wav', '.txt')
+-      if (existsSync(txtPath)) {
+-        const transcript = readFileSync(txtPath, 'utf-8').trim()
+-        try { unlinkSync(txtPath) } catch {}
+-        return { error: null, transcript }
+-      }
+-      // File not created — Python whisper failed silently
+-      return {
+-        error: `Whisper output file not found at ${txtPath}. Check disk space and permissions.`,
+-        transcript: null,
+-      }
+-    }
+-
+-    // WhisperKit (stdout fallback) and whisper-cpp print to stdout directly
+-    // Strip timestamp patterns and known hallucination outputs
+-    const HALLUCINATIONS = /^\s*(\[BLANK_AUDIO\]|you\.?|thank you\.?|thanks\.?)\s*$/i
+-    const transcript = output
+-      .replace(/\[[\d:.]+\s*-->\s*[\d:.]+\]\s*/g, '')
+-      .trim()
+-
+-    if (HALLUCINATIONS.test(transcript)) {
+-      return { error: null, transcript: '' }
+-    }
+-
+-    return { error: null, transcript: transcript || '' }
+-  } catch (err: any) {
+-    log(`Transcription error: ${err.message}`)
+-    return {
+-      error: `Transcription failed: ${err.message}`,
+-      transcript: null,
+-    }
+-  } finally {
+-    try { unlinkSync(tmpWav) } catch {}
+-  }
+-})
+-
+-ipcMain.handle(IPC.GET_DIAGNOSTICS, () => {
+-  const { readFileSync, existsSync } = require('fs')
+-  const health = controlPlane.getHealth()
+-
+-  let recentLogs = ''
+-  if (existsSync(LOG_FILE)) {
+-    try {
+-      const content = readFileSync(LOG_FILE, 'utf-8')
+-      const lines = content.split('\n')
+-      recentLogs = lines.slice(-100).join('\n')
+-    } catch {}
+-  }
+-
+-  return {
+-    health,
+-    logPath: LOG_FILE,
+-    recentLogs,
+-    platform: process.platform,
+-    arch: process.arch,
+-    electronVersion: process.versions.electron,
+-    nodeVersion: process.versions.node,
+-    appVersion: app.getVersion(),
+-    transport: INTERACTIVE_PTY ? 'pty' : 'stream-json',
+-  }
+-})
+-
+-ipcMain.handle(IPC.OPEN_IN_TERMINAL, (_event, arg: string | null | { sessionId?: string | null; projectPath?: string }) => {
+-  const { execFile } = require('child_process')
+-  const claudeBin = 'claude'
+-
+-  // Support both old (string) and new ({ sessionId, projectPath }) calling convention
+-  let sessionId: string | null = null
+-  let projectPath: string = process.cwd()
+-  if (typeof arg === 'string') {
+-    sessionId = arg
+-  } else if (arg && typeof arg === 'object') {
+-    sessionId = arg.sessionId ?? null
+-    projectPath = arg.projectPath && arg.projectPath !== '~' ? arg.projectPath : process.cwd()
+-  }
+-
+-  // Escape for AppleScript: double quotes → backslash-escaped, backslashes doubled
+-  const projectDir = projectPath.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+-  let cmd: string
+-  if (sessionId) {
+-    cmd = `cd \\"${projectDir}\\" && ${claudeBin} --resume ${sessionId}`
+-  } else {
+-    cmd = `cd \\"${projectDir}\\" && ${claudeBin}`
+-  }
+-
+-  const script = `tell application "Terminal"
+-  activate
+-  do script "${cmd}"
+-end tell`
+-
+-  try {
+-    execFile('/usr/bin/osascript', ['-e', script], (err: Error | null) => {
+-      if (err) log(`Failed to open terminal: ${err.message}`)
+-      else log(`Opened terminal with: ${cmd}`)
+-    })
+-    return true
+-  } catch (err: unknown) {
+-    log(`Failed to open terminal: ${err}`)
+-    return false
+-  }
+-})
+-
+-// ─── Marketplace IPC ───
+-
+-ipcMain.handle(IPC.MARKETPLACE_FETCH, async (_event, { forceRefresh } = {}) => {
+-  log('IPC MARKETPLACE_FETCH')
+-  return fetchCatalog(forceRefresh)
+-})
+-
+-ipcMain.handle(IPC.MARKETPLACE_INSTALLED, async () => {
+-  log('IPC MARKETPLACE_INSTALLED')
+-  return listInstalled()
+-})
+-
+-ipcMain.handle(IPC.MARKETPLACE_INSTALL, async (_event, { repo, pluginName, marketplace, sourcePath, isSkillMd }: { repo: string; pluginName: string; marketplace: string; sourcePath?: string; isSkillMd?: boolean }) => {
+-  log(`IPC MARKETPLACE_INSTALL: ${pluginName} from ${repo} (isSkillMd=${isSkillMd})`)
+-  return installPlugin(repo, pluginName, marketplace, sourcePath, isSkillMd)
+-})
+-
+-ipcMain.handle(IPC.MARKETPLACE_UNINSTALL, async (_event, { pluginName }: { pluginName: string }) => {
+-  log(`IPC MARKETPLACE_UNINSTALL: ${pluginName}`)
+-  return uninstallPlugin(pluginName)
+-})
+-
+-// ─── Theme Detection ───
+-
+-ipcMain.handle(IPC.GET_THEME, () => {
+-  return { isDark: nativeTheme.shouldUseDarkColors }
+-})
+-
+-nativeTheme.on('updated', () => {
+-  broadcast(IPC.THEME_CHANGED, nativeTheme.shouldUseDarkColors)
+-})
+-
+-// ─── Permission Preflight ───
+-// Request all required macOS permissions upfront on first launch so the user
+-// is never interrupted mid-session by a permission prompt.
+-
+-async function requestPermissions(): Promise<void> {
+-  if (process.platform !== 'darwin') return
+-
+-  // ── Microphone (for voice input via Whisper) ──
+-  try {
+-    const micStatus = systemPreferences.getMediaAccessStatus('microphone')
+-    if (micStatus === 'not-determined') {
+-      await systemPreferences.askForMediaAccess('microphone')
+-    }
+-  } catch (err: any) {
+-    log(`Permission preflight: microphone check failed — ${err.message}`)
+-  }
+-
+-  // ── Accessibility (for global ⌥+Space shortcut) ──
+-  // globalShortcut works without it on modern macOS; Cmd+Shift+K is always the fallback.
+-  // Screen Recording: not requested upfront — macOS 15 Sequoia shows an alarming
+-  // "bypass private window picker" dialog. Let the OS prompt naturally if/when
+-  // the screenshot feature is actually used.
+-}
+-
+-// ─── Day Boundary Detection ───
+-
+-function startDayBoundaryCheck(): void {
+-  let currentDay = new Date().toISOString().slice(0, 10)
+-  setInterval(() => {
+-    const now = new Date().toISOString().slice(0, 10)
+-    if (now !== currentDay) {
+-      log(`Showtime: Day boundary crossed — ${currentDay} → ${now}`)
+-      currentDay = now
+-      broadcast(IPC.DAY_BOUNDARY)
+-    }
+-  }, 60_000) // Check every minute
+-}
+-
+ // ─── App Lifecycle ───
+ 
+ app.whenReady().then(async () => {
+@@ -1158,10 +51,10 @@ app.whenReady().then(async () => {
+   // Initialize SQLite data layer
+   try {
+     const dataService = DataService.init()
+-    syncEngine = new SyncEngine(dataService)
++    setSyncEngine(new SyncEngine(dataService))
+     log('DataService initialized')
+-  } catch (err: any) {
+-    log(`DataService initialization failed: ${err.message}`)
++  } catch (err: unknown) {
++    log(`DataService initialization failed: ${err instanceof Error ? err.message : String(err)}`)
+   }
+ 
+   createWindow()
+@@ -1171,6 +64,7 @@ app.whenReady().then(async () => {
+   startDayBoundaryCheck()
+ 
+   if (SPACES_DEBUG) {
++    const mainWindow = getMainWindow()
+     mainWindow?.on('show', () => snapshotWindowState('event window show'))
+     mainWindow?.on('hide', () => snapshotWindowState('event window hide'))
+     mainWindow?.on('focus', () => snapshotWindowState('event window focus'))
+@@ -1195,43 +89,11 @@ app.whenReady().then(async () => {
+     })
+   }
+ 
++  registerShortcuts(showWindow, toggleWindow)
++  const tray = createTray(showWindow, toggleWindow)
+ 
+-  // Primary: Option+Space (2 keys, doesn't conflict with shell)
+-  // When visible: toggle expanded/pill state in the renderer
+-  // When hidden: show the window
+-  // Fallback: Cmd+Shift+K kept as secondary shortcut
+-  const registered = globalShortcut.register('Alt+Space', () => {
+-    if (mainWindow?.isVisible()) {
+-      // Toggle expanded state by broadcasting to renderer
+-      broadcast(IPC.TOGGLE_EXPANDED)
+-    } else {
+-      showWindow('shortcut Alt+Space')
+-    }
+-  })
+-  if (!registered) {
+-    log('Alt+Space shortcut registration failed — macOS input sources may claim it')
+-  }
+-  globalShortcut.register('CommandOrControl+Shift+K', () => toggleWindow('shortcut Cmd/Ctrl+Shift+K'))
+-
+-  const trayIconPath = join(__dirname, '../../resources/trayTemplate.png')
+-  const trayIcon = nativeImage.createFromPath(trayIconPath)
+-  trayIcon.setTemplateImage(true)
+-  tray = new Tray(trayIcon)
+-  tray.setToolTip('Showtime')
+-  tray.on('click', () => toggleWindow('tray click'))
+-  tray.setContextMenu(
+-    Menu.buildFromTemplate([
+-      { label: 'Show Showtime', click: () => showWindow('tray menu') },
+-      { type: 'separator' },
+-      { label: 'Reset Show', click: () => {
+-        if (mainWindow && !mainWindow.isDestroyed()) {
+-          mainWindow.webContents.send(IPC.RESET_SHOW)
+-        }
+-      }},
+-      { type: 'separator' },
+-      { label: 'Quit Showtime', click: () => { app.quit() } },
+-    ])
+-  )
++  registerCoreIpc()
++  registerShowtimeIpc()
+ 
+   // app 'activate' fires when macOS brings the app to the foreground (e.g. after
+   // webContents.focus() triggers applicationDidBecomeActive on some macOS versions).
+@@ -1241,21 +103,27 @@ app.whenReady().then(async () => {
+ 
+   // ─── Test-mode IPC handlers for E2E verification ───
+   if (process.env.NODE_ENV === 'test') {
+-    ipcMain.handle('test:get-window-config', () => ({
+-      alwaysOnTop: mainWindow?.isAlwaysOnTop(),
+-      visibleOnAllWorkspaces: mainWindow?.isVisibleOnAllWorkspaces(),
+-      backgroundColor: mainWindow?.getBackgroundColor(),
+-      bounds: mainWindow?.getBounds(),
+-    }))
++    ipcMain.handle('test:get-window-config', () => {
++      const mainWindow = getMainWindow()
++      return {
++        alwaysOnTop: mainWindow?.isAlwaysOnTop(),
++        visibleOnAllWorkspaces: mainWindow?.isVisibleOnAllWorkspaces(),
++        backgroundColor: mainWindow?.getBackgroundColor(),
++        bounds: mainWindow?.getBounds(),
++      }
++    })
+     ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Reset Show', 'separator', 'Quit Showtime']
+     ipcMain.handle('test:get-tray-menu', () => (global as any).__trayMenuLabels)
+   }
++
++  // Suppress unused variable warning — tray must stay referenced to avoid GC
++  void tray
+ })
+ 
+ app.on('will-quit', () => {
+   globalShortcut.unregisterAll()
+   controlPlane.shutdown()
+-  syncEngine?.finalFlush()
++  getSyncEngine()?.finalFlush()
+   flushLogs()
+ })
+ 
+diff --git a/src/main/ipc/core.ts b/src/main/ipc/core.ts
+new file mode 100644
+index 0000000..c2dec60
+--- /dev/null
++++ b/src/main/ipc/core.ts
+@@ -0,0 +1,113 @@
++import { ipcMain } from 'electron'
++import { execSync } from 'child_process'
++import { homedir } from 'os'
++import { getCliEnv } from '../cli-env'
++import { controlPlane, DEBUG_MODE, log } from '../state'
++import { IPC } from '../../shared/types'
++import type { RunOptions } from '../../shared/types'
++
++export function registerCoreIpc(): void {
++  ipcMain.handle(IPC.START, async () => {
++    log('IPC START — fetching static CLI info')
++
++    let version = 'unknown'
++    try {
++      version = execSync('claude -v', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
++    } catch {}
++
++    let auth: { email?: string; subscriptionType?: string; authMethod?: string } = {}
++    try {
++      const raw = execSync('claude auth status', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
++      auth = JSON.parse(raw)
++    } catch {}
++
++    let mcpServers: string[] = []
++    try {
++      const raw = execSync('claude mcp list', { encoding: 'utf-8', timeout: 5000, env: getCliEnv() }).trim()
++      if (raw) mcpServers = raw.split('\n').filter(Boolean)
++    } catch {}
++
++    return { version, auth, mcpServers, projectPath: process.cwd(), homePath: homedir() }
++  })
++
++  ipcMain.handle(IPC.CREATE_TAB, () => {
++    const tabId = controlPlane.createTab()
++    log(`IPC CREATE_TAB → ${tabId}`)
++    return { tabId }
++  })
++
++  ipcMain.on(IPC.INIT_SESSION, (_event, tabId: string) => {
++    log(`IPC INIT_SESSION: ${tabId}`)
++    controlPlane.initSession(tabId)
++  })
++
++  ipcMain.on(IPC.RESET_TAB_SESSION, (_event, tabId: string) => {
++    log(`IPC RESET_TAB_SESSION: ${tabId}`)
++    controlPlane.resetTabSession(tabId)
++  })
++
++  ipcMain.handle(IPC.PROMPT, async (_event, { tabId, requestId, options }: { tabId: string; requestId: string; options: RunOptions }) => {
++    if (DEBUG_MODE) {
++      log(`IPC PROMPT: tab=${tabId} req=${requestId} prompt="${options.prompt.substring(0, 100)}"`)
++    } else {
++      log(`IPC PROMPT: tab=${tabId} req=${requestId}`)
++    }
++
++    if (!tabId) {
++      throw new Error('No tabId provided — prompt rejected')
++    }
++    if (!requestId) {
++      throw new Error('No requestId provided — prompt rejected')
++    }
++
++    try {
++      await controlPlane.submitPrompt(tabId, requestId, options)
++    } catch (err: unknown) {
++      const msg = err instanceof Error ? err.message : String(err)
++      log(`PROMPT error: ${msg}`)
++      throw err
++    }
++  })
++
++  ipcMain.handle(IPC.CANCEL, (_event, requestId: string) => {
++    log(`IPC CANCEL: ${requestId}`)
++    return controlPlane.cancel(requestId)
++  })
++
++  ipcMain.handle(IPC.STOP_TAB, (_event, tabId: string) => {
++    log(`IPC STOP_TAB: ${tabId}`)
++    return controlPlane.cancelTab(tabId)
++  })
++
++  ipcMain.handle(IPC.RETRY, async (_event, { tabId, requestId, options }: { tabId: string; requestId: string; options: RunOptions }) => {
++    log(`IPC RETRY: tab=${tabId} req=${requestId}`)
++    return controlPlane.retry(tabId, requestId, options)
++  })
++
++  ipcMain.handle(IPC.STATUS, () => {
++    return controlPlane.getHealth()
++  })
++
++  ipcMain.handle(IPC.TAB_HEALTH, () => {
++    return controlPlane.getHealth()
++  })
++
++  ipcMain.handle(IPC.CLOSE_TAB, (_event, tabId: string) => {
++    log(`IPC CLOSE_TAB: ${tabId}`)
++    controlPlane.closeTab(tabId)
++  })
++
++  ipcMain.on(IPC.SET_PERMISSION_MODE, (_event, mode: string) => {
++    if (mode !== 'ask' && mode !== 'auto') {
++      log(`IPC SET_PERMISSION_MODE: invalid mode "${mode}" — ignoring`)
++      return
++    }
++    log(`IPC SET_PERMISSION_MODE: ${mode}`)
++    controlPlane.setPermissionMode(mode)
++  })
++
++  ipcMain.handle(IPC.RESPOND_PERMISSION, (_event, { tabId, questionId, optionId }: { tabId: string; questionId: string; optionId: string }) => {
++    log(`IPC RESPOND_PERMISSION: tab=${tabId} question=${questionId} option=${optionId}`)
++    return controlPlane.respondToPermission(tabId, questionId, optionId)
++  })
++}
+diff --git a/src/main/ipc/showtime.ts b/src/main/ipc/showtime.ts
+new file mode 100644
+index 0000000..277d6c5
+--- /dev/null
++++ b/src/main/ipc/showtime.ts
+@@ -0,0 +1,163 @@
++import { app, ipcMain, Notification, nativeTheme } from 'electron'
++import { getMainWindow, getSyncEngine, log, broadcast } from '../state'
++import { applyViewMode } from '../window'
++import { DataService } from '../data/DataService'
++import { IPC } from '../../shared/types'
++import type { ShowStateSnapshot, TimelineEventInput, ClaudeContextPayload } from '../data/types'
++
++export function registerShowtimeIpc(): void {
++  // ─── Window management ───
++
++  ipcMain.on(IPC.HIDE_WINDOW, () => {
++    getMainWindow()?.hide()
++  })
++
++  ipcMain.on(IPC.APP_QUIT, () => {
++    // Hide window first to avoid black flash during quit
++    getMainWindow()?.hide()
++    setTimeout(() => app.quit(), 100)
++  })
++
++  ipcMain.handle(IPC.IS_VISIBLE, () => {
++    return getMainWindow()?.isVisible() ?? false
++  })
++
++  // ─── Showtime notifications ───
++
++  ipcMain.on(IPC.NOTIFY_ACT_COMPLETE, (_event, actName: string, sketch: string) => {
++    log(`Showtime: Act Complete — ${actName} (${sketch})`)
++    if (Notification.isSupported()) {
++      new Notification({ title: `Act Complete: ${actName}`, body: `${sketch} — time for a Beat check!` }).show()
++    }
++  })
++
++  ipcMain.on(IPC.NOTIFY_BEAT_CHECK, (_event, actName: string) => {
++    log(`Showtime: Beat check — ${actName}`)
++    if (Notification.isSupported()) {
++      new Notification({ title: 'Beat Check', body: `Were you present during ${actName}?` }).show()
++    }
++  })
++
++  ipcMain.on(IPC.NOTIFY_VERDICT, (_event, verdict: string, message: string) => {
++    log(`Showtime: Verdict — ${verdict}`)
++    if (Notification.isSupported()) {
++      const fallbackMessages: Record<string, string> = {
++        DAY_WON: 'Standing ovation! You showed up and you were present.',
++        SOLID_SHOW: 'Not every sketch lands. The show was still great.',
++        GOOD_EFFORT: 'You got on stage. That\'s the hardest part.',
++        SHOW_CALLED_EARLY: 'A short show is still a show.',
++      }
++      new Notification({ title: 'Show Complete', body: message || fallbackMessages[verdict] || 'The show is over.' }).show()
++    }
++  })
++
++  // ─── Showtime window management ───
++
++  ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
++    applyViewMode(mode)
++  })
++
++  // ─── Showtime data persistence IPC ───
++
++  ipcMain.handle(IPC.DATA_HYDRATE, () => {
++    try {
++      return getSyncEngine()?.hydrate() ?? null
++    } catch (err: unknown) {
++      log(`DATA_HYDRATE error: ${err instanceof Error ? err.message : String(err)}`)
++      return null
++    }
++  })
++
++  ipcMain.on(IPC.DATA_SYNC, (_event, snapshot: ShowStateSnapshot) => {
++    try {
++      getSyncEngine()?.queueSync(snapshot)
++    } catch (err: unknown) {
++      log(`DATA_SYNC error: ${err instanceof Error ? err.message : String(err)}`)
++    }
++  })
++
++  ipcMain.handle(IPC.DATA_FLUSH, (_event, snapshot?: ShowStateSnapshot) => {
++    try {
++      getSyncEngine()?.flush(snapshot)
++    } catch (err: unknown) {
++      log(`DATA_FLUSH error: ${err instanceof Error ? err.message : String(err)}`)
++    }
++  })
++
++  ipcMain.on(IPC.TIMELINE_RECORD, (_event, event: TimelineEventInput) => {
++    try {
++      getSyncEngine()?.recordAndFlush(event)
++    } catch (err: unknown) {
++      log(`TIMELINE_RECORD error: ${err instanceof Error ? err.message : String(err)}`)
++    }
++  })
++
++  ipcMain.handle(IPC.TIMELINE_EVENTS, (_event, showId: string) => {
++    try {
++      const data = DataService.getInstance()
++      return data.timeline.getEventsForShow(showId)
++    } catch (err: unknown) {
++      log(`TIMELINE_EVENTS error: ${err instanceof Error ? err.message : String(err)}`)
++      return []
++    }
++  })
++
++  ipcMain.handle(IPC.TIMELINE_DRIFT, (_event, showId: string) => {
++    try {
++      const data = DataService.getInstance()
++      return data.timeline.computeDrift(showId)
++    } catch (err: unknown) {
++      log(`TIMELINE_DRIFT error: ${err instanceof Error ? err.message : String(err)}`)
++      return 0
++    }
++  })
++
++  ipcMain.handle(IPC.TIMELINE_DRIFT_PER_ACT, (_event, showId: string) => {
++    try {
++      const data = DataService.getInstance()
++      return data.timeline.getDriftPerAct(showId)
++    } catch (err: unknown) {
++      log(`TIMELINE_DRIFT_PER_ACT error: ${err instanceof Error ? err.message : String(err)}`)
++      return []
++    }
++  })
++
++  ipcMain.on(IPC.CLAUDE_CONTEXT_SAVE, (_event, ctx: ClaudeContextPayload) => {
++    try {
++      const data = DataService.getInstance()
++      data.claudeCtx.saveContext(ctx)
++    } catch (err: unknown) {
++      log(`CLAUDE_CONTEXT_SAVE error: ${err instanceof Error ? err.message : String(err)}`)
++    }
++  })
++
++  ipcMain.handle(IPC.CLAUDE_CONTEXT_GET, (_event, showId: string) => {
++    try {
++      const data = DataService.getInstance()
++      return data.claudeCtx.getLatestContext(showId) ?? null
++    } catch (err: unknown) {
++      log(`CLAUDE_CONTEXT_GET error: ${err instanceof Error ? err.message : String(err)}`)
++      return null
++    }
++  })
++
++  ipcMain.handle(IPC.SHOW_HISTORY, (_event, limit?: number) => {
++    try {
++      const data = DataService.getInstance()
++      return data.shows.getRecentShows(limit ?? 30)
++    } catch (err: unknown) {
++      log(`SHOW_HISTORY error: ${err instanceof Error ? err.message : String(err)}`)
++      return []
++    }
++  })
++
++  // ─── Theme Detection ───
++
++  ipcMain.handle(IPC.GET_THEME, () => {
++    return { isDark: nativeTheme.shouldUseDarkColors }
++  })
++
++  nativeTheme.on('updated', () => {
++    broadcast(IPC.THEME_CHANGED, nativeTheme.shouldUseDarkColors)
++  })
++}
+diff --git a/src/main/permissions.ts b/src/main/permissions.ts
+new file mode 100644
+index 0000000..601f843
+--- /dev/null
++++ b/src/main/permissions.ts
+@@ -0,0 +1,26 @@
++import { systemPreferences } from 'electron'
++import { log } from './state'
++
++// ─── Permission Preflight ───
++// Request all required macOS permissions upfront on first launch so the user
++// is never interrupted mid-session by a permission prompt.
++
++export async function requestPermissions(): Promise<void> {
++  if (process.platform !== 'darwin') return
++
++  // ── Microphone (for voice input via Whisper) ──
++  try {
++    const micStatus = systemPreferences.getMediaAccessStatus('microphone')
++    if (micStatus === 'not-determined') {
++      await systemPreferences.askForMediaAccess('microphone')
++    }
++  } catch (err: unknown) {
++    log(`Permission preflight: microphone check failed — ${err instanceof Error ? err.message : String(err)}`)
++  }
++
++  // ── Accessibility (for global Option+Space shortcut) ──
++  // globalShortcut works without it on modern macOS; Cmd+Shift+K is always the fallback.
++  // Screen Recording: not requested upfront — macOS 15 Sequoia shows an alarming
++  // "bypass private window picker" dialog. Let the OS prompt naturally if/when
++  // the screenshot feature is actually used.
++}
+diff --git a/src/main/process-manager.ts b/src/main/process-manager.ts
+deleted file mode 100644
+index add7af0..0000000
+--- a/src/main/process-manager.ts
++++ /dev/null
+@@ -1,193 +0,0 @@
+-import { spawn, execSync, ChildProcess } from 'child_process'
+-import { EventEmitter } from 'events'
+-import { homedir } from 'os'
+-import { appendFileSync } from 'fs'
+-import { join } from 'path'
+-import { StreamParser } from './stream-parser'
+-import { getCliEnv } from './cli-env'
+-import type { ClaudeEvent, RunOptions } from '../shared/types'
+-
+-const LOG_FILE = join(homedir(), '.clui-debug.log')
+-
+-function log(msg: string): void {
+-  const line = `[${new Date().toISOString()}] ${msg}\n`
+-  try { appendFileSync(LOG_FILE, line) } catch {}
+-}
+-
+-export interface RunHandle {
+-  runId: string
+-  sessionId: string | null
+-  process: ChildProcess
+-  parser: StreamParser
+-}
+-
+-/**
+- * Manages Claude Code subprocesses.
+- */
+-export class ProcessManager extends EventEmitter {
+-  private activeRuns = new Map<string, RunHandle>()
+-  private claudeBinary: string
+-
+-  constructor() {
+-    super()
+-    // Find the real claude binary — Electron doesn't inherit shell aliases or full PATH
+-    this.claudeBinary = this.findClaudeBinary()
+-    log(`Claude binary: ${this.claudeBinary}`)
+-  }
+-
+-  private findClaudeBinary(): string {
+-    // Try common locations
+-    const candidates = [
+-      '/usr/local/bin/claude',
+-      '/opt/homebrew/bin/claude',
+-      join(homedir(), '.npm-global/bin/claude'),
+-      join(homedir(), '.nvm/versions/node', '**', 'bin/claude'),
+-    ]
+-
+-    for (const c of candidates) {
+-      try {
+-        execSync(`test -x "${c}"`, { stdio: 'ignore' })
+-        return c
+-      } catch {}
+-    }
+-
+-    // Fallback: ask a login shell
+-    try {
+-      const result = execSync('/bin/zsh -ilc "whence -p claude"', { encoding: 'utf-8', env: getCliEnv() }).trim()
+-      if (result) return result
+-    } catch {}
+-
+-    try {
+-      const result = execSync('/bin/bash -lc "which claude"', { encoding: 'utf-8', env: getCliEnv() }).trim()
+-      if (result) return result
+-    } catch {}
+-
+-    // Last resort
+-    return 'claude'
+-  }
+-
+-  startRun(options: RunOptions): RunHandle {
+-    const runId = crypto.randomUUID()
+-    const cwd = options.projectPath === '~' ? homedir() : options.projectPath
+-
+-    const args: string[] = [
+-      '-p',
+-      '--output-format', 'stream-json',
+-      '--verbose',
+-      '--include-partial-messages',
+-      '--permission-mode', 'acceptEdits',
+-      '--chrome',
+-    ]
+-
+-    if (options.sessionId) {
+-      args.push('--resume', options.sessionId)
+-    }
+-
+-    if (options.allowedTools?.length) {
+-      args.push('--allowedTools', options.allowedTools.join(','))
+-    }
+-
+-    if (options.maxTurns) {
+-      args.push('--max-turns', String(options.maxTurns))
+-    }
+-
+-    if (options.maxBudgetUsd) {
+-      args.push('--max-budget-usd', String(options.maxBudgetUsd))
+-    }
+-
+-    if (options.systemPrompt) {
+-      args.push('--system-prompt', options.systemPrompt)
+-    }
+-
+-    log(`Starting run ${runId}: ${this.claudeBinary} ${args.join(' ')}`)
+-    log(`Prompt: ${options.prompt.substring(0, 200)}`)
+-
+-    // Build environment: merge login shell PATH with Electron's env
+-    // Electron doesn't source ~/.zshrc so PATH is often incomplete
+-    const env = getCliEnv()
+-
+-    // Ensure our claude binary's directory is in PATH
+-    const binDir = this.claudeBinary.substring(0, this.claudeBinary.lastIndexOf('/'))
+-    if (env.PATH && !env.PATH.includes(binDir)) {
+-      env.PATH = `${binDir}:${env.PATH}`
+-    }
+-
+-    const child = spawn(this.claudeBinary, args, {
+-      stdio: ['pipe', 'pipe', 'pipe'],
+-      cwd,
+-      env,
+-    })
+-
+-    log(`Spawned PID: ${child.pid}`)
+-
+-    const parser = StreamParser.fromStream(child.stdout!)
+-
+-    const handle: RunHandle = {
+-      runId,
+-      sessionId: null,
+-      process: child,
+-      parser,
+-    }
+-
+-    parser.on('event', (event: ClaudeEvent) => {
+-      log(`Event [${runId}]: ${event.type}`)
+-      if (event.type === 'system' && 'subtype' in event && event.subtype === 'init') {
+-        handle.sessionId = (event as any).session_id
+-      }
+-      this.emit('event', runId, event)
+-    })
+-
+-    parser.on('parse-error', (line: string) => {
+-      log(`Parse error [${runId}]: ${line.substring(0, 200)}`)
+-      this.emit('parse-error', runId, line)
+-    })
+-
+-    child.on('close', (code) => {
+-      log(`Process closed [${runId}]: code=${code}`)
+-      this.activeRuns.delete(runId)
+-      this.emit('exit', runId, code, handle.sessionId)
+-    })
+-
+-    child.on('error', (err) => {
+-      log(`Process error [${runId}]: ${err.message}`)
+-      this.activeRuns.delete(runId)
+-      this.emit('error', runId, err)
+-    })
+-
+-    child.stderr?.setEncoding('utf-8')
+-    child.stderr?.on('data', (data: string) => {
+-      log(`Stderr [${runId}]: ${data.trim().substring(0, 500)}`)
+-      this.emit('stderr', runId, data)
+-    })
+-
+-    child.stdin!.write(options.prompt)
+-    child.stdin!.end()
+-
+-    this.activeRuns.set(runId, handle)
+-    return handle
+-  }
+-
+-  cancelRun(runId: string): boolean {
+-    const handle = this.activeRuns.get(runId)
+-    if (!handle) return false
+-
+-    log(`Cancelling run ${runId}`)
+-    handle.process.kill('SIGINT')
+-
+-    setTimeout(() => {
+-      if (handle.process.exitCode === null) {
+-        handle.process.kill('SIGTERM')
+-      }
+-    }, 5000)
+-
+-    return true
+-  }
+-
+-  isRunning(runId: string): boolean {
+-    return this.activeRuns.has(runId)
+-  }
+-
+-  getActiveRunIds(): string[] {
+-    return Array.from(this.activeRuns.keys())
+-  }
+-}
+diff --git a/src/main/shortcuts.ts b/src/main/shortcuts.ts
+new file mode 100644
+index 0000000..760c726
+--- /dev/null
++++ b/src/main/shortcuts.ts
+@@ -0,0 +1,25 @@
++import { globalShortcut } from 'electron'
++import { getMainWindow, broadcast, log } from './state'
++import { IPC } from '../shared/types'
++
++export function registerShortcuts(
++  showWindow: (source?: string) => void,
++  toggleWindow: (source?: string) => void,
++): void {
++  // Primary: Option+Space (2 keys, doesn't conflict with shell)
++  // When visible: toggle expanded/pill state in the renderer
++  // When hidden: show the window
++  // Fallback: Cmd+Shift+K kept as secondary shortcut
++  const registered = globalShortcut.register('Alt+Space', () => {
++    if (getMainWindow()?.isVisible()) {
++      // Toggle expanded state by broadcasting to renderer
++      broadcast(IPC.TOGGLE_EXPANDED)
++    } else {
++      showWindow('shortcut Alt+Space')
++    }
++  })
++  if (!registered) {
++    log('Alt+Space shortcut registration failed — macOS input sources may claim it')
++  }
++  globalShortcut.register('CommandOrControl+Shift+K', () => toggleWindow('shortcut Cmd/Ctrl+Shift+K'))
++}
+diff --git a/src/main/state.ts b/src/main/state.ts
+new file mode 100644
+index 0000000..da0e870
+--- /dev/null
++++ b/src/main/state.ts
+@@ -0,0 +1,29 @@
++import { BrowserWindow } from 'electron'
++import { ControlPlane } from './claude/control-plane'
++import { SyncEngine } from './data/SyncEngine'
++import { log as _log } from './logger'
++
++export const DEBUG_MODE = process.env.CLUI_DEBUG === '1'
++export const SPACES_DEBUG = DEBUG_MODE || process.env.CLUI_SPACES_DEBUG === '1'
++const INTERACTIVE_PTY = process.env.CLUI_INTERACTIVE_PERMISSIONS_PTY === '1'
++
++export const controlPlane = new ControlPlane(INTERACTIVE_PTY)
++
++// Mutable shared refs — set during app.whenReady()
++let _mainWindow: BrowserWindow | null = null
++let _syncEngine: SyncEngine | null = null
++
++export function getMainWindow(): BrowserWindow | null { return _mainWindow }
++export function setMainWindow(w: BrowserWindow | null): void { _mainWindow = w }
++export function getSyncEngine(): SyncEngine | null { return _syncEngine }
++export function setSyncEngine(s: SyncEngine): void { _syncEngine = s }
++
++export function log(msg: string): void {
++  _log('main', msg)
++}
++
++export function broadcast(channel: string, ...args: unknown[]): void {
++  if (_mainWindow && !_mainWindow.isDestroyed()) {
++    _mainWindow.webContents.send(channel, ...args)
++  }
++}
+diff --git a/src/main/tray.ts b/src/main/tray.ts
+new file mode 100644
+index 0000000..4047ee7
+--- /dev/null
++++ b/src/main/tray.ts
+@@ -0,0 +1,31 @@
++import { app, Tray, Menu, nativeImage } from 'electron'
++import { join } from 'path'
++import { getMainWindow } from './state'
++import { IPC } from '../shared/types'
++
++export function createTray(
++  showWindow: (source?: string) => void,
++  toggleWindow: (source?: string) => void,
++): Tray {
++  const trayIconPath = join(__dirname, '../../resources/trayTemplate.png')
++  const trayIcon = nativeImage.createFromPath(trayIconPath)
++  trayIcon.setTemplateImage(true)
++  const tray = new Tray(trayIcon)
++  tray.setToolTip('Showtime')
++  tray.on('click', () => toggleWindow('tray click'))
++  tray.setContextMenu(
++    Menu.buildFromTemplate([
++      { label: 'Show Showtime', click: () => showWindow('tray menu') },
++      { type: 'separator' },
++      { label: 'Reset Show', click: () => {
++        const mainWindow = getMainWindow()
++        if (mainWindow && !mainWindow.isDestroyed()) {
++          mainWindow.webContents.send(IPC.RESET_SHOW)
++        }
++      }},
++      { type: 'separator' },
++      { label: 'Quit Showtime', click: () => { app.quit() } },
++    ])
++  )
++  return tray
++}
+diff --git a/src/main/window.ts b/src/main/window.ts
+new file mode 100644
+index 0000000..bf5b68c
+--- /dev/null
++++ b/src/main/window.ts
+@@ -0,0 +1,246 @@
++import { app, BrowserWindow, screen } from 'electron'
++import { join } from 'path'
++import { computeAnchorFromBounds, computeBoundsFromAnchor, clampToWorkArea } from './window-geometry'
++import { getMainWindow, setMainWindow, SPACES_DEBUG, log, broadcast } from './state'
++import { IPC } from '../shared/types'
++
++const PILL_BOTTOM_MARGIN = 24
++
++// ─── Content-tight window sizing ───
++// Window resizes to match view content exactly. No transparent dead zones.
++export const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
++  pill: { width: 320, height: 56 },
++  compact: { width: 340, height: 140 },
++  dashboard: { width: 400, height: 320 },
++  expanded: { width: 560, height: 620 },
++  full: { width: 560, height: 740 },
++}
++
++// Anchor-based position tracking: center-bottom point preserved across view transitions and user drags.
++let anchorPoint: { x: number; y: number } | null = null
++let isDragging = false
++let deferredViewMode: string | null = null
++let toggleSequence = 0
++
++export function snapshotWindowState(reason: string): void {
++  if (!SPACES_DEBUG) return
++  const mainWindow = getMainWindow()
++  if (!mainWindow || mainWindow.isDestroyed()) {
++    log(`[spaces] ${reason} window=none`)
++    return
++  }
++
++  const b = mainWindow.getBounds()
++  const cursor = screen.getCursorScreenPoint()
++  const display = screen.getDisplayNearestPoint(cursor)
++  const visibleOnAll = mainWindow.isVisibleOnAllWorkspaces()
++  const wcFocused = mainWindow.webContents.isFocused()
++
++  log(
++    `[spaces] ${reason} ` +
++    `vis=${mainWindow.isVisible()} focused=${mainWindow.isFocused()} wcFocused=${wcFocused} ` +
++    `alwaysOnTop=${mainWindow.isAlwaysOnTop()} allWs=${visibleOnAll} ` +
++    `bounds=(${b.x},${b.y},${b.width}x${b.height}) ` +
++    `cursor=(${cursor.x},${cursor.y}) display=${display.id} ` +
++    `workArea=(${display.workArea.x},${display.workArea.y},${display.workArea.width}x${display.workArea.height})`
++  )
++}
++
++export function scheduleToggleSnapshots(toggleId: number, phase: 'show' | 'hide'): void {
++  if (!SPACES_DEBUG) return
++  const probes = [0, 100, 400, 1200]
++  for (const delay of probes) {
++    setTimeout(() => {
++      snapshotWindowState(`toggle#${toggleId} ${phase} +${delay}ms`)
++    }, delay)
++  }
++}
++
++function clampToDisplay(bounds: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } {
++  const display = screen.getDisplayMatching(bounds as Electron.Rectangle)
++  return clampToWorkArea(bounds, display.workArea)
++}
++
++export function applyViewMode(mode: string): void {
++  const mainWindow = getMainWindow()
++  if (!mainWindow || mainWindow.isDestroyed()) return
++  const dims = VIEW_DIMENSIONS[mode]
++  if (!dims) return
++
++  if (isDragging) {
++    deferredViewMode = mode
++    return
++  }
++
++  if (!anchorPoint) {
++    anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
++  }
++
++  const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
++  mainWindow.setBounds(newBounds)
++  anchorPoint = computeAnchorFromBounds(newBounds)
++  log(`Showtime: applyViewMode(${mode}) → bounds=(${newBounds.x},${newBounds.y},${newBounds.width}x${newBounds.height})`)
++}
++
++export function createWindow(): void {
++  const initialDims = VIEW_DIMENSIONS.full
++  const cursor = screen.getCursorScreenPoint()
++  const display = screen.getDisplayNearestPoint(cursor)
++  const { width: screenWidth, height: screenHeight } = display.workAreaSize
++  const { x: dx, y: dy } = display.workArea
++
++  const x = dx + Math.round((screenWidth - initialDims.width) / 2)
++  const y = dy + screenHeight - initialDims.height - PILL_BOTTOM_MARGIN
++
++  const mainWindow = new BrowserWindow({
++    width: initialDims.width,
++    height: initialDims.height,
++    x,
++    y,
++    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
++    frame: false,
++    transparent: true,
++    // Do NOT use vibrancy — it creates a native NSVisualEffectView that bleeds
++    // through as a visible gray border around content. Paint backgrounds in CSS.
++    resizable: false,
++    movable: true,
++    alwaysOnTop: true,
++    skipTaskbar: true,
++    hasShadow: true,
++    roundedCorners: true,
++    backgroundColor: '#00000000',
++    show: false,
++    icon: join(__dirname, '../../resources/icon.icns'),
++    webPreferences: {
++      preload: join(__dirname, '../preload/index.js'),
++      contextIsolation: true,
++      nodeIntegration: false,
++    },
++  })
++
++  setMainWindow(mainWindow)
++
++  // Initialize anchor from initial bounds
++  anchorPoint = computeAnchorFromBounds({ x, y, width: initialDims.width, height: initialDims.height })
++
++  // Belt-and-suspenders: panel already joins all spaces and floats,
++  // but explicit flags ensure correct behavior on older Electron builds.
++  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
++  mainWindow.setAlwaysOnTop(true, 'screen-saver')
++
++  // isDragging guard: track user drags to prevent setBounds during drag
++  let dragTimeout: ReturnType<typeof setTimeout> | null = null
++  mainWindow.on('will-move', () => {
++    isDragging = true
++    // Safety valve: if 'moved' never fires, reset after 5 seconds
++    if (dragTimeout) clearTimeout(dragTimeout)
++    dragTimeout = setTimeout(() => {
++      if (isDragging) {
++        log('Showtime: isDragging safety valve triggered (5s timeout)')
++        isDragging = false
++        if (deferredViewMode) {
++          const mode = deferredViewMode
++          deferredViewMode = null
++          applyViewMode(mode)
++        }
++      }
++    }, 5000)
++  })
++  mainWindow.on('moved', () => {
++    if (dragTimeout) { clearTimeout(dragTimeout); dragTimeout = null }
++    isDragging = false
++    if (mainWindow && !mainWindow.isDestroyed()) {
++      anchorPoint = computeAnchorFromBounds(mainWindow.getBounds())
++    }
++    if (deferredViewMode) {
++      const mode = deferredViewMode
++      deferredViewMode = null
++      applyViewMode(mode)
++    }
++  })
++
++  mainWindow.once('ready-to-show', () => {
++    mainWindow?.show()
++    if (process.env.ELECTRON_RENDERER_URL) {
++      mainWindow?.webContents.openDevTools({ mode: 'detach' })
++    }
++  })
++
++  let forceQuit = false
++  app.on('before-quit', () => { forceQuit = true })
++  mainWindow.on('close', (e) => {
++    if (!forceQuit) {
++      e.preventDefault()
++      mainWindow?.hide()
++    }
++  })
++
++  if (process.env.ELECTRON_RENDERER_URL) {
++    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
++  } else {
++    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
++  }
++}
++
++export function showWindow(source = 'unknown'): void {
++  const mainWindow = getMainWindow()
++  if (!mainWindow) return
++  const toggleId = ++toggleSequence
++
++  if (anchorPoint) {
++    // Use stored anchor — window returns to where user last placed it
++    const currentBounds = mainWindow.getBounds()
++    const dims = { width: currentBounds.width, height: currentBounds.height }
++    const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
++    mainWindow.setBounds(newBounds)
++  } else {
++    // First show after launch — center on cursor's display, bottom-aligned
++    const cursor = screen.getCursorScreenPoint()
++    const display = screen.getDisplayNearestPoint(cursor)
++    const { width: sw, height: sh } = display.workAreaSize
++    const { x: dx, y: dy } = display.workArea
++    const dims = VIEW_DIMENSIONS.full
++    const bounds = {
++      x: dx + Math.round((sw - dims.width) / 2),
++      y: dy + sh - dims.height - PILL_BOTTOM_MARGIN,
++      width: dims.width,
++      height: dims.height,
++    }
++    mainWindow.setBounds(bounds)
++    anchorPoint = computeAnchorFromBounds(bounds)
++  }
++
++  // Always re-assert space membership — the flag can be lost after hide/show cycles
++  // and must be set before show() so the window joins the active Space, not its
++  // last-known Space.
++  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
++
++  if (SPACES_DEBUG) {
++    const currentDisplay = screen.getDisplayMatching(mainWindow.getBounds())
++    log(`[spaces] showWindow#${toggleId} source=${source} move-to-display id=${currentDisplay.id}`)
++    snapshotWindowState(`showWindow#${toggleId} pre-show`)
++  }
++  // As an accessory app (app.dock.hide), show() + focus gives keyboard
++  // without deactivating the active app — hover preserved everywhere.
++  mainWindow.show()
++  mainWindow.webContents.focus()
++  broadcast(IPC.WINDOW_SHOWN)
++  if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'show')
++}
++
++export function toggleWindow(source = 'unknown'): void {
++  const mainWindow = getMainWindow()
++  if (!mainWindow) return
++  const toggleId = ++toggleSequence
++  if (SPACES_DEBUG) {
++    log(`[spaces] toggle#${toggleId} source=${source} start`)
++    snapshotWindowState(`toggle#${toggleId} pre`)
++  }
++
++  if (mainWindow.isVisible()) {
++    mainWindow.hide()
++    if (SPACES_DEBUG) scheduleToggleSnapshots(toggleId, 'hide')
++  } else {
++    showWindow(source)
++  }
++}
+diff --git a/src/preload/index.ts b/src/preload/index.ts
+index 6fdc757..fb81281 100644
+--- a/src/preload/index.ts
++++ b/src/preload/index.ts
+@@ -1,6 +1,6 @@
+ import { contextBridge, ipcRenderer } from 'electron'
+ import { IPC } from '../shared/types'
+-import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, Attachment, SessionMeta, CatalogPlugin, SessionLoadMessage } from '../shared/types'
++import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError } from '../shared/types'
+ import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry } from '../main/data/types'
+ 
+ export interface CluiAPI {
+@@ -14,24 +14,9 @@ export interface CluiAPI {
+   status(): Promise<HealthReport>
+   tabHealth(): Promise<HealthReport>
+   closeTab(tabId: string): Promise<void>
+-  selectDirectory(): Promise<string | null>
+-  openExternal(url: string): Promise<boolean>
+-  openInTerminal(sessionId: string | null, projectPath?: string): Promise<boolean>
+-  attachFiles(): Promise<Attachment[] | null>
+-  takeScreenshot(): Promise<Attachment | null>
+-  pasteImage(dataUrl: string): Promise<Attachment | null>
+-  transcribeAudio(audioBase64: string): Promise<{ error: string | null; transcript: string | null }>
+-  getDiagnostics(): Promise<any>
+   respondPermission(tabId: string, questionId: string, optionId: string): Promise<boolean>
+   initSession(tabId: string): void
+   resetTabSession(tabId: string): void
+-  listSessions(projectPath?: string): Promise<SessionMeta[]>
+-  loadSession(sessionId: string, projectPath?: string): Promise<SessionLoadMessage[]>
+-  fetchMarketplace(forceRefresh?: boolean): Promise<{ plugins: CatalogPlugin[]; error: string | null }>
+-  listInstalledPlugins(): Promise<string[]>
+-  installPlugin(repo: string, pluginName: string, marketplace: string, sourcePath?: string, isSkillMd?: boolean): Promise<{ ok: boolean; error?: string }>
+-  uninstallPlugin(pluginName: string): Promise<{ ok: boolean; error?: string }>
+-  setPermissionMode(mode: string): void
+   getTheme(): Promise<{ isDark: boolean }>
+   onThemeChange(callback: (isDark: boolean) => void): () => void
+ 
+@@ -39,14 +24,13 @@ export interface CluiAPI {
+   quit(): void
+ 
+   // ─── Window management ───
+-  hideWindow(): void
+   isVisible(): Promise<boolean>
++
+   // ─── Event listeners (main → renderer) ───
+   onEvent(callback: (tabId: string, event: NormalizedEvent) => void): () => void
+   onTabStatusChange(callback: (tabId: string, newStatus: string, oldStatus: string) => void): () => void
+   onError(callback: (tabId: string, error: EnrichedError) => void): () => void
+   onSkillStatus(callback: (status: { name: string; state: string; error?: string; reason?: string }) => void): () => void
+-  onWindowShown(callback: () => void): () => void
+ 
+   // ─── Showtime notifications ───
+   notifyActComplete(actName: string, sketch: string): void
+@@ -87,27 +71,10 @@ const api: CluiAPI = {
+   status: () => ipcRenderer.invoke(IPC.STATUS),
+   tabHealth: () => ipcRenderer.invoke(IPC.TAB_HEALTH),
+   closeTab: (tabId) => ipcRenderer.invoke(IPC.CLOSE_TAB, tabId),
+-  selectDirectory: () => ipcRenderer.invoke(IPC.SELECT_DIRECTORY),
+-  openExternal: (url) => ipcRenderer.invoke(IPC.OPEN_EXTERNAL, url),
+-  openInTerminal: (sessionId, projectPath) => ipcRenderer.invoke(IPC.OPEN_IN_TERMINAL, { sessionId, projectPath }),
+-  attachFiles: () => ipcRenderer.invoke(IPC.ATTACH_FILES),
+-  takeScreenshot: () => ipcRenderer.invoke(IPC.TAKE_SCREENSHOT),
+-  pasteImage: (dataUrl) => ipcRenderer.invoke(IPC.PASTE_IMAGE, dataUrl),
+-  transcribeAudio: (audioBase64) => ipcRenderer.invoke(IPC.TRANSCRIBE_AUDIO, audioBase64),
+-  getDiagnostics: () => ipcRenderer.invoke(IPC.GET_DIAGNOSTICS),
+   respondPermission: (tabId, questionId, optionId) =>
+     ipcRenderer.invoke(IPC.RESPOND_PERMISSION, { tabId, questionId, optionId }),
+   initSession: (tabId) => ipcRenderer.send(IPC.INIT_SESSION, tabId),
+   resetTabSession: (tabId) => ipcRenderer.send(IPC.RESET_TAB_SESSION, tabId),
+-  listSessions: (projectPath?: string) => ipcRenderer.invoke(IPC.LIST_SESSIONS, projectPath),
+-  loadSession: (sessionId: string, projectPath?: string) => ipcRenderer.invoke(IPC.LOAD_SESSION, { sessionId, projectPath }),
+-  fetchMarketplace: (forceRefresh) => ipcRenderer.invoke(IPC.MARKETPLACE_FETCH, { forceRefresh }),
+-  listInstalledPlugins: () => ipcRenderer.invoke(IPC.MARKETPLACE_INSTALLED),
+-  installPlugin: (repo, pluginName, marketplace, sourcePath, isSkillMd) =>
+-    ipcRenderer.invoke(IPC.MARKETPLACE_INSTALL, { repo, pluginName, marketplace, sourcePath, isSkillMd }),
+-  uninstallPlugin: (pluginName) =>
+-    ipcRenderer.invoke(IPC.MARKETPLACE_UNINSTALL, { pluginName }),
+-  setPermissionMode: (mode) => ipcRenderer.send(IPC.SET_PERMISSION_MODE, mode),
+   getTheme: () => ipcRenderer.invoke(IPC.GET_THEME),
+   onThemeChange: (callback) => {
+     const handler = (_e: Electron.IpcRendererEvent, isDark: boolean) => callback(isDark)
+@@ -119,16 +86,10 @@ const api: CluiAPI = {
+   quit: () => ipcRenderer.send(IPC.APP_QUIT),
+ 
+   // ─── Window management ───
+-  hideWindow: () => ipcRenderer.send(IPC.HIDE_WINDOW),
+   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
+ 
+   // ─── Event listeners ───
+   onEvent: (callback) => {
+-    const channels = [
+-      IPC.TEXT_CHUNK, IPC.TOOL_CALL, IPC.TOOL_CALL_UPDATE,
+-      IPC.TOOL_CALL_COMPLETE, IPC.TASK_UPDATE, IPC.TASK_COMPLETE,
+-      IPC.SESSION_DEAD, IPC.SESSION_INIT, IPC.ERROR, IPC.RATE_LIMIT,
+-    ]
+     // Single unified handler — all normalized events come through one channel
+     const handler = (_e: Electron.IpcRendererEvent, tabId: string, event: NormalizedEvent) => callback(tabId, event)
+     ipcRenderer.on('clui:normalized-event', handler)
+@@ -155,12 +116,6 @@ const api: CluiAPI = {
+     return () => ipcRenderer.removeListener(IPC.SKILL_STATUS, handler)
+   },
+ 
+-  onWindowShown: (callback) => {
+-    const handler = () => callback()
+-    ipcRenderer.on(IPC.WINDOW_SHOWN, handler)
+-    return () => ipcRenderer.removeListener(IPC.WINDOW_SHOWN, handler)
+-  },
+-
+   // ─── Showtime notifications ───
+   notifyActComplete: (actName: string, sketch: string) => ipcRenderer.send(IPC.NOTIFY_ACT_COMPLETE, actName, sketch),
+   notifyBeatCheck: (actName: string) => ipcRenderer.send(IPC.NOTIFY_BEAT_CHECK, actName),
+diff --git a/src/renderer/App.tsx b/src/renderer/App.tsx
+index f9f826d..665d190 100644
+--- a/src/renderer/App.tsx
++++ b/src/renderer/App.tsx
+@@ -19,13 +19,16 @@ import { OnboardingView } from './views/OnboardingView'
+ import { BeatCheckModal } from './components/BeatCheckModal'
+ import type { ViewTier } from '../shared/types'
+ 
++// View modes that the IPC bridge accepts for window sizing
++type ViewMode = 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'
++
+ // Map viewTier + phase to the IPC view mode that determines window size
+-function tierToViewMode(tier: ViewTier, phase: string): string {
++function tierToViewMode(tier: ViewTier, phase: string): ViewMode {
+   // Full-screen phases always use 'full' regardless of tier
+   if (phase === 'no_show' || phase === 'writers_room' || phase === 'strike') {
+     return 'full'
+   }
+-  const map: Record<ViewTier, string> = {
++  const map: Record<ViewTier, ViewMode> = {
+     micro: 'pill',
+     compact: 'compact',
+     dashboard: 'dashboard',
+@@ -109,7 +112,7 @@ export default function App() {
+     }
+ 
+     const mode = tierToViewMode(viewTier, phase)
+-    window.clui.setViewMode(mode as any)
++    window.clui.setViewMode(mode)
+   }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory])
+ 
+   // ─── Force-expand on Beat Check ───
+diff --git a/src/renderer/hooks/useClaudeEvents.ts b/src/renderer/hooks/useClaudeEvents.ts
+index e4e1688..9152fbd 100644
+--- a/src/renderer/hooks/useClaudeEvents.ts
++++ b/src/renderer/hooks/useClaudeEvents.ts
+@@ -36,7 +36,7 @@ export function useClaudeEvents() {
+         // Buffer text chunks and flush on next animation frame
+         const buffer = chunkBufferRef.current
+         const existing = buffer.get(tabId) || ''
+-        buffer.set(tabId, existing + (event as any).text)
++        buffer.set(tabId, existing + (event.type === 'text_chunk' ? event.text : ''))
+ 
+         if (!rafIdRef.current) {
+           rafIdRef.current = requestAnimationFrame(flushChunks)
+diff --git a/src/renderer/stores/sessionStore.ts b/src/renderer/stores/sessionStore.ts
+index 7dbd969..5cd1618 100644
+--- a/src/renderer/stores/sessionStore.ts
++++ b/src/renderer/stores/sessionStore.ts
+@@ -29,12 +29,10 @@ interface State {
+   isExpanded: boolean
+   staticInfo: StaticInfo | null
+   preferredModel: string | null
+-  permissionMode: 'ask' | 'auto'
+ 
+   // Actions
+   initStaticInfo: () => Promise<void>
+   setPreferredModel: (model: string | null) => void
+-  setPermissionMode: (mode: 'ask' | 'auto') => void
+   createTab: () => Promise<string>
+   toggleExpanded: () => void
+   addSystemMessage: (content: string) => void
+@@ -105,7 +103,6 @@ export const useSessionStore = create<State>((set, get) => ({
+   isExpanded: false,
+   staticInfo: null,
+   preferredModel: null,
+-  permissionMode: 'ask',
+ 
+   initStaticInfo: async () => {
+     try {
+@@ -126,11 +123,6 @@ export const useSessionStore = create<State>((set, get) => ({
+     set({ preferredModel: model })
+   },
+ 
+-  setPermissionMode: (mode) => {
+-    set({ permissionMode: mode })
+-    window.clui.setPermissionMode(mode)
+-  },
+-
+   createTab: async () => {
+     const homeDir = get().staticInfo?.homePath || '~'
+     try {
+diff --git a/src/shared/types.ts b/src/shared/types.ts
+index 498aa10..e683991 100644
+--- a/src/shared/types.ts
++++ b/src/shared/types.ts
+@@ -363,6 +363,7 @@ export interface ShowState {
+   verdict: ShowVerdict | null
+   viewTier: ViewTier
+   beatCheckPending: boolean
++  celebrationActive: boolean
+   goingLiveActive: boolean
+   writersRoomStep: WritersRoomStep
+   writersRoomEnteredAt: number | null
+@@ -382,19 +383,9 @@ export const IPC = {
+   STATUS: 'clui:status',
+   TAB_HEALTH: 'clui:tab-health',
+   CLOSE_TAB: 'clui:close-tab',
+-  SELECT_DIRECTORY: 'clui:select-directory',
+-  OPEN_EXTERNAL: 'clui:open-external',
+-  OPEN_IN_TERMINAL: 'clui:open-in-terminal',
+-  ATTACH_FILES: 'clui:attach-files',
+-  TAKE_SCREENSHOT: 'clui:take-screenshot',
+-  TRANSCRIBE_AUDIO: 'clui:transcribe-audio',
+-  PASTE_IMAGE: 'clui:paste-image',
+-  GET_DIAGNOSTICS: 'clui:get-diagnostics',
+   RESPOND_PERMISSION: 'clui:respond-permission',
+   INIT_SESSION: 'clui:init-session',
+   RESET_TAB_SESSION: 'clui:reset-tab-session',
+-  LIST_SESSIONS: 'clui:list-sessions',
+-  LOAD_SESSION: 'clui:load-session',
+ 
+   // One-way events (main → renderer)
+   TEXT_CHUNK: 'clui:text-chunk',
+@@ -420,12 +411,6 @@ export const IPC = {
+   GET_THEME: 'clui:get-theme',
+   THEME_CHANGED: 'clui:theme-changed',
+ 
+-  // Marketplace
+-  MARKETPLACE_FETCH: 'clui:marketplace-fetch',
+-  MARKETPLACE_INSTALLED: 'clui:marketplace-installed',
+-  MARKETPLACE_INSTALL: 'clui:marketplace-install',
+-  MARKETPLACE_UNINSTALL: 'clui:marketplace-uninstall',
+-
+   // Permission mode
+   SET_PERMISSION_MODE: 'clui:set-permission-mode',
+ 
+@@ -459,8 +444,4 @@ export const IPC = {
+   // App lifecycle
+   APP_QUIT: 'app:quit',
+ 
+-  // Legacy (kept for backward compat during migration)
+-  STREAM_EVENT: 'clui:stream-event',
+-  RUN_COMPLETE: 'clui:run-complete',
+-  RUN_ERROR: 'clui:run-error',
+ } as const
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None

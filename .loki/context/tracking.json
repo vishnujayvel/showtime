@@ -1,14 +1,14 @@
 {
-  "session_id": "e6f10daf-431e-4139-9985-f639109f4bf7",
+  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
   "provider": "claude",
-  "updated_at": "2026-03-22T02:04:48.646191+00:00",
+  "updated_at": "2026-03-22T02:29:14.352235+00:00",
   "current": {
-    "input_tokens": 1,
-    "output_tokens": 38059,
-    "cache_read_tokens": 151617,
-    "cache_creation_tokens": 434155,
-    "total_tokens": 151618,
-    "context_window_pct": 75.81,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_creation_tokens": 0,
+    "total_tokens": 0,
+    "context_window_pct": 0.0,
     "estimated_cost_usd": 53.0779
   },
   "compactions": [
