@@ -1,0 +1,17 @@
+VERDICT: FAIL
+
+FINDINGS:
+
+- [High] Strike verdict test has no-op assertion: `if (hasVerdict) { expect(hasVerdict).toBe(true) }` is a tautology — when the verdict UI fails to render, the test silently passes. Seeds `SOLID_SHOW` but never actually asserts it appeared. (e2e/strike-reset.test.ts:15-17)
+
+- [High] Post-reset state assertion guarded by `if (state)` — if `localStorage` returns null (e.g., reset clears storage entirely), all three assertions are skipped and the test passes without verifying the reset worked. This is the most critical assertion in the "confirming reset" test. (e2e/strike-reset.test.ts:80-84)
+
+- [Medium] `FIXTURES.strike_solidShow as unknown as Record<string, unknown>` double type cast masks a type mismatch between `as const` readonly fixtures and `seedFixture`'s mutable `Record<string, unknown>` parameter. The `seedFixture` signature should accept `Readonly<Record<string, unknown>>` to avoid casts. (e2e/strike-reset.test.ts:5)
+
+- [Medium] Only `SOLID_SHOW` verdict is tested. Fixtures define 4 verdict types (`DAY_WON`, `SOLID_SHOW`, `GOOD_EFFORT`, `SHOW_CALLED_EARLY`) but only one has a test. Each verdict renders different UI text and the loose `||` check means the test can't distinguish between them. (e2e/strike-reset.test.ts:8-11)
+
+- [Medium] `DIRECTOR_STATE` omits `goingLiveActive`, `beatCheckPending`, `celebrationActive` — relies on `seedFixture` defaults being `false`. The old inline code explicitly set these. If `seedFixture` defaults change, these tests could start seeing overlays (beat check modal, celebration, going-live animation) during the director mode test. (e2e/strike-reset.test.ts:21-31)
+
+- [Low] `Date.now()` in module-level `DIRECTOR_STATE.showStartedAt` is evaluated once at import time. If the test file takes significant time to execute, the "10 minutes ago" timestamp drifts. Not flaky today, but fragile if time-sensitive UI (e.g., "X minutes into show") is added. (e2e/strike-reset.test.ts:30)
+
+- [Low] `writers-room.test.ts` still uses old inline `localStorage` manipulation (lines 27-34, 83-95) while `strike-reset.test.ts` was refactored to use `seedFixture`. Inconsistent patterns across the test suite; the inline approach is more error-prone (merges onto potentially stale state vs. `seedFixture` which replaces entirely). (e2e/writers-room.test.ts:27-34)

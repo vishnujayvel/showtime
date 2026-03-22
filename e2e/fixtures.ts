@@ -14,11 +14,20 @@ export const test = base.extend<{}, ElectronFixtures>({
   app: [async ({}, use) => {
     const app = await electron.launch({
       args: [path.join(__dirname, '..', 'dist', 'main', 'index.js')],
-      env: { ...process.env, NODE_ENV: 'test' },
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        // Position test window on secondary display (beyond primary screen width)
+        SHOWTIME_TEST_X: '2000',
+        SHOWTIME_TEST_Y: '200',
+      },
       timeout: 30000,
     })
 
     const page = await app.firstWindow()
+    // Move test window to secondary display so it doesn't pop up on primary screen
+    const bw = await app.browserWindow(page)
+    await bw.evaluate((win) => win.setPosition(2000, 200))
     await page.waitForSelector('div', { timeout: 15000 }).catch(() => {})
     await page.waitForTimeout(3000)
 
@@ -204,7 +213,7 @@ export async function setShowState(page: Page, stateOverrides: Record<string, un
  * Seed a complete state from a FIXTURES entry (creates state from scratch).
  * Unlike setShowState which merges, this replaces the entire state.
  */
-export async function seedFixture(page: Page, fixture: Record<string, unknown>) {
+export async function seedFixture(page: Page, fixture: Readonly<Record<string, unknown>>) {
   await page.evaluate((state) => {
     const fullState = {
       state: {

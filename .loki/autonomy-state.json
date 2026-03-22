@@ -1,10 +1,10 @@
 {
-    "retryCount": 2,
-    "status": "completion_promise_fulfilled",
+    "retryCount": 4,
+    "status": "running",
     "lastExitCode": 0,
-    "lastRun": "2026-03-22T07:00:15Z",
-    "prdPath": "/tmp/batch2-proposal.md",
-    "pid": 71933,
+    "lastRun": "2026-03-22T17:57:53Z",
+    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/layer3-proposal.md",
+    "pid": 84397,
     "maxRetries": 50,
     "baseWait": 60
 }

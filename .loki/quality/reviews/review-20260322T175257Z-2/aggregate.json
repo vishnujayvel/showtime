@@ -1,0 +1,8 @@
+{
+  "review_id": "review-20260322T175257Z-2",
+  "iteration": 2,
+  "pass_count": 2,
+  "fail_count": 1,
+  "has_blocking": true,
+  "verdicts": "architecture-strategist:PASS test-coverage-auditor:FAIL performance-oracle:PASS"
+}

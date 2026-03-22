@@ -1,0 +1,13 @@
+VERDICT: **PASS**
+
+FINDINGS:
+
+- **[Medium]** DRY violation: `seedFixture` and `seedWithMockHour` duplicate the 16-field default state template verbatim. Extract a `buildDefaultState(overrides)` helper — adding a new state field requires updating both. (e2e/fixtures.ts:209-230 vs 250-271)
+
+- **[Medium]** Dependency direction: `VIEW_DIMENSIONS` is copy-pasted from `main/window.ts` rather than imported from a shared constants module. Production dimension changes silently desync from test expectations. (e2e/fixtures.ts:164-170)
+
+- **[Low]** `FIVE_ACTS` duplicates the first 3 entries of `STANDARD_ACTS` rather than composing via spread: `const FIVE_ACTS = [...STANDARD_ACTS, act4, act5]`. (e2e/fixtures.ts:57-63)
+
+- **[Low]** Vacuous assertion pattern: `if (isVisible) { expect(isVisible).toBe(true) }` silently passes when the element is absent — the test claims to verify presence but actually asserts nothing in the failure case. Appears in multiple tests. (e2e/view-tiers.test.ts:101-103, 179-181)
+
+- **[Low]** `navigateAndWait` is a dead indirection layer — it's exported but unused by any new test file; all callers use `navigateAndWaitPage` directly or via `seedFixture`/`setShowState`. (e2e/fixtures.ts:180-182)
