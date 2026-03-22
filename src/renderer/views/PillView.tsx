@@ -8,7 +8,7 @@ import { cn } from '../lib/utils'
 
 export function PillView() {
   const phase = useShowStore((s) => s.phase)
-  const toggleExpanded = useShowStore((s) => s.toggleExpanded)
+  const expandViewTier = useShowStore((s) => s.expandViewTier)
   const currentAct = useShowStore(selectCurrentAct)
   const { minutes, seconds, isRunning } = useTimer()
 
@@ -44,7 +44,7 @@ export function PillView() {
         {/* Rest: click to expand */}
         <div
           className="flex items-center gap-3 flex-1 cursor-pointer no-drag"
-          onClick={toggleExpanded}
+          onClick={expandViewTier}
         >
           {phase === 'live' && (
             <>

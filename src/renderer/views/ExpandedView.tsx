@@ -25,7 +25,7 @@ export function ExpandedView() {
   const currentAct = useShowStore(selectCurrentAct)
   const beatsLocked = useShowStore((s) => s.beatsLocked)
   const beatThreshold = useShowStore((s) => s.beatThreshold)
-  const toggleExpanded = useShowStore((s) => s.toggleExpanded)
+  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
   const enterDirector = useShowStore((s) => s.enterDirector)
   const showStartedAt = useShowStore((s) => s.showStartedAt)
 
@@ -61,7 +61,7 @@ export function ExpandedView() {
             Director
           </button>
           <button
-            onClick={toggleExpanded}
+            onClick={collapseViewTier}
             className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
           >
             ▼

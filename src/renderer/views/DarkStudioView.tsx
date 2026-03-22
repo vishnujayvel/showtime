@@ -1,9 +1,35 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useShowStore } from '../stores/showStore'
 import { Button } from '../ui/button'
 
-export function DarkStudioView() {
+function getTemporalGreeting(): { heading: string; sub: string } {
+  const hour = new Date().getHours()
+  if (hour < 12) {
+    return {
+      heading: "Today's show hasn't been written yet.",
+      sub: 'The morning stage is yours.',
+    }
+  }
+  if (hour < 18) {
+    return {
+      heading: "Today's show hasn't been written yet.",
+      sub: 'There\u2019s still time to make it a great one.',
+    }
+  }
+  return {
+    heading: "Tomorrow's show hasn't been written yet.",
+    sub: 'Plan ahead — the best shows are written the night before.',
+  }
+}
+
+interface DarkStudioViewProps {
+  onShowHistory?: () => void
+}
+
+export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
   const triggerColdOpen = useShowStore((s) => s.triggerColdOpen)
+  const greeting = useMemo(getTemporalGreeting, [])
 
   return (
     <div
@@ -21,21 +47,26 @@ export function DarkStudioView() {
         transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       >
         <h1 className="font-body text-2xl font-light text-txt-primary tracking-tight">
-          Tonight's show hasn't been written yet.
+          {greeting.heading}
         </h1>
         <p className="font-body text-sm text-txt-muted mt-3">
-          Every great show starts somewhere.
+          {greeting.sub}
         </p>
 
         <motion.div
-          className="mt-8"
+          className="mt-8 flex items-center gap-3"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 1.2 }}
         >
           <Button variant="accent" onClick={triggerColdOpen}>
-            Enter the Writer's Room
+            Enter the Writer&apos;s Room
           </Button>
+          {onShowHistory && (
+            <Button variant="ghost_muted" onClick={onShowHistory}>
+              Past Shows
+            </Button>
+          )}
         </motion.div>
       </motion.div>
     </div>

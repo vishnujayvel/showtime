@@ -37,7 +37,9 @@ const PILL_BOTTOM_MARGIN = 24
 // ─── Content-tight window sizing ───
 // Window resizes to match view content exactly. No transparent dead zones.
 const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  pill: { width: 320, height: 48 },
+  pill: { width: 320, height: 56 },
+  compact: { width: 340, height: 140 },
+  dashboard: { width: 400, height: 320 },
   expanded: { width: 560, height: 620 },
   full: { width: 560, height: 740 },
 }
@@ -524,6 +526,16 @@ ipcMain.handle(IPC.CLAUDE_CONTEXT_GET, (_event, showId: string) => {
   } catch (err: any) {
     log(`CLAUDE_CONTEXT_GET error: ${err.message}`)
     return null
+  }
+})
+
+ipcMain.handle(IPC.SHOW_HISTORY, (_event, limit?: number) => {
+  try {
+    const data = DataService.getInstance()
+    return data.shows.getRecentShows(limit ?? 30)
+  } catch (err: any) {
+    log(`SHOW_HISTORY error: ${err.message}`)
+    return []
   }
 })
 

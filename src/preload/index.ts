@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
 import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, Attachment, SessionMeta, CatalogPlugin, SessionLoadMessage } from '../shared/types'
-import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload } from '../main/data/types'
+import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry } from '../main/data/types'
 
 export interface CluiAPI {
   // ─── Request-response (renderer → main) ───
@@ -54,7 +54,7 @@ export interface CluiAPI {
   notifyVerdict(verdict: string, message: string): void
 
   // ─── Showtime window management ───
-  setViewMode(mode: 'pill' | 'expanded' | 'full'): void
+  setViewMode(mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'): void
   onDayBoundary(callback: () => void): () => void
   onToggleExpanded(callback: () => void): () => void
   onResetShow(callback: () => void): () => void
@@ -69,6 +69,7 @@ export interface CluiAPI {
   getTimelineDriftPerAct(showId: string): Promise<ActDriftResult[]>
   saveClaudeContext(ctx: ClaudeContextPayload): void
   getClaudeContext(showId: string): Promise<ClaudeContextPayload | null>
+  getShowHistory(limit?: number): Promise<ShowHistoryEntry[]>
 
   // ─── Test-only (NODE_ENV=test) ───
   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
@@ -196,6 +197,7 @@ const api: CluiAPI = {
   getTimelineDriftPerAct: (showId: string) => ipcRenderer.invoke(IPC.TIMELINE_DRIFT_PER_ACT, showId),
   saveClaudeContext: (ctx: ClaudeContextPayload) => ipcRenderer.send(IPC.CLAUDE_CONTEXT_SAVE, ctx),
   getClaudeContext: (showId: string) => ipcRenderer.invoke(IPC.CLAUDE_CONTEXT_GET, showId),
+  getShowHistory: (limit?: number) => ipcRenderer.invoke(IPC.SHOW_HISTORY, limit),
 
   // Test-only IPC (NODE_ENV=test)
   ...(process.env.NODE_ENV === 'test' ? {
