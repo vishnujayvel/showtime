@@ -1,4 +1,4 @@
-import { test, expect, screenshot, navigateAndWait } from './fixtures'
+import { test, expect, screenshot, navigateAndWait, seedFixture, FIXTURES } from './fixtures'
 
 test.describe('7.2 — Dark Studio → Writer\'s Room', () => {
   test('clicking CTA transitions to Writer\'s Room', async ({ mainPage: page }) => {
@@ -22,18 +22,7 @@ test.describe('7.2 — Dark Studio → Writer\'s Room', () => {
 
 test.describe('7.3 — Writer\'s Room Flow', () => {
   test('can select energy level', async ({ mainPage: page }) => {
-    // Ensure we're at energy step
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'energy'
-        parsed.state.viewTier = 'expanded'
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait(page)
+    await seedFixture(page, FIXTURES.writersRoom_energy)
 
     const highButton = page.getByText('High Energy')
     await expect(highButton).toBeVisible({ timeout: 5000 })
@@ -80,21 +69,7 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
 
 test.describe('Claude E2E Verification (#6, #13)', () => {
   test('Writer\'s Room generates real lineup via Claude (conditional)', async ({ mainPage: page }) => {
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'plan'
-        parsed.state.energy = 'high'
-        parsed.state.viewTier = 'expanded'
-        parsed.state.goingLiveActive = false
-        parsed.state.beatCheckPending = false
-        parsed.state.celebrationActive = false
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait(page)
+    await seedFixture(page, FIXTURES.writersRoom_plan)
 
     const textarea = page.locator('textarea').first()
     await expect(textarea).toBeVisible({ timeout: 5000 })

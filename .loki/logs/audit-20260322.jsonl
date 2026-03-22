@@ -5,3 +5,10 @@
   "user": "vishnu",
   "pid": 71933
 }
+{
+  "timestamp": "2026-03-22T16:00:15Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/layer3-proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 84397
+}

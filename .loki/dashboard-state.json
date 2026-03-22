@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-03-22T07:00:14Z",
+  "timestamp": "2026-03-22T18:16:41Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
     "path": "/Users/vishnu/workplace/showtime"
   },
-  "mode": "autonomous",
+  "mode": "stopped",
   "provider": "claude",
   "phase": "DEVELOPMENT",
   "complexity": "standard",
@@ -17,7 +17,15 @@
   },
   "tasks": {
     "pending": [],
-    "inProgress": [],
+    "inProgress": [
+  {
+    "id": "todo-0",
+    "type": "todo",
+    "payload": {
+      "action": "Run E2E tests and verify all pass"
+    }
+  }
+],
     "review": [],
     "completed": [
   {
@@ -183,6 +191,24 @@
     "completedAt": "2026-03-21T21:15:33Z",
     "exitCode": 141,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "failed",
+    "completedAt": "2026-03-22T16:59:54Z",
+    "exitCode": 141,
+    "provider": "claude"
+  },
+  {
+    "id": "iteration-2",
+    "type": "iteration",
+    "title": "Iteration 2",
+    "status": "failed",
+    "completedAt": "2026-03-22T17:52:50Z",
+    "exitCode": 141,
+    "provider": "claude"
   }
 ]
   },
@@ -190,12 +216,12 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 57,
-    "memoryUsage": 70,
+    "cpuUsage": 38,
+    "memoryUsage": 68,
     "resourceStatus": "ok"
   },
   "memory": {
-    "episodic": 17,
+    "episodic": 20,
     "semantic": 2,
     "procedural": 0
   },
@@ -219,7 +245,7 @@
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-22T06:43:39Z",
+    "started_at": "2026-03-22T07:00:15Z",
     "restart_count": 1,
     "status": "stopped",
     "last_health": {"ok": false},
@@ -228,17 +254,17 @@
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "d60131df-4ff6-4e03-9051-5203a7111652",
+  "session_id": "2d9b484e-b3cb-43bb-a4ee-f1888f07443a",
   "provider": "claude",
-  "updated_at": "2026-03-22T06:57:45.310323+00:00",
+  "updated_at": "2026-03-22T17:52:50.189976+00:00",
   "current": {
-    "input_tokens": 1,
-    "output_tokens": 26929,
-    "cache_read_tokens": 111489,
-    "cache_creation_tokens": 141261,
-    "total_tokens": 111490,
-    "context_window_pct": 55.74,
-    "estimated_cost_usd": 58.3354
+    "input_tokens": 3,
+    "output_tokens": 128,
+    "cache_read_tokens": 104827,
+    "cache_creation_tokens": 88062,
+    "total_tokens": 104830,
+    "context_window_pct": 52.41,
+    "estimated_cost_usd": 59.3516
   },
   "compactions": [
     {
@@ -277,13 +303,13 @@
     }
   ],
   "totals": {
-    "total_input": 96015,
-    "total_output": 330882,
-    "total_cost_usd": 58.3354,
+    "total_input": 96036,
+    "total_output": 331165,
+    "total_cost_usd": 59.3516,
     "compaction_count": 2,
     "iterations_tracked": 2
   }
 },
-  "tokens": {"input": 96015, "output": 330882, "cost_usd": 58.3354},
+  "tokens": {"input": 96036, "output": 331165, "cost_usd": 59.3516},
   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
 }

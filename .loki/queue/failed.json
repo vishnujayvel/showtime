@@ -25,5 +25,23 @@
     "completedAt": "2026-03-21T21:15:33Z",
     "exitCode": 141,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "failed",
+    "completedAt": "2026-03-22T16:59:54Z",
+    "exitCode": 141,
+    "provider": "claude"
+  },
+  {
+    "id": "iteration-2",
+    "type": "iteration",
+    "title": "Iteration 2",
+    "status": "failed",
+    "completedAt": "2026-03-22T17:52:50Z",
+    "exitCode": 141,
+    "provider": "claude"
   }
 ]

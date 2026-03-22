@@ -1,1 +1,10 @@
-{}
+{
+  "id": "iteration-3",
+  "type": "iteration",
+  "title": "Iteration 3",
+  "description": "PRD: /Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/layer3-proposal.md",
+  "status": "in_progress",
+  "priority": "medium",
+  "startedAt": "2026-03-22T17:57:52Z",
+  "provider": "claude"
+}

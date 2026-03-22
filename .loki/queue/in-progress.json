@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "todo-0",
+    "type": "todo",
+    "payload": {
+      "action": "Run E2E tests and verify all pass"
+    }
+  }
+]

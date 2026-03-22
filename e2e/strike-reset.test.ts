@@ -1,49 +1,76 @@
 import { test, expect, screenshot, seedFixture, FIXTURES } from './fixtures'
 
-test.describe('7.5 — Strike the Stage', () => {
-  test('can render strike view with verdict', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.strike_solidShow as unknown as Record<string, unknown>)
+// ─── All-Verdicts Coverage (#16 + completeness) ───
 
+test.describe('7.5 — Strike the Stage: DAY_WON', () => {
+  test('renders DAY_WON verdict', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.strike_dayWon)
     const body = await page.textContent('body')
-    const hasVerdict = body?.includes('SOLID SHOW')
-      || body?.includes('DAY WON')
-      || body?.includes('GOOD EFFORT')
-      || body?.includes('SHOW CALLED')
-
-    await screenshot(page, '10-strike-verdict')
-
-    if (hasVerdict) {
-      expect(hasVerdict).toBe(true)
-    }
+    expect(body).toMatch(/DAY WON/i)
+    await screenshot(page, '10-strike-day-won')
   })
 })
 
-const DIRECTOR_STATE = {
-  phase: 'director',
-  viewTier: 'expanded',
-  beatsLocked: 1,
-  beatThreshold: 3,
-  acts: [
-    { id: 'reset-act-1', name: 'Test Act', sketch: 'Testing', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
-  ],
-  currentActId: 'reset-act-1',
-  showStartedAt: Date.now() - 600000,
+test.describe('7.5 — Strike the Stage: SOLID_SHOW', () => {
+  test('renders SOLID_SHOW verdict', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.strike_solidShow)
+    const body = await page.textContent('body')
+    expect(body).toMatch(/SOLID SHOW/i)
+    await screenshot(page, '10-strike-solid-show')
+  })
+})
+
+test.describe('7.5 — Strike the Stage: GOOD_EFFORT', () => {
+  test('renders GOOD_EFFORT verdict', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.strike_goodEffort)
+    const body = await page.textContent('body')
+    expect(body).toMatch(/GOOD EFFORT/i)
+    await screenshot(page, '10-strike-good-effort')
+  })
+})
+
+test.describe('7.5 — Strike the Stage: SHOW_CALLED_EARLY', () => {
+  test('renders SHOW_CALLED_EARLY verdict', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.strike_calledEarly)
+    const body = await page.textContent('body')
+    expect(body).toMatch(/SHOW CALLED/i)
+    await screenshot(page, '10-strike-called-early')
+  })
+})
+
+// ─── Director State factory (fresh timestamp per test) ───
+
+function makeDirectorState() {
+  return {
+    phase: 'director',
+    viewTier: 'expanded',
+    beatsLocked: 1,
+    beatThreshold: 3,
+    goingLiveActive: false,
+    beatCheckPending: false,
+    celebrationActive: false,
+    acts: [
+      { id: 'reset-act-1', name: 'Test Act', sketch: 'Testing', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
+    ],
+    currentActId: 'reset-act-1',
+    showStartedAt: Date.now() - 600000,
+  }
 }
+
+// ─── Reset Show (#16) ───
 
 test.describe('Reset Show (#16)', () => {
   test('Director Mode shows reset button with confirmation dialog', async ({ mainPage: page }) => {
-    await seedFixture(page, DIRECTOR_STATE)
+    await seedFixture(page, makeDirectorState())
 
     const directorTitle = page.getByText('The Director is here.')
     await expect(directorTitle).toBeVisible({ timeout: 10000 })
 
-    // Reset button now uses temporal label
     const resetBtn = page.locator('button').filter({ hasText: /Reset .+ show/i }).first()
     await expect(resetBtn).toBeVisible({ timeout: 5000 })
     await resetBtn.click()
     await page.waitForTimeout(500)
 
-    // Confirmation dialog now uses temporal label
     const confirmTitle = page.locator('[role="dialog"] h2, [role="alertdialog"] h2').filter({ hasText: /Reset .+ show/i }).first()
     await expect(confirmTitle).toBeVisible({ timeout: 5000 })
     await screenshot(page, 'reset-show-confirm')
@@ -56,7 +83,7 @@ test.describe('Reset Show (#16)', () => {
   })
 
   test('confirming reset returns to Dark Studio', async ({ mainPage: page }) => {
-    await seedFixture(page, DIRECTOR_STATE)
+    await seedFixture(page, makeDirectorState())
 
     const directorTitle = page.getByText('The Director is here.')
     await expect(directorTitle).toBeVisible({ timeout: 10000 })
@@ -77,11 +104,10 @@ test.describe('Reset Show (#16)', () => {
       const raw = localStorage.getItem('showtime-show-state')
       return raw ? JSON.parse(raw).state : null
     })
-    if (state) {
-      expect(state.phase).toBe('no_show')
-      expect(state.acts).toHaveLength(0)
-      expect(state.beatsLocked).toBe(0)
-    }
+    expect(state).not.toBeNull()
+    expect(state.phase).toBe('no_show')
+    expect(state.acts).toHaveLength(0)
+    expect(state.beatsLocked).toBe(0)
     await screenshot(page, 'reset-show-complete')
   })
 })
