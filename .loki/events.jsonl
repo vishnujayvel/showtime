@@ -84,3 +84,9 @@
 {"timestamp":"2026-03-22T02:04:54Z","type":"code_review_start","data":{"review_id":"review-20260322T020454Z-1","reviewers":"architecture-strategist, performance-oracle, security-sentinel","iteration":1}}
 {"timestamp":"2026-03-22T02:06:12Z","type":"code_review_complete","data":{"review_id":"review-20260322T020454Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
 {"timestamp":"2026-03-22T02:06:13Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-22T02:09:34Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md","parallel":true,"complexity":"standard","pid":69309}}
+{"timestamp":"2026-03-22T02:09:35Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md"}}
+{"timestamp":"2026-03-22T02:29:14Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-22T02:29:19Z","type":"code_review_start","data":{"review_id":"review-20260322T022919Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-22T02:30:21Z","type":"code_review_complete","data":{"review_id":"review-20260322T022919Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+{"timestamp":"2026-03-22T02:30:22Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}

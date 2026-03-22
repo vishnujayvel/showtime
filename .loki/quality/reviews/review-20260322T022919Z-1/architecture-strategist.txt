@@ -1,0 +1,9 @@
+VERDICT: PASS
+
+FINDINGS:
+- [Medium] Inconsistent dependency injection: `registerShortcuts`/`createTray` receive `showWindow`/`toggleWindow` as parameters (proper DI), but `registerCoreIpc`/`registerShowtimeIpc` take zero parameters and pull all dependencies from `state.ts` imports — pick one pattern (`src/main/shortcuts.ts:4`, `src/main/ipc/core.ts:9`)
+- [Medium] `state.ts` is an ambient service locator — all 7 new modules import mutable singletons via getters rather than receiving dependencies explicitly, making coupling implicit and unit testing harder (`src/main/state.ts:12-17`)
+- [Low] `registerShowtimeIpc` mixes 4 concerns (window mgmt, notifications, data persistence, theme detection) — the theme listener especially is an app lifecycle event, not an IPC handler (`src/main/ipc/showtime.ts:155-162`)
+- [Low] Module-level mutable state in `window.ts` (`anchorPoint`, `isDragging`, `deferredViewMode`, `toggleSequence`) prevents isolated unit testing of window functions (`src/main/window.ts:20-23`)
+
+Overall: Good decomposition of a ~1100-line god file into cohesive modules with correct dependency direction (hub-and-spoke through `state.ts`, no cycles). Dead CLUI code cleanly removed from IPC, preload, types, and store. Type safety improved (`any` → `unknown`, `ViewMode` union, safe event narrowing). The remaining issues are consistency nits, not blockers.

@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-03-22T02:01:30Z",
+  "timestamp": "2026-03-22T02:29:44Z",
   "cpu": {
-    "usage_percent": 95,
-    "threshold_percent": 80,
-    "status": "high"
-  },
-  "memory": {
-    "usage_percent": 70,
+    "usage_percent": 52,
     "threshold_percent": 80,
     "status": "ok"
   },
-  "overall_status": "warning",
-  "warning_message": "CPU usage is 95% (threshold: 80%). Consider reducing parallel agent count or pausing non-critical tasks."
+  "memory": {
+    "usage_percent": 72,
+    "threshold_percent": 80,
+    "status": "ok"
+  },
+  "overall_status": "ok",
+  "warning_message": ""
 }

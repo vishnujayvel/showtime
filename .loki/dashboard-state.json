@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-22T02:06:13Z",
+  "timestamp": "2026-03-22T02:30:21Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
@@ -127,6 +127,15 @@
     "completedAt": "2026-03-22T02:04:48Z",
     "exitCode": 0,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "completed",
+    "completedAt": "2026-03-22T02:29:14Z",
+    "exitCode": 0,
+    "provider": "claude"
   }
 ],
     "failed": [
@@ -163,12 +172,12 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 95,
-    "memoryUsage": 70,
-    "resourceStatus": "warning"
+    "cpuUsage": 52,
+    "memoryUsage": 72,
+    "resourceStatus": "ok"
   },
   "memory": {
-    "episodic": 15,
+    "episodic": 16,
     "semantic": 2,
     "procedural": 0
   },
@@ -181,12 +190,12 @@
   "reject_votes": 0,
   "last_check_iteration": 0,
   "consecutive_no_change": 0,
-  "done_signals": 0,
+  "done_signals": 1,
   "convergence_history": [],
   "verdicts": [],
-  "total_done_signals": 0,
+  "total_done_signals": 1,
   "last_track_iteration": 1,
-  "files_changed": 23
+  "files_changed": 22
 },
   "checklist": null,
   "appRunner": {
@@ -195,7 +204,7 @@
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-22T01:46:48Z",
+    "started_at": "2026-03-22T02:06:13Z",
     "restart_count": 1,
     "status": "stopped",
     "last_health": {"ok": false},
@@ -204,16 +213,16 @@
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "e6f10daf-431e-4139-9985-f639109f4bf7",
+  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
   "provider": "claude",
-  "updated_at": "2026-03-22T02:04:48.646191+00:00",
+  "updated_at": "2026-03-22T02:29:14.352235+00:00",
   "current": {
-    "input_tokens": 1,
-    "output_tokens": 38059,
-    "cache_read_tokens": 151617,
-    "cache_creation_tokens": 434155,
-    "total_tokens": 151618,
-    "context_window_pct": 75.81,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_creation_tokens": 0,
+    "total_tokens": 0,
+    "context_window_pct": 0.0,
     "estimated_cost_usd": 53.0779
   },
   "compactions": [
