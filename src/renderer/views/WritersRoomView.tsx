@@ -124,7 +124,7 @@ ${planText}`
 
   return (
     <div
-      className="w-[560px] min-h-[680px] bg-surface overflow-hidden flex flex-col"
+      className="w-full h-full bg-surface overflow-hidden flex flex-col"
     >
       {/* Title bar */}
       <div

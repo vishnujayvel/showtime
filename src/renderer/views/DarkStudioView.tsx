@@ -7,7 +7,7 @@ export function DarkStudioView() {
 
   return (
     <div
-      className="min-h-screen bg-studio-bg flex flex-col items-center justify-center relative"
+      className="w-full h-full bg-studio-bg flex flex-col items-center justify-center relative"
     >
       {/* Invisible drag handle */}
       <div className="absolute top-0 left-0 right-0 h-8 drag-region" />
