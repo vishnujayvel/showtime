@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-21T23:14:50Z
+Updated: 2026-03-21T23:31:55Z
 
 ## Current State
 
@@ -12,9 +12,8 @@ Updated: 2026-03-21T23:14:50Z
 
 ## Last Completed Task
 
-- Last commit: feat: wave 3 — onboarding E2E fix + cold open splash + window sizing
-- Files changed: e2e/showtime.test.ts, src/__tests__/showStore.test.ts, src/renderer/App.tsx, src/renderer/stores/showStore.ts, src/renderer/views/ColdOpenTransition.tsx
-  (+2 more)
+- Last commit: test: add Reset Show E2E tests and update tray menu assertion (#16)
+- Files changed: e2e/showtime.test.ts
 
 ## Active Blockers
 

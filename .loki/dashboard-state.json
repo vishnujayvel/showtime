@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-21T23:16:39Z",
+  "timestamp": "2026-03-21T23:33:12Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
@@ -100,6 +100,15 @@
     "completedAt": "2026-03-21T23:14:43Z",
     "exitCode": 0,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "completed",
+    "completedAt": "2026-03-21T23:31:51Z",
+    "exitCode": 0,
+    "provider": "claude"
   }
 ],
     "failed": [
@@ -136,8 +145,8 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 58,
-    "memoryUsage": 68,
+    "cpuUsage": 49,
+    "memoryUsage": 71,
     "resourceStatus": "ok"
   },
   "memory": {
@@ -160,31 +169,31 @@
 },
   "checklist": null,
   "appRunner": {
-    "main_pid": 5162,
-    "process_group": "-5162",
+    "main_pid": 67680,
+    "process_group": "-67680",
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-21T23:14:50Z",
+    "started_at": "2026-03-21T23:31:54Z",
     "restart_count": 1,
-    "status": "running",
+    "status": "stopped",
     "last_health": {"ok": false},
     "crash_count": 0
 },
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "fd8829c3-6adb-4f5f-87ef-de65d0f3c533",
+  "session_id": "af104f38-f9ff-4838-9535-57032b0e1372",
   "provider": "claude",
-  "updated_at": "2026-03-21T23:14:43.051356+00:00",
+  "updated_at": "2026-03-21T23:31:50.931365+00:00",
   "current": {
-    "input_tokens": 0,
-    "output_tokens": 0,
-    "cache_read_tokens": 0,
-    "cache_creation_tokens": 0,
-    "total_tokens": 0,
-    "context_window_pct": 0.0,
-    "estimated_cost_usd": 41.2175
+    "input_tokens": 1,
+    "output_tokens": 14890,
+    "cache_read_tokens": 96598,
+    "cache_creation_tokens": 234208,
+    "total_tokens": 96599,
+    "context_window_pct": 48.3,
+    "estimated_cost_usd": 44.3045
   },
   "compactions": [
     {
@@ -223,13 +232,13 @@
     }
   ],
   "totals": {
-    "total_input": 73221,
-    "total_output": 233961,
-    "total_cost_usd": 41.2175,
+    "total_input": 73393,
+    "total_output": 248851,
+    "total_cost_usd": 44.3045,
     "compaction_count": 2,
     "iterations_tracked": 2
   }
 },
-  "tokens": {"input": 73221, "output": 233961, "cost_usd": 41.2175},
+  "tokens": {"input": 73393, "output": 248851, "cost_usd": 44.3045},
   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
 }

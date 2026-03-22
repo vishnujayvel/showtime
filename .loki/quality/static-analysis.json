@@ -1,1 +1,1 @@
-{"timestamp":"2026-03-21T23:14:51Z","files_checked":7,"findings":4,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/ColdOpenTransition.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/DarkStudioView.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/OnboardingView.tsx. ","pass":false}
+{"timestamp":"2026-03-21T23:31:55Z","files_checked":1,"findings":0,"summary":"","pass":true}

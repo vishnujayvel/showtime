@@ -96,3 +96,17 @@
   "user": "vishnu",
   "pid": 26272
 }
+{
+  "timestamp": "2026-03-21T23:19:51Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-4-proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 21785
+}
+{
+  "timestamp": "2026-03-21T23:33:14Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-audio-polish/wave-4-proposal.md",
+  "user": "vishnu",
+  "pid": 21785
+}

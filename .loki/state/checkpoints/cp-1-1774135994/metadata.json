@@ -1,0 +1,11 @@
+{
+  "id": "cp-1-1774135994",
+  "timestamp": "2026-03-21T23:33:14Z",
+  "iteration": 1,
+  "task_id": "session-end",
+  "task_description": "session end (iterations=1)",
+  "git_sha": "d758b3c9af7342e12921de02351d4bf0a3a00eb2",
+  "git_branch": "main",
+  "provider": "claude",
+  "phase": "DEVELOPMENT"
+}
