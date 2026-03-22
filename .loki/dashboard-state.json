@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-22T06:43:38Z",
+  "timestamp": "2026-03-22T07:00:14Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
@@ -145,6 +145,15 @@
     "completedAt": "2026-03-22T06:40:56Z",
     "exitCode": 0,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "completed",
+    "completedAt": "2026-03-22T06:57:45Z",
+    "exitCode": 0,
+    "provider": "claude"
   }
 ],
     "failed": [
@@ -181,12 +190,12 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 50,
-    "memoryUsage": 69,
+    "cpuUsage": 57,
+    "memoryUsage": 70,
     "resourceStatus": "ok"
   },
   "memory": {
-    "episodic": 16,
+    "episodic": 17,
     "semantic": 2,
     "procedural": 0
   },
@@ -210,7 +219,7 @@
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-22T02:30:22Z",
+    "started_at": "2026-03-22T06:43:39Z",
     "restart_count": 1,
     "status": "stopped",
     "last_health": {"ok": false},
@@ -219,17 +228,17 @@
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "74fd4685-d420-4fb0-bd99-7b103f91f772",
+  "session_id": "d60131df-4ff6-4e03-9051-5203a7111652",
   "provider": "claude",
-  "updated_at": "2026-03-22T06:40:56.436239+00:00",
+  "updated_at": "2026-03-22T06:57:45.310323+00:00",
   "current": {
     "input_tokens": 1,
-    "output_tokens": 17043,
-    "cache_read_tokens": 79454,
-    "cache_creation_tokens": 263185,
-    "total_tokens": 79455,
-    "context_window_pct": 39.73,
-    "estimated_cost_usd": 55.4441
+    "output_tokens": 26929,
+    "cache_read_tokens": 111489,
+    "cache_creation_tokens": 141261,
+    "total_tokens": 111490,
+    "context_window_pct": 55.74,
+    "estimated_cost_usd": 58.3354
   },
   "compactions": [
     {
@@ -268,13 +277,13 @@
     }
   ],
   "totals": {
-    "total_input": 95935,
-    "total_output": 303953,
-    "total_cost_usd": 55.4441,
+    "total_input": 96015,
+    "total_output": 330882,
+    "total_cost_usd": 58.3354,
     "compaction_count": 2,
     "iterations_tracked": 2
   }
 },
-  "tokens": {"input": 95935, "output": 303953, "cost_usd": 55.4441},
+  "tokens": {"input": 96015, "output": 330882, "cost_usd": 58.3354},
   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
 }

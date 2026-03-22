@@ -6,10 +6,10 @@
   "reject_votes": 0,
   "last_check_iteration": 0,
   "consecutive_no_change": 0,
-  "done_signals": 1,
+  "done_signals": 0,
   "convergence_history": [],
   "verdicts": [],
-  "total_done_signals": 1,
+  "total_done_signals": 0,
   "last_track_iteration": 1,
-  "files_changed": 24
+  "files_changed": 23
 }
