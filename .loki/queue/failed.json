@@ -43,5 +43,14 @@
     "completedAt": "2026-03-22T17:52:50Z",
     "exitCode": 141,
     "provider": "claude"
+  },
+  {
+    "id": "iteration-3",
+    "type": "iteration",
+    "title": "Iteration 3",
+    "status": "failed",
+    "completedAt": "2026-03-22T18:18:49Z",
+    "exitCode": 137,
+    "provider": "claude"
   }
 ]

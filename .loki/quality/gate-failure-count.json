@@ -4,5 +4,5 @@
   "pass": true,
   "static_analysis": 0,
   "test_coverage": 0,
-  "code_review": 1
+  "code_review": 0
 }

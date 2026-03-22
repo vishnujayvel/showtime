@@ -1,8 +1,8 @@
 {
     "retryCount": 4,
-    "status": "running",
-    "lastExitCode": 0,
-    "lastRun": "2026-03-22T17:57:53Z",
+    "status": "exited",
+    "lastExitCode": 137,
+    "lastRun": "2026-03-22T18:18:48Z",
     "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/layer3-proposal.md",
     "pid": 84397,
     "maxRetries": 50,
