@@ -72,3 +72,9 @@
 {"timestamp":"2026-03-21T23:31:57Z","type":"code_review_start","data":{"review_id":"review-20260321T233157Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
 {"timestamp":"2026-03-21T23:33:13Z","type":"code_review_complete","data":{"review_id":"review-20260321T233157Z-1","pass_count":2,"fail_count":1,"has_blocking":false,"iteration":1}}
 {"timestamp":"2026-03-21T23:33:14Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-22T01:35:04Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md","parallel":true,"complexity":"standard","pid":79650}}
+{"timestamp":"2026-03-22T01:35:05Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md"}}
+{"timestamp":"2026-03-22T01:45:41Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-22T01:45:45Z","type":"code_review_start","data":{"review_id":"review-20260322T014545Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-22T01:46:46Z","type":"code_review_complete","data":{"review_id":"review-20260322T014545Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-22T01:46:47Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}

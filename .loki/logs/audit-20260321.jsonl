@@ -110,3 +110,17 @@
   "user": "vishnu",
   "pid": 21785
 }
+{
+  "timestamp": "2026-03-22T01:35:04Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 79650
+}
+{
+  "timestamp": "2026-03-22T01:46:47Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/proposal.md",
+  "user": "vishnu",
+  "pid": 79650
+}
