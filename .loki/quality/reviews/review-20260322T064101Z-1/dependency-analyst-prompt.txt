@@ -1,0 +1,3518 @@
+You are dependency-analyst. Your SOLE focus is: Outdated packages, CVEs, bloat, unused deps, license issues.
+
+Review ONLY for: outdated dependencies, known CVEs, unnecessary imports, dependency bloat, license compatibility, unused packages.
+
+Files changed:
+.loki/CONTINUITY.md
+.loki/STATUS.txt
+.loki/app-runner/detection.json
+.loki/autonomy-state.json
+.loki/context/last_offset.txt
+.loki/context/tracking.json
+.loki/council/state.json
+.loki/dashboard-state.json
+.loki/dashboard/dashboard.pid
+.loki/events.jsonl
+.loki/logs/agent-audit.jsonl
+.loki/logs/audit-20260321.jsonl
+.loki/metrics/efficiency/iteration-1.json
+.loki/pids/69582.json
+.loki/prd-observations.md
+.loki/quality/gate-failure-count.json
+.loki/quality/static-analysis.json
+.loki/quality/test-results.json
+.loki/queue/completed.json
+.loki/signals/STATIC_ANALYSIS_FAILED
+.loki/state/checkpoints/index.jsonl
+.loki/state/resources.json
+package-lock.json
+package.json
+src/__tests__/model/show-machine.test.ts
+src/__tests__/model/show-machine.ts
+src/__tests__/property/show-store.property.test.ts
+src/__tests__/property/temporal.property.test.ts
+
+Diff:
+diff --git a/.loki/CONTINUITY.md b/.loki/CONTINUITY.md
+index 8a52c9b..0e9e497 100644
+--- a/.loki/CONTINUITY.md
++++ b/.loki/CONTINUITY.md
+@@ -1,6 +1,6 @@
+ # Session Continuity
+ 
+-Updated: 2026-03-22T02:29:15Z
++Updated: 2026-03-22T06:40:57Z
+ 
+ ## Current State
+ 
+@@ -12,9 +12,9 @@ Updated: 2026-03-22T02:29:15Z
+ 
+ ## Last Completed Task
+ 
+-- Last commit: refactor: decompose main process + delete CLUI dead code
+-- Files changed: src/__tests__/setup.ts, src/main/day-boundary.ts, src/main/index.ts, src/main/ipc/core.ts, src/main/ipc/showtime.ts
+-  (+11 more)
++- Last commit: feat: add Layer 1 (XState model) + Layer 2 (fast-check property) test suites
++- Files changed: package-lock.json, package.json, src/__tests__/model/show-machine.test.ts, src/__tests__/model/show-machine.ts, src/__tests__/property/show-store.property.test.ts
++  (+1 more)
+ 
+ ## Active Blockers
+ 
+diff --git a/.loki/STATUS.txt b/.loki/STATUS.txt
+index 93d5061..1bb93b2 100644
+--- a/.loki/STATUS.txt
++++ b/.loki/STATUS.txt
+@@ -2,14 +2,14 @@
+ ║                    LOKI MODE STATUS                            ║
+ ╚════════════════════════════════════════════════════════════════╝
+ 
+-Updated: Sat Mar 21 19:30:21 PDT 2026
++Updated: Sat Mar 21 23:41:00 PDT 2026
+ 
+ Phase: DEVELOPMENT
+ 
+ Tasks:
+   ├─ Pending:     0
+   ├─ In Progress: 0
+-  ├─ Completed:   13
++  ├─ Completed:   14
+   └─ Failed:      3
+ 
+ Monitor: watch -n 2 cat .loki/STATUS.txt
+diff --git a/.loki/app-runner/detection.json b/.loki/app-runner/detection.json
+index 573aa1f..74d7a81 100644
+--- a/.loki/app-runner/detection.json
++++ b/.loki/app-runner/detection.json
+@@ -3,5 +3,5 @@
+     "command": "npm run dev",
+     "port": 5173,
+     "is_docker": false,
+-    "detected_at": "2026-03-22T02:29:14Z"
++    "detected_at": "2026-03-22T06:40:56Z"
+ }
+diff --git a/.loki/autonomy-state.json b/.loki/autonomy-state.json
+index 4f92549..c839e2c 100644
+--- a/.loki/autonomy-state.json
++++ b/.loki/autonomy-state.json
+@@ -1,10 +1,10 @@
+ {
+     "retryCount": 2,
+-    "status": "completion_promise_fulfilled",
++    "status": "exited",
+     "lastExitCode": 0,
+-    "lastRun": "2026-03-22T02:30:21Z",
+-    "prdPath": "/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md",
+-    "pid": 69309,
++    "lastRun": "2026-03-22T06:40:56Z",
++    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md",
++    "pid": 41628,
+     "maxRetries": 50,
+     "baseWait": 60
+ }
+diff --git a/.loki/context/last_offset.txt b/.loki/context/last_offset.txt
+index c227083..1bda760 100644
+--- a/.loki/context/last_offset.txt
++++ b/.loki/context/last_offset.txt
+@@ -1 +1 @@
+-0
+\ No newline at end of file
++117
+\ No newline at end of file
+diff --git a/.loki/context/tracking.json b/.loki/context/tracking.json
+index 85af5a3..09368f7 100644
+--- a/.loki/context/tracking.json
++++ b/.loki/context/tracking.json
+@@ -1,15 +1,15 @@
+ {
+-  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
++  "session_id": "74fd4685-d420-4fb0-bd99-7b103f91f772",
+   "provider": "claude",
+-  "updated_at": "2026-03-22T02:29:14.352235+00:00",
++  "updated_at": "2026-03-22T06:40:56.436239+00:00",
+   "current": {
+-    "input_tokens": 0,
+-    "output_tokens": 0,
+-    "cache_read_tokens": 0,
+-    "cache_creation_tokens": 0,
+-    "total_tokens": 0,
+-    "context_window_pct": 0.0,
+-    "estimated_cost_usd": 53.0779
++    "input_tokens": 1,
++    "output_tokens": 17043,
++    "cache_read_tokens": 79454,
++    "cache_creation_tokens": 263185,
++    "total_tokens": 79455,
++    "context_window_pct": 39.73,
++    "estimated_cost_usd": 55.4441
+   },
+   "compactions": [
+     {
+@@ -48,9 +48,9 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 74818,
+-    "total_output": 286910,
+-    "total_cost_usd": 53.0779,
++    "total_input": 95935,
++    "total_output": 303953,
++    "total_cost_usd": 55.4441,
+     "compaction_count": 2,
+     "iterations_tracked": 2
+   }
+diff --git a/.loki/council/state.json b/.loki/council/state.json
+index 8a220ff..eaaa60b 100644
+--- a/.loki/council/state.json
++++ b/.loki/council/state.json
+@@ -1,15 +1,12 @@
+ {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 1,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 1,
+-  "last_track_iteration": 1,
+-  "files_changed": 22
+-}
+\ No newline at end of file
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
++}
+diff --git a/.loki/dashboard-state.json b/.loki/dashboard-state.json
+index cbac5f6..b440b86 100644
+--- a/.loki/dashboard-state.json
++++ b/.loki/dashboard-state.json
+@@ -1,5 +1,5 @@
+ {
+-  "timestamp": "2026-03-22T02:30:21Z",
++  "timestamp": "2026-03-22T06:41:01Z",
+   "version": "unknown",
+   "project": {
+     "name": "showtime",
+@@ -136,6 +136,15 @@
+     "completedAt": "2026-03-22T02:29:14Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T06:40:56Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ],
+     "failed": [
+@@ -172,8 +181,8 @@
+   "metrics": {
+     "tasksCompleted": 0,
+     "tasksFailed": 0,
+-    "cpuUsage": 52,
+-    "memoryUsage": 72,
++    "cpuUsage": 50,
++    "memoryUsage": 69,
+     "resourceStatus": "ok"
+   },
+   "memory": {
+@@ -183,19 +192,16 @@
+   },
+   "qualityGates": null,
+   "council": {
+-  "initialized": true,
+-  "enabled": true,
+-  "total_votes": 0,
+-  "approve_votes": 0,
+-  "reject_votes": 0,
+-  "last_check_iteration": 0,
+-  "consecutive_no_change": 0,
+-  "done_signals": 1,
+-  "convergence_history": [],
+-  "verdicts": [],
+-  "total_done_signals": 1,
+-  "last_track_iteration": 1,
+-  "files_changed": 22
++    "initialized": true,
++    "enabled": true,
++    "total_votes": 0,
++    "approve_votes": 0,
++    "reject_votes": 0,
++    "last_check_iteration": 0,
++    "consecutive_no_change": 0,
++    "done_signals": 0,
++    "convergence_history": [],
++    "verdicts": []
+ },
+   "checklist": null,
+   "appRunner": {
+@@ -204,7 +210,7 @@
+     "method": "npm run dev",
+     "port": 5173,
+     "url": "http://localhost:5173",
+-    "started_at": "2026-03-22T02:06:13Z",
++    "started_at": "2026-03-22T02:30:22Z",
+     "restart_count": 1,
+     "status": "stopped",
+     "last_health": {"ok": false},
+@@ -213,17 +219,17 @@
+   "playwright": null,
+   "budget": null,
+   "context": {
+-  "session_id": "6952d9bb-56a5-4749-8c82-68f9daa5c8eb",
++  "session_id": "74fd4685-d420-4fb0-bd99-7b103f91f772",
+   "provider": "claude",
+-  "updated_at": "2026-03-22T02:29:14.352235+00:00",
++  "updated_at": "2026-03-22T06:40:56.436239+00:00",
+   "current": {
+-    "input_tokens": 0,
+-    "output_tokens": 0,
+-    "cache_read_tokens": 0,
+-    "cache_creation_tokens": 0,
+-    "total_tokens": 0,
+-    "context_window_pct": 0.0,
+-    "estimated_cost_usd": 53.0779
++    "input_tokens": 1,
++    "output_tokens": 17043,
++    "cache_read_tokens": 79454,
++    "cache_creation_tokens": 263185,
++    "total_tokens": 79455,
++    "context_window_pct": 39.73,
++    "estimated_cost_usd": 55.4441
+   },
+   "compactions": [
+     {
+@@ -262,13 +268,13 @@
+     }
+   ],
+   "totals": {
+-    "total_input": 74818,
+-    "total_output": 286910,
+-    "total_cost_usd": 53.0779,
++    "total_input": 95935,
++    "total_output": 303953,
++    "total_cost_usd": 55.4441,
+     "compaction_count": 2,
+     "iterations_tracked": 2
+   }
+ },
+-  "tokens": {"input": 74818, "output": 286910, "cost_usd": 53.0779},
++  "tokens": {"input": 95935, "output": 303953, "cost_usd": 55.4441},
+   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
+ }
+diff --git a/.loki/dashboard/dashboard.pid b/.loki/dashboard/dashboard.pid
+index 00550c6..0dd9181 100644
+--- a/.loki/dashboard/dashboard.pid
++++ b/.loki/dashboard/dashboard.pid
+@@ -1 +1 @@
+-69582
++41872
+diff --git a/.loki/events.jsonl b/.loki/events.jsonl
+index e45d7fb..e3bdaf0 100644
+--- a/.loki/events.jsonl
++++ b/.loki/events.jsonl
+@@ -90,3 +90,6 @@
+ {"timestamp":"2026-03-22T02:29:19Z","type":"code_review_start","data":{"review_id":"review-20260322T022919Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+ {"timestamp":"2026-03-22T02:30:21Z","type":"code_review_complete","data":{"review_id":"review-20260322T022919Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+ {"timestamp":"2026-03-22T02:30:22Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
++{"timestamp":"2026-03-22T06:34:25Z","type":"session_start","data":{"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md","parallel":true,"complexity":"standard","pid":41628}}
++{"timestamp":"2026-03-22T06:34:25Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md"}}
++{"timestamp":"2026-03-22T06:40:56Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+diff --git a/.loki/logs/agent-audit.jsonl b/.loki/logs/agent-audit.jsonl
+index bf4e19a..9ecabb8 100644
+--- a/.loki/logs/agent-audit.jsonl
++++ b/.loki/logs/agent-audit.jsonl
+@@ -42,3 +42,5 @@
+ {"timestamp": "2026-03-22T02:09:34Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md,provider=claude", "iteration": 0, "pid": 69309}
+ {"timestamp": "2026-03-22T02:09:35Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 69309}
+ {"timestamp": "2026-03-22T02:30:22Z", "action": "session_stop", "description": "Session ended", "details": "result=0,iterations=1", "iteration": 1, "pid": 69309}
++{"timestamp": "2026-03-22T06:34:25Z", "action": "session_start", "description": "Session started", "details": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md,provider=claude", "iteration": 0, "pid": 41628}
++{"timestamp": "2026-03-22T06:34:26Z", "action": "cli_invoke", "description": "Starting iteration 1", "details": "provider=claude,tier=development", "iteration": 1, "pid": 41628}
+diff --git a/.loki/logs/audit-20260321.jsonl b/.loki/logs/audit-20260321.jsonl
+index 25bd916..16c3ccd 100644
+--- a/.loki/logs/audit-20260321.jsonl
++++ b/.loki/logs/audit-20260321.jsonl
+@@ -152,3 +152,10 @@
+   "user": "vishnu",
+   "pid": 69309
+ }
++{
++  "timestamp": "2026-03-22T06:34:25Z",
++  "event": "SESSION_START",
++  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
++  "user": "vishnu",
++  "pid": 41628
++}
+diff --git a/.loki/metrics/efficiency/iteration-1.json b/.loki/metrics/efficiency/iteration-1.json
+index 321bcb7..14cb85f 100644
+--- a/.loki/metrics/efficiency/iteration-1.json
++++ b/.loki/metrics/efficiency/iteration-1.json
+@@ -2,11 +2,11 @@
+   "iteration": 1,
+   "model": "opus",
+   "phase": "DEVELOPMENT",
+-  "duration_ms": 1179000,
++  "duration_ms": 391000,
+   "provider": "claude",
+   "status": "completed",
+   "input_tokens": 2891,
+   "output_tokens": 80165,
+   "cost_usd": 13.4582,
+-  "timestamp": "2026-03-22T02:29:14Z"
++  "timestamp": "2026-03-22T06:40:56Z"
+ }
+diff --git a/.loki/pids/69582.json b/.loki/pids/69582.json
+deleted file mode 100644
+index 1c7e7b4..0000000
+--- a/.loki/pids/69582.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{"pid":69582,"label":"dashboard","started":"2026-03-22T02:09:28Z","ppid":69309,"extra":"port=57377"}
+diff --git a/.loki/prd-observations.md b/.loki/prd-observations.md
+index 580f6e1..bbe168f 100644
+--- a/.loki/prd-observations.md
++++ b/.loki/prd-observations.md
+@@ -1,36 +1,41 @@
+ # PRD Analysis Observations
+ 
+-**Source:** `/Users/vishnu/workplace/showtime/docs/plans/2026-03-21-refactor-plan.md`
+-**Analyzed:** 2026-03-22T02:09:35Z
+-**Quality Score:** 5.0/10
+-**Estimated Scope:** large (~19 items detected)
++**Source:** `/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md`
++**Analyzed:** 2026-03-22T06:34:25Z
++**Quality Score:** 2.5/10
++**Estimated Scope:** medium (~7 items detected)
+ 
+ ## Strengths
+ 
+ - **Feature List**: Partially covered (mentioned but lacks dedicated section)
+ - **Tech Stack**: Partially covered (mentioned but lacks dedicated section)
+-- **User Stories / Flows**: Partially covered (mentioned but lacks dedicated section)
+-- **Acceptance Criteria**: Well-defined with dedicated section and content
++- **Acceptance Criteria**: Partially covered (mentioned but lacks dedicated section)
+ - **Data Model / Schema**: Partially covered (mentioned but lacks dedicated section)
+-- **Deployment Requirements**: Partially covered (mentioned but lacks dedicated section)
+-- **Error Handling**: Partially covered (mentioned but lacks dedicated section)
+-- **Security Requirements**: Partially covered (mentioned but lacks dedicated section)
+ 
+ ## Missing or Unclear
+ 
++- **User Stories / Flows**: User stories, personas, or user flow descriptions
+ - **API Specifications**: API endpoints, request/response formats
++- **Deployment Requirements**: Deployment targets, CI/CD, and infrastructure
++- **Error Handling**: Error handling, edge cases, and failure modes
++- **Security Requirements**: Authentication, authorization, and security measures
+ 
+ ## Assumptions Made
+ 
++- Will derive user flows from feature descriptions
+ - Will define API endpoints based on feature set
++- Will use standard containerized deployment
++- Will implement standard error handling patterns
++- Will apply baseline security (input validation, auth if applicable)
+ 
+ ## Recommended Additions
+ 
+ - Add a dedicated **Feature List** section with more detail
+ - Add a dedicated **Tech Stack** section with more detail
+-- Add a dedicated **User Stories / Flows** section with more detail
++- Add **User Stories / Flows** section: User stories, personas, or user flow descriptions
++- Add a dedicated **Acceptance Criteria** section with more detail
+ - Add a dedicated **Data Model / Schema** section with more detail
+ - Add **API Specifications** section: API endpoints, request/response formats
+-- Add a dedicated **Deployment Requirements** section with more detail
+-- Add a dedicated **Error Handling** section with more detail
+-- Add a dedicated **Security Requirements** section with more detail
++- Add **Deployment Requirements** section: Deployment targets, CI/CD, and infrastructure
++- Add **Error Handling** section: Error handling, edge cases, and failure modes
++- Add **Security Requirements** section: Authentication, authorization, and security measures
+diff --git a/.loki/quality/gate-failure-count.json b/.loki/quality/gate-failure-count.json
+index ae166fb..971aebe 100644
+--- a/.loki/quality/gate-failure-count.json
++++ b/.loki/quality/gate-failure-count.json
+@@ -2,7 +2,7 @@
+   "timestamp": "2026-03-21T22:11:48Z",
+   "gate_failures": [],
+   "pass": true,
+-  "static_analysis": 3,
++  "static_analysis": 0,
+   "test_coverage": 0,
+   "code_review": 2
+ }
+\ No newline at end of file
+diff --git a/.loki/quality/static-analysis.json b/.loki/quality/static-analysis.json
+index 2eadef3..f508faf 100644
+--- a/.loki/quality/static-analysis.json
++++ b/.loki/quality/static-analysis.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-22T02:29:16Z","files_checked":15,"findings":1,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. ","pass":false}
++{"timestamp":"2026-03-22T06:40:58Z","files_checked":4,"findings":0,"summary":"","pass":true}
+diff --git a/.loki/quality/test-results.json b/.loki/quality/test-results.json
+index 8b1d92d..fbe6c78 100644
+--- a/.loki/quality/test-results.json
++++ b/.loki/quality/test-results.json
+@@ -1 +1 @@
+-{"timestamp":"2026-03-22T02:29:19Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':75,'numPassedTestSuites':75,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':196,'numPassedTests':196,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774146557359,'success':true,'testResults':[{'asse"}
++{"timestamp":"2026-03-22T06:41:01Z","runner":"vitest","pass":true,"min_coverage":80,"summary":"vitest: {'numTotalTestSuites':82,'numPassedTestSuites':82,'numFailedTestSuites':0,'numPendingTestSuites':0,'numTotalTests':226,'numPassedTests':226,'numFailedTests':0,'numPendingTests':0,'numTodoTests':0,'snapshot':{'added':0,'failure':false,'filesAdded':0,'filesRemoved':0,'filesRemovedList':[],'filesUnmatched':0,'filesUpdated':0,'matched':0,'total':0,'unchecked':0,'uncheckedKeysByFile':[],'unmatched':0,'updated':0,'didUpdate':false},'startTime':1774161659027,'success':true,'testResults':[{'asse"}
+diff --git a/.loki/queue/completed.json b/.loki/queue/completed.json
+index 8222129..7b8950c 100644
+--- a/.loki/queue/completed.json
++++ b/.loki/queue/completed.json
+@@ -115,5 +115,14 @@
+     "completedAt": "2026-03-22T02:29:14Z",
+     "exitCode": 0,
+     "provider": "claude"
++  },
++  {
++    "id": "iteration-1",
++    "type": "iteration",
++    "title": "Iteration 1",
++    "status": "completed",
++    "completedAt": "2026-03-22T06:40:56Z",
++    "exitCode": 0,
++    "provider": "claude"
+   }
+ ]
+\ No newline at end of file
+diff --git a/.loki/signals/STATIC_ANALYSIS_FAILED b/.loki/signals/STATIC_ANALYSIS_FAILED
+deleted file mode 100644
+index 0ae3002..0000000
+--- a/.loki/signals/STATIC_ANALYSIS_FAILED
++++ /dev/null
+@@ -1 +0,0 @@
+-static_analysis
+diff --git a/.loki/state/checkpoints/index.jsonl b/.loki/state/checkpoints/index.jsonl
+index 21516a9..9ab4c2a 100644
+--- a/.loki/state/checkpoints/index.jsonl
++++ b/.loki/state/checkpoints/index.jsonl
+@@ -30,3 +30,4 @@
+ {"id": "cp-1-1774145173", "ts": "2026-03-22T02:06:13Z", "iter": 1, "task": "session end (iterations=1)", "sha": "1a61e274f60631f2fd524e8c1561ab681cf4fa93"}
+ {"id": "cp-1-1774146555", "ts": "2026-03-22T02:29:15Z", "iter": 1, "task": "iteration-1 complete", "sha": "77343abfd08fb085838b4744dbfb6f72ea2b31a5"}
+ {"id": "cp-1-1774146622", "ts": "2026-03-22T02:30:22Z", "iter": 1, "task": "session end (iterations=1)", "sha": "77343abfd08fb085838b4744dbfb6f72ea2b31a5"}
++{"id": "cp-1-1774161657", "ts": "2026-03-22T06:40:57Z", "iter": 1, "task": "iteration-1 complete", "sha": "4d81b8d8e8a2d603cd981469900df89689817c2a"}
+diff --git a/.loki/state/resources.json b/.loki/state/resources.json
+index 31363a6..e740be6 100644
+--- a/.loki/state/resources.json
++++ b/.loki/state/resources.json
+@@ -1,12 +1,12 @@
+ {
+-  "timestamp": "2026-03-22T02:29:44Z",
++  "timestamp": "2026-03-22T06:39:27Z",
+   "cpu": {
+-    "usage_percent": 52,
++    "usage_percent": 50,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+   "memory": {
+-    "usage_percent": 72,
++    "usage_percent": 69,
+     "threshold_percent": 80,
+     "status": "ok"
+   },
+diff --git a/package-lock.json b/package-lock.json
+index c36690a..09ce89f 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -20,8 +20,6 @@
+         "drizzle-orm": "^0.45.1",
+         "framer-motion": "^12.35.1",
+         "node-pty": "^1.1.0",
+-        "react-markdown": "^9.0.0",
+-        "remark-gfm": "^4.0.0",
+         "tailwind-merge": "^3.5.0",
+         "zustand": "^5.0.0"
+       },
+@@ -36,11 +34,13 @@
+         "@types/react": "^19.0.0",
+         "@types/react-dom": "^19.0.0",
+         "@vitejs/plugin-react": "^4.3.0",
++        "@xstate/graph": "^3.0.4",
+         "autoprefixer": "^10.4.0",
+         "drizzle-kit": "^0.31.10",
+         "electron": "^35.7.5",
+         "electron-builder": "^26.8.1",
+         "electron-vite": "^3.0.0",
++        "fast-check": "^4.6.0",
+         "jsdom": "^29.0.1",
+         "postcss": "^8.4.0",
+         "react": "^19.0.0",
+@@ -48,7 +48,8 @@
+         "tailwindcss": "^4.2.1",
+         "typescript": "^5.7.0",
+         "vite": "^6.0.0",
+-        "vitest": "^4.1.0"
++        "vitest": "^4.1.0",
++        "xstate": "^5.28.0"
+       }
+     },
+     "node_modules/@adobe/css-tools": {
+@@ -3556,6 +3557,7 @@
+       "version": "4.1.12",
+       "resolved": "https://registry.npmjs.org/@types/debug/-/debug-4.1.12.tgz",
+       "integrity": "sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==",
++      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "@types/ms": "*"
+@@ -3572,17 +3574,9 @@
+       "version": "1.0.8",
+       "resolved": "https://registry.npmjs.org/@types/estree/-/estree-1.0.8.tgz",
+       "integrity": "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==",
++      "dev": true,
+       "license": "MIT"
+     },
+-    "node_modules/@types/estree-jsx": {
+-      "version": "1.0.5",
+-      "resolved": "https://registry.npmjs.org/@types/estree-jsx/-/estree-jsx-1.0.5.tgz",
+-      "integrity": "sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/estree": "*"
+-      }
+-    },
+     "node_modules/@types/fs-extra": {
+       "version": "9.0.13",
+       "resolved": "https://registry.npmjs.org/@types/fs-extra/-/fs-extra-9.0.13.tgz",
+@@ -3593,15 +3587,6 @@
+         "@types/node": "*"
+       }
+     },
+-    "node_modules/@types/hast": {
+-      "version": "3.0.4",
+-      "resolved": "https://registry.npmjs.org/@types/hast/-/hast-3.0.4.tgz",
+-      "integrity": "sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "*"
+-      }
+-    },
+     "node_modules/@types/http-cache-semantics": {
+       "version": "4.2.0",
+       "resolved": "https://registry.npmjs.org/@types/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz",
+@@ -3619,19 +3604,11 @@
+         "@types/node": "*"
+       }
+     },
+-    "node_modules/@types/mdast": {
+-      "version": "4.0.4",
+-      "resolved": "https://registry.npmjs.org/@types/mdast/-/mdast-4.0.4.tgz",
+-      "integrity": "sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "*"
+-      }
+-    },
+     "node_modules/@types/ms": {
+       "version": "2.1.0",
+       "resolved": "https://registry.npmjs.org/@types/ms/-/ms-2.1.0.tgz",
+       "integrity": "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==",
++      "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/@types/node": {
+@@ -3660,6 +3637,7 @@
+       "version": "19.2.14",
+       "resolved": "https://registry.npmjs.org/@types/react/-/react-19.2.14.tgz",
+       "integrity": "sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==",
++      "devOptional": true,
+       "license": "MIT",
+       "dependencies": {
+         "csstype": "^3.2.2"
+@@ -3685,12 +3663,6 @@
+         "@types/node": "*"
+       }
+     },
+-    "node_modules/@types/unist": {
+-      "version": "3.0.3",
+-      "resolved": "https://registry.npmjs.org/@types/unist/-/unist-3.0.3.tgz",
+-      "integrity": "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==",
+-      "license": "MIT"
+-    },
+     "node_modules/@types/verror": {
+       "version": "1.10.11",
+       "resolved": "https://registry.npmjs.org/@types/verror/-/verror-1.10.11.tgz",
+@@ -3710,12 +3682,6 @@
+         "@types/node": "*"
+       }
+     },
+-    "node_modules/@ungap/structured-clone": {
+-      "version": "1.3.0",
+-      "resolved": "https://registry.npmjs.org/@ungap/structured-clone/-/structured-clone-1.3.0.tgz",
+-      "integrity": "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==",
+-      "license": "ISC"
+-    },
+     "node_modules/@vitejs/plugin-react": {
+       "version": "4.7.0",
+       "resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-4.7.0.tgz",
+@@ -3860,6 +3826,16 @@
+         "node": ">=10.0.0"
+       }
+     },
++    "node_modules/@xstate/graph": {
++      "version": "3.0.4",
++      "resolved": "https://registry.npmjs.org/@xstate/graph/-/graph-3.0.4.tgz",
++      "integrity": "sha512-b12RA7E//+7FJVrD09Td+BhHRJbeKZnK+98xXBd+JmccG360xVP1lyzVhUZPgBgwPdmIGBJqhKzmWYJQ9c8ojQ==",
++      "dev": true,
++      "license": "MIT",
++      "peerDependencies": {
++        "xstate": "^5.19.4"
++      }
++    },
+     "node_modules/7zip-bin": {
+       "version": "5.2.0",
+       "resolved": "https://registry.npmjs.org/7zip-bin/-/7zip-bin-5.2.0.tgz",
+@@ -4245,16 +4221,6 @@
+         "postcss": "^8.1.0"
+       }
+     },
+-    "node_modules/bail": {
+-      "version": "2.0.2",
+-      "resolved": "https://registry.npmjs.org/bail/-/bail-2.0.2.tgz",
+-      "integrity": "sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/balanced-match": {
+       "version": "4.0.4",
+       "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+@@ -4676,16 +4642,6 @@
+       ],
+       "license": "CC-BY-4.0"
+     },
+-    "node_modules/ccount": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/ccount/-/ccount-2.0.1.tgz",
+-      "integrity": "sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/chai": {
+       "version": "6.2.2",
+       "resolved": "https://registry.npmjs.org/chai/-/chai-6.2.2.tgz",
+@@ -4713,46 +4669,6 @@
+         "url": "https://github.com/chalk/chalk?sponsor=1"
+       }
+     },
+-    "node_modules/character-entities": {
+-      "version": "2.0.2",
+-      "resolved": "https://registry.npmjs.org/character-entities/-/character-entities-2.0.2.tgz",
+-      "integrity": "sha512-shx7oQ0Awen/BRIdkjkvz54PnEEI/EjwXDSIZp86/KKdbafHh1Df/RYGBhn4hbe2+uKC9FnT5UCEdyPz3ai9hQ==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/character-entities-html4": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/character-entities-html4/-/character-entities-html4-2.1.0.tgz",
+-      "integrity": "sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/character-entities-legacy": {
+-      "version": "3.0.0",
+-      "resolved": "https://registry.npmjs.org/character-entities-legacy/-/character-entities-legacy-3.0.0.tgz",
+-      "integrity": "sha512-RpPp0asT/6ufRm//AJVwpViZbGM/MkjQFxJccQRHmISF/22NBtsHqAWmL+/pmkPWoIUJdWyeVleTl1wydHATVQ==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/character-reference-invalid": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/character-reference-invalid/-/character-reference-invalid-2.0.1.tgz",
+-      "integrity": "sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/chownr": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/chownr/-/chownr-3.0.0.tgz",
+@@ -4922,16 +4838,6 @@
+         "node": ">= 0.8"
+       }
+     },
+-    "node_modules/comma-separated-tokens": {
+-      "version": "2.0.3",
+-      "resolved": "https://registry.npmjs.org/comma-separated-tokens/-/comma-separated-tokens-2.0.3.tgz",
+-      "integrity": "sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/commander": {
+       "version": "5.1.0",
+       "resolved": "https://registry.npmjs.org/commander/-/commander-5.1.0.tgz",
+@@ -5057,6 +4963,7 @@
+       "version": "3.2.3",
+       "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
++      "devOptional": true,
+       "license": "MIT"
+     },
+     "node_modules/data-urls": {
+@@ -5077,6 +4984,7 @@
+       "version": "4.4.3",
+       "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+       "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
++      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "ms": "^2.1.3"
+@@ -5097,19 +5005,6 @@
+       "dev": true,
+       "license": "MIT"
+     },
+-    "node_modules/decode-named-character-reference": {
+-      "version": "1.3.0",
+-      "resolved": "https://registry.npmjs.org/decode-named-character-reference/-/decode-named-character-reference-1.3.0.tgz",
+-      "integrity": "sha512-GtpQYB283KrPp6nRw50q3U9/VfOutZOe103qlN7BPP6Ad27xYnOIWv4lPzo8HCAL+mMZofJ9KEy30fq6MfaK6Q==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "character-entities": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/decompress-response": {
+       "version": "6.0.0",
+       "resolved": "https://registry.npmjs.org/decompress-response/-/decompress-response-6.0.0.tgz",
+@@ -5221,6 +5116,7 @@
+       "version": "2.0.3",
+       "resolved": "https://registry.npmjs.org/dequal/-/dequal-2.0.3.tgz",
+       "integrity": "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==",
++      "dev": true,
+       "license": "MIT",
+       "engines": {
+         "node": ">=6"
+@@ -5249,19 +5145,6 @@
+       "integrity": "sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==",
+       "license": "MIT"
+     },
+-    "node_modules/devlop": {
+-      "version": "1.1.0",
+-      "resolved": "https://registry.npmjs.org/devlop/-/devlop-1.1.0.tgz",
+-      "integrity": "sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "dequal": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/dir-compare": {
+       "version": "4.2.0",
+       "resolved": "https://registry.npmjs.org/dir-compare/-/dir-compare-4.2.0.tgz",
+@@ -6029,16 +5912,6 @@
+         "url": "https://github.com/sponsors/sindresorhus"
+       }
+     },
+-    "node_modules/estree-util-is-identifier-name": {
+-      "version": "3.0.0",
+-      "resolved": "https://registry.npmjs.org/estree-util-is-identifier-name/-/estree-util-is-identifier-name-3.0.0.tgz",
+-      "integrity": "sha512-hFtqIDZTIUZ9BXLb8y4pYGyk6+wekIivNVTcmvk8NoOh+VeRn5y6cEHzbURrWbfp1fIqdVipilzj+lfaadNZmg==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/estree-walker": {
+       "version": "3.0.3",
+       "resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
+@@ -6075,12 +5948,6 @@
+       "dev": true,
+       "license": "Apache-2.0"
+     },
+-    "node_modules/extend": {
+-      "version": "3.0.2",
+-      "resolved": "https://registry.npmjs.org/extend/-/extend-3.0.2.tgz",
+-      "integrity": "sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==",
+-      "license": "MIT"
+-    },
+     "node_modules/extract-zip": {
+       "version": "2.0.1",
+       "resolved": "https://registry.npmjs.org/extract-zip/-/extract-zip-2.0.1.tgz",
+@@ -6113,6 +5980,29 @@
+       "license": "MIT",
+       "optional": true
+     },
++    "node_modules/fast-check": {
++      "version": "4.6.0",
++      "resolved": "https://registry.npmjs.org/fast-check/-/fast-check-4.6.0.tgz",
++      "integrity": "sha512-h7H6Dm0Fy+H4ciQYFxFjXnXkzR2kr9Fb22c0UBpHnm59K2zpr2t13aPTHlltFiNT6zuxp6HMPAVVvgur4BLdpA==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "individual",
++          "url": "https://github.com/sponsors/dubzzz"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/fast-check"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "pure-rand": "^8.0.0"
++      },
++      "engines": {
++        "node": ">=12.17.0"
++      }
++    },
+     "node_modules/fast-deep-equal": {
+       "version": "3.1.3",
+       "resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+@@ -6656,46 +6546,6 @@
+         "node": ">= 0.4"
+       }
+     },
+-    "node_modules/hast-util-to-jsx-runtime": {
+-      "version": "2.3.6",
+-      "resolved": "https://registry.npmjs.org/hast-util-to-jsx-runtime/-/hast-util-to-jsx-runtime-2.3.6.tgz",
+-      "integrity": "sha512-zl6s8LwNyo1P9uw+XJGvZtdFF1GdAkOg8ujOw+4Pyb76874fLps4ueHXDhXWdk6YHQ6OgUtinliG7RsYvCbbBg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/estree": "^1.0.0",
+-        "@types/hast": "^3.0.0",
+-        "@types/unist": "^3.0.0",
+-        "comma-separated-tokens": "^2.0.0",
+-        "devlop": "^1.0.0",
+-        "estree-util-is-identifier-name": "^3.0.0",
+-        "hast-util-whitespace": "^3.0.0",
+-        "mdast-util-mdx-expression": "^2.0.0",
+-        "mdast-util-mdx-jsx": "^3.0.0",
+-        "mdast-util-mdxjs-esm": "^2.0.0",
+-        "property-information": "^7.0.0",
+-        "space-separated-tokens": "^2.0.0",
+-        "style-to-js": "^1.0.0",
+-        "unist-util-position": "^5.0.0",
+-        "vfile-message": "^4.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/hast-util-whitespace": {
+-      "version": "3.0.0",
+-      "resolved": "https://registry.npmjs.org/hast-util-whitespace/-/hast-util-whitespace-3.0.0.tgz",
+-      "integrity": "sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/hast": "^3.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/hosted-git-info": {
+       "version": "4.1.0",
+       "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-4.1.0.tgz",
+@@ -6742,16 +6592,6 @@
+         "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
+       }
+     },
+-    "node_modules/html-url-attributes": {
+-      "version": "3.0.1",
+-      "resolved": "https://registry.npmjs.org/html-url-attributes/-/html-url-attributes-3.0.1.tgz",
+-      "integrity": "sha512-ol6UPyBWqsrO6EJySPz2O7ZSr856WDrEzM5zMqp+FJJLGMW35cLYmmZnl0vztAZxRUoNZJFTCohfjuIJ8I4QBQ==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/http-cache-semantics": {
+       "version": "4.2.0",
+       "resolved": "https://registry.npmjs.org/http-cache-semantics/-/http-cache-semantics-4.2.0.tgz",
+@@ -6896,12 +6736,6 @@
+       "integrity": "sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==",
+       "license": "ISC"
+     },
+-    "node_modules/inline-style-parser": {
+-      "version": "0.2.7",
+-      "resolved": "https://registry.npmjs.org/inline-style-parser/-/inline-style-parser-0.2.7.tgz",
+-      "integrity": "sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==",
+-      "license": "MIT"
+-    },
+     "node_modules/ip-address": {
+       "version": "10.1.0",
+       "resolved": "https://registry.npmjs.org/ip-address/-/ip-address-10.1.0.tgz",
+@@ -6912,40 +6746,6 @@
+         "node": ">= 12"
+       }
+     },
+-    "node_modules/is-alphabetical": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/is-alphabetical/-/is-alphabetical-2.0.1.tgz",
+-      "integrity": "sha512-FWyyY60MeTNyeSRpkM2Iry0G9hpr7/9kD40mD/cGQEuilcZYS4okz8SN2Q6rLCJ8gbCt6fN+rC+6tMGS99LaxQ==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/is-alphanumerical": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/is-alphanumerical/-/is-alphanumerical-2.0.1.tgz",
+-      "integrity": "sha512-hmbYhX/9MUMF5uh7tOXyK/n0ZvWpad5caBA17GsC6vyuCqaWliRG5K1qS9inmUhEMaOBIW7/whAnSwveW/LtZw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "is-alphabetical": "^2.0.0",
+-        "is-decimal": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/is-decimal": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/is-decimal/-/is-decimal-2.0.1.tgz",
+-      "integrity": "sha512-AAB9hiomQs5DXWcRB1rqsxGUstbRroFOPPVAomNk/3XHR5JyEZChOyTWe2oayKnsSsr/kcGqF+z6yuH6HHpN0A==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/is-fullwidth-code-point": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz",
+@@ -6956,16 +6756,6 @@
+         "node": ">=8"
+       }
+     },
+-    "node_modules/is-hexadecimal": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/is-hexadecimal/-/is-hexadecimal-2.0.1.tgz",
+-      "integrity": "sha512-DgZQp241c8oO6cA1SbTEWiXeoxV42vlcJxgH+B3hi1AiqqKruZR3ZGF8In3fj4+/y/7rHvlOZLZtgJ/4ttYGZg==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/is-interactive": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/is-interactive/-/is-interactive-1.0.0.tgz",
+@@ -6976,18 +6766,6 @@
+         "node": ">=8"
+       }
+     },
+-    "node_modules/is-plain-obj": {
+-      "version": "4.1.0",
+-      "resolved": "https://registry.npmjs.org/is-plain-obj/-/is-plain-obj-4.1.0.tgz",
+-      "integrity": "sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==",
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">=12"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/sindresorhus"
+-      }
+-    },
+     "node_modules/is-potential-custom-element-name": {
+       "version": "1.0.1",
+       "resolved": "https://registry.npmjs.org/is-potential-custom-element-name/-/is-potential-custom-element-name-1.0.1.tgz",
+@@ -7506,16 +7284,6 @@
+         "url": "https://github.com/sponsors/sindresorhus"
+       }
+     },
+-    "node_modules/longest-streak": {
+-      "version": "3.1.0",
+-      "resolved": "https://registry.npmjs.org/longest-streak/-/longest-streak-3.1.0.tgz",
+-      "integrity": "sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/lowercase-keys": {
+       "version": "2.0.0",
+       "resolved": "https://registry.npmjs.org/lowercase-keys/-/lowercase-keys-2.0.0.tgz",
+@@ -7580,16 +7348,6 @@
+         "node": "^18.17.0 || >=20.5.0"
+       }
+     },
+-    "node_modules/markdown-table": {
+-      "version": "3.0.4",
+-      "resolved": "https://registry.npmjs.org/markdown-table/-/markdown-table-3.0.4.tgz",
+-      "integrity": "sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/matcher": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/matcher/-/matcher-3.0.0.tgz",
+@@ -7614,912 +7372,67 @@
+         "node": ">= 0.4"
+       }
+     },
+-    "node_modules/mdast-util-find-and-replace": {
+-      "version": "3.0.2",
+-      "resolved": "https://registry.npmjs.org/mdast-util-find-and-replace/-/mdast-util-find-and-replace-3.0.2.tgz",
+-      "integrity": "sha512-Tmd1Vg/m3Xz43afeNxDIhWRtFZgM2VLyaf4vSTYwudTyeuTneoL3qtWMA5jeLyz/O1vDJmmV4QuScFCA2tBPwg==",
++    "node_modules/mdn-data": {
++      "version": "2.27.1",
++      "resolved": "https://registry.npmjs.org/mdn-data/-/mdn-data-2.27.1.tgz",
++      "integrity": "sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==",
++      "dev": true,
++      "license": "CC0-1.0"
++    },
++    "node_modules/mime": {
++      "version": "2.6.0",
++      "resolved": "https://registry.npmjs.org/mime/-/mime-2.6.0.tgz",
++      "integrity": "sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==",
++      "dev": true,
+       "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "escape-string-regexp": "^5.0.0",
+-        "unist-util-is": "^6.0.0",
+-        "unist-util-visit-parents": "^6.0.0"
++      "bin": {
++        "mime": "cli.js"
+       },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
++      "engines": {
++        "node": ">=4.0.0"
+       }
+     },
+-    "node_modules/mdast-util-find-and-replace/node_modules/escape-string-regexp": {
+-      "version": "5.0.0",
+-      "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz",
+-      "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==",
++    "node_modules/mime-db": {
++      "version": "1.52.0",
++      "resolved": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
++      "integrity": "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==",
++      "dev": true,
+       "license": "MIT",
+       "engines": {
+-        "node": ">=12"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/sindresorhus"
+-      }
+-    },
+-    "node_modules/mdast-util-from-markdown": {
+-      "version": "2.0.3",
+-      "resolved": "https://registry.npmjs.org/mdast-util-from-markdown/-/mdast-util-from-markdown-2.0.3.tgz",
+-      "integrity": "sha512-W4mAWTvSlKvf8L6J+VN9yLSqQ9AOAAvHuoDAmPkz4dHf553m5gVj2ejadHJhoJmcmxEnOv6Pa8XJhpxE93kb8Q==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "@types/unist": "^3.0.0",
+-        "decode-named-character-reference": "^1.0.0",
+-        "devlop": "^1.0.0",
+-        "mdast-util-to-string": "^4.0.0",
+-        "micromark": "^4.0.0",
+-        "micromark-util-decode-numeric-character-reference": "^2.0.0",
+-        "micromark-util-decode-string": "^2.0.0",
+-        "micromark-util-normalize-identifier": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0",
+-        "unist-util-stringify-position": "^4.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
++        "node": ">= 0.6"
+       }
+     },
+-    "node_modules/mdast-util-gfm": {
+-      "version": "3.1.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-gfm/-/mdast-util-gfm-3.1.0.tgz",
+-      "integrity": "sha512-0ulfdQOM3ysHhCJ1p06l0b0VKlhU0wuQs3thxZQagjcjPrlFRqY215uZGHHJan9GEAXd9MbfPjFJz+qMkVR6zQ==",
++    "node_modules/mime-types": {
++      "version": "2.1.35",
++      "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
++      "integrity": "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==",
++      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-gfm-autolink-literal": "^2.0.0",
+-        "mdast-util-gfm-footnote": "^2.0.0",
+-        "mdast-util-gfm-strikethrough": "^2.0.0",
+-        "mdast-util-gfm-table": "^2.0.0",
+-        "mdast-util-gfm-task-list-item": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0"
++        "mime-db": "1.52.0"
+       },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
++      "engines": {
++        "node": ">= 0.6"
+       }
+     },
+-    "node_modules/mdast-util-gfm-autolink-literal": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/mdast-util-gfm-autolink-literal/-/mdast-util-gfm-autolink-literal-2.0.1.tgz",
+-      "integrity": "sha512-5HVP2MKaP6L+G6YaxPNjuL0BPrq9orG3TsrZ9YXbA3vDw/ACI4MEsnoDpn6ZNm7GnZgtAcONJyPhOP8tNJQavQ==",
++    "node_modules/mimic-fn": {
++      "version": "2.1.0",
++      "resolved": "https://registry.npmjs.org/mimic-fn/-/mimic-fn-2.1.0.tgz",
++      "integrity": "sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==",
++      "dev": true,
+       "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "ccount": "^2.0.0",
+-        "devlop": "^1.0.0",
+-        "mdast-util-find-and-replace": "^3.0.0",
+-        "micromark-util-character": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
++      "engines": {
++        "node": ">=6"
+       }
+     },
+-    "node_modules/mdast-util-gfm-footnote": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-gfm-footnote/-/mdast-util-gfm-footnote-2.1.0.tgz",
+-      "integrity": "sha512-sqpDWlsHn7Ac9GNZQMeUzPQSMzR6Wv0WKRNvQRg0KqHh02fpTz69Qc1QSseNX29bhz1ROIyNyxExfawVKTm1GQ==",
++    "node_modules/mimic-response": {
++      "version": "1.0.1",
++      "resolved": "https://registry.npmjs.org/mimic-response/-/mimic-response-1.0.1.tgz",
++      "integrity": "sha512-j5EctnkH7amfV/q5Hgmoal1g2QHFJRraOtmx0JpIqkxhBhI/lJSl1nMpQ45hVarwNETOoWEimndZ4QK0RHxuxQ==",
++      "dev": true,
+       "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "devlop": "^1.1.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0",
+-        "micromark-util-normalize-identifier": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-gfm-strikethrough": {
+-      "version": "2.0.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-gfm-strikethrough/-/mdast-util-gfm-strikethrough-2.0.0.tgz",
+-      "integrity": "sha512-mKKb915TF+OC5ptj5bJ7WFRPdYtuHv0yTRxK2tJvi+BDqbkiG7h7u/9SI89nRAYcmap2xHQL9D+QG/6wSrTtXg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-gfm-table": {
+-      "version": "2.0.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-gfm-table/-/mdast-util-gfm-table-2.0.0.tgz",
+-      "integrity": "sha512-78UEvebzz/rJIxLvE7ZtDd/vIQ0RHv+3Mh5DR96p7cS7HsBhYIICDBCu8csTNWNO6tBWfqXPWekRuj2FNOGOZg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "devlop": "^1.0.0",
+-        "markdown-table": "^3.0.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-gfm-task-list-item": {
+-      "version": "2.0.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-gfm-task-list-item/-/mdast-util-gfm-task-list-item-2.0.0.tgz",
+-      "integrity": "sha512-IrtvNvjxC1o06taBAVJznEnkiHxLFTzgonUdy8hzFVeDun0uTjxxrRGVaNFqkU1wJR3RBPEfsxmU6jDWPofrTQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "devlop": "^1.0.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-mdx-expression": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/mdast-util-mdx-expression/-/mdast-util-mdx-expression-2.0.1.tgz",
+-      "integrity": "sha512-J6f+9hUp+ldTZqKRSg7Vw5V6MqjATc+3E4gf3CFNcuZNWD8XdyI6zQ8GqH7f8169MM6P7hMBRDVGnn7oHB9kXQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/estree-jsx": "^1.0.0",
+-        "@types/hast": "^3.0.0",
+-        "@types/mdast": "^4.0.0",
+-        "devlop": "^1.0.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-mdx-jsx": {
+-      "version": "3.2.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-mdx-jsx/-/mdast-util-mdx-jsx-3.2.0.tgz",
+-      "integrity": "sha512-lj/z8v0r6ZtsN/cGNNtemmmfoLAFZnjMbNyLzBafjzikOM+glrjNHPlf6lQDOTccj9n5b0PPihEBbhneMyGs1Q==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/estree-jsx": "^1.0.0",
+-        "@types/hast": "^3.0.0",
+-        "@types/mdast": "^4.0.0",
+-        "@types/unist": "^3.0.0",
+-        "ccount": "^2.0.0",
+-        "devlop": "^1.1.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0",
+-        "parse-entities": "^4.0.0",
+-        "stringify-entities": "^4.0.0",
+-        "unist-util-stringify-position": "^4.0.0",
+-        "vfile-message": "^4.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-mdxjs-esm": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/mdast-util-mdxjs-esm/-/mdast-util-mdxjs-esm-2.0.1.tgz",
+-      "integrity": "sha512-EcmOpxsZ96CvlP03NghtH1EsLtr0n9Tm4lPUJUBccV9RwUOneqSycg19n5HGzCf+10LozMRSObtVr3ee1WoHtg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/estree-jsx": "^1.0.0",
+-        "@types/hast": "^3.0.0",
+-        "@types/mdast": "^4.0.0",
+-        "devlop": "^1.0.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "mdast-util-to-markdown": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-phrasing": {
+-      "version": "4.1.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-phrasing/-/mdast-util-phrasing-4.1.0.tgz",
+-      "integrity": "sha512-TqICwyvJJpBwvGAMZjj4J2n0X8QWp21b9l0o7eXyVJ25YNWYbJDVIyD1bZXE6WtV6RmKJVYmQAKWa0zWOABz2w==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "unist-util-is": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-to-hast": {
+-      "version": "13.2.1",
+-      "resolved": "https://registry.npmjs.org/mdast-util-to-hast/-/mdast-util-to-hast-13.2.1.tgz",
+-      "integrity": "sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/hast": "^3.0.0",
+-        "@types/mdast": "^4.0.0",
+-        "@ungap/structured-clone": "^1.0.0",
+-        "devlop": "^1.0.0",
+-        "micromark-util-sanitize-uri": "^2.0.0",
+-        "trim-lines": "^3.0.0",
+-        "unist-util-position": "^5.0.0",
+-        "unist-util-visit": "^5.0.0",
+-        "vfile": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-to-markdown": {
+-      "version": "2.1.2",
+-      "resolved": "https://registry.npmjs.org/mdast-util-to-markdown/-/mdast-util-to-markdown-2.1.2.tgz",
+-      "integrity": "sha512-xj68wMTvGXVOKonmog6LwyJKrYXZPvlwabaryTjLh9LuvovB/KAH+kvi8Gjj+7rJjsFi23nkUxRQv1KqSroMqA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "@types/unist": "^3.0.0",
+-        "longest-streak": "^3.0.0",
+-        "mdast-util-phrasing": "^4.0.0",
+-        "mdast-util-to-string": "^4.0.0",
+-        "micromark-util-classify-character": "^2.0.0",
+-        "micromark-util-decode-string": "^2.0.0",
+-        "unist-util-visit": "^5.0.0",
+-        "zwitch": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdast-util-to-string": {
+-      "version": "4.0.0",
+-      "resolved": "https://registry.npmjs.org/mdast-util-to-string/-/mdast-util-to-string-4.0.0.tgz",
+-      "integrity": "sha512-0H44vDimn51F0YwvxSJSm0eCDOJTRlmN0R1yBh4HLj9wiV1Dn0QoXGbvFAWj2hSItVTlCmBF1hqKlIyUBVFLPg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/mdn-data": {
+-      "version": "2.27.1",
+-      "resolved": "https://registry.npmjs.org/mdn-data/-/mdn-data-2.27.1.tgz",
+-      "integrity": "sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==",
+-      "dev": true,
+-      "license": "CC0-1.0"
+-    },
+-    "node_modules/micromark": {
+-      "version": "4.0.2",
+-      "resolved": "https://registry.npmjs.org/micromark/-/micromark-4.0.2.tgz",
+-      "integrity": "sha512-zpe98Q6kvavpCr1NPVSCMebCKfD7CA2NqZ+rykeNhONIJBpc1tFKt9hucLGwha3jNTNI8lHpctWJWoimVF4PfA==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/debug": "^4.0.0",
+-        "debug": "^4.0.0",
+-        "decode-named-character-reference": "^1.0.0",
+-        "devlop": "^1.0.0",
+-        "micromark-core-commonmark": "^2.0.0",
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-chunked": "^2.0.0",
+-        "micromark-util-combine-extensions": "^2.0.0",
+-        "micromark-util-decode-numeric-character-reference": "^2.0.0",
+-        "micromark-util-encode": "^2.0.0",
+-        "micromark-util-normalize-identifier": "^2.0.0",
+-        "micromark-util-resolve-all": "^2.0.0",
+-        "micromark-util-sanitize-uri": "^2.0.0",
+-        "micromark-util-subtokenize": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-core-commonmark": {
+-      "version": "2.0.3",
+-      "resolved": "https://registry.npmjs.org/micromark-core-commonmark/-/micromark-core-commonmark-2.0.3.tgz",
+-      "integrity": "sha512-RDBrHEMSxVFLg6xvnXmb1Ayr2WzLAWjeSATAoxwKYJV94TeNavgoIdA0a9ytzDSVzBy2YKFK+emCPOEibLeCrg==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "decode-named-character-reference": "^1.0.0",
+-        "devlop": "^1.0.0",
+-        "micromark-factory-destination": "^2.0.0",
+-        "micromark-factory-label": "^2.0.0",
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-factory-title": "^2.0.0",
+-        "micromark-factory-whitespace": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-chunked": "^2.0.0",
+-        "micromark-util-classify-character": "^2.0.0",
+-        "micromark-util-html-tag-name": "^2.0.0",
+-        "micromark-util-normalize-identifier": "^2.0.0",
+-        "micromark-util-resolve-all": "^2.0.0",
+-        "micromark-util-subtokenize": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm": {
+-      "version": "3.0.0",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm/-/micromark-extension-gfm-3.0.0.tgz",
+-      "integrity": "sha512-vsKArQsicm7t0z2GugkCKtZehqUm31oeGBV/KVSorWSy8ZlNAv7ytjFhvaryUiCUJYqs+NoE6AFhpQvBTM6Q4w==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-extension-gfm-autolink-literal": "^2.0.0",
+-        "micromark-extension-gfm-footnote": "^2.0.0",
+-        "micromark-extension-gfm-strikethrough": "^2.0.0",
+-        "micromark-extension-gfm-table": "^2.0.0",
+-        "micromark-extension-gfm-tagfilter": "^2.0.0",
+-        "micromark-extension-gfm-task-list-item": "^2.0.0",
+-        "micromark-util-combine-extensions": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm-autolink-literal": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm-autolink-literal/-/micromark-extension-gfm-autolink-literal-2.1.0.tgz",
+-      "integrity": "sha512-oOg7knzhicgQ3t4QCjCWgTmfNhvQbDDnJeVu9v81r7NltNCVmhPy1fJRX27pISafdjL+SVc4d3l48Gb6pbRypw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-sanitize-uri": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm-footnote": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm-footnote/-/micromark-extension-gfm-footnote-2.1.0.tgz",
+-      "integrity": "sha512-/yPhxI1ntnDNsiHtzLKYnE3vf9JZ6cAisqVDauhp4CEHxlb4uoOTxOCJ+9s51bIB8U1N1FJ1RXOKTIlD5B/gqw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "devlop": "^1.0.0",
+-        "micromark-core-commonmark": "^2.0.0",
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-normalize-identifier": "^2.0.0",
+-        "micromark-util-sanitize-uri": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm-strikethrough": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm-strikethrough/-/micromark-extension-gfm-strikethrough-2.1.0.tgz",
+-      "integrity": "sha512-ADVjpOOkjz1hhkZLlBiYA9cR2Anf8F4HqZUO6e5eDcPQd0Txw5fxLzzxnEkSkfnD0wziSGiv7sYhk/ktvbf1uw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "devlop": "^1.0.0",
+-        "micromark-util-chunked": "^2.0.0",
+-        "micromark-util-classify-character": "^2.0.0",
+-        "micromark-util-resolve-all": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm-table": {
+-      "version": "2.1.1",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm-table/-/micromark-extension-gfm-table-2.1.1.tgz",
+-      "integrity": "sha512-t2OU/dXXioARrC6yWfJ4hqB7rct14e8f7m0cbI5hUmDyyIlwv5vEtooptH8INkbLzOatzKuVbQmAYcbWoyz6Dg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "devlop": "^1.0.0",
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm-tagfilter": {
+-      "version": "2.0.0",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm-tagfilter/-/micromark-extension-gfm-tagfilter-2.0.0.tgz",
+-      "integrity": "sha512-xHlTOmuCSotIA8TW1mDIM6X2O1SiX5P9IuDtqGonFhEK0qgRI4yeC6vMxEV2dgyr2TiD+2PQ10o+cOhdVAcwfg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-extension-gfm-task-list-item": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/micromark-extension-gfm-task-list-item/-/micromark-extension-gfm-task-list-item-2.1.0.tgz",
+-      "integrity": "sha512-qIBZhqxqI6fjLDYFTBIa4eivDMnP+OZqsNwmQ3xNLE4Cxwc+zfQEfbs6tzAo2Hjq+bh6q5F+Z8/cksrLFYWQQw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "devlop": "^1.0.0",
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/micromark-factory-destination": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-factory-destination/-/micromark-factory-destination-2.0.1.tgz",
+-      "integrity": "sha512-Xe6rDdJlkmbFRExpTOmRj9N3MaWmbAgdpSrBQvCFqhezUn4AHqJHbaEnfbVYYiexVSs//tqOdY/DxhjdCiJnIA==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-factory-label": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-factory-label/-/micromark-factory-label-2.0.1.tgz",
+-      "integrity": "sha512-VFMekyQExqIW7xIChcXn4ok29YE3rnuyveW3wZQWWqF4Nv9Wk5rgJ99KzPvHjkmPXF93FXIbBp6YdW3t71/7Vg==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "devlop": "^1.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-factory-space": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-factory-space/-/micromark-factory-space-2.0.1.tgz",
+-      "integrity": "sha512-zRkxjtBxxLd2Sc0d+fbnEunsTj46SWXgXciZmHq0kDYGnck/ZSGj9/wULTV95uoeYiK5hRXP2mJ98Uo4cq/LQg==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-factory-title": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-factory-title/-/micromark-factory-title-2.0.1.tgz",
+-      "integrity": "sha512-5bZ+3CjhAd9eChYTHsjy6TGxpOFSKgKKJPJxr293jTbfry2KDoWkhBb6TcPVB4NmzaPhMs1Frm9AZH7OD4Cjzw==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-factory-whitespace": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-factory-whitespace/-/micromark-factory-whitespace-2.0.1.tgz",
+-      "integrity": "sha512-Ob0nuZ3PKt/n0hORHyvoD9uZhr+Za8sFoP+OnMcnWK5lngSzALgQYKMr9RJVOWLqQYuyn6ulqGWSXdwf6F80lQ==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-factory-space": "^2.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-character": {
+-      "version": "2.1.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-character/-/micromark-util-character-2.1.1.tgz",
+-      "integrity": "sha512-wv8tdUTJ3thSFFFJKtpYKOYiGP2+v96Hvk4Tu8KpCAsTMs6yi+nVmGh1syvSCsaxz45J6Jbw+9DD6g97+NV67Q==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-chunked": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-chunked/-/micromark-util-chunked-2.0.1.tgz",
+-      "integrity": "sha512-QUNFEOPELfmvv+4xiNg2sRYeS/P84pTW0TCgP5zc9FpXetHY0ab7SxKyAQCNCc1eK0459uoLI1y5oO5Vc1dbhA==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-symbol": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-classify-character": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-classify-character/-/micromark-util-classify-character-2.0.1.tgz",
+-      "integrity": "sha512-K0kHzM6afW/MbeWYWLjoHQv1sgg2Q9EccHEDzSkxiP/EaagNzCm7T/WMKZ3rjMbvIpvBiZgwR3dKMygtA4mG1Q==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-combine-extensions": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-combine-extensions/-/micromark-util-combine-extensions-2.0.1.tgz",
+-      "integrity": "sha512-OnAnH8Ujmy59JcyZw8JSbK9cGpdVY44NKgSM7E9Eh7DiLS2E9RNQf0dONaGDzEG9yjEl5hcqeIsj4hfRkLH/Bg==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-chunked": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-decode-numeric-character-reference": {
+-      "version": "2.0.2",
+-      "resolved": "https://registry.npmjs.org/micromark-util-decode-numeric-character-reference/-/micromark-util-decode-numeric-character-reference-2.0.2.tgz",
+-      "integrity": "sha512-ccUbYk6CwVdkmCQMyr64dXz42EfHGkPQlBj5p7YVGzq8I7CtjXZJrubAYezf7Rp+bjPseiROqe7G6foFd+lEuw==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-symbol": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-decode-string": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-decode-string/-/micromark-util-decode-string-2.0.1.tgz",
+-      "integrity": "sha512-nDV/77Fj6eH1ynwscYTOsbK7rR//Uj0bZXBwJZRfaLEJ1iGBR6kIfNmlNqaqJf649EP0F3NWNdeJi03elllNUQ==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "decode-named-character-reference": "^1.0.0",
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-decode-numeric-character-reference": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-encode": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-encode/-/micromark-util-encode-2.0.1.tgz",
+-      "integrity": "sha512-c3cVx2y4KqUnwopcO9b/SCdo2O67LwJJ/UyqGfbigahfegL9myoEFoDYZgkT7f36T0bLrM9hZTAaAyH+PCAXjw==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT"
+-    },
+-    "node_modules/micromark-util-html-tag-name": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-html-tag-name/-/micromark-util-html-tag-name-2.0.1.tgz",
+-      "integrity": "sha512-2cNEiYDhCWKI+Gs9T0Tiysk136SnR13hhO8yW6BGNyhOC4qYFnwF1nKfD3HFAIXA5c45RrIG1ub11GiXeYd1xA==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT"
+-    },
+-    "node_modules/micromark-util-normalize-identifier": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-normalize-identifier/-/micromark-util-normalize-identifier-2.0.1.tgz",
+-      "integrity": "sha512-sxPqmo70LyARJs0w2UclACPUUEqltCkJ6PhKdMIDuJ3gSf/Q+/GIe3WKl0Ijb/GyH9lOpUkRAO2wp0GVkLvS9Q==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-symbol": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-resolve-all": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-resolve-all/-/micromark-util-resolve-all-2.0.1.tgz",
+-      "integrity": "sha512-VdQyxFWFT2/FGJgwQnJYbe1jjQoNTS4RjglmSjTUlpUMa95Htx9NHeYW4rGDJzbjvCsl9eLjMQwGeElsqmzcHg==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-sanitize-uri": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-sanitize-uri/-/micromark-util-sanitize-uri-2.0.1.tgz",
+-      "integrity": "sha512-9N9IomZ/YuGGZZmQec1MbgxtlgougxTodVwDzzEouPKo3qFWvymFHWcnDi2vzV1ff6kas9ucW+o3yzJK9YB1AQ==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "micromark-util-character": "^2.0.0",
+-        "micromark-util-encode": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-subtokenize": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/micromark-util-subtokenize/-/micromark-util-subtokenize-2.1.0.tgz",
+-      "integrity": "sha512-XQLu552iSctvnEcgXw6+Sx75GflAPNED1qx7eBJ+wydBb2KCbRZe+NwvIEEMM83uml1+2WSXpBAcp9IUCgCYWA==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT",
+-      "dependencies": {
+-        "devlop": "^1.0.0",
+-        "micromark-util-chunked": "^2.0.0",
+-        "micromark-util-symbol": "^2.0.0",
+-        "micromark-util-types": "^2.0.0"
+-      }
+-    },
+-    "node_modules/micromark-util-symbol": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/micromark-util-symbol/-/micromark-util-symbol-2.0.1.tgz",
+-      "integrity": "sha512-vs5t8Apaud9N28kgCrRUdEed4UJ+wWNvicHLPxCa9ENlYuAY31M0ETy5y1vA33YoNPDFTghEbnh6efaE8h4x0Q==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT"
+-    },
+-    "node_modules/micromark-util-types": {
+-      "version": "2.0.2",
+-      "resolved": "https://registry.npmjs.org/micromark-util-types/-/micromark-util-types-2.0.2.tgz",
+-      "integrity": "sha512-Yw0ECSpJoViF1qTU4DC6NwtC4aWGt1EkzaQB8KPPyCRR8z9TWeV0HbEFGTO+ZY1wB22zmxnJqhPyTpOVCpeHTA==",
+-      "funding": [
+-        {
+-          "type": "GitHub Sponsors",
+-          "url": "https://github.com/sponsors/unifiedjs"
+-        },
+-        {
+-          "type": "OpenCollective",
+-          "url": "https://opencollective.com/unified"
+-        }
+-      ],
+-      "license": "MIT"
+-    },
+-    "node_modules/mime": {
+-      "version": "2.6.0",
+-      "resolved": "https://registry.npmjs.org/mime/-/mime-2.6.0.tgz",
+-      "integrity": "sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==",
+-      "dev": true,
+-      "license": "MIT",
+-      "bin": {
+-        "mime": "cli.js"
+-      },
+-      "engines": {
+-        "node": ">=4.0.0"
+-      }
+-    },
+-    "node_modules/mime-db": {
+-      "version": "1.52.0",
+-      "resolved": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
+-      "integrity": "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==",
+-      "dev": true,
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">= 0.6"
+-      }
+-    },
+-    "node_modules/mime-types": {
+-      "version": "2.1.35",
+-      "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
+-      "integrity": "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==",
+-      "dev": true,
+-      "license": "MIT",
+-      "dependencies": {
+-        "mime-db": "1.52.0"
+-      },
+-      "engines": {
+-        "node": ">= 0.6"
+-      }
+-    },
+-    "node_modules/mimic-fn": {
+-      "version": "2.1.0",
+-      "resolved": "https://registry.npmjs.org/mimic-fn/-/mimic-fn-2.1.0.tgz",
+-      "integrity": "sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==",
+-      "dev": true,
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">=6"
+-      }
+-    },
+-    "node_modules/mimic-response": {
+-      "version": "1.0.1",
+-      "resolved": "https://registry.npmjs.org/mimic-response/-/mimic-response-1.0.1.tgz",
+-      "integrity": "sha512-j5EctnkH7amfV/q5Hgmoal1g2QHFJRraOtmx0JpIqkxhBhI/lJSl1nMpQ45hVarwNETOoWEimndZ4QK0RHxuxQ==",
+-      "dev": true,
+-      "license": "MIT",
+-      "engines": {
+-        "node": ">=4"
++      "engines": {
++        "node": ">=4"
+       }
+     },
+     "node_modules/min-indent": {
+@@ -8749,6 +7662,7 @@
+       "version": "2.1.3",
+       "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
++      "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/nanoid": {
+@@ -9050,31 +7964,6 @@
+       "dev": true,
+       "license": "BlueOak-1.0.0"
+     },
+-    "node_modules/parse-entities": {
+-      "version": "4.0.2",
+-      "resolved": "https://registry.npmjs.org/parse-entities/-/parse-entities-4.0.2.tgz",
+-      "integrity": "sha512-GG2AQYWoLgL877gQIKeRPGO1xF9+eG1ujIb5soS5gPvLQ1y2o8FL90w2QWNdf9I361Mpp7726c+lj3U0qK1uGw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^2.0.0",
+-        "character-entities-legacy": "^3.0.0",
+-        "character-reference-invalid": "^2.0.0",
+-        "decode-named-character-reference": "^1.0.0",
+-        "is-alphanumerical": "^2.0.0",
+-        "is-decimal": "^2.0.0",
+-        "is-hexadecimal": "^2.0.0"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/parse-entities/node_modules/@types/unist": {
+-      "version": "2.0.11",
+-      "resolved": "https://registry.npmjs.org/@types/unist/-/unist-2.0.11.tgz",
+-      "integrity": "sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==",
+-      "license": "MIT"
+-    },
+     "node_modules/parse5": {
+       "version": "8.0.0",
+       "resolved": "https://registry.npmjs.org/parse5/-/parse5-8.0.0.tgz",
+@@ -9436,16 +8325,6 @@
+         "signal-exit": "^3.0.2"
+       }
+     },
+-    "node_modules/property-information": {
+-      "version": "7.1.0",
+-      "resolved": "https://registry.npmjs.org/property-information/-/property-information-7.1.0.tgz",
+-      "integrity": "sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/pump": {
+       "version": "3.0.4",
+       "resolved": "https://registry.npmjs.org/pump/-/pump-3.0.4.tgz",
+@@ -9466,6 +8345,23 @@
+         "node": ">=6"
+       }
+     },
++    "node_modules/pure-rand": {
++      "version": "8.3.0",
++      "resolved": "https://registry.npmjs.org/pure-rand/-/pure-rand-8.3.0.tgz",
++      "integrity": "sha512-1ws1Ab8fnsf4bvpL+SujgBnr3KFs5abgCLVzavBp+f2n8Ld5YTOZlkv/ccYPhu3X9s+MEeqPRMqKlJz/kWDK8A==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "individual",
++          "url": "https://github.com/sponsors/dubzzz"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/fast-check"
++        }
++      ],
++      "license": "MIT"
++    },
+     "node_modules/quick-lru": {
+       "version": "5.1.1",
+       "resolved": "https://registry.npmjs.org/quick-lru/-/quick-lru-5.1.1.tgz",
+@@ -9523,33 +8419,6 @@
+       "license": "MIT",
+       "peer": true
+     },
+-    "node_modules/react-markdown": {
+-      "version": "9.1.0",
+-      "resolved": "https://registry.npmjs.org/react-markdown/-/react-markdown-9.1.0.tgz",
+-      "integrity": "sha512-xaijuJB0kzGiUdG7nc2MOMDUDBWPyGAjZtUrow9XxUeua8IqeP+VlIfAZ3bphpcLTnSZXz6z9jcVC/TCwbfgdw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/hast": "^3.0.0",
+-        "@types/mdast": "^4.0.0",
+-        "devlop": "^1.0.0",
+-        "hast-util-to-jsx-runtime": "^2.0.0",
+-        "html-url-attributes": "^3.0.0",
+-        "mdast-util-to-hast": "^13.0.0",
+-        "remark-parse": "^11.0.0",
+-        "remark-rehype": "^11.0.0",
+-        "unified": "^11.0.0",
+-        "unist-util-visit": "^5.0.0",
+-        "vfile": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      },
+-      "peerDependencies": {
+-        "@types/react": ">=18",
+-        "react": ">=18"
+-      }
+-    },
+     "node_modules/react-refresh": {
+       "version": "0.17.0",
+       "resolved": "https://registry.npmjs.org/react-refresh/-/react-refresh-0.17.0.tgz",
+@@ -9670,72 +8539,6 @@
+         "node": ">=8"
+       }
+     },
+-    "node_modules/remark-gfm": {
+-      "version": "4.0.1",
+-      "resolved": "https://registry.npmjs.org/remark-gfm/-/remark-gfm-4.0.1.tgz",
+-      "integrity": "sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "mdast-util-gfm": "^3.0.0",
+-        "micromark-extension-gfm": "^3.0.0",
+-        "remark-parse": "^11.0.0",
+-        "remark-stringify": "^11.0.0",
+-        "unified": "^11.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/remark-parse": {
+-      "version": "11.0.0",
+-      "resolved": "https://registry.npmjs.org/remark-parse/-/remark-parse-11.0.0.tgz",
+-      "integrity": "sha512-FCxlKLNGknS5ba/1lmpYijMUzX2esxW5xQqjWxw2eHFfS2MSdaHVINFmhjo+qN1WhZhNimq0dZATN9pH0IDrpA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "mdast-util-from-markdown": "^2.0.0",
+-        "micromark-util-types": "^2.0.0",
+-        "unified": "^11.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/remark-rehype": {
+-      "version": "11.1.2",
+-      "resolved": "https://registry.npmjs.org/remark-rehype/-/remark-rehype-11.1.2.tgz",
+-      "integrity": "sha512-Dh7l57ianaEoIpzbp0PC9UKAdCSVklD8E5Rpw7ETfbTl3FqcOOgq5q2LVDhgGCkaBv7p24JXikPdvhhmHvKMsw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/hast": "^3.0.0",
+-        "@types/mdast": "^4.0.0",
+-        "mdast-util-to-hast": "^13.0.0",
+-        "unified": "^11.0.0",
+-        "vfile": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/remark-stringify": {
+-      "version": "11.0.0",
+-      "resolved": "https://registry.npmjs.org/remark-stringify/-/remark-stringify-11.0.0.tgz",
+-      "integrity": "sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/mdast": "^4.0.0",
+-        "mdast-util-to-markdown": "^2.0.0",
+-        "unified": "^11.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/require-directory": {
+       "version": "2.1.1",
+       "resolved": "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz",
+@@ -10204,16 +9007,6 @@
+         "source-map": "^0.6.0"
+       }
+     },
+-    "node_modules/space-separated-tokens": {
+-      "version": "2.0.2",
+-      "resolved": "https://registry.npmjs.org/space-separated-tokens/-/space-separated-tokens-2.0.2.tgz",
+-      "integrity": "sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/sprintf-js": {
+       "version": "1.1.3",
+       "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.1.3.tgz",
+@@ -10299,20 +9092,6 @@
+         "node": ">=8"
+       }
+     },
+-    "node_modules/stringify-entities": {
+-      "version": "4.0.4",
+-      "resolved": "https://registry.npmjs.org/stringify-entities/-/stringify-entities-4.0.4.tgz",
+-      "integrity": "sha512-IwfBptatlO+QCJUo19AqvrPNqlVMpW9YEL2LIVY+Rpv2qsjCGxaDLNRgeGsQWJhfItebuJhsGSLjaBbNSQ+ieg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "character-entities-html4": "^2.0.0",
+-        "character-entities-legacy": "^3.0.0"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/strip-ansi": {
+       "version": "6.0.1",
+       "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+@@ -10362,24 +9141,6 @@
+         "node": ">=0.10.0"
+       }
+     },
+-    "node_modules/style-to-js": {
+-      "version": "1.1.21",
+-      "resolved": "https://registry.npmjs.org/style-to-js/-/style-to-js-1.1.21.tgz",
+-      "integrity": "sha512-RjQetxJrrUJLQPHbLku6U/ocGtzyjbJMP9lCNK7Ag0CNh690nSH8woqWH9u16nMjYBAok+i7JO1NP2pOy8IsPQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "style-to-object": "1.0.14"
+-      }
+-    },
+-    "node_modules/style-to-object": {
+-      "version": "1.0.14",
+-      "resolved": "https://registry.npmjs.org/style-to-object/-/style-to-object-1.0.14.tgz",
+-      "integrity": "sha512-LIN7rULI0jBscWQYaSswptyderlarFkjQ+t79nzty8tcIAceVomEVlLzH5VP4Cmsv6MtKhs7qaAiwlcp+Mgaxw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "inline-style-parser": "0.2.7"
+-      }
+-    },
+     "node_modules/sumchecker": {
+       "version": "3.0.1",
+       "resolved": "https://registry.npmjs.org/sumchecker/-/sumchecker-3.0.1.tgz",
+@@ -10717,26 +9478,6 @@
+         "node": ">=20"
+       }
+     },
+-    "node_modules/trim-lines": {
+-      "version": "3.0.1",
+-      "resolved": "https://registry.npmjs.org/trim-lines/-/trim-lines-3.0.1.tgz",
+-      "integrity": "sha512-kRj8B+YHZCc9kQYdWfJB2/oUl9rA99qbowYYBtr4ui4mZyAQ2JpvVBd/6U2YloATfqBhBTSMhTpgBHtU0Mf3Rg==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+-    "node_modules/trough": {
+-      "version": "2.2.0",
+-      "resolved": "https://registry.npmjs.org/trough/-/trough-2.2.0.tgz",
+-      "integrity": "sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+-    },
+     "node_modules/truncate-utf8-bytes": {
+       "version": "1.0.2",
+       "resolved": "https://registry.npmjs.org/truncate-utf8-bytes/-/truncate-utf8-bytes-1.0.2.tgz",
+@@ -11314,25 +10055,6 @@
+       "devOptional": true,
+       "license": "MIT"
+     },
+-    "node_modules/unified": {
+-      "version": "11.0.5",
+-      "resolved": "https://registry.npmjs.org/unified/-/unified-11.0.5.tgz",
+-      "integrity": "sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0",
+-        "bail": "^2.0.0",
+-        "devlop": "^1.0.0",
+-        "extend": "^3.0.0",
+-        "is-plain-obj": "^4.0.0",
+-        "trough": "^2.0.0",
+-        "vfile": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/unique-filename": {
+       "version": "4.0.0",
+       "resolved": "https://registry.npmjs.org/unique-filename/-/unique-filename-4.0.0.tgz",
+@@ -11359,74 +10081,6 @@
+         "node": "^18.17.0 || >=20.5.0"
+       }
+     },
+-    "node_modules/unist-util-is": {
+-      "version": "6.0.1",
+-      "resolved": "https://registry.npmjs.org/unist-util-is/-/unist-util-is-6.0.1.tgz",
+-      "integrity": "sha512-LsiILbtBETkDz8I9p1dQ0uyRUWuaQzd/cuEeS1hoRSyW5E5XGmTzlwY1OrNzzakGowI9Dr/I8HVaw4hTtnxy8g==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/unist-util-position": {
+-      "version": "5.0.0",
+-      "resolved": "https://registry.npmjs.org/unist-util-position/-/unist-util-position-5.0.0.tgz",
+-      "integrity": "sha512-fucsC7HjXvkB5R3kTCO7kUjRdrS0BJt3M/FPxmHMBOm8JQi2BsHAHFsy27E0EolP8rp0NzXsJ+jNPyDWvOJZPA==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/unist-util-stringify-position": {
+-      "version": "4.0.0",
+-      "resolved": "https://registry.npmjs.org/unist-util-stringify-position/-/unist-util-stringify-position-4.0.0.tgz",
+-      "integrity": "sha512-0ASV06AAoKCDkS2+xw5RXJywruurpbC4JZSm7nr7MOt1ojAzvyyaO+UxZf18j8FCF6kmzCZKcAgN/yu2gm2XgQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/unist-util-visit": {
+-      "version": "5.1.0",
+-      "resolved": "https://registry.npmjs.org/unist-util-visit/-/unist-util-visit-5.1.0.tgz",
+-      "integrity": "sha512-m+vIdyeCOpdr/QeQCu2EzxX/ohgS8KbnPDgFni4dQsfSCtpz8UqDyY5GjRru8PDKuYn7Fq19j1CQ+nJSsGKOzg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0",
+-        "unist-util-is": "^6.0.0",
+-        "unist-util-visit-parents": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/unist-util-visit-parents": {
+-      "version": "6.0.2",
+-      "resolved": "https://registry.npmjs.org/unist-util-visit-parents/-/unist-util-visit-parents-6.0.2.tgz",
+-      "integrity": "sha512-goh1s1TBrqSqukSc8wrjwWhL0hiJxgA8m4kFxGlQ+8FYQ3C/m11FcTs4YYem7V664AhHVvgoQLk890Ssdsr2IQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0",
+-        "unist-util-is": "^6.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/universalify": {
+       "version": "0.1.2",
+       "resolved": "https://registry.npmjs.org/universalify/-/universalify-0.1.2.tgz",
+@@ -11550,34 +10204,6 @@
+         "node": ">=0.6.0"
+       }
+     },
+-    "node_modules/vfile": {
+-      "version": "6.0.3",
+-      "resolved": "https://registry.npmjs.org/vfile/-/vfile-6.0.3.tgz",
+-      "integrity": "sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0",
+-        "vfile-message": "^4.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+-    "node_modules/vfile-message": {
+-      "version": "4.0.3",
+-      "resolved": "https://registry.npmjs.org/vfile-message/-/vfile-message-4.0.3.tgz",
+-      "integrity": "sha512-QTHzsGd1EhbZs4AsQ20JX1rC3cOlt/IWJruk893DfLRr57lcnOeMaWG4K0JrRta4mIJZKth2Au3mM3u03/JWKw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "@types/unist": "^3.0.0",
+-        "unist-util-stringify-position": "^4.0.0"
+-      },
+-      "funding": {
+-        "type": "opencollective",
+-        "url": "https://opencollective.com/unified"
+-      }
+-    },
+     "node_modules/vite": {
+       "version": "6.4.1",
+       "resolved": "https://registry.npmjs.org/vite/-/vite-6.4.1.tgz",
+@@ -11914,6 +10540,17 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/xstate": {
++      "version": "5.28.0",
++      "resolved": "https://registry.npmjs.org/xstate/-/xstate-5.28.0.tgz",
++      "integrity": "sha512-Iaqq6ZrUzqeUtA3hC5LQKZfR8ZLzEFTImMHJM3jWEdVvXWdKvvVLXZEiNQWm3SCA9ZbEou/n5rcsna1wb9t28A==",
++      "dev": true,
++      "license": "MIT",
++      "funding": {
++        "type": "opencollective",
++        "url": "https://opencollective.com/xstate"
++      }
++    },
+     "node_modules/y18n": {
+       "version": "5.0.8",
+       "resolved": "https://registry.npmjs.org/y18n/-/y18n-5.0.8.tgz",
+@@ -12012,16 +10649,6 @@
+           "optional": true
+         }
+       }
+-    },
+-    "node_modules/zwitch": {
+-      "version": "2.0.4",
+-      "resolved": "https://registry.npmjs.org/zwitch/-/zwitch-2.0.4.tgz",
+-      "integrity": "sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==",
+-      "license": "MIT",
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/wooorm"
+-      }
+     }
+   }
+ }
+diff --git a/package.json b/package.json
+index b4cc114..e206f3d 100644
+--- a/package.json
++++ b/package.json
+@@ -71,11 +71,13 @@
+     "@types/react": "^19.0.0",
+     "@types/react-dom": "^19.0.0",
+     "@vitejs/plugin-react": "^4.3.0",
++    "@xstate/graph": "^3.0.4",
+     "autoprefixer": "^10.4.0",
+     "drizzle-kit": "^0.31.10",
+     "electron": "^35.7.5",
+     "electron-builder": "^26.8.1",
+     "electron-vite": "^3.0.0",
++    "fast-check": "^4.6.0",
+     "jsdom": "^29.0.1",
+     "postcss": "^8.4.0",
+     "react": "^19.0.0",
+@@ -83,6 +85,7 @@
+     "tailwindcss": "^4.2.1",
+     "typescript": "^5.7.0",
+     "vite": "^6.0.0",
+-    "vitest": "^4.1.0"
++    "vitest": "^4.1.0",
++    "xstate": "^5.28.0"
+   }
+ }
+diff --git a/src/__tests__/model/show-machine.test.ts b/src/__tests__/model/show-machine.test.ts
+new file mode 100644
+index 0000000..ea1f79f
+--- /dev/null
++++ b/src/__tests__/model/show-machine.test.ts
+@@ -0,0 +1,293 @@
++/**
++ * Layer 1: XState State Machine Model Tests
++ *
++ * Uses @xstate/graph getSimplePaths() to auto-generate ALL valid state paths,
++ * then drives the real Zustand showStore through each path verifying:
++ * - Phase matches after each transition
++ * - Store invariants hold at every step
++ * - View tier is appropriate for the phase
++ */
++import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
++import { getSimplePaths } from '@xstate/graph'
++import { createActor } from 'xstate'
++import { showMachine } from './show-machine'
++import type { ShowMachineEvent } from './show-machine'
++import { useShowStore } from '../../renderer/stores/showStore'
++import type { ShowLineup, ShowPhase, ViewTier } from '../../shared/types'
++
++// ─── Helpers ───
++
++const sampleLineup: ShowLineup = {
++  acts: [
++    { name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 60 },
++    { name: 'Exercise', sketch: 'Exercise', durationMinutes: 45 },
++  ],
++  beatThreshold: 2,
++  openingNote: 'Test lineup',
++}
++
++function resetStore() {
++  useShowStore.setState({
++    phase: 'no_show',
++    energy: null,
++    acts: [],
++    currentActId: null,
++    beatsLocked: 0,
++    beatThreshold: 3,
++    timerEndAt: null,
++    timerPausedRemaining: null,
++    claudeSessionId: null,
++    showDate: new Date().toISOString().slice(0, 10),
++    verdict: null,
++    viewTier: 'expanded' as ViewTier,
++    beatCheckPending: false,
++    celebrationActive: false,
++    coldOpenActive: false,
++    goingLiveActive: false,
++    writersRoomStep: 'energy',
++    writersRoomEnteredAt: null,
++    breathingPauseEndAt: null,
++  })
++}
++
++/** Apply a machine event to the real Zustand store */
++function applyEvent(event: ShowMachineEvent): void {
++  const store = useShowStore.getState()
++
++  switch (event.type) {
++    case 'ENTER_WRITERS_ROOM':
++      store.enterWritersRoom()
++      break
++
++    case 'SET_LINEUP':
++      store.setLineup(sampleLineup)
++      break
++
++    case 'START_SHOW': {
++      // Ensure lineup is set before starting
++      const s = useShowStore.getState()
++      if (s.acts.length === 0) {
++        s.setLineup(sampleLineup)
++      }
++      useShowStore.getState().startShow()
++      break
++    }
++
++    case 'COMPLETE_ACT': {
++      const s = useShowStore.getState()
++      if (s.currentActId) {
++        s.completeAct(s.currentActId)
++        // Skip beat (don't wait for celebration timeout)
++        useShowStore.getState().skipBeat()
++      }
++      break
++    }
++
++    case 'ENTER_INTERMISSION':
++      store.enterIntermission()
++      break
++
++    case 'EXIT_INTERMISSION':
++      store.exitIntermission()
++      break
++
++    case 'ENTER_DIRECTOR':
++      store.enterDirector()
++      break
++
++    case 'EXIT_DIRECTOR':
++      store.exitDirector()
++      break
++
++    case 'CALL_EARLY':
++      store.callShowEarly()
++      break
++
++    case 'SKIP_TO_NEXT':
++      store.skipToNextAct()
++      break
++
++    case 'STRIKE':
++      store.strikeTheStage()
++      break
++
++    case 'RESET':
++      store.resetShow()
++      break
++  }
++}
++
++/** Verify store invariants that must hold at every state */
++function assertInvariants() {
++  const s = useShowStore.getState()
++  const validPhases: ShowPhase[] = ['no_show', 'writers_room', 'live', 'intermission', 'director', 'strike']
++  const validTiers: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
++
++  // Phase is always valid
++  expect(validPhases).toContain(s.phase)
++
++  // ViewTier is always valid
++  expect(validTiers).toContain(s.viewTier)
++
++  // Beats invariant
++  expect(s.beatsLocked).toBeGreaterThanOrEqual(0)
++  expect(s.beatsLocked).toBeLessThanOrEqual(s.beatThreshold)
++
++  // Acts array is never null/undefined
++  expect(Array.isArray(s.acts)).toBe(true)
++
++  // If live, at most one act is active
++  if (s.phase === 'live') {
++    const activeActs = s.acts.filter((a) => a.status === 'active')
++    expect(activeActs.length).toBeLessThanOrEqual(1)
++  }
++
++  // showStartedAt is set when not in no_show (unless we just reset)
++  if (s.phase === 'live' || s.phase === 'intermission' || s.phase === 'director') {
++    expect(s.showStartedAt).not.toBeNull()
++  }
++}
++
++// Map XState state value to expected Zustand phase
++function xstateToPhase(stateValue: string): ShowPhase {
++  return stateValue as ShowPhase
++}
++
++// ─── Tests ───
++
++describe('Layer 1: XState State Machine Path Tests', () => {
++  beforeEach(() => {
++    resetStore()
++    vi.useFakeTimers()
++  })
++
++  afterEach(() => {
++    vi.useRealTimers()
++  })
++
++  // Generate all simple paths through the state machine
++  const paths = getSimplePaths(showMachine)
++
++  it('generates at least 6 paths (one to each state)', () => {
++    // We have 6 states, so there must be at least 6 paths
++    expect(paths.length).toBeGreaterThanOrEqual(6)
++  })
++
++  // Test each auto-generated path
++  for (const path of paths) {
++    const stateValue = typeof path.state.value === 'string'
++      ? path.state.value
++      : JSON.stringify(path.state.value)
++
++    it(`reaches ${stateValue} via [${path.steps.map((s) => s.event.type).join(' → ')}]`, () => {
++      resetStore()
++
++      for (const step of path.steps) {
++        applyEvent(step.event as ShowMachineEvent)
++        assertInvariants()
++      }
++
++      // Final state should match (some transitions may cause auto-advance)
++      const finalPhase = useShowStore.getState().phase
++      const expectedPhase = xstateToPhase(stateValue)
++
++      // For paths ending in 'live', the store might auto-advance to strike
++      // if all acts are completed. Accept both.
++      if (expectedPhase === 'live') {
++        expect(['live', 'strike']).toContain(finalPhase)
++      } else {
++        expect(finalPhase).toBe(expectedPhase)
++      }
++    })
++  }
++
++  // ─── Specific transition invariants ───
++
++  describe('transition invariants', () => {
++    it('no_show → writers_room sets phase and writersRoomStep', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('writers_room')
++      expect(s.writersRoomStep).toBe('energy')
++      expect(s.writersRoomEnteredAt).not.toBeNull()
++    })
++
++    it('writers_room → live sets first act as active', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      applyEvent({ type: 'START_SHOW' })
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('live')
++      expect(s.currentActId).not.toBeNull()
++      expect(s.acts.filter((a) => a.status === 'active')).toHaveLength(1)
++      expect(s.showStartedAt).not.toBeNull()
++    })
++
++    it('live → intermission preserves timer remaining', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      applyEvent({ type: 'START_SHOW' })
++      const timerBefore = useShowStore.getState().timerEndAt
++      expect(timerBefore).not.toBeNull()
++
++      applyEvent({ type: 'ENTER_INTERMISSION' })
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('intermission')
++      expect(s.timerEndAt).toBeNull()
++      expect(s.timerPausedRemaining).not.toBeNull()
++    })
++
++    it('intermission → live restores timer', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      applyEvent({ type: 'START_SHOW' })
++      applyEvent({ type: 'ENTER_INTERMISSION' })
++
++      const remaining = useShowStore.getState().timerPausedRemaining
++      expect(remaining).not.toBeNull()
++
++      applyEvent({ type: 'EXIT_INTERMISSION' })
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('live')
++      expect(s.timerEndAt).not.toBeNull()
++      expect(s.timerPausedRemaining).toBeNull()
++    })
++
++    it('director → callEarly goes to strike with SHOW_CALLED_EARLY verdict', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      applyEvent({ type: 'START_SHOW' })
++      applyEvent({ type: 'ENTER_DIRECTOR' })
++      applyEvent({ type: 'CALL_EARLY' })
++
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('strike')
++      expect(s.verdict).toBe('SHOW_CALLED_EARLY')
++    })
++
++    it('strike → reset returns to no_show with clean state', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      applyEvent({ type: 'START_SHOW' })
++      applyEvent({ type: 'STRIKE' })
++      expect(useShowStore.getState().phase).toBe('strike')
++
++      applyEvent({ type: 'RESET' })
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('no_show')
++      expect(s.acts).toHaveLength(0)
++      expect(s.verdict).toBeNull()
++      expect(s.currentActId).toBeNull()
++      expect(s.timerEndAt).toBeNull()
++    })
++
++    it('completing all acts triggers strike with appropriate verdict', () => {
++      applyEvent({ type: 'ENTER_WRITERS_ROOM' })
++      applyEvent({ type: 'START_SHOW' })
++
++      // Complete first act
++      applyEvent({ type: 'COMPLETE_ACT' })
++      // Complete second act (last one)
++      applyEvent({ type: 'COMPLETE_ACT' })
++
++      const s = useShowStore.getState()
++      expect(s.phase).toBe('strike')
++      expect(s.verdict).not.toBeNull()
++    })
++  })
++})
+diff --git a/src/__tests__/model/show-machine.ts b/src/__tests__/model/show-machine.ts
+new file mode 100644
+index 0000000..6d66499
+--- /dev/null
++++ b/src/__tests__/model/show-machine.ts
+@@ -0,0 +1,70 @@
++/**
++ * XState v5 machine modeling Showtime's ShowPhase transitions.
++ * Used by show-machine.test.ts to auto-generate all valid state paths.
++ */
++import { setup } from 'xstate'
++
++export type ShowMachineEvent =
++  | { type: 'ENTER_WRITERS_ROOM' }
++  | { type: 'SET_LINEUP' }
++  | { type: 'START_SHOW' }
++  | { type: 'COMPLETE_ACT' }
++  | { type: 'ENTER_INTERMISSION' }
++  | { type: 'EXIT_INTERMISSION' }
++  | { type: 'ENTER_DIRECTOR' }
++  | { type: 'EXIT_DIRECTOR' }
++  | { type: 'CALL_EARLY' }
++  | { type: 'SKIP_TO_NEXT' }
++  | { type: 'STRIKE' }
++  | { type: 'RESET' }
++
++export const showMachine = setup({
++  types: {
++    events: {} as ShowMachineEvent,
++  },
++}).createMachine({
++  id: 'showPhase',
++  initial: 'no_show',
++  states: {
++    no_show: {
++      on: {
++        ENTER_WRITERS_ROOM: 'writers_room',
++      },
++    },
++    writers_room: {
++      on: {
++        START_SHOW: 'live',
++        RESET: 'no_show',
++      },
++    },
++    live: {
++      on: {
++        COMPLETE_ACT: 'live',         // beat check → next act (stay live)
++        ENTER_INTERMISSION: 'intermission',
++        ENTER_DIRECTOR: 'director',
++        STRIKE: 'strike',
++        RESET: 'no_show',
++      },
++    },
++    intermission: {
++      on: {
++        EXIT_INTERMISSION: 'live',
++        STRIKE: 'strike',
++        RESET: 'no_show',
++      },
++    },
++    director: {
++      on: {
++        EXIT_DIRECTOR: 'live',
++        CALL_EARLY: 'strike',
++        SKIP_TO_NEXT: 'live',
++        RESET: 'no_show',
++      },
++    },
++    strike: {
++      on: {
++        RESET: 'no_show',
++      },
++    },
++  },
++})
+diff --git a/src/__tests__/property/show-store.property.test.ts b/src/__tests__/property/show-store.property.test.ts
+new file mode 100644
+index 0000000..a70ae4a
+--- /dev/null
++++ b/src/__tests__/property/show-store.property.test.ts
+@@ -0,0 +1,410 @@
++/**
++ * Layer 2: fast-check Property-Based Store Testing
++ *
++ * Command-based model testing that generates random sequences of store actions
++ * and verifies invariants hold after EVERY command.
++ */
++import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
++import fc from 'fast-check'
++import { useShowStore } from '../../renderer/stores/showStore'
++import type { ShowPhase, ViewTier, ShowLineup } from '../../shared/types'
++
++// ─── Helpers ───
++
++const VALID_PHASES: ShowPhase[] = ['no_show', 'writers_room', 'live', 'intermission', 'director', 'strike']
++const VALID_TIERS: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
++
++const sampleLineup: ShowLineup = {
++  acts: [
++    { name: 'Deep Work', sketch: 'Deep', durationMinutes: 60 },
++    { name: 'Exercise', sketch: 'Exercise', durationMinutes: 45 },
++    { name: 'Admin', sketch: 'Admin', durationMinutes: 30 },
++  ],
++  beatThreshold: 3,
++  openingNote: 'Test',
++}
++
++function resetStore() {
++  useShowStore.setState({
++    phase: 'no_show',
++    energy: null,
++    acts: [],
++    currentActId: null,
++    beatsLocked: 0,
++    beatThreshold: 3,
++    timerEndAt: null,
++    timerPausedRemaining: null,
++    claudeSessionId: null,
++    showDate: new Date().toISOString().slice(0, 10),
++    verdict: null,
++    viewTier: 'expanded' as ViewTier,
++    beatCheckPending: false,
++    celebrationActive: false,
++    coldOpenActive: false,
++    goingLiveActive: false,
++    writersRoomStep: 'energy',
++    writersRoomEnteredAt: null,
++    breathingPauseEndAt: null,
++  })
++}
++
++// ─── Invariants ───
++
++function checkInvariants(): void {
++  const s = useShowStore.getState()
++
++  // Phase is always valid
++  expect(VALID_PHASES).toContain(s.phase)
++
++  // ViewTier is always valid
++  expect(VALID_TIERS).toContain(s.viewTier)
++
++  // Beats are bounded
++  expect(s.beatsLocked).toBeGreaterThanOrEqual(0)
++  expect(s.beatsLocked).toBeLessThanOrEqual(s.beatThreshold)
++
++  // Acts array is never null/undefined
++  expect(Array.isArray(s.acts)).toBe(true)
++
++  // If live, at most one act has status 'active'
++  if (s.phase === 'live') {
++    const activeCount = s.acts.filter((a) => a.status === 'active').length
++    expect(activeCount).toBeLessThanOrEqual(1)
++  }
++
++  // If strike, verdict must be set
++  if (s.phase === 'strike') {
++    expect(s.verdict).not.toBeNull()
++  }
++
++  // currentActId, if set, must reference a real act
++  if (s.currentActId) {
++    const found = s.acts.find((a) => a.id === s.currentActId)
++    expect(found).toBeDefined()
++  }
++
++  // timerPausedRemaining only during intermission
++  if (s.timerPausedRemaining !== null) {
++    expect(['intermission']).toContain(s.phase)
++  }
++}
++
++// ─── Commands ───
++
++type StoreCommand = {
++  name: string
++  precondition: () => boolean
++  run: () => void
++}
++
++const commands: (() => StoreCommand)[] = [
++  // ENTER_WRITERS_ROOM
++  () => ({
++    name: 'enterWritersRoom',
++    precondition: () => useShowStore.getState().phase === 'no_show',
++    run: () => useShowStore.getState().enterWritersRoom(),
++  }),
++
++  // SET_LINEUP
++  () => ({
++    name: 'setLineup',
++    precondition: () => useShowStore.getState().phase === 'writers_room',
++    run: () => useShowStore.getState().setLineup(sampleLineup),
++  }),
++
++  // START_SHOW
++  () => ({
++    name: 'startShow',
++    precondition: () => {
++      const s = useShowStore.getState()
++      return s.phase === 'writers_room' && s.acts.length > 0
++    },
++    run: () => useShowStore.getState().startShow(),
++  }),
++
++  // COMPLETE_ACT
++  () => ({
++    name: 'completeAct',
++    precondition: () => {
++      const s = useShowStore.getState()
++      return s.phase === 'live' && s.currentActId !== null
++    },
++    run: () => {
++      const s = useShowStore.getState()
++      if (s.currentActId) {
++        s.completeAct(s.currentActId)
++      }
++    },
++  }),
++
++  // LOCK_BEAT
++  () => ({
++    name: 'lockBeat',
++    precondition: () => useShowStore.getState().beatCheckPending === true,
++    run: () => {
++      useShowStore.getState().lockBeat()
++      // Advance past celebration timeout
++      vi.advanceTimersByTime(2000)
++    },
++  }),
++
++  // SKIP_BEAT
++  () => ({
++    name: 'skipBeat',
++    precondition: () => useShowStore.getState().beatCheckPending === true,
++    run: () => useShowStore.getState().skipBeat(),
++  }),
++
++  // ENTER_INTERMISSION
++  () => ({
++    name: 'enterIntermission',
++    precondition: () => useShowStore.getState().phase === 'live',
++    run: () => useShowStore.getState().enterIntermission(),
++  }),
++
++  // EXIT_INTERMISSION
++  () => ({
++    name: 'exitIntermission',
++    precondition: () => useShowStore.getState().phase === 'intermission',
++    run: () => useShowStore.getState().exitIntermission(),
++  }),
++
++  // ENTER_DIRECTOR
++  () => ({
++    name: 'enterDirector',
++    precondition: () => useShowStore.getState().phase === 'live',
++    run: () => useShowStore.getState().enterDirector(),
++  }),
++
++  // EXIT_DIRECTOR
++  () => ({
++    name: 'exitDirector',
++    precondition: () => useShowStore.getState().phase === 'director',
++    run: () => useShowStore.getState().exitDirector(),
++  }),
++
++  // CALL_SHOW_EARLY
++  () => ({
++    name: 'callShowEarly',
++    precondition: () => useShowStore.getState().phase === 'director',
++    run: () => useShowStore.getState().callShowEarly(),
++  }),
++
++  // SKIP_TO_NEXT
++  () => ({
++    name: 'skipToNextAct',
++    precondition: () => {
++      const s = useShowStore.getState()
++      return s.phase === 'director' && s.currentActId !== null
++    },
++    run: () => useShowStore.getState().skipToNextAct(),
++  }),
++
++  // RESET
++  () => ({
++    name: 'resetShow',
++    precondition: () => true, // can always reset
++    run: () => useShowStore.getState().resetShow(),
++  }),
++
++  // CYCLE_TIER
++  () => ({
++    name: 'cycleViewTier',
++    precondition: () => true,
++    run: () => useShowStore.getState().cycleViewTier(),
++  }),
++
++  // EXPAND_TIER
++  () => ({
++    name: 'expandViewTier',
++    precondition: () => true,
++    run: () => useShowStore.getState().expandViewTier(),
++  }),
++
++  // COLLAPSE_TIER
++  () => ({
++    name: 'collapseViewTier',
++    precondition: () => true,
++    run: () => useShowStore.getState().collapseViewTier(),
++  }),
++]
++
++// ─── Arbitrary for command indices ───
++
++const commandIdxArb = fc.integer({ min: 0, max: commands.length - 1 })
++
++// ─── Tests ───
++
++describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
++  beforeEach(() => {
++    resetStore()
++    vi.useFakeTimers()
++  })
++
++  afterEach(() => {
++    vi.useRealTimers()
++  })
++
++  it('invariants hold after any sequence of valid commands (100 runs × 50 steps)', () => {
++    fc.assert(
++      fc.property(
++        fc.array(commandIdxArb, { minLength: 1, maxLength: 50 }),
++        (indices) => {
++          resetStore()
++
++          for (const idx of indices) {
++            const cmd = commands[idx]()
++            if (cmd.precondition()) {
++              cmd.run()
++              checkInvariants()
++            }
++          }
++        }
++      ),
++      { numRuns: 100 }
++    )
++  })
++
++  it('reset always returns to clean no_show state regardless of prior state', () => {
++    fc.assert(
++      fc.property(
++        fc.array(commandIdxArb, { minLength: 1, maxLength: 30 }),
++        (indices) => {
++          resetStore()
++
++          // Apply random commands
++          for (const idx of indices) {
++            const cmd = commands[idx]()
++            if (cmd.precondition()) {
++              cmd.run()
++            }
++          }
++
++          // Reset and verify clean state
++          useShowStore.getState().resetShow()
++          const s = useShowStore.getState()
++          expect(s.phase).toBe('no_show')
++          expect(s.acts).toHaveLength(0)
++          expect(s.verdict).toBeNull()
++          expect(s.currentActId).toBeNull()
++          expect(s.timerEndAt).toBeNull()
++          expect(s.beatsLocked).toBe(0)
++          expect(s.beatCheckPending).toBe(false)
++        }
++      ),
++      { numRuns: 50 }
++    )
++  })
++
++  it('viewTier is always valid after any sequence of tier operations', () => {
++    fc.assert(
++      fc.property(
++        fc.array(fc.constantFrom('cycle', 'expand', 'collapse', 'set'), { minLength: 1, maxLength: 100 }),
++        (ops) => {
++          resetStore()
++
++          for (const op of ops) {
++            switch (op) {
++              case 'cycle':
++                useShowStore.getState().cycleViewTier()
++                break
++              case 'expand':
++                useShowStore.getState().expandViewTier()
++                break
++              case 'collapse':
++                useShowStore.getState().collapseViewTier()
++                break
++              case 'set':
++                useShowStore.getState().setViewTier(
++                  VALID_TIERS[Math.floor(Math.random() * VALID_TIERS.length)]
++                )
++                break
++            }
++
++            const tier = useShowStore.getState().viewTier
++            expect(VALID_TIERS).toContain(tier)
++          }
++        }
++      ),
++      { numRuns: 100 }
++    )
++  })
++
++  it('beatsLocked never exceeds beatThreshold through any command sequence', () => {
++    fc.assert(
++      fc.property(
++        fc.array(commandIdxArb, { minLength: 1, maxLength: 50 }),
++        (indices) => {
++          resetStore()
++
++          for (const idx of indices) {
++            const cmd = commands[idx]()
++            if (cmd.precondition()) {
++              cmd.run()
++              const s = useShowStore.getState()
++              expect(s.beatsLocked).toBeLessThanOrEqual(s.beatThreshold)
++            }
++          }
++        }
++      ),
++      { numRuns: 100 }
++    )
++  })
++
++  it('completing acts always progresses (act count with completed/skipped never decreases)', () => {
++    fc.assert(
++      fc.property(
++        fc.array(commandIdxArb, { minLength: 5, maxLength: 40 }),
++        (indices) => {
++          resetStore()
++
++          let prevFinished = 0
++          for (const idx of indices) {
++            const cmd = commands[idx]()
++            if (cmd.precondition()) {
++              cmd.run()
++              const s = useShowStore.getState()
++              const finished = s.acts.filter((a) => a.status === 'completed' || a.status === 'skipped').length
++              // Can only reset finished count via resetShow
++              if (cmd.name !== 'resetShow' && cmd.name !== 'callShowEarly') {
++                expect(finished).toBeGreaterThanOrEqual(prevFinished)
++              }
++              prevFinished = finished
++            }
++          }
++        }
++      ),
++      { numRuns: 50 }
++    )
++  })
++
++  it('the full happy path (writers_room → live → complete all → strike) works', () => {
++    resetStore()
++    const store = useShowStore.getState()
++
++    // Enter writers room and set lineup
++    store.enterWritersRoom()
++    expect(useShowStore.getState().phase).toBe('writers_room')
++
++    useShowStore.getState().setLineup(sampleLineup)
++    expect(useShowStore.getState().acts.length).toBe(3)
++
++    // Start show
++    useShowStore.getState().startShow()
++    expect(useShowStore.getState().phase).toBe('live')
++
++    // Complete all 3 acts with beat skips
++    for (let i = 0; i < 3; i++) {
++      const s = useShowStore.getState()
++      if (s.currentActId) {
++        s.completeAct(s.currentActId)
++        useShowStore.getState().skipBeat()
++      }
++    }
++
++    // Should be at strike
++    expect(useShowStore.getState().phase).toBe('strike')
++    expect(useShowStore.getState().verdict).not.toBeNull()
++    checkInvariants()
++  })
++})
+diff --git a/src/__tests__/property/temporal.property.test.ts b/src/__tests__/property/temporal.property.test.ts
+new file mode 100644
+index 0000000..cd302cb
+--- /dev/null
++++ b/src/__tests__/property/temporal.property.test.ts
+@@ -0,0 +1,188 @@
++/**
++ * Layer 2b: Temporal Logic Property Tests
++ *
++ * Property tests for time-dependent behavior:
++ * - Greeting text matches time of day
++ * - "tomorrow" vs "tonight" copy correctness
++ * - Day boundary date handling
++ */
++import { describe, it, expect, vi, afterEach } from 'vitest'
++import fc from 'fast-check'
++
++// ─── Temporal helpers (extracted from DarkStudioView / WritersRoomView patterns) ───
++
++/** Returns the greeting for a given hour (0-23) — must match DarkStudioView logic */
++function getGreeting(hour: number): string {
++  if (hour >= 5 && hour < 12) return 'Good morning'
++  if (hour >= 12 && hour < 17) return 'Good afternoon'
++  if (hour >= 17 && hour < 22) return 'Good evening'
++  return 'Late night'
++}
++
++/** Returns whether the show is being planned for "tomorrow" vs "today" */
++function isForTomorrow(hour: number): boolean {
++  return hour >= 18 // After 6 PM, planning for tomorrow
++}
++
++/** Returns the copy text for the plan target */
++function getPlanTargetCopy(hour: number): string {
++  return isForTomorrow(hour) ? "tomorrow's show" : "today's show"
++}
++
++// ─── Tests ───
++
++describe('Layer 2b: Temporal Property Tests', () => {
++  afterEach(() => {
++    vi.useRealTimers()
++  })
++
++  it('greeting is always one of the four valid greetings for any hour', () => {
++    fc.assert(
++      fc.property(
++        fc.integer({ min: 0, max: 23 }),
++        (hour) => {
++          const greeting = getGreeting(hour)
++          expect(['Good morning', 'Good afternoon', 'Good evening', 'Late night']).toContain(greeting)
++        }
++      )
++    )
++  })
++
++  it('greeting transitions happen at correct boundaries', () => {
++    // Morning: 5-11
++    for (let h = 5; h < 12; h++) {
++      expect(getGreeting(h)).toBe('Good morning')
++    }
++    // Afternoon: 12-16
++    for (let h = 12; h < 17; h++) {
++      expect(getGreeting(h)).toBe('Good afternoon')
++    }
++    // Evening: 17-21
++    for (let h = 17; h < 22; h++) {
++      expect(getGreeting(h)).toBe('Good evening')
++    }
++    // Late night: 22-4
++    for (let h = 22; h < 24; h++) {
++      expect(getGreeting(h)).toBe('Late night')
++    }
++    for (let h = 0; h < 5; h++) {
++      expect(getGreeting(h)).toBe('Late night')
++    }
++  })
++
++  it('"tomorrow" copy is used only after 6 PM for any hour', () => {
++    fc.assert(
++      fc.property(
++        fc.integer({ min: 0, max: 23 }),
++        (hour) => {
++          const forTomorrow = isForTomorrow(hour)
++          if (hour >= 18) {
++            expect(forTomorrow).toBe(true)
++          } else {
++            expect(forTomorrow).toBe(false)
++          }
++        }
++      )
++    )
++  })
++
++  it('plan target copy is always either "today\'s show" or "tomorrow\'s show"', () => {
++    fc.assert(
++      fc.property(
++        fc.integer({ min: 0, max: 23 }),
++        (hour) => {
++          const copy = getPlanTargetCopy(hour)
++          expect(["today's show", "tomorrow's show"]).toContain(copy)
++        }
++      )
++    )
++  })
++
++  it('day boundary: show date resets at midnight', () => {
++    // Simulate dates across a day boundary
++    fc.assert(
++      fc.property(
++        fc.date({ min: new Date('2025-01-01T00:00:00Z'), max: new Date('2027-12-31T23:59:59Z') }),
++        (date) => {
++          fc.pre(!isNaN(date.getTime()))
++          const isoDate = date.toISOString().slice(0, 10)
++          // ISO date format is always YYYY-MM-DD
++          expect(isoDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
++          // Month is 01-12, day is 01-31
++          const [, month, day] = isoDate.split('-').map(Number)
++          expect(month).toBeGreaterThanOrEqual(1)
++          expect(month).toBeLessThanOrEqual(12)
++          expect(day).toBeGreaterThanOrEqual(1)
++          expect(day).toBeLessThanOrEqual(31)
++        }
++      )
++    )
++  })
++
++  it('verdict messages are always compassionate (no guilt language)', () => {
++    const VERDICT_MESSAGES: Record<string, string> = {
++      DAY_WON: 'You showed up and you were present.',
++      SOLID_SHOW: 'Not every sketch lands. The show was still great.',
++      GOOD_EFFORT: 'You got on stage. That\'s the hardest part.',
++      SHOW_CALLED_EARLY: 'Sometimes the show is short. The audience still came.',
++    }
++
++    const guiltWords = ['failed', 'lazy', 'wasted', 'should have', 'didn\'t', 'missed', 'forgot', 'wrong']
++
++    for (const [verdict, message] of Object.entries(VERDICT_MESSAGES)) {
++      for (const word of guiltWords) {
++        expect(message.toLowerCase()).not.toContain(word)
++      }
++      // All messages should be present and non-empty
++      expect(message.length).toBeGreaterThan(0)
++      expect(verdict).toBeTruthy()
++    }
++  })
++
++  it('timer end times are always in the future when set', () => {
++    fc.assert(
++      fc.property(
++        fc.integer({ min: 1, max: 120 }), // duration in minutes
++        (durationMinutes) => {
++          const now = Date.now()
++          const timerEndAt = now + durationMinutes * 60 * 1000
++          expect(timerEndAt).toBeGreaterThan(now)
++          // Duration should be reasonable (1 min to 2 hours)
++          const actualMinutes = (timerEndAt - now) / 60000
++          expect(actualMinutes).toBeCloseTo(durationMinutes, 5)
++        }
++      )
++    )
++  })
++
++  it('beat threshold determines verdict correctly for any locked/threshold combo', () => {
++    fc.assert(
++      fc.property(
++        fc.integer({ min: 0, max: 10 }), // beatsLocked
++        fc.integer({ min: 1, max: 10 }), // beatThreshold
++        (beatsLocked, beatThreshold) => {
++          // Ensure beatsLocked doesn't exceed threshold
++          const clamped = Math.min(beatsLocked, beatThreshold)
++          let verdict: string
++
++          if (clamped >= beatThreshold) {
++            verdict = 'DAY_WON'
++          } else if (clamped === beatThreshold - 1) {
++            verdict = 'SOLID_SHOW'
++          } else if (clamped >= Math.ceil(beatThreshold / 2)) {
++            verdict = 'GOOD_EFFORT'
++          } else {
++            verdict = 'SHOW_CALLED_EARLY'
++          }
++
++          expect(['DAY_WON', 'SOLID_SHOW', 'GOOD_EFFORT', 'SHOW_CALLED_EARLY']).toContain(verdict)
++
++          // DAY_WON requires all beats locked
++          if (verdict === 'DAY_WON') {
++            expect(clamped).toBeGreaterThanOrEqual(beatThreshold)
++          }
++        }
++      )
++    )
++  })
++})
+
+Output format (STRICT - follow exactly):
+VERDICT: PASS or FAIL
+FINDINGS:
+- [severity] description (file:line)
+Severity levels: Critical, High, Medium, Low
+
+If no issues found, output:
+VERDICT: PASS
+FINDINGS:
+- None

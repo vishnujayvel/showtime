@@ -152,3 +152,17 @@
   "user": "vishnu",
   "pid": 69309
 }
+{
+  "timestamp": "2026-03-22T06:34:25Z",
+  "event": "SESSION_START",
+  "data": "prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 41628
+}
+{
+  "timestamp": "2026-03-22T06:43:39Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/proposal.md",
+  "user": "vishnu",
+  "pid": 41628
+}

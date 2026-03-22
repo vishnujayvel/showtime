@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-22T02:29:15Z
+Updated: 2026-03-22T06:40:57Z
 
 ## Current State
 
@@ -12,9 +12,9 @@ Updated: 2026-03-22T02:29:15Z
 
 ## Last Completed Task
 
-- Last commit: refactor: decompose main process + delete CLUI dead code
-- Files changed: src/__tests__/setup.ts, src/main/day-boundary.ts, src/main/index.ts, src/main/ipc/core.ts, src/main/ipc/showtime.ts
-  (+11 more)
+- Last commit: feat: add Layer 1 (XState model) + Layer 2 (fast-check property) test suites
+- Files changed: package-lock.json, package.json, src/__tests__/model/show-machine.test.ts, src/__tests__/model/show-machine.ts, src/__tests__/property/show-store.property.test.ts
+  (+1 more)
 
 ## Active Blockers
 

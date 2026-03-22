@@ -1,0 +1,13 @@
+{
+  "id": "caf918ec",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-22T06:43:39.182082+00:00",
+  "payload": {
+    "action": "learning_signal",
+    "signal_id": "sig-64bb72a1",
+    "signal_type": "workflow_pattern",
+    "outcome": "success"
+  },
+  "version": "1.0"
+}
