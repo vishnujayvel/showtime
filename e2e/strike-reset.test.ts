@@ -1,20 +1,8 @@
-import { test, expect, screenshot, navigateAndWait, setShowState } from './fixtures'
+import { test, expect, screenshot, seedFixture, FIXTURES } from './fixtures'
 
 test.describe('7.5 — Strike the Stage', () => {
   test('can render strike view with verdict', async ({ mainPage: page }) => {
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'strike'
-        parsed.state.verdict = 'SOLID_SHOW'
-        parsed.state.beatsLocked = 2
-        parsed.state.beatThreshold = 3
-        parsed.state.viewTier = 'expanded'
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait(page)
+    await seedFixture(page, FIXTURES.strike_solidShow as unknown as Record<string, unknown>)
 
     const body = await page.textContent('body')
     const hasVerdict = body?.includes('SOLID SHOW')
@@ -30,28 +18,21 @@ test.describe('7.5 — Strike the Stage', () => {
   })
 })
 
+const DIRECTOR_STATE = {
+  phase: 'director',
+  viewTier: 'expanded',
+  beatsLocked: 1,
+  beatThreshold: 3,
+  acts: [
+    { id: 'reset-act-1', name: 'Test Act', sketch: 'Testing', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
+  ],
+  currentActId: 'reset-act-1',
+  showStartedAt: Date.now() - 600000,
+}
+
 test.describe('Reset Show (#16)', () => {
   test('Director Mode shows reset button with confirmation dialog', async ({ mainPage: page }) => {
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'director'
-        parsed.state.viewTier = 'expanded'
-        parsed.state.beatsLocked = 1
-        parsed.state.beatCheckPending = false
-        parsed.state.celebrationActive = false
-        parsed.state.goingLiveActive = false
-        if (!parsed.state.acts || parsed.state.acts.length === 0) {
-          parsed.state.acts = [
-            { id: 'reset-act-1', name: 'Test Act', sketch: 'Testing', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
-          ]
-          parsed.state.currentActId = 'reset-act-1'
-        }
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait(page)
+    await seedFixture(page, DIRECTOR_STATE)
 
     const directorTitle = page.getByText('The Director is here.')
     await expect(directorTitle).toBeVisible({ timeout: 10000 })
@@ -67,7 +48,7 @@ test.describe('Reset Show (#16)', () => {
     await expect(confirmTitle).toBeVisible({ timeout: 5000 })
     await screenshot(page, 'reset-show-confirm')
 
-    const cancelBtn = page.getByText('Cancel')
+    const cancelBtn = page.getByRole('button', { name: 'Cancel' })
     await cancelBtn.click()
     await page.waitForTimeout(300)
 
@@ -75,11 +56,17 @@ test.describe('Reset Show (#16)', () => {
   })
 
   test('confirming reset returns to Dark Studio', async ({ mainPage: page }) => {
+    await seedFixture(page, DIRECTOR_STATE)
+
+    const directorTitle = page.getByText('The Director is here.')
+    await expect(directorTitle).toBeVisible({ timeout: 10000 })
+
     const resetBtn = page.locator('button').filter({ hasText: /Reset .+ show/i }).first()
+    await expect(resetBtn).toBeVisible({ timeout: 5000 })
     await resetBtn.click()
     await page.waitForTimeout(500)
 
-    const confirmResetBtn = page.getByText('Reset Show')
+    const confirmResetBtn = page.getByRole('button', { name: 'Reset Show' })
     await confirmResetBtn.click()
     await page.waitForTimeout(1000)
 
