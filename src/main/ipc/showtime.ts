@@ -151,6 +151,16 @@ export function registerShowtimeIpc(): void {
     }
   })
 
+  ipcMain.handle(IPC.SHOW_DETAIL, (_event, showId: string) => {
+    try {
+      const data = DataService.getInstance()
+      return data.shows.getShowDetail(showId)
+    } catch (err: unknown) {
+      log(`SHOW_DETAIL error: ${err instanceof Error ? err.message : String(err)}`)
+      return null
+    }
+  })
+
   // ─── Theme Detection ───
 
   ipcMain.handle(IPC.GET_THEME, () => {

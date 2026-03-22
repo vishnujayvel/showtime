@@ -1,7 +1,7 @@
-import { eq, desc, sql, count } from 'drizzle-orm'
+import { eq, desc, asc, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { shows, acts } from './schema'
-import type { ShowHistoryEntry } from './types'
+import { shows, acts, claudeContexts } from './schema'
+import type { ShowHistoryEntry, ShowDetailEntry } from './types'
 
 export type ShowRow = typeof shows.$inferSelect
 export type ShowInsert = typeof shows.$inferInsert
@@ -65,5 +65,48 @@ export class ShowRepository {
       .all()
 
     return rows as ShowHistoryEntry[]
+  }
+
+  getShowDetail(showId: string): ShowDetailEntry | null {
+    const show = this.getShow(showId)
+    if (!show) return null
+
+    const actRows = this.db.select().from(acts)
+      .where(eq(acts.showId, showId))
+      .orderBy(asc(acts.sortOrder))
+      .all()
+
+    const ctx = this.db.select().from(claudeContexts)
+      .where(eq(claudeContexts.showId, showId))
+      .orderBy(desc(claudeContexts.createdAt))
+      .limit(1)
+      .get()
+
+    return {
+      showId: show.id,
+      phase: show.phase,
+      energy: show.energy,
+      verdict: show.verdict,
+      beatsLocked: show.beatsLocked,
+      beatThreshold: show.beatThreshold,
+      startedAt: show.startedAt,
+      endedAt: show.endedAt,
+      planText: show.planText ?? ctx?.planText ?? null,
+      lineupJson: ctx?.lineupJson ?? null,
+      acts: actRows.map(a => ({
+        id: a.id,
+        name: a.name,
+        sketch: a.sketch,
+        category: a.category,
+        plannedDurationMs: a.plannedDurationMs,
+        actualDurationMs: a.actualDurationMs,
+        sortOrder: a.sortOrder,
+        status: a.status,
+        beatLocked: a.beatLocked,
+        plannedStartAt: a.plannedStartAt,
+        actualStartAt: a.actualStartAt,
+        actualEndAt: a.actualEndAt,
+      })),
+    }
   }
 }

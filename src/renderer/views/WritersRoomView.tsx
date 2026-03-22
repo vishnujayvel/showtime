@@ -6,7 +6,7 @@ import { EnergySelector } from '../components/EnergySelector'
 import { LineupPanel } from '../panels/LineupPanel'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatDateLabel } from '../lib/utils'
+import { formatDateLabel, getTemporalShowLabel } from '../lib/utils'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
@@ -221,7 +221,7 @@ ${planText}`
                       What&apos;s on the schedule?
                     </h2>
                     <p className="text-sm text-txt-muted mb-6">
-                      Dump everything. Claude will organize it into tonight&apos;s lineup.
+                      Dump everything. Claude will organize it into {getTemporalShowLabel()} lineup.
                     </p>
 
                     <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
@@ -276,7 +276,7 @@ ${planText}`
               transition={springTransition}
             >
               <h2 className="font-body text-xl font-semibold text-txt-primary mb-6">
-                Tonight&apos;s Lineup
+                {getTemporalShowLabel().replace(/^./, c => c.toUpperCase())} Lineup
               </h2>
 
               <LineupPanel variant="full" />

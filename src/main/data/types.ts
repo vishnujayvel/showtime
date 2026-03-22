@@ -67,3 +67,17 @@ export interface ShowHistoryEntry {
   actCount: number
   completedActCount: number
 }
+
+export interface ShowDetailEntry {
+  showId: string
+  phase: string
+  energy: string | null
+  verdict: string | null
+  beatsLocked: number
+  beatThreshold: number
+  startedAt: number | null
+  endedAt: number | null
+  planText: string | null
+  lineupJson: string | null
+  acts: ActSnapshot[]
+}
