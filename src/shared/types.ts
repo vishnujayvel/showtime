@@ -301,6 +301,29 @@ export type EnergyLevel = 'high' | 'medium' | 'low' | 'recovery'
 export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
 export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
 export type WritersRoomStep = 'energy' | 'plan' | 'lineup'
+export type ViewTier = 'micro' | 'compact' | 'dashboard' | 'expanded'
+
+const VIEW_TIER_ORDER: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
+
+export function nextViewTier(current: ViewTier): ViewTier {
+  const idx = VIEW_TIER_ORDER.indexOf(current)
+  return VIEW_TIER_ORDER[(idx + 1) % VIEW_TIER_ORDER.length]
+}
+
+export function prevViewTier(current: ViewTier): ViewTier {
+  const idx = VIEW_TIER_ORDER.indexOf(current)
+  return VIEW_TIER_ORDER[(idx - 1 + VIEW_TIER_ORDER.length) % VIEW_TIER_ORDER.length]
+}
+
+export function expandTier(current: ViewTier): ViewTier {
+  const idx = VIEW_TIER_ORDER.indexOf(current)
+  return idx < VIEW_TIER_ORDER.length - 1 ? VIEW_TIER_ORDER[idx + 1] : current
+}
+
+export function collapseTier(current: ViewTier): ViewTier {
+  const idx = VIEW_TIER_ORDER.indexOf(current)
+  return idx > 0 ? VIEW_TIER_ORDER[idx - 1] : current
+}
 
 export interface Act {
   id: string
@@ -338,7 +361,7 @@ export interface ShowState {
   showDate: string
   showStartedAt: number | null
   verdict: ShowVerdict | null
-  isExpanded: boolean
+  viewTier: ViewTier
   beatCheckPending: boolean
   goingLiveActive: boolean
   writersRoomStep: WritersRoomStep
@@ -431,6 +454,7 @@ export const IPC = {
   TIMELINE_DRIFT_PER_ACT: 'showtime:timeline-drift-per-act',
   CLAUDE_CONTEXT_SAVE: 'showtime:claude-context-save',
   CLAUDE_CONTEXT_GET: 'showtime:claude-context-get',
+  SHOW_HISTORY: 'showtime:show-history',
 
   // App lifecycle
   APP_QUIT: 'app:quit',

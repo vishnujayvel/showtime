@@ -3,36 +3,57 @@ import { AnimatePresence } from 'framer-motion'
 import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
 import { useSessionStore } from './stores/sessionStore'
-import { useShowStore } from './stores/showStore'
+import { useShowStore, selectIsExpanded } from './stores/showStore'
 import { useThemeStore } from './theme'
 import { DarkStudioView } from './views/DarkStudioView'
 import { WritersRoomView } from './views/WritersRoomView'
 import { ColdOpenTransition } from './views/ColdOpenTransition'
 import { GoingLiveTransition } from './views/GoingLiveTransition'
 import { PillView } from './views/PillView'
+import { CompactView } from './views/CompactView'
+import { DashboardView } from './views/DashboardView'
 import { ExpandedView } from './views/ExpandedView'
 import { StrikeView } from './views/StrikeView'
+import { HistoryView } from './views/HistoryView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
+import type { ViewTier } from '../shared/types'
+
+// Map viewTier + phase to the IPC view mode that determines window size
+function tierToViewMode(tier: ViewTier, phase: string): string {
+  // Full-screen phases always use 'full' regardless of tier
+  if (phase === 'no_show' || phase === 'writers_room' || phase === 'strike') {
+    return 'full'
+  }
+  const map: Record<ViewTier, string> = {
+    micro: 'pill',
+    compact: 'compact',
+    dashboard: 'dashboard',
+    expanded: 'expanded',
+  }
+  return map[tier]
+}
 
 export default function App() {
   useClaudeEvents()
   useHealthReconciliation()
 
   const phase = useShowStore((s) => s.phase)
-  const isExpanded = useShowStore((s) => s.isExpanded)
+  const viewTier = useShowStore((s) => s.viewTier)
+  const isExpanded = useShowStore(selectIsExpanded)
   const coldOpenActive = useShowStore((s) => s.coldOpenActive)
   const completeColdOpen = useShowStore((s) => s.completeColdOpen)
   const goingLiveActive = useShowStore((s) => s.goingLiveActive)
   const completeGoingLive = useShowStore((s) => s.completeGoingLive)
   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
   const beatCheckPending = useShowStore((s) => s.beatCheckPending)
-  const setExpanded = useShowStore((s) => s.setExpanded)
+  const setViewTier = useShowStore((s) => s.setViewTier)
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
 
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return localStorage.getItem('showtime-onboarding-complete') !== 'true'
   })
+  const [showHistory, setShowHistory] = useState(false)
 
   // ─── Listen for tray-triggered reset ───
   const resetShow = useShowStore((s) => s.resetShow)
@@ -81,33 +102,22 @@ export default function App() {
       return
     }
 
-    if (!isExpanded) {
-      window.clui.setViewMode('pill')
+    // History view is full-screen
+    if (showHistory) {
+      window.clui.setViewMode('full')
       return
     }
 
-    switch (phase) {
-      case 'no_show':
-      case 'writers_room':
-      case 'strike':
-        window.clui.setViewMode('full')
-        break
-      case 'live':
-      case 'intermission':
-      case 'director':
-      default:
-        window.clui.setViewMode('expanded')
-        break
-    }
-  }, [phase, isExpanded, coldOpenActive, goingLiveActive])
+    const mode = tierToViewMode(viewTier, phase)
+    window.clui.setViewMode(mode as any)
+  }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory])
 
   // ─── Force-expand on Beat Check ───
   useEffect(() => {
-    if (beatCheckPending && !isExpanded) {
-      setExpanded(true)
-      window.clui?.setViewMode('expanded')
+    if (beatCheckPending && (viewTier === 'micro' || viewTier === 'compact')) {
+      setViewTier('dashboard')
     }
-  }, [beatCheckPending, isExpanded, setExpanded])
+  }, [beatCheckPending, viewTier, setViewTier])
 
   // ─── Onboarding completion handler ───
   const handleOnboardingComplete = useCallback((enterRoom: boolean) => {
@@ -126,6 +136,11 @@ export default function App() {
 
   // ─── View routing ───
   const renderView = () => {
+    // History overlay
+    if (showHistory) {
+      return <HistoryView key="history" onBack={() => setShowHistory(false)} />
+    }
+
     // Onboarding takes priority on first launch
     if (showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive) {
       return (
@@ -147,32 +162,34 @@ export default function App() {
       return <GoingLiveTransition key="going-live" onComplete={completeGoingLive} />
     }
 
-    // Pill view when collapsed
-    if (!isExpanded) {
-      return <PillView key="pill" />
-    }
-
-    // Phase-based routing
+    // Full-screen phases render regardless of viewTier
     switch (phase) {
       case 'no_show':
-        return <DarkStudioView key="dark-studio" />
+        return <DarkStudioView key="dark-studio" onShowHistory={() => setShowHistory(true)} />
       case 'writers_room':
         return <WritersRoomView key="writers-room" />
       case 'strike':
-        return <StrikeView key="strike" />
-      case 'live':
-      case 'intermission':
-      case 'director':
-        return <ExpandedView key="expanded" />
+        return <StrikeView key="strike" onShowHistory={() => setShowHistory(true)} />
+    }
+
+    // Live/intermission/director — tier-based routing
+    switch (viewTier) {
+      case 'micro':
+        return <PillView key="pill" />
+      case 'compact':
+        return <CompactView key="compact" />
+      case 'dashboard':
+        return <DashboardView key="dashboard" />
+      case 'expanded':
       default:
-        return <DarkStudioView key="dark-studio-default" />
+        return <ExpandedView key="expanded" />
     }
   }
 
   return (
     <div className="w-full h-full relative bg-transparent flex flex-col">
       {/* Help button — visible on DarkStudio when onboarding was completed */}
-      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && (
+      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && !showHistory && (
         <button
           onClick={handleHelpClick}
           className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"

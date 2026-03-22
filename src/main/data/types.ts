@@ -54,3 +54,16 @@ export interface ActDriftResult {
   plannedMs: number
   actualMs: number
 }
+
+export interface ShowHistoryEntry {
+  showId: string
+  phase: string
+  energy: string | null
+  verdict: string | null
+  beatsLocked: number
+  beatThreshold: number
+  startedAt: number | null
+  endedAt: number | null
+  actCount: number
+  completedActCount: number
+}

@@ -63,7 +63,7 @@ function resetStore() {
     showDate: new Date().toISOString().slice(0, 10),
     showStartedAt: null,
     verdict: null,
-    isExpanded: true,
+    viewTier: 'expanded',
     beatCheckPending: false,
     celebrationActive: false,
     goingLiveActive: false,
@@ -128,7 +128,7 @@ describe('PillView drag zones', () => {
       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
-      isExpanded: false,
+      viewTier: 'micro',
     })
     const { container } = render(<PillView />)
     const dragZone = container.querySelector('.drag-region')
@@ -137,21 +137,21 @@ describe('PillView drag zones', () => {
     expect(noDragZone).toBeInTheDocument()
   })
 
-  it('click zone triggers toggleExpanded', () => {
-    const toggleSpy = vi.fn()
+  it('click zone triggers expandViewTier', () => {
+    const expandSpy = vi.fn()
     useShowStore.setState({
       phase: 'live',
       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
-      isExpanded: false,
-      toggleExpanded: toggleSpy,
+      viewTier: 'micro',
+      expandViewTier: expandSpy,
     })
     const { container } = render(<PillView />)
     const noDragZone = container.querySelector('.no-drag')
     expect(noDragZone).toBeInTheDocument()
     fireEvent.click(noDragZone!)
-    expect(toggleSpy).toHaveBeenCalled()
+    expect(expandSpy).toHaveBeenCalled()
   })
 })
 
@@ -173,7 +173,7 @@ describe('StrikeView celebration', () => {
       beatsLocked: 1,
       beatThreshold: 3,
       showStartedAt: Date.now() - 60 * 60 * 1000,
-      isExpanded: true,
+      viewTier: 'expanded',
     })
     render(<StrikeView />)
     expect(screen.getByTestId('encore-btn')).toBeInTheDocument()
@@ -189,7 +189,7 @@ describe('StrikeView celebration', () => {
       beatsLocked: 0,
       beatThreshold: 3,
       showStartedAt: Date.now() - 2 * 60 * 60 * 1000,
-      isExpanded: true,
+      viewTier: 'expanded',
     })
     render(<StrikeView />)
     const duration = screen.getByTestId('show-duration')
@@ -205,7 +205,7 @@ describe('StrikeView celebration', () => {
       beatsLocked: 3,
       beatThreshold: 3,
       showStartedAt: Date.now() - 60 * 60 * 1000,
-      isExpanded: true,
+      viewTier: 'expanded',
     })
     render(<StrikeView />)
     expect(screen.getByText('Standing ovation.')).toBeInTheDocument()
@@ -223,7 +223,7 @@ describe('Temporal context', () => {
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
       showStartedAt: Date.now(),
-      isExpanded: true,
+      viewTier: 'expanded',
     })
     render(<ExpandedView />)
     const dateLabel = screen.getByTestId('date-label')
@@ -240,7 +240,7 @@ describe('Temporal context', () => {
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
       showStartedAt: Date.now(),
-      isExpanded: true,
+      viewTier: 'expanded',
     })
     render(<ExpandedView />)
     const startedAt = screen.getByTestId('started-at')

@@ -17,13 +17,17 @@ function formatDuration(startMs: number): string {
   return `${hours}h ${mins}m`
 }
 
-export function StrikeView() {
+interface StrikeViewProps {
+  onShowHistory?: () => void
+}
+
+export function StrikeView({ onShowHistory }: StrikeViewProps) {
   const verdict = useShowStore((s) => s.verdict)
   const acts = useShowStore((s) => s.acts)
   const beatsLocked = useShowStore((s) => s.beatsLocked)
   const beatThreshold = useShowStore((s) => s.beatThreshold)
   const resetShow = useShowStore((s) => s.resetShow)
-  const setExpanded = useShowStore((s) => s.setExpanded)
+  const setViewTier = useShowStore((s) => s.setViewTier)
   const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
   const showStartedAt = useShowStore((s) => s.showStartedAt)
 
@@ -192,7 +196,7 @@ export function StrikeView() {
             Standing ovation.
           </motion.p>
         )}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
             variant="accent"
             onClick={enterWritersRoom}
@@ -209,11 +213,20 @@ export function StrikeView() {
           </Button>
           <Button
             variant="neutral"
-            onClick={() => setExpanded(false)}
+            onClick={() => setViewTier('micro')}
             data-testid="thats-a-wrap-btn"
           >
             That&apos;s a Wrap
           </Button>
+          {onShowHistory && (
+            <Button
+              variant="ghost_muted"
+              onClick={onShowHistory}
+              data-testid="view-history-btn"
+            >
+              View Past Shows
+            </Button>
+          )}
         </div>
       </div>
     </motion.div>

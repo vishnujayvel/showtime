@@ -16,7 +16,7 @@ function resetStore() {
     claudeSessionId: null,
     showDate: new Date().toISOString().slice(0, 10),
     verdict: null,
-    isExpanded: true,
+    viewTier: 'expanded',
     beatCheckPending: false,
     celebrationActive: false,
   })
@@ -155,7 +155,7 @@ describe('showStore', () => {
     it('collapses to pill view', () => {
       useShowStore.getState().setLineup(sampleLineup)
       useShowStore.getState().startShow()
-      expect(useShowStore.getState().isExpanded).toBe(false)
+      expect(useShowStore.getState().viewTier).toBe('micro')
     })
 
     it('leaves other acts as upcoming', () => {
@@ -593,7 +593,7 @@ describe('showStore', () => {
 
     it('expands view', () => {
       useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().isExpanded).toBe(true)
+      expect(useShowStore.getState().viewTier).toBe('expanded')
     })
 
     it('sends verdict notification', () => {
@@ -602,15 +602,73 @@ describe('showStore', () => {
     })
   })
 
-  // ─── Navigation ───
+  // ─── Navigation (view tier) ───
 
   describe('toggleExpanded', () => {
-    it('toggles isExpanded', () => {
-      expect(useShowStore.getState().isExpanded).toBe(true)
+    it('toggles between micro and expanded', () => {
+      expect(useShowStore.getState().viewTier).toBe('expanded')
       useShowStore.getState().toggleExpanded()
-      expect(useShowStore.getState().isExpanded).toBe(false)
+      expect(useShowStore.getState().viewTier).toBe('micro')
       useShowStore.getState().toggleExpanded()
-      expect(useShowStore.getState().isExpanded).toBe(true)
+      expect(useShowStore.getState().viewTier).toBe('expanded')
+    })
+  })
+
+  describe('viewTier navigation', () => {
+    it('cycleViewTier cycles through all 4 tiers', () => {
+      useShowStore.setState({ viewTier: 'micro' })
+      useShowStore.getState().cycleViewTier()
+      expect(useShowStore.getState().viewTier).toBe('compact')
+      useShowStore.getState().cycleViewTier()
+      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      useShowStore.getState().cycleViewTier()
+      expect(useShowStore.getState().viewTier).toBe('expanded')
+      useShowStore.getState().cycleViewTier()
+      expect(useShowStore.getState().viewTier).toBe('micro')
+    })
+
+    it('expandViewTier goes up one tier', () => {
+      useShowStore.setState({ viewTier: 'micro' })
+      useShowStore.getState().expandViewTier()
+      expect(useShowStore.getState().viewTier).toBe('compact')
+      useShowStore.getState().expandViewTier()
+      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      useShowStore.getState().expandViewTier()
+      expect(useShowStore.getState().viewTier).toBe('expanded')
+    })
+
+    it('expandViewTier clamps at expanded', () => {
+      useShowStore.setState({ viewTier: 'expanded' })
+      useShowStore.getState().expandViewTier()
+      expect(useShowStore.getState().viewTier).toBe('expanded')
+    })
+
+    it('collapseViewTier goes down one tier', () => {
+      useShowStore.setState({ viewTier: 'expanded' })
+      useShowStore.getState().collapseViewTier()
+      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      useShowStore.getState().collapseViewTier()
+      expect(useShowStore.getState().viewTier).toBe('compact')
+      useShowStore.getState().collapseViewTier()
+      expect(useShowStore.getState().viewTier).toBe('micro')
+    })
+
+    it('collapseViewTier clamps at micro', () => {
+      useShowStore.setState({ viewTier: 'micro' })
+      useShowStore.getState().collapseViewTier()
+      expect(useShowStore.getState().viewTier).toBe('micro')
+    })
+
+    it('setViewTier sets directly', () => {
+      useShowStore.getState().setViewTier('dashboard')
+      expect(useShowStore.getState().viewTier).toBe('dashboard')
+    })
+
+    it('setExpanded maps true to expanded, false to micro', () => {
+      useShowStore.getState().setExpanded(false)
+      expect(useShowStore.getState().viewTier).toBe('micro')
+      useShowStore.getState().setExpanded(true)
+      expect(useShowStore.getState().viewTier).toBe('expanded')
     })
   })
 
@@ -628,7 +686,7 @@ describe('showStore', () => {
       expect(state.acts).toHaveLength(0)
       expect(state.verdict).toBeNull()
       expect(state.beatsLocked).toBe(0)
-      expect(state.isExpanded).toBe(true)
+      expect(state.viewTier).toBe('expanded')
     })
   })
 

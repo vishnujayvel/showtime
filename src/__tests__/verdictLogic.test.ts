@@ -16,7 +16,7 @@ function resetStore() {
     claudeSessionId: null,
     showDate: new Date().toISOString().slice(0, 10),
     verdict: null,
-    isExpanded: true,
+    viewTier: 'expanded',
     beatCheckPending: false,
     celebrationActive: false,
   })

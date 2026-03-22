@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep } from '../../shared/types'
+import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep, ViewTier } from '../../shared/types'
+import { nextViewTier, expandTier, collapseTier } from '../../shared/types'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -63,7 +64,12 @@ interface ShowActions {
   // Strike
   strikeTheStage: () => void
 
-  // Navigation
+  // Navigation (view tier)
+  cycleViewTier: () => void
+  expandViewTier: () => void
+  collapseViewTier: () => void
+  setViewTier: (tier: ViewTier) => void
+  // Backward compat — maps to viewTier
   toggleExpanded: () => void
   setExpanded: (expanded: boolean) => void
 
@@ -90,7 +96,7 @@ interface ShowStoreState {
   showDate: string
   showStartedAt: number | null
   verdict: ShowVerdict | null
-  isExpanded: boolean
+  viewTier: ViewTier
   beatCheckPending: boolean
   celebrationActive: boolean
   coldOpenActive: boolean
@@ -118,7 +124,7 @@ const initialState: ShowStoreState = {
   showDate: today(),
   showStartedAt: null,
   verdict: null,
-  isExpanded: true,
+  viewTier: 'expanded' as ViewTier,
   beatCheckPending: false,
   celebrationActive: false,
   coldOpenActive: false,
@@ -227,7 +233,7 @@ export const useShowStore = create<ShowStore>()(
         const now = Date.now()
         set({
           phase: 'live',
-          isExpanded: false,
+          viewTier: 'micro' as ViewTier,
           currentActId: firstAct.id,
           timerEndAt: now + firstAct.durationMinutes * 60 * 1000,
           showDate: today(),
@@ -479,7 +485,7 @@ export const useShowStore = create<ShowStore>()(
           currentActId: null,
           timerEndAt: null,
           timerPausedRemaining: null,
-          isExpanded: true,
+          viewTier: 'expanded' as ViewTier,
           beatCheckPending: false,
         })
         window.clui.notifyVerdict('SHOW_CALLED_EARLY', VERDICT_MESSAGES.SHOW_CALLED_EARLY)
@@ -585,7 +591,7 @@ export const useShowStore = create<ShowStore>()(
           currentActId: null,
           timerEndAt: null,
           timerPausedRemaining: null,
-          isExpanded: true,
+          viewTier: 'expanded' as ViewTier,
           beatCheckPending: false,
         })
         recordTimeline('show_ended', get().showDate, null, { actualEnd: Date.now() })
@@ -593,10 +599,15 @@ export const useShowStore = create<ShowStore>()(
         window.clui.notifyVerdict(verdict, VERDICT_MESSAGES[verdict])
       },
 
-      // ─── Navigation ───
+      // ─── Navigation (view tier) ───
 
-      toggleExpanded: () => set((s) => ({ isExpanded: !s.isExpanded })),
-      setExpanded: (expanded) => set({ isExpanded: expanded }),
+      cycleViewTier: () => set((s) => ({ viewTier: nextViewTier(s.viewTier) })),
+      expandViewTier: () => set((s) => ({ viewTier: expandTier(s.viewTier) })),
+      collapseViewTier: () => set((s) => ({ viewTier: collapseTier(s.viewTier) })),
+      setViewTier: (tier) => set({ viewTier: tier }),
+      // Backward compat
+      toggleExpanded: () => set((s) => ({ viewTier: s.viewTier === 'micro' ? 'expanded' as ViewTier : 'micro' as ViewTier })),
+      setExpanded: (expanded) => set({ viewTier: (expanded ? 'expanded' : 'micro') as ViewTier }),
 
       // ─── Reset ───
 
@@ -605,7 +616,7 @@ export const useShowStore = create<ShowStore>()(
           clearTimeout(celebrationTimeout)
           celebrationTimeout = null
         }
-        set({ ...initialState, showDate: today(), showStartedAt: null, isExpanded: true })
+        set({ ...initialState, showDate: today(), showStartedAt: null, viewTier: 'expanded' as ViewTier })
       },
 
       // ─── Session ───
@@ -665,7 +676,7 @@ export const useShowStore = create<ShowStore>()(
           if (!rehydratedState) return
           // Day boundary: if show date isn't today, reset
           if (rehydratedState.showDate !== today()) {
-            Object.assign(rehydratedState, { ...initialState, showDate: today(), isExpanded: true })
+            Object.assign(rehydratedState, { ...initialState, showDate: today(), viewTier: 'expanded' as ViewTier })
           }
         }
       },
@@ -677,4 +688,7 @@ export const useShowStore = create<ShowStore>()(
 
 export const selectCurrentAct = (s: ShowStore): Act | undefined =>
   s.acts.find((a) => a.id === s.currentActId)
+
+export const selectIsExpanded = (s: ShowStore): boolean =>
+  s.viewTier !== 'micro'
 

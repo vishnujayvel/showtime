@@ -197,7 +197,7 @@ test.describe('7.5 — Strike the Stage', () => {
         parsed.state.verdict = 'SOLID_SHOW'
         parsed.state.beatsLocked = 2
         parsed.state.beatThreshold = 3
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -228,7 +228,7 @@ test.describe('Visual Validation', () => {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
         parsed.state.writersRoomStep = 'energy'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -260,7 +260,7 @@ test.describe('Visual Validation', () => {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
         parsed.state.goingLiveActive = true
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -283,7 +283,7 @@ test.describe('Visual Validation', () => {
         parsed.state.phase = 'live'
         parsed.state.beatCheckPending = true
         parsed.state.celebrationActive = true
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.beatsLocked = 1
         parsed.state.currentActId = parsed.state.acts?.[0]?.id || null
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
@@ -310,7 +310,7 @@ test.describe('Visual Validation', () => {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
         parsed.state.writersRoomStep = 'energy'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
@@ -343,7 +343,7 @@ test.describe('Visual Validation', () => {
         parsed.state.beatCheckPending = true
         parsed.state.celebrationActive = false
         parsed.state.phase = 'live'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -366,7 +366,7 @@ test.describe('Pill ↔ Expanded', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'live'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.verdict = null
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
@@ -451,7 +451,7 @@ test.describe('Issue-Specific UI Verification', () => {
         parsed.state.phase = 'writers_room'
         parsed.state.writersRoomStep = 'plan'
         parsed.state.energy = 'high'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
         parsed.state.celebrationActive = false
@@ -492,7 +492,7 @@ test.describe('Issue-Specific UI Verification', () => {
         parsed.state.phase = 'live'
         parsed.state.celebrationActive = true
         parsed.state.beatCheckPending = true
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.beatsLocked = 1
         parsed.state.currentActId = parsed.state.acts?.[0]?.id || null
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
@@ -515,7 +515,7 @@ test.describe('Issue-Specific UI Verification', () => {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
         parsed.state.goingLiveActive = true
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -572,7 +572,7 @@ test.describe('Issue-Specific UI Verification', () => {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
         parsed.state.writersRoomStep = 'energy'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
@@ -598,7 +598,7 @@ test.describe('Issue-Specific UI Verification', () => {
         parsed.state.phase = 'writers_room'
         parsed.state.writersRoomStep = 'plan'
         parsed.state.energy = 'high'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -637,7 +637,7 @@ test.describe('Race Condition Guards (#11)', () => {
         parsed.state.phase = 'live'
         parsed.state.beatCheckPending = true
         parsed.state.celebrationActive = false
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.beatsLocked = 0
         // Ensure we have acts with one active
         if (!parsed.state.acts || parsed.state.acts.length === 0) {
@@ -687,7 +687,7 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
         parsed.state.phase = 'writers_room'
         parsed.state.writersRoomStep = 'plan'
         parsed.state.energy = 'high'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
         parsed.state.celebrationActive = false
@@ -998,7 +998,7 @@ test.describe('Reset Show (#16)', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'director'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.beatsLocked = 1
         parsed.state.beatCheckPending = false
         parsed.state.celebrationActive = false
@@ -1152,7 +1152,7 @@ test.describe('RundownBar + MiniRundownStrip', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'live'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.beatCheckPending = false
         parsed.state.celebrationActive = false
         parsed.state.goingLiveActive = false
@@ -1197,7 +1197,7 @@ test.describe('RundownBar + MiniRundownStrip', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'live'
-        parsed.state.isExpanded = false
+        parsed.state.viewTier = 'micro'
         parsed.state.beatCheckPending = false
         parsed.state.celebrationActive = false
         parsed.state.goingLiveActive = false
@@ -1220,7 +1220,7 @@ test.describe('RundownBar + MiniRundownStrip', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'no_show'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
@@ -1263,7 +1263,7 @@ test.describe('Plan Modification (Live)', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'live'
-        parsed.state.isExpanded = true
+        parsed.state.viewTier = 'expanded'
         parsed.state.beatCheckPending = false
         parsed.state.celebrationActive = false
         parsed.state.goingLiveActive = false
