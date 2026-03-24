@@ -32,6 +32,9 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
   })
 
   test('shows plan dump textarea after energy selection', async ({ mainPage: page }) => {
+    // Self-contained: seed the plan step directly
+    await seedFixture(page, FIXTURES.writersRoom_plan)
+
     const textarea = page.locator('textarea').first()
     await expect(textarea).toBeVisible({ timeout: 5000 })
 

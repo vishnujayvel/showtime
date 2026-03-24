@@ -2,9 +2,9 @@
     "retryCount": 4,
     "status": "exited",
     "lastExitCode": 137,
-    "lastRun": "2026-03-22T18:18:48Z",
-    "prdPath": "/Users/vishnu/workplace/showtime/openspec/changes/showtime-test-suite/layer3-proposal.md",
-    "pid": 84397,
+    "lastRun": "2026-03-24T19:10:46Z",
+    "prdPath": "/tmp/fix-e2e-bugs.md",
+    "pid": 55719,
     "maxRetries": 50,
     "baseWait": 60
 }

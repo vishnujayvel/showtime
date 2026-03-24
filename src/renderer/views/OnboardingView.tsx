@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '../ui/button'
+import { getTemporalShowLabel } from '../lib/utils'
 
 interface OnboardingViewProps {
   onComplete: () => void
@@ -17,7 +18,7 @@ const steps = [
   {
     title: "The Writer's Room",
     content:
-      "Each morning, you enter the Writer's Room. Tell Claude what's on your plate, and the writers draft tonight's lineup.",
+      `Each morning, you enter the Writer's Room. Tell Claude what's on your plate, and the writers draft ${getTemporalShowLabel()} lineup.`,
     animationClass: 'spotlight-warm',
   },
   {
