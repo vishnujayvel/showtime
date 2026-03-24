@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-24T19:10:49Z
+Updated: 2026-03-24T20:35:45Z
 
 ## Current State
 
@@ -12,9 +12,9 @@ Updated: 2026-03-24T19:10:49Z
 
 ## Last Completed Task
 
-- Last commit: Update visual regression baselines + parallel E2E results
-- Files changed: .claude/scheduled_tasks.lock, .loki/STATUS.txt, .loki/STOP, .loki/app-runner/state.json, .loki/dashboard-state.json
-  (+101 more)
+- Last commit: feat: implement macOS app identity — menu bar, settings view, about panel (#35)
+- Files changed: electron.vite.config.ts, package.json, src/main/index.ts, src/main/menu.ts, src/main/tray.ts
+  (+5 more)
 
 ## Active Blockers
 

@@ -122,3 +122,15 @@
 {"timestamp":"2026-03-24T19:10:55Z","type":"code_review_start","data":{"review_id":"review-20260324T191054Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
 {"timestamp":"2026-03-24T19:12:35Z","type":"code_review_complete","data":{"review_id":"review-20260324T191054Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
 {"timestamp":"2026-03-24T19:15:06Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":2}}
+{"timestamp":"2026-03-24T20:04:16Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/app-identity-proposal.md","parallel":true,"complexity":"standard","pid":82225}}
+{"timestamp":"2026-03-24T20:04:16Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/app-identity-proposal.md"}}
+{"timestamp":"2026-03-24T20:20:52Z","type":"iteration_complete","data":{"iteration":1,"status":"failed","exitCode":137,"provider":"claude"}}
+{"timestamp":"2026-03-24T20:21:14Z","type":"code_review_start","data":{"review_id":"review-20260324T202113Z-1","reviewers":"architecture-strategist, test-coverage-auditor, performance-oracle","iteration":1}}
+{"timestamp":"2026-03-24T20:23:16Z","type":"code_review_complete","data":{"review_id":"review-20260324T202113Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-24T20:25:28Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/app-identity-v2.md","parallel":true,"complexity":"standard","pid":42293}}
+{"timestamp":"2026-03-24T20:25:29Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/app-identity-v2.md"}}
+{"timestamp":"2026-03-24T20:25:47Z","type":"iteration_start","data":{"iteration":2,"provider":"claude","prd":"/tmp/app-identity-proposal.md"}}
+{"timestamp":"2026-03-24T20:35:39Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-24T20:36:27Z","type":"code_review_start","data":{"review_id":"review-20260324T203623Z-1","reviewers":"architecture-strategist, performance-oracle, dependency-analyst","iteration":1}}
+{"timestamp":"2026-03-24T20:39:14Z","type":"code_review_complete","data":{"review_id":"review-20260324T203623Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-24T20:40:05Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
