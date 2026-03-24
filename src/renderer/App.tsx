@@ -15,6 +15,7 @@ import { DashboardView } from './views/DashboardView'
 import { ExpandedView } from './views/ExpandedView'
 import { StrikeView } from './views/StrikeView'
 import { HistoryView } from './views/HistoryView'
+import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 import type { ViewTier } from '../shared/types'
@@ -57,6 +58,7 @@ export default function App() {
     return localStorage.getItem('showtime-onboarding-complete') !== 'true'
   })
   const [showHistory, setShowHistory] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   // ─── Listen for tray-triggered reset ───
   const resetShow = useShowStore((s) => s.resetShow)
@@ -64,6 +66,12 @@ export default function App() {
     if (!window.clui?.onResetShow) return
     return window.clui.onResetShow(() => resetShow())
   }, [resetShow])
+
+  // ─── Listen for settings open (Cmd+, or tray) ───
+  useEffect(() => {
+    if (!window.clui?.onOpenSettings) return
+    return window.clui.onOpenSettings(() => setShowSettings(true))
+  }, [])
 
   // ─── Theme initialization ───
   useEffect(() => {
@@ -105,15 +113,15 @@ export default function App() {
       return
     }
 
-    // History view is full-screen
-    if (showHistory) {
+    // History and Settings views are full-screen
+    if (showHistory || showSettings) {
       window.clui.setViewMode('full')
       return
     }
 
     const mode = tierToViewMode(viewTier, phase)
     window.clui.setViewMode(mode)
-  }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory])
+  }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory, showSettings])
 
   // ─── Force-expand on Beat Check ───
   useEffect(() => {
@@ -139,6 +147,11 @@ export default function App() {
 
   // ─── View routing ───
   const renderView = () => {
+    // Settings overlay
+    if (showSettings) {
+      return <SettingsView key="settings" onBack={() => setShowSettings(false)} />
+    }
+
     // History overlay
     if (showHistory) {
       return <HistoryView key="history" onBack={() => setShowHistory(false)} />

@@ -11,6 +11,7 @@ import { createWindow, showWindow, toggleWindow, snapshotWindowState } from './w
 import { registerCoreIpc } from './ipc/core'
 import { registerShowtimeIpc } from './ipc/showtime'
 import { createTray } from './tray'
+import { buildAppMenu } from './menu'
 import { registerShortcuts } from './shortcuts'
 import { requestPermissions } from './permissions'
 import { startDayBoundaryCheck } from './day-boundary'
@@ -63,6 +64,7 @@ app.whenReady().then(async () => {
     log(`DataService initialization failed: ${err instanceof Error ? err.message : String(err)}`)
   }
 
+  buildAppMenu()
   createWindow()
   snapshotWindowState('after createWindow')
 
@@ -118,7 +120,7 @@ app.whenReady().then(async () => {
         bounds: mainWindow?.getBounds(),
       }
     })
-    ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Reset Show', 'separator', 'Quit Showtime']
+    ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Preferences…', 'Reset Show', 'separator', 'Quit Showtime']
     ipcMain.handle('test:get-tray-menu', () => (global as any).__trayMenuLabels)
   }
 

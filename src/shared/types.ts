@@ -422,6 +422,7 @@ export const IPC = {
   // Showtime window management
   SET_VIEW_MODE: 'showtime:set-view-mode',
   RESET_SHOW: 'showtime:reset-show',
+  OPEN_SETTINGS: 'showtime:open-settings',
 
   // Showtime day boundary detection (main → renderer)
   DAY_BOUNDARY: 'showtime:day-boundary',

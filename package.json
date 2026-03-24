@@ -1,5 +1,6 @@
 {
   "name": "showtime",
+  "productName": "Showtime",
   "version": "0.1.0",
   "description": "Showtime — SNL Day Planner for ADHD-friendly task management with Claude Code",
   "license": "MIT",
