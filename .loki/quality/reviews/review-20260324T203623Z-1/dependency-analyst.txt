@@ -1,0 +1,6 @@
+VERDICT: PASS
+FINDINGS:
+- [Low] `autoprefixer` (devDependency) is unnecessary with Tailwind CSS v4 + `@tailwindcss/vite` plugin — it's pre-existing bloat, not introduced in this diff (package.json:76)
+- [Low] `postcss` (devDependency) may be unused since `@tailwindcss/vite` handles PostCSS internally — pre-existing, not introduced in this diff (package.json:83)
+
+No dependency changes were introduced in this diff. The only `package.json` edit is adding `"productName": "Showtime"`. All new code (`menu.ts`, `SettingsView.tsx`, `env.d.ts` global) uses already-declared dependencies (Electron built-ins, React, Framer Motion, Zustand). The `import pkg from './package.json'` in `electron.vite.config.ts` is a build-time-only read for version injection — no runtime impact.

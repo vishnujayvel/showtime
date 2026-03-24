@@ -3,6 +3,6 @@
   "gate_failures": [],
   "pass": true,
   "static_analysis": 1,
-  "test_coverage": 0,
+  "test_coverage": 1,
   "code_review": 0
 }

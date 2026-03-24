@@ -1,0 +1,9 @@
+[
+  {
+    "id": "todo-0",
+    "type": "todo",
+    "payload": {
+      "action": "Update visual regression baseline for dashboard"
+    }
+  }
+]

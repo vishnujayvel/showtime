@@ -1,0 +1,4 @@
+VERDICT: PASS
+FINDINGS:
+- Low: Duplicated "open settings" IPC dispatch logic in both `menu.ts:23-27` and `tray.ts:20-25` — identical `getMainWindow()` guard + `webContents.send(IPC.OPEN_SETTINGS)` pattern. Tolerable at 2 call sites but worth noting if a third appears.
+- None otherwise. Clean SRP per module (menu, tray, SettingsView), correct dependency direction (main→shared←renderer), proper Electron process isolation via IPC bridge, and no god-class growth in App.tsx beyond what 2 overlay flags warrant.
