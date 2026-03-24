@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Calendar Sync Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        'accent-dark': '#c4613e',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' },
+        notepad: { bg: '#13130f', header: '#1a1a14', border: '#2a2a24', text: '#c8c6b8' },
+        cal: '#60a5fa'
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Animations */
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .spin { animation: spin 1.2s linear infinite; }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+
+  /* Calendar event badge */
+  .cal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: rgba(96,165,250,0.1);
+    border: 1px solid rgba(96,165,250,0.25);
+    color: #60a5fa;
+  }
+
+  /* State machine diagram */
+  .sm-node {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .sm-arrow {
+    color: #5a5855;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .sm-decision {
+    padding: 6px 12px;
+    border: 1.5px dashed;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* Toggle switch */
+  .toggle-track {
+    width: 40px; height: 24px;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 4px;
+    transition: left 0.2s;
+  }
+  .toggle-track.on { background: #d97757; }
+  .toggle-track.on .toggle-thumb { left: 20px; }
+  .toggle-track.off { background: #242428; }
+  .toggle-track.off .toggle-thumb { left: 4px; }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Calendar Sync</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Calendar Integration</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    Import today's calendar events into the Writer's Room. Calendar events become suggested acts, visually distinct from user-added tasks. Graceful fallbacks for every error state.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- STATE MACHINE DIAGRAM                                          -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Architecture</span>
+    <h2 class="text-xl font-bold text-txt-primary">State Machine</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The complete decision tree for calendar sync, rendered as a flow diagram.</p>
+
+  <div class="p-8 rounded-xl" style="background: #0d0d0f; border: 1px solid #242428;">
+    <!-- Row 1: Entry -->
+    <div class="flex items-center gap-3 mb-6 flex-wrap">
+      <div class="sm-node" style="background: rgba(217,119,87,0.1); border: 1px solid rgba(217,119,87,0.3); color: #d97757;">
+        Writer's Room Opens
+      </div>
+      <span class="sm-arrow">&#8594;</span>
+      <div class="sm-decision" style="border-color: #5a5855; color: #9a9890;">
+        Calendar MCP Available?
+      </div>
+    </div>
+
+    <!-- Row 2: YES branch -->
+    <div class="ml-8 mb-4">
+      <div class="flex items-center gap-3 mb-4 flex-wrap">
+        <span class="sm-node text-xs" style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e;">YES</span>
+        <span class="sm-arrow">&#8594;</span>
+        <div class="sm-decision" style="border-color: #60a5fa; color: #60a5fa;">
+          Toggle: Import calendar?
+        </div>
+      </div>
+
+      <!-- ON sub-branch -->
+      <div class="ml-16 mb-3">
+        <div class="flex items-center gap-3 mb-3 flex-wrap">
+          <span class="sm-node text-xs" style="background: rgba(217,119,87,0.1); border: 1px solid rgba(217,119,87,0.3); color: #d97757;">ON</span>
+          <span class="sm-arrow">&#8594;</span>
+          <div class="sm-node" style="background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); color: #60a5fa;">
+            Fetch Events
+          </div>
+          <span class="sm-arrow">&#8594;</span>
+          <div class="sm-decision" style="border-color: #5a5855; color: #9a9890;">
+            Result?
+          </div>
+        </div>
+
+        <!-- Fetch results -->
+        <div class="ml-16 space-y-2">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="sm-node text-xs" style="background: rgba(34,197,94,0.08); color: #22c55e; border: 1px solid rgba(34,197,94,0.2);">Events found</span>
+            <span class="sm-arrow">&#8594;</span>
+            <span class="sm-node text-xs" style="background: rgba(245,158,11,0.08); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2);">Show in lineup as suggested acts</span>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="sm-node text-xs" style="background: rgba(154,152,144,0.08); color: #9a9890; border: 1px solid rgba(154,152,144,0.2);">No events today</span>
+            <span class="sm-arrow">&#8594;</span>
+            <span class="sm-node text-xs" style="background: rgba(154,152,144,0.08); color: #9a9890; border: 1px solid rgba(154,152,144,0.2);">"Calendar is clear today!"</span>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="sm-node text-xs" style="background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);">Fetch error / timeout</span>
+            <span class="sm-arrow">&#8594;</span>
+            <span class="sm-node text-xs" style="background: rgba(154,152,144,0.08); color: #9a9890; border: 1px solid rgba(154,152,144,0.2);">Graceful fallback, standard planning</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- OFF sub-branch -->
+      <div class="ml-16">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="sm-node text-xs" style="background: rgba(90,88,85,0.15); border: 1px solid rgba(90,88,85,0.3); color: #5a5855;">OFF</span>
+          <span class="sm-arrow">&#8594;</span>
+          <span class="sm-node text-xs" style="background: rgba(154,152,144,0.08); color: #9a9890; border: 1px solid rgba(154,152,144,0.2);">Standard lineup (no calendar data)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: NO branch -->
+    <div class="ml-8">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="sm-node text-xs" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #ef4444;">NO</span>
+        <span class="sm-arrow">&#8594;</span>
+        <span class="sm-node text-xs" style="background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); color: #60a5fa;">Banner: "Connect Google Calendar in Claude Code settings"</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 1: NO CALENDAR MCP                                       -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">No Calendar MCP</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Google Calendar MCP is not configured. Show an informational banner (not blocking).</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8 relative">
+      <!-- Spotlight -->
+      <div style="position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:300px; height:200px; background:radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.05) 0%, transparent 70%); pointer-events:none;"></div>
+
+      <p class="text-xl font-semibold text-txt-primary mb-6">How's your energy?</p>
+
+      <!-- Calendar MCP banner -->
+      <div class="mb-6 px-4 py-3 rounded-lg flex items-start gap-3" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15);">
+        <span class="text-lg mt-0.5">&#128197;</span>
+        <div class="flex-1">
+          <p class="text-sm text-txt-primary font-medium">Connect Google Calendar</p>
+          <p class="text-xs text-txt-secondary mt-1">Auto-populate your lineup with today's events. Set up the Calendar MCP in Claude Code settings.</p>
+          <button class="text-xs text-cal mt-2 hover:underline font-medium">Learn how &#8594;</button>
+        </div>
+        <button class="text-txt-muted hover:text-txt-secondary text-xs mt-0.5">&#10005;</button>
+      </div>
+
+      <!-- Energy selector (standard flow continues) -->
+      <div class="grid grid-cols-2 gap-3">
+        <button class="text-left p-4 rounded-lg border" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.25);">
+          <span class="text-2xl mb-1 block">&#9889;</span>
+          <span class="font-semibold text-sm" style="color:#f59e0b;">High Energy</span>
+          <p class="text-xs text-txt-muted mt-1">Ready to headline</p>
+        </button>
+        <button class="text-left p-4 rounded-lg border" style="background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.25);">
+          <span class="text-2xl mb-1 block">&#9728;&#65039;</span>
+          <span class="font-semibold text-sm" style="color:#22c55e;">Medium</span>
+          <p class="text-xs text-txt-muted mt-1">Solid performer</p>
+        </button>
+        <button class="text-left p-4 rounded-lg border" style="background:rgba(96,165,250,0.06); border-color:rgba(96,165,250,0.25);">
+          <span class="text-2xl mb-1 block">&#127780;&#65039;</span>
+          <span class="font-semibold text-sm" style="color:#60a5fa;">Low</span>
+          <p class="text-xs text-txt-muted mt-1">Keep it light</p>
+        </button>
+        <button class="text-left p-4 rounded-lg border" style="background:rgba(139,92,246,0.06); border-color:rgba(139,92,246,0.25);">
+          <span class="text-2xl mb-1 block">&#127769;</span>
+          <span class="font-semibold text-sm" style="color:#8b5cf6;">Recovery</span>
+          <p class="text-xs text-txt-muted mt-1">Short set, lots of breaks</p>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 2: CALENDAR AVAILABLE, TOGGLE OFF                        -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">Calendar Available, Toggle OFF</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Calendar MCP is connected but the user has opted not to import events today.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+      <p class="text-sm text-txt-secondary mb-6">Dump everything. Claude will organize it into today's lineup.</p>
+
+      <!-- Calendar toggle (OFF) -->
+      <div class="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1);">
+        <span class="text-base">&#128197;</span>
+        <span class="text-sm text-txt-secondary flex-1">Import today's calendar events</span>
+        <div class="toggle-track off" onclick="this.classList.toggle('on'); this.classList.toggle('off');">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Standard notepad -->
+      <div class="rounded-lg overflow-hidden" style="background:#13130f; border:1px solid #2a2a24;">
+        <div class="px-4 py-2 flex items-center gap-2" style="background:#1a1a14; border-bottom:1px solid #2a2a24;">
+          <span class="text-xs font-mono text-txt-muted">TODAY'S NOTES</span>
+        </div>
+        <div class="p-4 font-mono text-sm" style="color:#c8c6b8; min-height:100px;">
+          <span class="text-txt-muted">meetings, tasks, errands, whatever...</span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+          Build the Lineup &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 3: CALENDAR AVAILABLE, TOGGLE ON, FETCHING               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Fetching Calendar Events</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Calendar toggle is ON. Fetching today's events from Google Calendar MCP.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+      <p class="text-sm text-txt-secondary mb-6">Dump everything. Claude will organize it into today's lineup.</p>
+
+      <!-- Calendar toggle (ON) with loading -->
+      <div class="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15);">
+        <span class="text-base">&#128197;</span>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-cal font-medium">Checking your calendar</span>
+            <!-- Spinner -->
+            <svg class="spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="5.5" stroke="rgba(96,165,250,0.3)" stroke-width="2"/>
+              <path d="M12.5 7a5.5 5.5 0 0 0-5.5-5.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="toggle-track on">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Skeleton loading for events -->
+      <div class="space-y-2 mb-5">
+        <div class="flex items-center gap-3 px-3 py-2.5 rounded-md" style="background: rgba(96,165,250,0.04);">
+          <div class="w-16 h-3 rounded" style="background: rgba(96,165,250,0.1);"></div>
+          <div class="flex-1 h-3 rounded" style="background: rgba(96,165,250,0.08); max-width: 180px;"></div>
+        </div>
+        <div class="flex items-center gap-3 px-3 py-2.5 rounded-md" style="background: rgba(96,165,250,0.04);">
+          <div class="w-16 h-3 rounded" style="background: rgba(96,165,250,0.1);"></div>
+          <div class="flex-1 h-3 rounded" style="background: rgba(96,165,250,0.08); max-width: 140px;"></div>
+        </div>
+        <div class="flex items-center gap-3 px-3 py-2.5 rounded-md" style="background: rgba(96,165,250,0.04);">
+          <div class="w-16 h-3 rounded" style="background: rgba(96,165,250,0.1);"></div>
+          <div class="flex-1 h-3 rounded" style="background: rgba(96,165,250,0.08); max-width: 200px;"></div>
+        </div>
+      </div>
+
+      <!-- Notepad (still available, user can type while waiting) -->
+      <div class="rounded-lg overflow-hidden" style="background:#13130f; border:1px solid #2a2a24;">
+        <div class="px-4 py-2 flex items-center gap-2" style="background:#1a1a14; border-bottom:1px solid #2a2a24;">
+          <span class="text-xs font-mono text-txt-muted">TODAY'S NOTES</span>
+        </div>
+        <div class="p-4 font-mono text-sm" style="color:#c8c6b8; min-height:80px;">
+          <span class="text-txt-muted">add tasks not on your calendar...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 4: EVENTS FOUND — CALENDAR EVENTS AS SUGGESTED ACTS      -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">Events Found</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Calendar events are shown as suggested acts with time badges, calendar icon, and auto-detected categories. User can deselect any.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+      <p class="text-sm text-txt-secondary mb-6">Your calendar events are below. Add anything else you want on the show.</p>
+
+      <!-- Calendar toggle (ON, connected) -->
+      <div class="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15);">
+        <span class="text-base">&#128197;</span>
+        <div class="flex-1 flex items-center gap-2">
+          <span class="text-sm text-cal font-medium">3 events imported</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        </div>
+        <div class="toggle-track on">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Calendar events as cards -->
+      <div class="space-y-2 mb-5">
+        <p class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted mb-2">FROM YOUR CALENDAR</p>
+
+        <!-- Event 1: Meeting — Social -->
+        <div class="flex items-center gap-3 px-3.5 py-3 rounded-lg" style="background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.12);">
+          <input type="checkbox" checked class="accent-cal w-3.5 h-3.5 rounded cursor-pointer" />
+          <div class="w-0.5 h-8 rounded-full" style="background: #ec4899;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="cal-badge">&#128197; 10:00 AM</span>
+              <span class="text-[9px] font-mono text-txt-muted uppercase tracking-wider">Social</span>
+            </div>
+            <p class="text-sm text-txt-primary font-medium truncate">Team Standup</p>
+            <p class="text-xs text-txt-muted">30 min &middot; Google Meet</p>
+          </div>
+        </div>
+
+        <!-- Event 2: Focus Block — Deep Work -->
+        <div class="flex items-center gap-3 px-3.5 py-3 rounded-lg" style="background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.12);">
+          <input type="checkbox" checked class="accent-cal w-3.5 h-3.5 rounded cursor-pointer" />
+          <div class="w-0.5 h-8 rounded-full" style="background: #8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="cal-badge">&#128197; 2:00 PM</span>
+              <span class="text-[9px] font-mono text-txt-muted uppercase tracking-wider">Deep Work</span>
+            </div>
+            <p class="text-sm text-txt-primary font-medium truncate">Project Review with Sarah</p>
+            <p class="text-xs text-txt-muted">45 min &middot; Zoom</p>
+          </div>
+        </div>
+
+        <!-- Event 3: Gym — Exercise -->
+        <div class="flex items-center gap-3 px-3.5 py-3 rounded-lg" style="background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.12);">
+          <input type="checkbox" checked class="accent-cal w-3.5 h-3.5 rounded cursor-pointer" />
+          <div class="w-0.5 h-8 rounded-full" style="background: #22c55e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="cal-badge">&#128197; 5:30 PM</span>
+              <span class="text-[9px] font-mono text-txt-muted uppercase tracking-wider">Exercise</span>
+            </div>
+            <p class="text-sm text-txt-primary font-medium truncate">Gym Session</p>
+            <p class="text-xs text-txt-muted">60 min</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notepad for additional tasks -->
+      <div class="rounded-lg overflow-hidden" style="background:#13130f; border:1px solid #2a2a24;">
+        <div class="px-4 py-2 flex items-center gap-2" style="background:#1a1a14; border-bottom:1px solid #2a2a24;">
+          <span class="text-xs font-mono text-txt-muted">ADDITIONAL TASKS</span>
+        </div>
+        <div class="p-4 font-mono text-sm leading-7" style="color:#c8c6b8; min-height:80px; background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(90,88,85,0.15) 27px, rgba(90,88,85,0.15) 28px); background-position: 0 3px;">
+          <span style="color:#d97757;">1.</span> Finish API docs<br>
+          <span style="color:#d97757;">2.</span> Reply to investor email<br>
+          <span class="text-txt-muted">|</span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+          Build the Lineup &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 5: NO EVENTS TODAY                                       -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 5</span>
+    <h2 class="text-xl font-bold text-txt-primary">Calendar Clear</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Calendar connected but no events today. A positive message, then standard planning.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+      <p class="text-sm text-txt-secondary mb-6">Dump everything. Claude will organize it into today's lineup.</p>
+
+      <!-- Calendar toggle (ON, no events) -->
+      <div class="flex items-center gap-3 mb-2 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1);">
+        <span class="text-base">&#128197;</span>
+        <span class="text-sm text-txt-secondary flex-1">Import today's calendar events</span>
+        <div class="toggle-track on">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- No events message -->
+      <div class="mb-5 px-3 py-2 rounded-md" style="background: rgba(34,197,94,0.04);">
+        <p class="text-xs text-txt-secondary">&#9989; Calendar is clear today! Plan freely.</p>
+      </div>
+
+      <!-- Standard notepad -->
+      <div class="rounded-lg overflow-hidden" style="background:#13130f; border:1px solid #2a2a24;">
+        <div class="px-4 py-2 flex items-center gap-2" style="background:#1a1a14; border-bottom:1px solid #2a2a24;">
+          <span class="text-xs font-mono text-txt-muted">TODAY'S NOTES</span>
+        </div>
+        <div class="p-4 font-mono text-sm" style="color:#c8c6b8; min-height:100px;">
+          <span class="text-txt-muted">meetings, tasks, errands, whatever...</span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+          Build the Lineup &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 6: FETCH ERROR                                           -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 6</span>
+    <h2 class="text-xl font-bold text-txt-primary">Calendar Fetch Error</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Calendar fetch failed or timed out. Graceful fallback -- no blocking, just an informational message.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+      <p class="text-sm text-txt-secondary mb-6">Dump everything. Claude will organize it into today's lineup.</p>
+
+      <!-- Calendar error banner -->
+      <div class="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-lg" style="background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.12);">
+        <span class="text-base">&#128197;</span>
+        <div class="flex-1">
+          <p class="text-sm text-txt-secondary">Couldn't reach your calendar. Proceeding with standard planning.</p>
+          <button class="text-xs text-cal mt-1 hover:underline font-medium">Try again</button>
+        </div>
+        <div class="toggle-track on">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Standard notepad (unblocked) -->
+      <div class="rounded-lg overflow-hidden" style="background:#13130f; border:1px solid #2a2a24;">
+        <div class="px-4 py-2 flex items-center gap-2" style="background:#1a1a14; border-bottom:1px solid #2a2a24;">
+          <span class="text-xs font-mono text-txt-muted">TODAY'S NOTES</span>
+        </div>
+        <div class="p-4 font-mono text-sm" style="color:#c8c6b8; min-height:100px;">
+          <span class="text-txt-muted">meetings, tasks, errands, whatever...</span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button class="px-5 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+          Build the Lineup &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 7: MIXED LINEUP — CALENDAR + USER TASKS                  -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 7</span>
+    <h2 class="text-xl font-bold text-txt-primary">Mixed Lineup</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The generated lineup combines calendar events and user-added tasks. Calendar events are visually distinct with a blue badge and time indicator.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xl font-semibold text-txt-primary">Today's Lineup</p>
+          <p class="text-sm text-txt-secondary mt-1">Calendar events + your tasks, organized.</p>
+        </div>
+        <span class="font-mono text-xs text-txt-muted">6 ACTS &middot; ~4h 15m</span>
+      </div>
+
+      <div class="space-y-2.5 mb-8">
+        <!-- Act 1: User task -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6;">DEEP WORK <span class="divider">|</span> ACT 1</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Finish API Docs</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">45:00</span>
+        </div>
+
+        <!-- Act 2: CALENDAR event — meeting -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1); animation-delay:0.08s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#ec4899;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(236,72,153,0.4); color:#ec4899;">SOCIAL <span class="divider">|</span> ACT 2</span>
+              <span class="cal-badge">&#128197; 10:00 AM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Team Standup</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 3: User task -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.16s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#60a5fa;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa;">ADMIN <span class="divider">|</span> ACT 3</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Reply to Investor Email</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">20:00</span>
+        </div>
+
+        <!-- Act 4: CALENDAR event — focus block -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1); animation-delay:0.24s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6;">DEEP WORK <span class="divider">|</span> ACT 4</span>
+              <span class="cal-badge">&#128197; 2:00 PM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Project Review with Sarah</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">45:00</span>
+        </div>
+
+        <!-- Act 5: User task -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.32s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">CREATIVE <span class="divider">|</span> ACT 5</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Newsletter Brainstorm</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 6: CALENDAR event — gym -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1); animation-delay:0.40s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#22c55e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e;">EXERCISE <span class="divider">|</span> ACT 6</span>
+              <span class="cal-badge">&#128197; 5:30 PM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Gym Session</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">60:00</span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="flex items-center gap-4 mb-6 px-1">
+        <div class="flex items-center gap-1.5">
+          <div class="w-3 h-3 rounded" style="background: #242428; border: 1px solid #333;"></div>
+          <span class="text-[10px] text-txt-muted">Your tasks</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-3 h-3 rounded" style="background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2);"></div>
+          <span class="text-[10px] text-txt-muted">Calendar events</span>
+        </div>
+      </div>
+
+      <!-- WE'RE LIVE button -->
+      <div class="pt-4" style="border-top: 1px solid #2a2a2e;">
+        <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+          <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+          WE'RE LIVE!
+        </button>
+        <p class="text-center text-xs text-txt-muted mt-3">This starts the show. You've got this.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SETTINGS SECTION: CALENDAR SYNC                                -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Settings</span>
+    <h2 class="text-xl font-bold text-txt-primary">Preferences — Calendar Sync</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The Settings view with calendar sync configuration, showing both connected and not-configured states.</p>
+
+  <!-- Settings: Connected -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Calendar Connected</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <!-- Title bar -->
+      <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+        <div class="flex items-center gap-3">
+          <div class="traffic-lights">
+            <div class="traffic-light" style="background:#ff5f57;"></div>
+            <div class="traffic-light" style="background:#febc2e;"></div>
+            <div class="traffic-light" style="background:#28c840;"></div>
+          </div>
+          <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PREFERENCES</span>
+        </div>
+        <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      </div>
+
+      <div class="px-5 py-5 space-y-6">
+        <!-- Calendar Sync -->
+        <div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-base">&#128197;</span>
+              <div>
+                <p class="text-sm font-body text-txt-primary">Calendar Sync</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <p class="text-xs text-emerald-400">Connected via Google Calendar MCP</p>
+                </div>
+              </div>
+            </div>
+            <div class="toggle-track on" onclick="this.classList.toggle('on'); this.classList.toggle('off');">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <p class="text-xs text-txt-muted mt-2 ml-8">When enabled, today's calendar events are imported into the Writer's Room as suggested acts.</p>
+        </div>
+
+        <div style="border-top: 1px solid #242428;"></div>
+
+        <!-- Sound -->
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-body text-txt-primary">Sound</p>
+            <p class="text-xs text-txt-muted mt-0.5">Notification sounds</p>
+          </div>
+          <div class="toggle-track on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Theme -->
+        <div>
+          <p class="text-sm font-body text-txt-primary mb-2">Theme</p>
+          <div class="flex gap-2">
+            <button class="px-3 py-1.5 rounded text-xs font-body capitalize" style="background:#d97757; color:white;">dark</button>
+            <button class="px-3 py-1.5 rounded text-xs font-body capitalize" style="background:#242428; color:#9a9890;">light</button>
+            <button class="px-3 py-1.5 rounded text-xs font-body capitalize" style="background:#242428; color:#9a9890;">system</button>
+          </div>
+        </div>
+
+        <!-- Reset Show -->
+        <div class="pt-2" style="border-top: 1px solid #242428;">
+          <p class="text-sm font-body text-txt-primary mb-1">Reset Show</p>
+          <p class="text-xs text-txt-muted mb-3">Clear today's show and start fresh from Dark Studio.</p>
+          <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+            Reset Show
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-5 py-4 text-center" style="border-top: 1px solid #242428;">
+        <p class="text-xs text-txt-muted font-body">Showtime v0.3.0</p>
+        <p class="text-[10px] text-txt-muted mt-1">An ADHD-friendly day planner</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings: Not Configured -->
+  <div>
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Calendar Not Configured</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <!-- Title bar -->
+      <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+        <div class="flex items-center gap-3">
+          <div class="traffic-lights">
+            <div class="traffic-light" style="background:#ff5f57;"></div>
+            <div class="traffic-light" style="background:#febc2e;"></div>
+            <div class="traffic-light" style="background:#28c840;"></div>
+          </div>
+          <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PREFERENCES</span>
+        </div>
+        <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      </div>
+
+      <div class="px-5 py-5 space-y-6">
+        <!-- Calendar Sync — not configured -->
+        <div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-base">&#128197;</span>
+              <div>
+                <p class="text-sm font-body text-txt-primary">Calendar Sync</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background: #5a5855;"></span>
+                  <p class="text-xs text-txt-muted">Not configured</p>
+                </div>
+              </div>
+            </div>
+            <div class="toggle-track off" style="opacity: 0.5; cursor: not-allowed;">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <p class="text-xs text-txt-muted mt-2 ml-8">
+            Requires Google Calendar MCP in Claude Code.
+            <button class="text-cal hover:underline font-medium ml-1">Set up &#8594;</button>
+          </p>
+        </div>
+
+        <div style="border-top: 1px solid #242428;"></div>
+
+        <!-- Sound -->
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-body text-txt-primary">Sound</p>
+            <p class="text-xs text-txt-muted mt-0.5">Notification sounds</p>
+          </div>
+          <div class="toggle-track on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Theme -->
+        <div>
+          <p class="text-sm font-body text-txt-primary mb-2">Theme</p>
+          <div class="flex gap-2">
+            <button class="px-3 py-1.5 rounded text-xs font-body capitalize" style="background:#d97757; color:white;">dark</button>
+            <button class="px-3 py-1.5 rounded text-xs font-body capitalize" style="background:#242428; color:#9a9890;">light</button>
+            <button class="px-3 py-1.5 rounded text-xs font-body capitalize" style="background:#242428; color:#9a9890;">system</button>
+          </div>
+        </div>
+
+        <!-- Reset Show -->
+        <div class="pt-2" style="border-top: 1px solid #242428;">
+          <p class="text-sm font-body text-txt-primary mb-1">Reset Show</p>
+          <p class="text-xs text-txt-muted mb-3">Clear today's show and start fresh from Dark Studio.</p>
+          <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+            Reset Show
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-5 py-4 text-center" style="border-top: 1px solid #242428;">
+        <p class="text-xs text-txt-muted font-body">Showtime v0.3.0</p>
+        <p class="text-[10px] text-txt-muted mt-1">An ADHD-friendly day planner</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- INTERACTIVE DEMO: STATE SWITCHER                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Interactive</span>
+    <h2 class="text-xl font-bold text-txt-primary">State Switcher</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Click the buttons below to switch between calendar sync states in a single window.</p>
+
+  <!-- State buttons -->
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button onclick="showState('no-mcp')" class="state-btn px-3 py-1.5 rounded text-xs font-mono" style="background: #242428; color: #9a9890; border: 1px solid #333;">No MCP</button>
+    <button onclick="showState('toggle-off')" class="state-btn px-3 py-1.5 rounded text-xs font-mono" style="background: #242428; color: #9a9890; border: 1px solid #333;">Toggle OFF</button>
+    <button onclick="showState('fetching')" class="state-btn px-3 py-1.5 rounded text-xs font-mono" style="background: #242428; color: #9a9890; border: 1px solid #333;">Fetching</button>
+    <button onclick="showState('events-found')" class="state-btn px-3 py-1.5 rounded text-xs font-mono" style="background: #242428; color: #9a9890; border: 1px solid #333;">Events Found</button>
+    <button onclick="showState('no-events')" class="state-btn px-3 py-1.5 rounded text-xs font-mono" style="background: #242428; color: #9a9890; border: 1px solid #333;">No Events</button>
+    <button onclick="showState('error')" class="state-btn px-3 py-1.5 rounded text-xs font-mono" style="background: #242428; color: #9a9890; border: 1px solid #333;">Error</button>
+  </div>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8" id="interactive-content">
+      <!-- Content injected by JS -->
+    </div>
+  </div>
+</section>
+
+<script>
+const states = {
+  'no-mcp': `
+    <p class="text-xl font-semibold text-txt-primary mb-6">How's your energy?</p>
+    <div class="mb-6 px-4 py-3 rounded-lg flex items-start gap-3" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15);">
+      <span class="text-lg mt-0.5">&#128197;</span>
+      <div class="flex-1">
+        <p class="text-sm text-txt-primary font-medium">Connect Google Calendar</p>
+        <p class="text-xs text-txt-secondary mt-1">Auto-populate your lineup with today's events.</p>
+        <button class="text-xs mt-2 hover:underline font-medium" style="color:#60a5fa;">Learn how &#8594;</button>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-xs mt-0.5">&#10005;</button>
+    </div>
+    <p class="text-xs text-txt-muted text-center">Energy selector continues below...</p>
+  `,
+  'toggle-off': `
+    <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+    <p class="text-sm text-txt-secondary mb-6">Dump everything.</p>
+    <div class="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1);">
+      <span class="text-base">&#128197;</span>
+      <span class="text-sm text-txt-secondary flex-1">Import today's calendar events</span>
+      <div class="toggle-track off" style="width:40px;height:24px;border-radius:12px;position:relative;background:#242428;cursor:pointer;">
+        <div style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:4px;left:4px;"></div>
+      </div>
+    </div>
+    <p class="text-xs text-txt-muted text-center">Standard notepad appears below...</p>
+  `,
+  'fetching': `
+    <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+    <p class="text-sm text-txt-secondary mb-6">Dump everything.</p>
+    <div class="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15);">
+      <span class="text-base">&#128197;</span>
+      <div class="flex-1 flex items-center gap-2">
+        <span class="text-sm font-medium" style="color:#60a5fa;">Checking your calendar</span>
+        <svg class="spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="5.5" stroke="rgba(96,165,250,0.3)" stroke-width="2"/>
+          <path d="M12.5 7a5.5 5.5 0 0 0-5.5-5.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div style="width:40px;height:24px;border-radius:12px;position:relative;background:#d97757;">
+        <div style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:4px;left:20px;"></div>
+      </div>
+    </div>
+    <div class="space-y-2 mb-5">
+      <div class="flex items-center gap-3 px-3 py-2.5 rounded-md pulse" style="background: rgba(96,165,250,0.04);">
+        <div class="w-16 h-3 rounded" style="background: rgba(96,165,250,0.1);"></div>
+        <div class="flex-1 h-3 rounded" style="background: rgba(96,165,250,0.08); max-width: 180px;"></div>
+      </div>
+      <div class="flex items-center gap-3 px-3 py-2.5 rounded-md pulse" style="background: rgba(96,165,250,0.04);">
+        <div class="w-16 h-3 rounded" style="background: rgba(96,165,250,0.1);"></div>
+        <div class="flex-1 h-3 rounded" style="background: rgba(96,165,250,0.08); max-width: 140px;"></div>
+      </div>
+    </div>
+  `,
+  'events-found': `
+    <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+    <p class="text-sm text-txt-secondary mb-6">Your calendar events are below.</p>
+    <div class="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15);">
+      <span class="text-base">&#128197;</span>
+      <div class="flex-1 flex items-center gap-2">
+        <span class="text-sm font-medium" style="color:#60a5fa;">3 events imported</span>
+        <span class="w-1.5 h-1.5 rounded-full" style="background:#22c55e;"></span>
+      </div>
+    </div>
+    <div class="space-y-2 mb-4">
+      <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg fade-in" style="background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.12);">
+        <div class="w-0.5 h-6 rounded-full" style="background: #ec4899;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span style="font-family:'JetBrains Mono';font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);color:#60a5fa;">&#128197; 10:00 AM</span>
+          </div>
+          <p class="text-sm text-txt-primary font-medium">Team Standup</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg fade-in" style="background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.12); animation-delay:0.1s;">
+        <div class="w-0.5 h-6 rounded-full" style="background: #8b5cf6;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span style="font-family:'JetBrains Mono';font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);color:#60a5fa;">&#128197; 2:00 PM</span>
+          </div>
+          <p class="text-sm text-txt-primary font-medium">Project Review with Sarah</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg fade-in" style="background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.12); animation-delay:0.2s;">
+        <div class="w-0.5 h-6 rounded-full" style="background: #22c55e;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span style="font-family:'JetBrains Mono';font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);color:#60a5fa;">&#128197; 5:30 PM</span>
+          </div>
+          <p class="text-sm text-txt-primary font-medium">Gym Session</p>
+        </div>
+      </div>
+    </div>
+  `,
+  'no-events': `
+    <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+    <p class="text-sm text-txt-secondary mb-6">Dump everything.</p>
+    <div class="flex items-center gap-3 mb-2 px-3 py-2.5 rounded-lg" style="background: rgba(96,165,250,0.04); border: 1px solid rgba(96,165,250,0.1);">
+      <span class="text-base">&#128197;</span>
+      <span class="text-sm text-txt-secondary flex-1">Import today's calendar events</span>
+      <div style="width:40px;height:24px;border-radius:12px;position:relative;background:#d97757;">
+        <div style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:4px;left:20px;"></div>
+      </div>
+    </div>
+    <div class="mb-5 px-3 py-2 rounded-md" style="background: rgba(34,197,94,0.04);">
+      <p class="text-xs text-txt-secondary">&#9989; Calendar is clear today! Plan freely.</p>
+    </div>
+    <p class="text-xs text-txt-muted text-center">Standard notepad appears below...</p>
+  `,
+  'error': `
+    <p class="text-xl font-semibold text-txt-primary mb-2">What's on the schedule?</p>
+    <p class="text-sm text-txt-secondary mb-6">Dump everything.</p>
+    <div class="flex items-center gap-3 mb-5 px-3 py-2.5 rounded-lg" style="background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.12);">
+      <span class="text-base">&#128197;</span>
+      <div class="flex-1">
+        <p class="text-sm text-txt-secondary">Couldn't reach your calendar. Proceeding with standard planning.</p>
+        <button class="text-xs mt-1 hover:underline font-medium" style="color:#60a5fa;">Try again</button>
+      </div>
+      <div style="width:40px;height:24px;border-radius:12px;position:relative;background:#d97757;">
+        <div style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:4px;left:20px;"></div>
+      </div>
+    </div>
+    <p class="text-xs text-txt-muted text-center">Standard notepad appears below, unblocked.</p>
+  `
+};
+
+function showState(key) {
+  const content = document.getElementById('interactive-content');
+  content.innerHTML = states[key];
+
+  // Update button styles
+  document.querySelectorAll('.state-btn').forEach(btn => {
+    btn.style.background = '#242428';
+    btn.style.color = '#9a9890';
+    btn.style.borderColor = '#333';
+  });
+  event.target.style.background = 'rgba(217,119,87,0.15)';
+  event.target.style.color = '#d97757';
+  event.target.style.borderColor = 'rgba(217,119,87,0.3)';
+}
+
+// Show initial state
+showState('no-mcp');
+document.querySelector('.state-btn').style.background = 'rgba(217,119,87,0.15)';
+document.querySelector('.state-btn').style.color = '#d97757';
+document.querySelector('.state-btn').style.borderColor = 'rgba(217,119,87,0.3)';
+</script>
+
+<!-- ============================================================ -->
+<!-- E2E TEST CASES                                                 -->
+<!-- ============================================================ -->
+<!--
+E2E Test Cases:
+
+## Calendar MCP Detection
+1. Launch app without Calendar MCP configured → verify "Connect Google Calendar" banner appears in Writer's Room
+2. Verify banner has "Learn how" link and dismiss (X) button
+3. Dismiss banner → verify it does not reappear for the current session
+4. Launch app with Calendar MCP configured → verify banner does NOT appear
+5. Launch app with Calendar MCP → verify calendar toggle checkbox appears in plan dump step
+
+## Calendar Toggle
+6. Calendar toggle OFF → verify no calendar fetch occurs, standard notepad shown
+7. Toggle calendar ON → verify fetch begins with "Checking your calendar..." + spinner
+8. Toggle calendar OFF while fetching → verify fetch is cancelled gracefully
+9. Verify toggle state persists across Writer's Room re-entries (saved in settings)
+
+## Fetch States
+10. Calendar fetch succeeds with events → verify events rendered as cards with time badges and category colors
+11. Calendar fetch succeeds with 0 events → verify "Calendar is clear today! Plan freely." message
+12. Calendar fetch times out (>10s) → verify error message: "Couldn't reach your calendar. Proceeding with standard planning."
+13. Calendar fetch network error → verify same graceful error message, "Try again" button
+14. Click "Try again" after error → verify fetch retries with loading state
+
+## Event Display
+15. Verify each calendar event shows: calendar icon (blue badge), time (e.g., "2:00 PM"), event name, duration
+16. Verify category auto-detection: meeting → Social, focus block → Deep Work, gym → Exercise
+17. Verify calendar event cards have blue-tinted background (distinct from user task cards)
+18. Verify each calendar event has a checkbox to include/exclude from lineup
+19. Uncheck a calendar event → verify it is excluded from the "Build the Lineup" payload
+20. Verify user can still type in notepad while calendar events are displayed above
+
+## Mixed Lineup
+21. Build lineup with calendar events + typed tasks → verify lineup contains both, properly categorized
+22. Verify calendar-sourced acts have blue calendar badge with time in the lineup view
+23. Verify user-sourced acts do NOT have calendar badge in the lineup view
+24. Verify calendar events can be reordered by drag (same as user acts)
+25. Verify act numbering is sequential regardless of source (calendar vs user)
+
+## Settings
+26. Navigate to Settings → verify "Calendar Sync" section exists
+27. Calendar MCP connected → verify green "Connected" status indicator
+28. Calendar MCP not configured → verify gray "Not configured" status with "Set up" link
+29. Calendar MCP not configured → verify toggle is disabled (grayed out, not clickable)
+30. Toggle calendar sync OFF in settings → verify Writer's Room no longer shows calendar toggle
+31. Toggle calendar sync ON in settings → verify Writer's Room shows calendar toggle
+32. Verify Settings shows: Calendar Sync, Sound, Theme, Reset Show (in that order)
+
+## Overlapping Events
+33. Two calendar events at the same time → verify both are shown, no deduplication
+34. All-day event → verify it is shown with "All Day" badge instead of time
+35. Multi-hour event → verify duration is correctly displayed
+
+## Non-blocking Behavior
+36. Calendar fetch in progress → verify notepad is still editable (not blocked)
+37. Calendar error → verify "Build the Lineup" button is still active
+38. No Calendar MCP → verify the rest of Writer's Room flow works identically
+-->
+
+</body>
+</html>

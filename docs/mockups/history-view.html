@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — History View Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Animations */
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  .breathe { animation: breathe 4s ease-in-out infinite; }
+
+  @keyframes expandIn {
+    0% { max-height: 0; opacity: 0; }
+    100% { max-height: 500px; opacity: 1; }
+  }
+  .expand-in { animation: expandIn 0.35s ease-out forwards; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  .loading-dot { animation: pulse 1.4s ease-in-out infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Verdict colors */
+  .verdict-day-won { color: #f59e0b; }
+  .verdict-solid-show { color: #d97757; }
+  .verdict-good-effort { color: #60a5fa; }
+  .verdict-called-early { color: #9a9890; }
+
+  /* Beat stars */
+  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .beat-dim { color: #5a5855; }
+
+  /* Expand arrow rotation */
+  .expand-arrow { transition: transform 0.2s ease; }
+  .expand-arrow.open { transform: rotate(90deg); }
+
+  /* Act status colors */
+  .status-done { color: #22c55e; }
+  .status-live { color: #ef4444; }
+  .status-cut { color: #5a5855; }
+  .status-pending { color: #9a9890; }
+
+  /* Drift indicator */
+  .drift-arrow { color: #d97757; }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">History View</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Past Shows</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    The show archive. Every day's performance recorded with verdicts, act recaps, and beat counts. Expand any show to relive the rundown.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- STATE 1: LOADING                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">Loading</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Initial load while fetching show history from storage.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Loading content -->
+    <div class="px-5 py-4" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+      <div class="text-center">
+        <p class="text-sm text-txt-muted mb-3">Loading...</p>
+        <div class="flex gap-2 justify-center">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent loading-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent loading-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent loading-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 2: EMPTY STATE                                           -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">Empty State</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">No shows have been completed yet. First-time user experience.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Empty content -->
+    <div class="px-5 py-4" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+      <div class="text-center max-w-xs">
+        <div class="text-4xl mb-4 opacity-30">&#127917;</div>
+        <p class="text-sm text-txt-muted">
+          No past shows yet. Your history will appear here after your first show.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 3: SHORT LIST (1-3 shows)                                -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Short List</h2>
+    <span class="text-xs text-txt-muted font-mono">1-3 shows</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">A few days of history. Each row shows date, verdict badge, act count, and beat stars.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Show list -->
+    <div class="px-5 py-4">
+      <!-- Show 1: DAY WON -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left slide-up" style="animation-delay:0s;">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0">
+          <p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p>
+        </div>
+        <div class="w-[90px] shrink-0">
+          <span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span>
+        </div>
+        <div class="flex-1">
+          <span class="font-mono text-xs text-txt-secondary">5/5 acts</span>
+        </div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span>
+          <span class="text-sm beat-lit">&#9733;</span>
+          <span class="text-sm beat-lit">&#9733;</span>
+        </div>
+      </button>
+
+      <!-- Show 2: SOLID SHOW -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left slide-up" style="animation-delay:0.03s;">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0">
+          <p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 21</p>
+        </div>
+        <div class="w-[90px] shrink-0">
+          <span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span>
+        </div>
+        <div class="flex-1">
+          <span class="font-mono text-xs text-txt-secondary">4/5 acts</span>
+        </div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span>
+          <span class="text-sm beat-lit">&#9733;</span>
+          <span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+
+      <!-- Show 3: GOOD EFFORT -->
+      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left slide-up" style="animation-delay:0.06s;">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0">
+          <p class="font-body text-sm text-txt-primary font-medium">Thu, Mar 20</p>
+        </div>
+        <div class="w-[90px] shrink-0">
+          <span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-good-effort">Good Effort</span>
+        </div>
+        <div class="flex-1">
+          <span class="font-mono text-xs text-txt-secondary">2/4 acts</span>
+        </div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span>
+          <span class="text-sm beat-dim">&#9734;</span>
+          <span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 4: FULL LIST WITH ALL VERDICT TYPES                      -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">Full List — All Verdicts</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Demonstrating all four verdict types and scrollable history.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Scrollable show list -->
+    <div class="px-5 py-4 overflow-y-auto" style="max-height: 400px;">
+      <!-- DAY WON -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">5/5 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
+        </div>
+      </button>
+
+      <!-- SOLID SHOW -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 21</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">4/5 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+
+      <!-- GOOD EFFORT -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Thu, Mar 20</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-good-effort">Good Effort</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">2/4 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+
+      <!-- CALLED EARLY -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Wed, Mar 19</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-called-early">Called Early</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">1/3 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+
+      <!-- DAY WON (another) -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Tue, Mar 18</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">6/6 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
+        </div>
+      </button>
+
+      <!-- SOLID SHOW (another) -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 17</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">3/4 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+
+      <!-- In Progress -->
+      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 14</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] text-txt-muted">In Progress</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">2/5 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 5: EXPANDED DETAIL — DAY WON                             -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 5</span>
+    <h2 class="text-xl font-bold text-txt-primary">Expanded Detail — Day Won</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Click a show to expand its detail: plan text, acts with statuses, and duration drift indicators.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Show list with one expanded -->
+    <div class="px-5 py-4 overflow-y-auto" style="max-height: 520px;">
+
+      <!-- Show 1: EXPANDED -->
+      <div>
+        <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left" style="background: rgba(36,36,40,0.5);">
+          <span class="text-txt-muted text-xs expand-arrow open">&#9654;</span>
+          <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p></div>
+          <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
+          <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">5/5 acts</span></div>
+          <div class="shrink-0 flex items-center gap-0.5">
+            <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
+          </div>
+        </button>
+
+        <!-- Expanded detail panel -->
+        <div class="pl-8 pr-2 py-3 border-b border-studio-hover expand-in">
+          <!-- Plan text -->
+          <div class="mb-3">
+            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">PLAN</span>
+            <p class="text-xs text-txt-secondary mt-1 whitespace-pre-wrap" style="line-height:1.6;">Finish API integration for client dashboard, review design mockups from Sarah, run for 30 min, reply to that email, brainstorm newsletter topic</p>
+          </div>
+
+          <!-- Acts detail -->
+          <div>
+            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">ACTS</span>
+            <div class="mt-1 space-y-1">
+              <!-- Act 1: Done, no drift -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
+                <span class="text-txt-primary flex-1 truncate">API Integration</span>
+                <span class="text-txt-muted shrink-0">45m</span>
+              </div>
+              <!-- Act 2: Done, with drift -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
+                <span class="text-txt-primary flex-1 truncate">Review Design Mockups</span>
+                <span class="text-txt-muted shrink-0">30m <span class="drift-arrow">&#8594; 42m</span></span>
+              </div>
+              <!-- Act 3: Done, no drift -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
+                <span class="text-txt-primary flex-1 truncate">Afternoon Run</span>
+                <span class="text-txt-muted shrink-0">30m</span>
+              </div>
+              <!-- Act 4: Done, with drift (under time) -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
+                <span class="text-txt-primary flex-1 truncate">Email Catchup</span>
+                <span class="text-txt-muted shrink-0">20m <span class="drift-arrow">&#8594; 12m</span></span>
+              </div>
+              <!-- Act 5: Done, no drift -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
+                <span class="text-txt-primary flex-1 truncate">Newsletter Brainstorm</span>
+                <span class="text-txt-muted shrink-0">30m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show 2: Collapsed -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 21</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">4/5 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+
+      <!-- Show 3: Collapsed -->
+      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Thu, Mar 20</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-good-effort">Good Effort</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">2/4 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 6: EXPANDED DETAIL — CALLED EARLY (mixed statuses)       -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 6</span>
+    <h2 class="text-xl font-bold text-txt-primary">Expanded Detail — Called Early</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">A show that ended early with mixed act statuses: Done, Cut, and Pending.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Show list with expanded "Called Early" -->
+    <div class="px-5 py-4 overflow-y-auto" style="max-height: 520px;">
+      <!-- Collapsed show above -->
+      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">5/5 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
+        </div>
+      </button>
+
+      <!-- EXPANDED: Called Early -->
+      <div>
+        <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left" style="background: rgba(36,36,40,0.5);">
+          <span class="text-txt-muted text-xs expand-arrow open">&#9654;</span>
+          <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Wed, Mar 19</p></div>
+          <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-called-early">Called Early</span></div>
+          <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">1/3 acts</span></div>
+          <div class="shrink-0 flex items-center gap-0.5">
+            <span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
+          </div>
+        </button>
+
+        <!-- Expanded detail panel -->
+        <div class="pl-8 pr-2 py-3 border-b border-studio-hover expand-in">
+          <!-- Plan text -->
+          <div class="mb-3">
+            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">PLAN</span>
+            <p class="text-xs text-txt-secondary mt-1 whitespace-pre-wrap" style="line-height:1.6;">catch up on PR reviews, write docs for the new endpoint, team sync call</p>
+          </div>
+
+          <!-- Acts detail with mixed statuses -->
+          <div>
+            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">ACTS</span>
+            <div class="mt-1 space-y-1">
+              <!-- Done with drift -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
+                <span class="text-txt-primary flex-1 truncate">PR Reviews</span>
+                <span class="text-txt-muted shrink-0">45m <span class="drift-arrow">&#8594; 1h 10m</span></span>
+              </div>
+              <!-- Cut -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-cut">Cut</span>
+                <span class="text-txt-secondary flex-1 truncate" style="text-decoration: line-through; text-decoration-color: #5a5855;">Write API Docs</span>
+                <span class="text-txt-muted shrink-0">30m</span>
+              </div>
+              <!-- Pending -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-pending">Pending</span>
+                <span class="text-txt-secondary flex-1 truncate">Team Sync Call</span>
+                <span class="text-txt-muted shrink-0">30m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsed show below -->
+      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
+        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
+        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Tue, Mar 18</p></div>
+        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
+        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">6/6 acts</span></div>
+        <div class="shrink-0 flex items-center gap-0.5">
+          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 7: INTERACTIVE DEMO                                      -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Interactive</span>
+    <h2 class="text-xl font-bold text-txt-primary">Click to Expand/Collapse</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Click any show row to toggle its detail panel. Demonstrates the real interaction pattern.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+      </div>
+      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+    </div>
+
+    <!-- Interactive show list -->
+    <div class="px-5 py-4" id="interactive-list">
+      <!-- Show entries rendered by JS -->
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
+      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+        Back to Stage
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+const shows = [
+  {
+    id: '2026-03-24',
+    date: 'Mon, Mar 24',
+    verdict: { label: 'Day Won', class: 'verdict-day-won' },
+    acts: '5/5 acts',
+    beatsLocked: 3,
+    beatsTotal: 3,
+    plan: 'Finish API integration for client dashboard, review design mockups, afternoon run, email catchup, newsletter brainstorm',
+    actDetails: [
+      { status: 'Done', statusClass: 'status-done', name: 'API Integration', planned: '45m', actual: null },
+      { status: 'Done', statusClass: 'status-done', name: 'Review Design Mockups', planned: '30m', actual: '42m' },
+      { status: 'Done', statusClass: 'status-done', name: 'Afternoon Run', planned: '30m', actual: null },
+      { status: 'Done', statusClass: 'status-done', name: 'Email Catchup', planned: '20m', actual: '12m' },
+      { status: 'Done', statusClass: 'status-done', name: 'Newsletter Brainstorm', planned: '30m', actual: null },
+    ]
+  },
+  {
+    id: '2026-03-21',
+    date: 'Fri, Mar 21',
+    verdict: { label: 'Solid Show', class: 'verdict-solid-show' },
+    acts: '4/5 acts',
+    beatsLocked: 2,
+    beatsTotal: 3,
+    plan: 'deploy v2 to staging, user interviews, gym, expense report, team retro',
+    actDetails: [
+      { status: 'Done', statusClass: 'status-done', name: 'Deploy v2 to Staging', planned: '45m', actual: '52m' },
+      { status: 'Done', statusClass: 'status-done', name: 'User Interviews', planned: '30m', actual: null },
+      { status: 'Done', statusClass: 'status-done', name: 'Gym', planned: '30m', actual: null },
+      { status: 'Done', statusClass: 'status-done', name: 'Expense Report', planned: '15m', actual: null },
+      { status: 'Cut', statusClass: 'status-cut', name: 'Team Retro', planned: '30m', actual: null },
+    ]
+  },
+  {
+    id: '2026-03-20',
+    date: 'Thu, Mar 20',
+    verdict: { label: 'Good Effort', class: 'verdict-good-effort' },
+    acts: '2/4 acts',
+    beatsLocked: 1,
+    beatsTotal: 3,
+    plan: 'data migration script, design review, walk, inbox zero',
+    actDetails: [
+      { status: 'Done', statusClass: 'status-done', name: 'Data Migration Script', planned: '45m', actual: '1h 5m' },
+      { status: 'Done', statusClass: 'status-done', name: 'Design Review', planned: '30m', actual: null },
+      { status: 'Cut', statusClass: 'status-cut', name: 'Walk', planned: '20m', actual: null },
+      { status: 'Pending', statusClass: 'status-pending', name: 'Inbox Zero', planned: '20m', actual: null },
+    ]
+  },
+  {
+    id: '2026-03-19',
+    date: 'Wed, Mar 19',
+    verdict: { label: 'Called Early', class: 'verdict-called-early' },
+    acts: '1/3 acts',
+    beatsLocked: 0,
+    beatsTotal: 3,
+    plan: 'catch up on PR reviews, write docs, team sync',
+    actDetails: [
+      { status: 'Done', statusClass: 'status-done', name: 'PR Reviews', planned: '45m', actual: '1h 10m' },
+      { status: 'Cut', statusClass: 'status-cut', name: 'Write API Docs', planned: '30m', actual: null },
+      { status: 'Pending', statusClass: 'status-pending', name: 'Team Sync Call', planned: '30m', actual: null },
+    ]
+  }
+];
+
+let expandedId = null;
+
+function renderList() {
+  const container = document.getElementById('interactive-list');
+  container.innerHTML = '';
+
+  shows.forEach((show, i) => {
+    const isExpanded = expandedId === show.id;
+    const isLast = i === shows.length - 1;
+
+    // Row wrapper
+    const wrapper = document.createElement('div');
+
+    // Main row button
+    const row = document.createElement('button');
+    row.className = `w-full flex items-center gap-3 py-3 ${!isLast ? 'border-b border-studio-hover' : ''} hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left`;
+    if (isExpanded) row.style.background = 'rgba(36,36,40,0.5)';
+
+    // Build beat stars
+    let stars = '';
+    for (let j = 0; j < show.beatsTotal; j++) {
+      stars += j < show.beatsLocked
+        ? '<span class="text-sm beat-lit">&#9733;</span>'
+        : '<span class="text-sm beat-dim">&#9734;</span>';
+    }
+
+    row.innerHTML = `
+      <span class="text-txt-muted text-xs expand-arrow ${isExpanded ? 'open' : ''}" style="transition: transform 0.2s ease; ${isExpanded ? 'transform: rotate(90deg);' : ''}">&#9654;</span>
+      <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">${show.date}</p></div>
+      <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider ${show.verdict.class}">${show.verdict.label}</span></div>
+      <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">${show.acts}</span></div>
+      <div class="shrink-0 flex items-center gap-0.5">${stars}</div>
+    `;
+
+    row.addEventListener('click', () => {
+      expandedId = expandedId === show.id ? null : show.id;
+      renderList();
+    });
+
+    wrapper.appendChild(row);
+
+    // Detail panel
+    if (isExpanded) {
+      const detail = document.createElement('div');
+      detail.className = 'pl-8 pr-2 py-3 border-b border-studio-hover';
+      detail.style.animation = 'expandIn 0.3s ease-out forwards';
+
+      let actsHtml = show.actDetails.map(act => {
+        const nameClass = act.status === 'Cut' ? 'text-txt-secondary' : 'text-txt-primary';
+        const nameStyle = act.status === 'Cut' ? 'text-decoration: line-through; text-decoration-color: #5a5855;' : '';
+        const driftHtml = act.actual ? `<span class="drift-arrow"> &#8594; ${act.actual}</span>` : '';
+        return `
+          <div class="flex items-center gap-2 text-xs">
+            <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase ${act.statusClass}">${act.status}</span>
+            <span class="${nameClass} flex-1 truncate" style="${nameStyle}">${act.name}</span>
+            <span class="text-txt-muted shrink-0">${act.planned}${driftHtml}</span>
+          </div>
+        `;
+      }).join('');
+
+      detail.innerHTML = `
+        <div class="mb-3">
+          <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">PLAN</span>
+          <p class="text-xs text-txt-secondary mt-1" style="line-height:1.6;">${show.plan}</p>
+        </div>
+        <div>
+          <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">ACTS</span>
+          <div class="mt-1 space-y-1">${actsHtml}</div>
+        </div>
+      `;
+      wrapper.appendChild(detail);
+    }
+
+    container.appendChild(wrapper);
+  });
+}
+
+renderList();
+</script>
+
+<!-- ============================================================ -->
+<!-- E2E TEST CASES                                                 -->
+<!-- ============================================================ -->
+<!--
+E2E Test Cases:
+1. Navigate to HistoryView → verify empty state when no shows ("No past shows yet. Your history will appear here after your first show.")
+2. Navigate to HistoryView → verify loading state renders "Loading..." centered text
+3. Seed 1 show → verify show list renders with date, verdict badge, act count, and beat stars
+4. Seed 3 shows → verify all three show rows render in chronological order (newest first)
+5. Verify DAY_WON verdict renders gold "Day Won" text with 3/3 lit beat stars
+6. Verify SOLID_SHOW verdict renders accent-colored "Solid Show" text with 2/3 lit beat stars
+7. Verify GOOD_EFFORT verdict renders blue "Good Effort" text with 1/3 lit beat stars
+8. Verify SHOW_CALLED_EARLY verdict renders gray "Called Early" text with 0/3 lit beat stars
+9. Click show row → verify detail panel expands with plan text and acts
+10. Click expanded show row → verify detail panel collapses
+11. Verify expanded detail shows act names with correct statuses (Done/Live/Cut/Pending)
+12. Verify drift indicator (orange arrow) appears when actual duration differs from planned
+13. Verify drift indicator does NOT appear when actual matches planned
+14. Verify "Cut" acts display with line-through text decoration
+15. Verify "Back" button in title bar navigates away from HistoryView
+16. Verify "Back to Stage" footer button navigates away from HistoryView
+17. Verify expand arrow rotates 90 degrees when show is expanded
+18. Verify show with no verdict shows "In Progress" or "Complete" text
+19. Seed 10+ shows → verify list is scrollable
+20. Navigate to HistoryView → verify title bar reads "PAST SHOWS" in JetBrains Mono uppercase
+-->
+
+</body>
+</html>

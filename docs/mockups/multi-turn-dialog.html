@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Multi-Turn Dialog Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        'accent-dark': '#c4613e',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' },
+        notepad: { bg: '#13130f', header: '#1a1a14', border: '#2a2a24', text: '#c8c6b8' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Animations */
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+  @keyframes writersDots {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  .writer-dot-1 { animation: writersDots 1.4s ease-in-out infinite; }
+  .writer-dot-2 { animation: writersDots 1.4s ease-in-out infinite 0.2s; }
+  .writer-dot-3 { animation: writersDots 1.4s ease-in-out infinite 0.4s; }
+
+  @keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(217,119,87,0.08) 50%, transparent 100%);
+    background-size: 200px 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes fadeSlideIn {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .fade-slide { animation: fadeSlideIn 0.4s ease-out forwards; }
+
+  /* Chat bubble styles */
+  .chat-bubble-user {
+    background: rgba(217,119,87,0.1);
+    border: 1px solid rgba(217,119,87,0.2);
+    border-radius: 12px 12px 4px 12px;
+  }
+  .chat-bubble-writers {
+    background: rgba(154,152,144,0.08);
+    border: 1px solid rgba(154,152,144,0.12);
+    border-radius: 12px 12px 12px 4px;
+  }
+  .chat-bubble-error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.15);
+    border-radius: 12px 12px 12px 4px;
+  }
+
+  /* Highlight glow on updated acts */
+  @keyframes updateGlow {
+    0% { box-shadow: 0 0 0 0 rgba(217,119,87,0.3); }
+    50% { box-shadow: 0 0 12px 2px rgba(217,119,87,0.15); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .act-updated { animation: updateGlow 1.5s ease-out; }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Multi-Turn Dialog</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Lineup Refinement</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    After Claude generates the initial lineup, the user can have a back-and-forth conversation to refine it. "Move deep work to after lunch." "Add a break between acts 2 and 3." The writers revise on cue.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- STATE 1: LINEUP GENERATED — INITIAL VIEW WITH CHAT INPUT       -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">Lineup Generated</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The initial lineup is ready. A new chat input appears below, inviting the user to refine.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-8 py-8 relative">
+      <!-- Warm spotlight overlay -->
+      <div style="position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:300px; height:200px; background:radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.05) 0%, transparent 70%); pointer-events:none;"></div>
+
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xl font-semibold text-txt-primary">Today's Lineup</p>
+          <p class="text-sm text-txt-secondary mt-1">Drag to reorder. This is your rundown.</p>
+        </div>
+        <span class="font-mono text-xs text-txt-muted">5 ACTS &middot; ~3h 15m</span>
+      </div>
+
+      <!-- Act cards -->
+      <div class="space-y-2.5 mb-6">
+        <!-- Act 1 -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6;">DEEP WORK <span class="divider">|</span> ACT 1</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">API Integration — Client Dashboard</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">45:00</span>
+        </div>
+
+        <!-- Act 2 -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.08s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">CREATIVE <span class="divider">|</span> ACT 2</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Review Design Mockups</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 3 -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.16s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#22c55e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e;">EXERCISE <span class="divider">|</span> ACT 3</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Afternoon Run</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 4 -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.24s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#60a5fa;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa;">ADMIN <span class="divider">|</span> ACT 4</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Email Catchup</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">20:00</span>
+        </div>
+
+        <!-- Act 5 -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.32s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">CREATIVE <span class="divider">|</span> ACT 5</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Newsletter Brainstorm</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+      </div>
+
+      <!-- Refinement chat input -->
+      <div class="border-t border-studio-hover pt-4">
+        <div class="flex items-center gap-3">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Tell the writers to change something..."
+              class="w-full px-4 py-2.5 rounded-lg text-sm font-body bg-studio-hover text-txt-primary placeholder:text-txt-muted border border-[#333] focus:border-accent focus:outline-none transition-colors"
+              disabled
+            />
+          </div>
+          <button class="px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style="background: #242428; color: #5a5855; border: 1px solid #333; cursor: not-allowed;">
+            Send
+          </button>
+        </div>
+        <p class="text-[10px] text-txt-muted mt-2 ml-1">Or press Enter. The writers will revise your lineup.</p>
+      </div>
+
+      <!-- WE'RE LIVE button -->
+      <div class="pt-6">
+        <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+          <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+          WE'RE LIVE!
+        </button>
+        <p class="text-center text-xs text-txt-muted mt-3">Happy with the lineup? Start the show.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 2: USER TYPED REFINEMENT                                 -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">User Typed Refinement</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The user has typed a change request. The Send button becomes active (accent-colored).</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <!-- Content (abbreviated lineup + chat) -->
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-1">Today's Lineup</p>
+      <p class="text-sm text-txt-muted mb-5 font-mono">5 ACTS &middot; ~3h 15m</p>
+
+      <!-- Compact lineup (abbreviated for focus on chat) -->
+      <div class="space-y-1.5 mb-5 opacity-60">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#8b5cf6;"></div>
+          <span class="text-txt-primary flex-1">API Integration</span>
+          <span class="font-mono text-txt-muted">45:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Review Design Mockups</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#22c55e;"></div>
+          <span class="text-txt-primary flex-1">Afternoon Run</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#60a5fa;"></div>
+          <span class="text-txt-primary flex-1">Email Catchup</span>
+          <span class="font-mono text-txt-muted">20:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Newsletter Brainstorm</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+      </div>
+
+      <!-- Chat input with typed message -->
+      <div class="border-t border-studio-hover pt-4">
+        <div class="flex items-center gap-3">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              value="Move deep work to after lunch and add a 10 min break after the run"
+              class="w-full px-4 py-2.5 rounded-lg text-sm font-body text-txt-primary border transition-colors"
+              style="background: #242428; border-color: #d97757; outline: none;"
+              disabled
+            />
+          </div>
+          <button class="px-4 py-2.5 rounded-lg text-sm font-medium transition-colors" style="background: rgba(217,119,87,0.15); color: #d97757; border: 1px solid rgba(217,119,87,0.3);">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 3: WRITERS REVISING (LOADING)                            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Writers Revising</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The user's message was sent. The writers are processing the revision. Subtle shimmer animation.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-1">Today's Lineup</p>
+      <p class="text-sm text-txt-muted mb-5 font-mono">5 ACTS &middot; ~3h 15m</p>
+
+      <!-- Lineup with shimmer overlay -->
+      <div class="space-y-1.5 mb-5 relative">
+        <div class="absolute inset-0 rounded-lg shimmer pointer-events-none" style="z-index:1;"></div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs opacity-40" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#8b5cf6;"></div>
+          <span class="text-txt-primary flex-1">API Integration</span>
+          <span class="font-mono text-txt-muted">45:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs opacity-40" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Review Design Mockups</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs opacity-40" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#22c55e;"></div>
+          <span class="text-txt-primary flex-1">Afternoon Run</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs opacity-40" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#60a5fa;"></div>
+          <span class="text-txt-primary flex-1">Email Catchup</span>
+          <span class="font-mono text-txt-muted">20:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs opacity-40" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Newsletter Brainstorm</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+      </div>
+
+      <!-- Chat history + loading -->
+      <div class="border-t border-studio-hover pt-4 space-y-3">
+        <!-- User message -->
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-2.5 max-w-[85%]">
+            <p class="text-sm text-txt-primary">Move deep work to after lunch and add a 10 min break after the run</p>
+          </div>
+        </div>
+
+        <!-- Writers typing indicator -->
+        <div class="flex justify-start">
+          <div class="chat-bubble-writers px-4 py-3 flex items-center gap-1.5">
+            <span class="text-xs text-txt-secondary mr-1">The writers are revising</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-accent writer-dot-1"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-accent writer-dot-2"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-accent writer-dot-3"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 4: LINEUP UPDATED — WITH CONVERSATION HISTORY            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">Lineup Updated</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The writers revised the lineup. Acts reordered, break added. Conversation history visible below. Changed acts have a subtle highlight.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xl font-semibold text-txt-primary">Today's Lineup</p>
+          <p class="text-sm text-txt-secondary mt-1">Updated by the writers.</p>
+        </div>
+        <span class="font-mono text-xs text-txt-muted">6 ACTS &middot; ~3h 25m</span>
+      </div>
+
+      <!-- UPDATED act cards (reordered, new break added) -->
+      <div class="space-y-2.5 mb-5">
+        <!-- Act 1: Creative (was Act 2) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg fade-slide" style="background:#242428; animation-delay:0s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">CREATIVE <span class="divider">|</span> ACT 1</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Review Design Mockups</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 2: Exercise (was Act 3) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg fade-slide" style="background:#242428; animation-delay:0.06s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#22c55e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e;">EXERCISE <span class="divider">|</span> ACT 2</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Afternoon Run</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 3: NEW — Break (highlighted) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg fade-slide act-updated" style="background:#242428; animation-delay:0.12s; border: 1px solid rgba(217,119,87,0.2);">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6;">REST <span class="divider">|</span> ACT 3</span>
+              <span class="text-[9px] font-mono text-accent uppercase tracking-wider">New</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Post-Run Break</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">10:00</span>
+        </div>
+
+        <!-- Act 4: Deep Work (was Act 1 — moved, highlighted) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg fade-slide act-updated" style="background:#242428; animation-delay:0.18s; border: 1px solid rgba(217,119,87,0.2);">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6;">DEEP WORK <span class="divider">|</span> ACT 4</span>
+              <span class="text-[9px] font-mono text-accent uppercase tracking-wider">Moved</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">API Integration — Client Dashboard</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">45:00</span>
+        </div>
+
+        <!-- Act 5: Admin (unchanged) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg fade-slide" style="background:#242428; animation-delay:0.24s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#60a5fa;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa;">ADMIN <span class="divider">|</span> ACT 5</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Email Catchup</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">20:00</span>
+        </div>
+
+        <!-- Act 6: Creative (unchanged) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg fade-slide" style="background:#242428; animation-delay:0.30s;">
+          <span class="text-txt-muted cursor-grab text-sm">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">CREATIVE <span class="divider">|</span> ACT 6</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Newsletter Brainstorm</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+      </div>
+
+      <!-- Conversation history -->
+      <div class="border-t border-studio-hover pt-4 space-y-3">
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-2.5 max-w-[85%]">
+            <p class="text-sm text-txt-primary">Move deep work to after lunch and add a 10 min break after the run</p>
+          </div>
+        </div>
+        <div class="flex justify-start">
+          <div class="chat-bubble-writers px-4 py-2.5 max-w-[85%]">
+            <p class="text-sm text-txt-secondary">Done — moved Deep Work to Act 4 (after lunch). Added a 10-minute Post-Run Break as Act 3. The rest of the lineup stays the same.</p>
+          </div>
+        </div>
+
+        <!-- New input for further refinement -->
+        <div class="pt-2">
+          <div class="flex items-center gap-3">
+            <div class="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Anything else to change?"
+                class="w-full px-4 py-2.5 rounded-lg text-sm font-body bg-studio-hover text-txt-primary placeholder:text-txt-muted border border-[#333] focus:border-accent focus:outline-none transition-colors"
+                disabled
+              />
+            </div>
+            <button class="px-4 py-2.5 rounded-lg text-sm font-medium" style="background: #242428; color: #5a5855; border: 1px solid #333; cursor: not-allowed;">
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WE'RE LIVE button -->
+      <div class="pt-6">
+        <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+          <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+          WE'RE LIVE!
+        </button>
+        <p class="text-center text-xs text-txt-muted mt-3">Happy with the lineup? Start the show.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 5: ERROR / CLARIFICATION NEEDED                          -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 5</span>
+    <h2 class="text-xl font-bold text-txt-primary">Error / Clarification</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Claude couldn't parse the request. A clarification message appears. The lineup is unchanged.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-1">Today's Lineup</p>
+      <p class="text-sm text-txt-muted mb-5 font-mono">5 ACTS &middot; ~3h 15m</p>
+
+      <!-- Original lineup (unchanged, compact) -->
+      <div class="space-y-1.5 mb-5">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#8b5cf6;"></div>
+          <span class="text-txt-primary flex-1">API Integration</span>
+          <span class="font-mono text-txt-muted">45:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Review Design Mockups</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#22c55e;"></div>
+          <span class="text-txt-primary flex-1">Afternoon Run</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#60a5fa;"></div>
+          <span class="text-txt-primary flex-1">Email Catchup</span>
+          <span class="font-mono text-txt-muted">20:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Newsletter Brainstorm</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+      </div>
+
+      <!-- Conversation with error -->
+      <div class="border-t border-studio-hover pt-4 space-y-3">
+        <!-- User message that's ambiguous -->
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-4 py-2.5 max-w-[85%]">
+            <p class="text-sm text-txt-primary">swap the things around</p>
+          </div>
+        </div>
+
+        <!-- Writers' clarification -->
+        <div class="flex justify-start">
+          <div class="chat-bubble-error px-4 py-2.5 max-w-[85%]">
+            <p class="text-sm" style="color: #f0a0a0;">I'm not sure which acts you'd like to swap. Could you be more specific? For example: "Swap Act 1 and Act 3" or "Move the run to after email."</p>
+          </div>
+        </div>
+
+        <!-- Input ready for retry -->
+        <div class="pt-2">
+          <div class="flex items-center gap-3">
+            <div class="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Try again — be more specific..."
+                class="w-full px-4 py-2.5 rounded-lg text-sm font-body bg-studio-hover text-txt-primary placeholder:text-txt-muted border border-[#333] focus:border-accent focus:outline-none transition-colors"
+                disabled
+              />
+            </div>
+            <button class="px-4 py-2.5 rounded-lg text-sm font-medium" style="background: #242428; color: #5a5855; border: 1px solid #333; cursor: not-allowed;">
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WE'RE LIVE button still available -->
+      <div class="pt-6">
+        <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+          <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+          WE'RE LIVE!
+        </button>
+        <p class="text-center text-xs text-txt-muted mt-3">You can still start the show with the current lineup.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATE 6: MULTI-TURN — EXTENDED CONVERSATION                    -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 6</span>
+    <h2 class="text-xl font-bold text-txt-primary">Multi-Turn Conversation</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Multiple rounds of refinement. The conversation scrolls while the lineup stays visible.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <p class="text-xl font-semibold text-txt-primary">Today's Lineup</p>
+          <p class="text-sm text-txt-muted mt-0.5 font-mono">4 ACTS &middot; ~2h 25m</p>
+        </div>
+        <span class="text-[10px] font-mono text-accent">2 revisions</span>
+      </div>
+
+      <!-- Final revised lineup (compact) -->
+      <div class="space-y-1.5 mb-5">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Review Design Mockups</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#22c55e;"></div>
+          <span class="text-txt-primary flex-1">Afternoon Run</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#8b5cf6;"></div>
+          <span class="text-txt-primary flex-1">API Integration</span>
+          <span class="font-mono text-txt-muted">45:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Newsletter Brainstorm</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+      </div>
+
+      <!-- Extended conversation history (scrollable) -->
+      <div class="border-t border-studio-hover pt-4 space-y-3 overflow-y-auto" style="max-height: 200px;">
+        <!-- Turn 1 -->
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-3.5 py-2 max-w-[85%]">
+            <p class="text-xs text-txt-primary">Move deep work to after lunch</p>
+          </div>
+        </div>
+        <div class="flex justify-start">
+          <div class="chat-bubble-writers px-3.5 py-2 max-w-[85%]">
+            <p class="text-xs text-txt-secondary">Done — moved Deep Work to Act 4, after your lunch break.</p>
+          </div>
+        </div>
+
+        <!-- Turn 2 -->
+        <div class="flex justify-end">
+          <div class="chat-bubble-user px-3.5 py-2 max-w-[85%]">
+            <p class="text-xs text-txt-primary">Actually drop the email and break acts, keep it tight</p>
+          </div>
+        </div>
+        <div class="flex justify-start">
+          <div class="chat-bubble-writers px-3.5 py-2 max-w-[85%]">
+            <p class="text-xs text-txt-secondary">Got it — removed Email Catchup and Post-Run Break. Down to 4 acts, ~2h 25m. Nice and tight.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fresh input -->
+      <div class="pt-3">
+        <div class="flex items-center gap-3">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Anything else to change?"
+              class="w-full px-4 py-2.5 rounded-lg text-sm font-body bg-studio-hover text-txt-primary placeholder:text-txt-muted border border-[#333] focus:border-accent focus:outline-none transition-colors"
+              disabled
+            />
+          </div>
+          <button class="px-4 py-2.5 rounded-lg text-sm font-medium" style="background: #242428; color: #5a5855; border: 1px solid #333;">
+            Send
+          </button>
+        </div>
+      </div>
+
+      <!-- WE'RE LIVE -->
+      <div class="pt-6">
+        <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+          <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+          WE'RE LIVE!
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- INTERACTIVE DEMO                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Interactive</span>
+    <h2 class="text-xl font-bold text-txt-primary">Try It — Type a Refinement</h2>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Type a message and press Enter or click Send. Simulates the multi-turn flow.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime — Writer's Room</span>
+      </div>
+    </div>
+
+    <div class="px-8 py-8">
+      <p class="text-xl font-semibold text-txt-primary mb-5">Today's Lineup</p>
+
+      <!-- Static lineup -->
+      <div class="space-y-1.5 mb-5" id="demo-lineup">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#8b5cf6;"></div>
+          <span class="text-txt-primary flex-1">API Integration</span>
+          <span class="font-mono text-txt-muted">45:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="text-txt-primary flex-1">Review Design Mockups</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-md text-xs" style="background:#242428;">
+          <div class="w-0.5 h-5 rounded-full" style="background:#22c55e;"></div>
+          <span class="text-txt-primary flex-1">Afternoon Run</span>
+          <span class="font-mono text-txt-muted">30:00</span>
+        </div>
+      </div>
+
+      <!-- Chat area -->
+      <div class="border-t border-studio-hover pt-4">
+        <div id="demo-chat" class="space-y-3 mb-3 overflow-y-auto" style="max-height: 200px;">
+          <!-- Messages inserted by JS -->
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <input
+              type="text"
+              id="demo-input"
+              placeholder="Tell the writers to change something..."
+              class="w-full px-4 py-2.5 rounded-lg text-sm font-body bg-studio-hover text-txt-primary placeholder:text-txt-muted border border-[#333] focus:border-accent focus:outline-none transition-colors"
+            />
+          </div>
+          <button
+            id="demo-send"
+            class="px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            style="background: #242428; color: #5a5855; border: 1px solid #333;"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Interactive demo
+const responses = [
+  "Done! I've updated the lineup based on your notes. The writers approve.",
+  "Good call. Adjusted the acts. The show looks tighter now.",
+  "Revised! Let me know if there's anything else to tweak.",
+  "The writers conferred and made the change. Looking good.",
+  "On it. Lineup refreshed to match your direction.",
+];
+
+let responseIndex = 0;
+
+const input = document.getElementById('demo-input');
+const sendBtn = document.getElementById('demo-send');
+const chat = document.getElementById('demo-chat');
+
+function updateSendButton() {
+  if (input.value.trim()) {
+    sendBtn.style.background = 'rgba(217,119,87,0.15)';
+    sendBtn.style.color = '#d97757';
+    sendBtn.style.borderColor = 'rgba(217,119,87,0.3)';
+    sendBtn.style.cursor = 'pointer';
+  } else {
+    sendBtn.style.background = '#242428';
+    sendBtn.style.color = '#5a5855';
+    sendBtn.style.borderColor = '#333';
+    sendBtn.style.cursor = 'not-allowed';
+  }
+}
+
+input.addEventListener('input', updateSendButton);
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Add user message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'flex justify-end fade-slide';
+  userDiv.innerHTML = `<div class="chat-bubble-user px-4 py-2.5 max-w-[85%]"><p class="text-sm text-txt-primary">${text}</p></div>`;
+  chat.appendChild(userDiv);
+  input.value = '';
+  updateSendButton();
+
+  // Show typing indicator
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'flex justify-start';
+  typingDiv.id = 'typing-indicator';
+  typingDiv.innerHTML = `
+    <div class="chat-bubble-writers px-4 py-3 flex items-center gap-1.5">
+      <span class="text-xs text-txt-secondary mr-1">The writers are revising</span>
+      <span class="w-1.5 h-1.5 rounded-full bg-accent writer-dot-1"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-accent writer-dot-2"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-accent writer-dot-3"></span>
+    </div>
+  `;
+  chat.appendChild(typingDiv);
+  chat.scrollTop = chat.scrollHeight;
+
+  // Simulate response after delay
+  setTimeout(() => {
+    const typing = document.getElementById('typing-indicator');
+    if (typing) typing.remove();
+
+    const responseDiv = document.createElement('div');
+    responseDiv.className = 'flex justify-start fade-slide';
+    responseDiv.innerHTML = `<div class="chat-bubble-writers px-4 py-2.5 max-w-[85%]"><p class="text-sm text-txt-secondary">${responses[responseIndex % responses.length]}</p></div>`;
+    chat.appendChild(responseDiv);
+    chat.scrollTop = chat.scrollHeight;
+    responseIndex++;
+  }, 1500);
+}
+
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+</script>
+
+<!-- ============================================================ -->
+<!-- E2E TEST CASES                                                 -->
+<!-- ============================================================ -->
+<!--
+E2E Test Cases:
+1. Generate lineup in Writer's Room → verify chat input appears below lineup with placeholder "Tell the writers to change something..."
+2. Chat input empty → verify Send button is disabled/muted (gray, not accent)
+3. Type text in chat input → verify Send button becomes active (accent-colored)
+4. Type refinement and press Enter → verify user message appears as right-aligned bubble
+5. Type refinement and click Send → verify same behavior as Enter
+6. After sending → verify typing indicator "The writers are revising..." with animated dots
+7. After revision completes → verify typing indicator is replaced by writers' response bubble (left-aligned)
+8. After revision completes → verify lineup acts are updated (reordered/added/removed)
+9. Verify new/moved acts have visual highlight ("New" / "Moved" label, accent border glow)
+10. Verify unchanged acts remain without highlight
+11. Send ambiguous message → verify error/clarification response with distinct styling (red-tinted bubble)
+12. After error → verify lineup is unchanged, input is ready for retry
+13. Verify conversation history scrolls when multiple turns exceed visible area
+14. Verify "WE'RE LIVE!" button remains accessible throughout all refinement states
+15. Verify revision count updates after each successful round ("2 revisions")
+16. After revision → verify act count and total duration update in header
+17. Verify chat input refocuses after writers' response appears
+18. Send refinement during loading → verify it is queued, not duplicated
+19. Verify the original plan dump is NOT shown during refinement (only lineup + chat)
+20. Verify lineup can still be manually drag-reordered during refinement mode
+-->
+
+</body>
+</html>
