@@ -53,13 +53,15 @@ export function PillView() {
               </span>
               <span
                 className={cn(
-                  'font-mono text-sm font-semibold tabular-nums',
+                  'font-mono text-sm font-semibold tabular-nums shrink-0',
                   isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
                 )}
               >
                 {timerText}
               </span>
-              <BeatCounter size="sm" />
+              <div className="shrink-0">
+                <BeatCounter size="sm" />
+              </div>
             </>
           )}
           {phase === 'intermission' && (
