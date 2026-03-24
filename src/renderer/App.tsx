@@ -104,6 +104,16 @@ export default function App() {
     })
   }, [])
 
+  // ─── Warm up Claude subprocess during Writer's Room ───
+  useEffect(() => {
+    if (phase === 'writers_room') {
+      const tabId = useSessionStore.getState().activeTabId
+      if (tabId) {
+        window.clui.initSession(tabId)
+      }
+    }
+  }, [phase])
+
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {
     if (!window.clui?.setViewMode) return
