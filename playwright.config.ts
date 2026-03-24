@@ -4,12 +4,17 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 60000,
   retries: 0,
-  // All tests share one Electron app via worker-scoped fixture
-  workers: 1,
-  fullyParallel: false,
+  workers: 4,
+  fullyParallel: true,
   use: {
     trace: 'on-first-retry',
+    video: 'retain-on-failure',
   },
-  // Exclude the old monolith (kept for reference)
+  projects: [
+    { name: 'smoke', testMatch: /app-launch|onboarding/ },
+    { name: 'core-flow', testMatch: /writers-room|live-show|strike-reset/ },
+    { name: 'data-views', testMatch: /data-layer|temporal|temporal-copy|view-tiers/ },
+    { name: 'visual', testMatch: /visual-regression|visual-validation|consistency/ },
+  ],
   testIgnore: ['showtime.test.ts'],
 })
