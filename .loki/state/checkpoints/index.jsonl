@@ -40,3 +40,4 @@
 {"id": "cp-2-1774202122", "ts": "2026-03-22T17:55:22Z", "iter": 2, "task": "iteration-2 failed (exit=141)", "sha": "39c09ed8943f259974e8d37e219ac93d317adcf3"}
 {"id": "cp-3-1774203529", "ts": "2026-03-22T18:18:49Z", "iter": 3, "task": "iteration-3 complete", "sha": "e0bd33ff0d94b0b8121a549ffd422738f7481151"}
 {"id": "cp-3-1774203549", "ts": "2026-03-22T18:19:09Z", "iter": 3, "task": "iteration-3 failed (exit=137)", "sha": "e0bd33ff0d94b0b8121a549ffd422738f7481151"}
+{"id": "cp-4-1774203700", "ts": "2026-03-22T18:21:40Z", "iter": 4, "task": "session end (iterations=4)", "sha": "0c18e3245c974ce4628a9e0d549f70f1c7d96b90"}
