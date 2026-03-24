@@ -44,8 +44,14 @@ async function seedPastShow(page: import('@playwright/test').Page, showId: strin
       ],
     })
   }, { showId, now, opts: opts ?? {} })
-  // Small wait to ensure SQLite write completes
-  await page.waitForTimeout(500)
+  // dataFlush returns a promise that resolves after SQLite write — no timeout needed
+}
+
+/** Clear all seeded shows from SQLite */
+async function clearHistory(page: import('@playwright/test').Page) {
+  await page.evaluate(() => {
+    return window.clui.clearShowHistory?.() ?? Promise.resolve()
+  })
 }
 
 /** Navigate to HistoryView from DarkStudio */
@@ -54,7 +60,8 @@ async function openHistoryFromDarkStudio(page: import('@playwright/test').Page) 
   const pastShowsBtn = page.getByRole('button', { name: 'Past Shows' })
   await expect(pastShowsBtn).toBeVisible({ timeout: 10000 })
   await pastShowsBtn.click()
-  await page.waitForTimeout(1500)
+  // Wait for HistoryView to render instead of arbitrary timeout
+  await expect(page.getByText('PAST SHOWS', { exact: true })).toBeVisible({ timeout: 10000 })
 }
 
 /** Assert HistoryView header is visible */
@@ -63,12 +70,19 @@ async function expectHistoryHeader(page: import('@playwright/test').Page) {
   await expect(header).toBeVisible({ timeout: 5000 })
 }
 
+/** Generate a unique showId for test isolation */
+function uniqueShowId(daysAgo: number): string {
+  return new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10)
+}
+
 // ─── Test 1: Navigate to HistoryView from DarkStudioView (empty state) ───
 
 test.describe('HistoryView — Navigation from DarkStudio', () => {
   test('shows empty state when no past shows exist', async ({ mainPage: page }) => {
-    await openHistoryFromDarkStudio(page)
+    // Clear any leftover data from prior tests
+    await clearHistory(page)
 
+    await openHistoryFromDarkStudio(page)
     await expectHistoryHeader(page)
 
     // Verify empty state message
@@ -77,10 +91,10 @@ test.describe('HistoryView — Navigation from DarkStudio', () => {
 
     await screenshot(page, 'history-empty-state')
 
-    // Navigate back so state is clean for next test
+    // Navigate back and wait for DarkStudio to appear
     const backBtn = page.getByRole('button', { name: 'Back to Stage' })
     await backBtn.click()
-    await page.waitForTimeout(1000)
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -88,9 +102,9 @@ test.describe('HistoryView — Navigation from DarkStudio', () => {
 
 test.describe('HistoryView — Navigation from Strike', () => {
   test('navigates from StrikeView via View Past Shows button', async ({ mainPage: page }) => {
-    // Seed a past show so history isn't empty when we get there
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-    await seedPastShow(page, yesterday)
+    // Seed a past show with unique ID so it doesn't collide
+    const showId = uniqueShowId(2)
+    await seedPastShow(page, showId)
 
     // Seed StrikeView state
     await seedFixture(page, FIXTURES.strike_dayWon)
@@ -99,27 +113,26 @@ test.describe('HistoryView — Navigation from Strike', () => {
     const viewHistoryBtn = page.locator('[data-testid="view-history-btn"]')
     await expect(viewHistoryBtn).toBeVisible({ timeout: 15000 })
     await viewHistoryBtn.click()
-    await page.waitForTimeout(1500)
 
-    // Verify HistoryView renders
+    // Wait for HistoryView to render
     await expectHistoryHeader(page)
 
     await screenshot(page, 'history-from-strike')
 
-    // Navigate back
+    // Navigate back and wait for DarkStudio
     const backBtn = page.getByRole('button', { name: 'Back to Stage' })
     await backBtn.click()
-    await page.waitForTimeout(1000)
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
   })
 })
 
-// ─── Test 3: Past show appears after completing a show ───
+// ─── Test 3: Past show appears after completing a show (DAY_WON) ───
 
 test.describe('HistoryView — Show Entry Verification', () => {
   test('displays past show with date, verdict, act count, and beat stars', async ({ mainPage: page }) => {
-    // Seed a completed show into SQLite (simulating post-Strike persistence)
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-    await seedPastShow(page, yesterday, {
+    // Seed a completed show with unique ID
+    const showId = uniqueShowId(3)
+    await seedPastShow(page, showId, {
       verdict: 'DAY_WON',
       beatsLocked: 3,
     })
@@ -132,17 +145,18 @@ test.describe('HistoryView — Show Entry Verification', () => {
     const emptyMsg = page.getByText('No past shows yet')
     await expect(emptyMsg).not.toBeVisible({ timeout: 3000 })
 
-    // Verify show entry elements are visible
-    const body = await page.textContent('body')
+    // Verify show entry via data-testid
+    const showEntry = page.locator(`[data-testid="show-entry-${showId}"]`)
+    await expect(showEntry).toBeVisible({ timeout: 5000 })
 
     // Verdict badge should show "Day Won"
-    expect(body).toMatch(/Day Won/i)
+    await expect(showEntry.getByText('Day Won')).toBeVisible()
 
     // Act count should show (e.g. "2/3 acts")
-    expect(body).toMatch(/\d+\/\d+ acts/)
+    await expect(showEntry.getByText(/\d+\/\d+ acts/)).toBeVisible()
 
     // Beat stars — verify golden stars exist (★ character)
-    const goldenStars = page.locator('.text-beat')
+    const goldenStars = showEntry.locator('.text-beat')
     const starCount = await goldenStars.count()
     expect(starCount).toBeGreaterThan(0)
 
@@ -151,17 +165,48 @@ test.describe('HistoryView — Show Entry Verification', () => {
     // Navigate back
     const backBtn = page.getByRole('button', { name: 'Back to Stage' })
     await backBtn.click()
-    await page.waitForTimeout(1000)
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
   })
 })
 
-// ─── Test 4: Expand a show to see detail ───
+// ─── Test 4: All verdict types display correctly ───
+
+test.describe('HistoryView — Verdict Types', () => {
+  test('displays GOOD_EFFORT and SHOW_CALLED_EARLY verdicts', async ({ mainPage: page }) => {
+    // Seed shows with each verdict type using unique IDs
+    const goodEffortId = uniqueShowId(5)
+    const calledEarlyId = uniqueShowId(6)
+
+    await seedPastShow(page, goodEffortId, { verdict: 'GOOD_EFFORT', beatsLocked: 1 })
+    await seedPastShow(page, calledEarlyId, { verdict: 'SHOW_CALLED_EARLY', beatsLocked: 0 })
+
+    await openHistoryFromDarkStudio(page)
+    await expectHistoryHeader(page)
+
+    // Verify GOOD_EFFORT entry
+    const goodEffortEntry = page.locator(`[data-testid="show-entry-${goodEffortId}"]`)
+    await expect(goodEffortEntry).toBeVisible({ timeout: 5000 })
+    await expect(goodEffortEntry.getByText('Good Effort')).toBeVisible()
+
+    // Verify SHOW_CALLED_EARLY entry
+    const calledEarlyEntry = page.locator(`[data-testid="show-entry-${calledEarlyId}"]`)
+    await expect(calledEarlyEntry).toBeVisible({ timeout: 5000 })
+    await expect(calledEarlyEntry.getByText('Called Early')).toBeVisible()
+
+    // Navigate back
+    const backBtn = page.getByRole('button', { name: 'Back to Stage' })
+    await backBtn.click()
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
+  })
+})
+
+// ─── Test 5: Expand a show to see detail (acts, plan, cut acts, drift) ───
 
 test.describe('HistoryView — Expand Show Detail', () => {
-  test('expanding a show reveals act list with names and durations', async ({ mainPage: page }) => {
-    // Seed a past show with plan text
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-    await seedPastShow(page, yesterday, {
+  test('expanding a show reveals act list with names, statuses, durations, and drift', async ({ mainPage: page }) => {
+    // Seed a past show with unique ID
+    const showId = uniqueShowId(4)
+    await seedPastShow(page, showId, {
       verdict: 'SOLID_SHOW',
       planText: 'Focus on deep work and exercise',
     })
@@ -170,41 +215,103 @@ test.describe('HistoryView — Expand Show Detail', () => {
     await openHistoryFromDarkStudio(page)
     await expectHistoryHeader(page)
 
-    // Click on the show entry to expand it (entries are motion.button with act count text)
-    const showEntry = page.locator('.overflow-y-auto button').first()
+    // Click on the show entry via data-testid
+    const showEntry = page.locator(`[data-testid="show-entry-${showId}"]`)
     await expect(showEntry).toBeVisible({ timeout: 5000 })
     await showEntry.click()
-    await page.waitForTimeout(1500)
 
-    // Verify act names appear in the expanded detail
-    const body = await page.textContent('body')
-    expect(body).toContain('Deep Work Session')
-    expect(body).toContain('Exercise Break')
-
-    // Verify act durations are shown (e.g., "45m", "25m")
-    expect(body).toMatch(/\d+m/)
-
-    // Verify plan text is shown
-    expect(body).toContain('Focus on deep work')
+    // Wait for expanded detail to appear
+    const detailPanel = page.locator(`[data-testid="show-detail-${showId}"]`)
+    await expect(detailPanel).toBeVisible({ timeout: 5000 })
 
     // Verify ACTS label appears
-    const actsLabel = page.getByText('ACTS', { exact: true })
-    await expect(actsLabel).toBeVisible({ timeout: 3000 })
+    await expect(detailPanel.getByText('ACTS', { exact: true })).toBeVisible()
 
     // Verify PLAN label appears
-    const planLabel = page.getByText('PLAN', { exact: true })
-    await expect(planLabel).toBeVisible({ timeout: 3000 })
+    await expect(detailPanel.getByText('PLAN', { exact: true })).toBeVisible()
+
+    // Verify plan text is shown
+    await expect(detailPanel.getByText('Focus on deep work')).toBeVisible()
+
+    // Verify completed act names
+    await expect(detailPanel.getByText('Deep Work Session')).toBeVisible()
+    await expect(detailPanel.getByText('Exercise Break')).toBeVisible()
+
+    // Verify cut act renders with "Cut" label
+    const cutRow = detailPanel.locator('[data-testid="act-row-cut"]')
+    await expect(cutRow).toBeVisible()
+    await expect(cutRow.getByText('Cut')).toBeVisible()
+    await expect(cutRow.getByText('Email & Slack')).toBeVisible()
+
+    // Verify duration drift indicator (planned != actual for Exercise Break: 25m → 30m)
+    const driftIndicator = detailPanel.locator('[data-testid="drift-indicator"]')
+    const driftCount = await driftIndicator.count()
+    expect(driftCount).toBeGreaterThan(0)
+
+    // Verify act durations are shown (e.g., "45m", "25m")
+    const detailText = await detailPanel.textContent()
+    expect(detailText).toMatch(/\d+m/)
 
     await screenshot(page, 'history-expanded-detail')
+
+    // ─── Collapse: click again and verify detail hides ───
+    await showEntry.click()
+    await expect(detailPanel).not.toBeVisible({ timeout: 5000 })
 
     // Navigate back
     const backBtn = page.getByRole('button', { name: 'Back to Stage' })
     await backBtn.click()
-    await page.waitForTimeout(1000)
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
   })
 })
 
-// ─── Test 5: Back button returns to previous view ───
+// ─── Test 6: Multiple shows display in reverse-chronological order ───
+
+test.describe('HistoryView — Multiple Shows & Ordering', () => {
+  test('displays multiple shows in reverse-chronological order', async ({ mainPage: page }) => {
+    // Seed three shows on different days
+    const olderShowId = uniqueShowId(9)
+    const middleShowId = uniqueShowId(8)
+    const newerShowId = uniqueShowId(7)
+
+    await seedPastShow(page, olderShowId, { verdict: 'GOOD_EFFORT', beatsLocked: 1 })
+    await seedPastShow(page, middleShowId, { verdict: 'SOLID_SHOW', beatsLocked: 2 })
+    await seedPastShow(page, newerShowId, { verdict: 'DAY_WON', beatsLocked: 3 })
+
+    await openHistoryFromDarkStudio(page)
+    await expectHistoryHeader(page)
+
+    // All three entries should be visible
+    await expect(page.locator(`[data-testid="show-entry-${olderShowId}"]`)).toBeVisible({ timeout: 5000 })
+    await expect(page.locator(`[data-testid="show-entry-${middleShowId}"]`)).toBeVisible({ timeout: 5000 })
+    await expect(page.locator(`[data-testid="show-entry-${newerShowId}"]`)).toBeVisible({ timeout: 5000 })
+
+    // Verify ordering: newer shows should appear before older ones
+    // Get all show-entry elements and check their data-testid order
+    const entries = page.locator('[data-testid^="show-entry-"]')
+    const count = await entries.count()
+    expect(count).toBeGreaterThanOrEqual(3)
+
+    // Get all testids in display order
+    const testIds: string[] = []
+    for (let i = 0; i < count; i++) {
+      const tid = await entries.nth(i).getAttribute('data-testid')
+      if (tid) testIds.push(tid)
+    }
+
+    // Newer show ID should appear before older in the list (reverse-chrono)
+    const newerIdx = testIds.indexOf(`show-entry-${newerShowId}`)
+    const olderIdx = testIds.indexOf(`show-entry-${olderShowId}`)
+    expect(newerIdx).toBeLessThan(olderIdx)
+
+    // Navigate back
+    const backBtn = page.getByRole('button', { name: 'Back to Stage' })
+    await backBtn.click()
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
+  })
+})
+
+// ─── Test 7: Back button returns to previous view ───
 
 test.describe('HistoryView — Back Navigation', () => {
   test('Back to Stage returns to DarkStudioView', async ({ mainPage: page }) => {
@@ -216,11 +323,9 @@ test.describe('HistoryView — Back Navigation', () => {
     const backBtn = page.getByRole('button', { name: 'Back to Stage' })
     await expect(backBtn).toBeVisible({ timeout: 3000 })
     await backBtn.click()
-    await page.waitForTimeout(1000)
 
     // Verify we're back on DarkStudioView
-    const writersCta = page.getByText("Enter the Writer's Room")
-    await expect(writersCta).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText("Enter the Writer's Room")).toBeVisible({ timeout: 10000 })
 
     // Verify "Past Shows" button is visible again (confirms DarkStudio view)
     await expect(page.getByRole('button', { name: 'Past Shows' })).toBeVisible({ timeout: 5000 })
