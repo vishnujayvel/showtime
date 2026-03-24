@@ -1,0 +1,8 @@
+{
+  "id": "35237131",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-24T18:18:09.322Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"/tmp/fix-e2e-bugs.md"},
+  "version": "1.0"
+}

@@ -1,4 +1,4 @@
-import { test, expect, screenshot, navigateAndWait, setShowState } from './fixtures'
+import { test, expect, screenshot, navigateAndWait, setShowState, seedFixture, FIXTURES } from './fixtures'
 
 test.describe('Visual Validation', () => {
   test('no inline styles on migrated components (#5, #8)', async ({ mainPage: page }) => {
@@ -84,6 +84,8 @@ test.describe('Visual Validation', () => {
   })
 
   test('spotlight-warm gradient is CSS class not inline (#8)', async ({ mainPage: page }) => {
+    // spotlight-warm is used in WritersRoomView, so seed that state
+    await seedFixture(page, FIXTURES.writersRoom_plan)
     const spotlightElements = await page.locator('.spotlight-warm').count()
     expect(spotlightElements).toBeGreaterThan(0)
   })
@@ -233,18 +235,7 @@ test.describe('Issue-Specific UI Verification', () => {
   })
 
   test('#14 Loading indicator: "The writers are working" text', async ({ mainPage: page }) => {
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'plan'
-        parsed.state.energy = 'high'
-        parsed.state.viewTier = 'expanded'
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait(page)
+    await seedFixture(page, FIXTURES.writersRoom_plan)
 
     const textarea = page.locator('textarea').first()
     if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {

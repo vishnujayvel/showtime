@@ -14,6 +14,14 @@ test.describe('Onboarding (#15)', () => {
   })
 
   test('can navigate through all 5 steps', async ({ mainPage: page }) => {
+    // Self-contained: ensure onboarding is showing
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-onboarding-complete')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait(page)
+    await expect(page.getByText('Welcome to the Show')).toBeVisible({ timeout: 10000 })
+
     const nextBtn = page.getByRole('button', { name: 'Next' })
     await expect(nextBtn).toBeVisible({ timeout: 5000 })
     await nextBtn.click()
@@ -53,6 +61,20 @@ test.describe('Onboarding (#15)', () => {
   })
 
   test('completing onboarding enters Writer\'s Room', async ({ mainPage: page }) => {
+    // Self-contained: start onboarding and navigate to final step
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-onboarding-complete')
+      localStorage.removeItem('showtime-show-state')
+    })
+    await navigateAndWait(page)
+    await expect(page.getByText('Welcome to the Show')).toBeVisible({ timeout: 10000 })
+    const nextBtn = page.getByRole('button', { name: 'Next' })
+    for (let i = 0; i < 4; i++) {
+      await nextBtn.click()
+      await page.waitForTimeout(500)
+    }
+    await expect(page.getByText('Ready for Your First Show?')).toBeVisible({ timeout: 5000 })
+
     const enterBtn = page.getByText("Enter the Writer's Room")
     await enterBtn.click()
     await page.waitForTimeout(1000)

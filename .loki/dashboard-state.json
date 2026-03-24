@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-03-22T18:21:39Z",
+  "timestamp": "2026-03-24T19:10:45Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
     "path": "/Users/vishnu/workplace/showtime"
   },
-  "mode": "stopped",
+  "mode": "autonomous",
   "provider": "claude",
   "phase": "DEVELOPMENT",
   "complexity": "standard",
@@ -22,7 +22,7 @@
     "id": "todo-0",
     "type": "todo",
     "payload": {
-      "action": "Run E2E tests and verify all pass"
+      "action": "Run full E2E suite - verify all pass"
     }
   }
 ],
@@ -225,9 +225,9 @@
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 38,
-    "memoryUsage": 68,
-    "resourceStatus": "ok"
+    "cpuUsage": 100,
+    "memoryUsage": 71,
+    "resourceStatus": "warning"
   },
   "memory": {
     "episodic": 21,
@@ -251,11 +251,11 @@
   "appRunner": {
     "main_pid": 0,
     "process_group": "-0",
-    "method": "npm run dev",
-    "port": 5173,
-    "url": "http://localhost:5173",
-    "started_at": "2026-03-22T07:00:15Z",
-    "restart_count": 1,
+    "method": "",
+    "port": 0,
+    "url": "",
+    "started_at": "2026-03-22T18:21:40Z",
+    "restart_count": 0,
     "status": "stopped",
     "last_health": {"ok": false},
     "crash_count": 0
