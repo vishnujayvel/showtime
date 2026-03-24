@@ -455,6 +455,10 @@ export class ControlPlane extends EventEmitter {
     if (!tab) return
 
     const requestId = `init-${tabId}`
+
+    // Idempotency: skip if already warm or init is in progress
+    if (this.initRequestIds.has(requestId) || tab.claudeSessionId) return
+
     this.initRequestIds.add(requestId)
 
     this.submitPrompt(tabId, requestId, {
