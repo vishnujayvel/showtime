@@ -29,6 +29,12 @@ controlPlane.on('error', (tabId: string, error: EnrichedError) => {
   broadcast('clui:enriched-error', tabId, error)
 })
 
+// ─── Isolated userData for parallel E2E workers ───
+
+if (process.env.SHOWTIME_USER_DATA) {
+  app.setPath('userData', process.env.SHOWTIME_USER_DATA)
+}
+
 // ─── App Lifecycle ───
 
 app.whenReady().then(async () => {

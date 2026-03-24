@@ -4,6 +4,8 @@
  */
 import { test as base, _electron as electron, type ElectronApplication, type Page } from '@playwright/test'
 import path from 'path'
+import os from 'os'
+import fs from 'fs'
 
 type ElectronFixtures = {
   app: ElectronApplication
@@ -11,12 +13,14 @@ type ElectronFixtures = {
 }
 
 export const test = base.extend<{}, ElectronFixtures>({
-  app: [async ({}, use) => {
+  app: [async ({}, use, testInfo) => {
+    const userDataDir = path.join(os.tmpdir(), `showtime-test-${testInfo.workerIndex}`)
     const app = await electron.launch({
       args: [path.join(__dirname, '..', 'dist', 'main', 'index.js')],
       env: {
         ...process.env,
         NODE_ENV: 'test',
+        SHOWTIME_USER_DATA: userDataDir,
         // Position test window on secondary display (beyond primary screen width)
         SHOWTIME_TEST_X: '2000',
         SHOWTIME_TEST_Y: '200',
@@ -45,6 +49,10 @@ export const test = base.extend<{}, ElectronFixtures>({
     if (pid) {
       try { process.kill(pid, 'SIGKILL') } catch {}
     }
+    // Clean up isolated userData directory for this worker
+    try {
+      fs.rmSync(userDataDir, { recursive: true, force: true })
+    } catch {}
   }, { scope: 'worker' }],
 
   mainPage: [async ({ app }, use) => {
