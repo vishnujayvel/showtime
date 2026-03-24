@@ -1,0 +1,9 @@
+[
+  {
+    "id": "todo-0",
+    "type": "todo",
+    "payload": {
+      "action": "Run full E2E suite - verify all pass"
+    }
+  }
+]
