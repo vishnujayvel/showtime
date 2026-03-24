@@ -1,0 +1,4 @@
+VERDICT: PASS
+FINDINGS:
+- [Low] `getTemporalShowLabel()` evaluated at module-level in `const steps` — value is frozen at import time, won't update if component re-renders across time boundaries (OnboardingView.tsx:21). Acceptable for onboarding (shown once), but couples static data to runtime clock.
+- None blocking. Test changes correctly consolidate duplicated inline state into shared `seedFixture` + `FIXTURES` pattern, improving cohesion and reducing coupling between test files and state shape details.
