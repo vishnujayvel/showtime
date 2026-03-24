@@ -1,0 +1,124 @@
+import { useState, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { useThemeStore, type ThemeMode } from '../theme'
+import { useShowStore } from '../stores/showStore'
+import { Button } from '../ui/button'
+
+interface SettingsViewProps {
+  onBack: () => void
+}
+
+const springTransition = { type: 'spring' as const, stiffness: 200, damping: 25 }
+
+export function SettingsView({ onBack }: SettingsViewProps) {
+  const themeMode = useThemeStore((s) => s.themeMode)
+  const setThemeMode = useThemeStore((s) => s.setThemeMode)
+  const soundEnabled = useThemeStore((s) => s.soundEnabled)
+  const setSoundEnabled = useThemeStore((s) => s.setSoundEnabled)
+  const resetShow = useShowStore((s) => s.resetShow)
+
+  const [confirmReset, setConfirmReset] = useState(false)
+
+  const handleReset = useCallback(() => {
+    if (!confirmReset) {
+      setConfirmReset(true)
+      return
+    }
+    resetShow()
+    setConfirmReset(false)
+  }, [confirmReset, resetShow])
+
+  return (
+    <motion.div
+      className="w-full h-full bg-surface overflow-hidden flex flex-col"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={springTransition}
+    >
+      {/* Title bar */}
+      <div className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region">
+        <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
+          PREFERENCES
+        </span>
+        <button
+          onClick={onBack}
+          className="text-txt-muted hover:text-txt-secondary text-sm no-drag transition-colors"
+        >
+          Back
+        </button>
+      </div>
+
+      {/* Settings content */}
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+        {/* Sound */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-body text-txt-primary">Sound</p>
+            <p className="text-xs text-txt-muted mt-0.5">Notification sounds</p>
+          </div>
+          <button
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className={`relative w-10 h-6 rounded-full transition-colors ${soundEnabled ? 'bg-accent' : 'bg-surface-hover'}`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${soundEnabled ? 'translate-x-4' : ''}`}
+            />
+          </button>
+        </div>
+
+        {/* Theme */}
+        <div>
+          <p className="text-sm font-body text-txt-primary mb-2">Theme</p>
+          <div className="flex gap-2">
+            {(['dark', 'light', 'system'] as ThemeMode[]).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setThemeMode(mode)}
+                className={`px-3 py-1.5 rounded text-xs font-body capitalize transition-colors ${
+                  themeMode === mode
+                    ? 'bg-accent text-white'
+                    : 'bg-surface-hover text-txt-secondary hover:text-txt-primary'
+                }`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Reset Show */}
+        <div className="pt-2 border-t border-[#242428]">
+          <p className="text-sm font-body text-txt-primary mb-1">Reset Show</p>
+          <p className="text-xs text-txt-muted mb-3">
+            Clear today's show and start fresh from Dark Studio.
+          </p>
+          <Button
+            variant={confirmReset ? 'destructive' : 'neutral'}
+            onClick={handleReset}
+          >
+            {confirmReset ? 'Confirm Reset' : 'Reset Show'}
+          </Button>
+          {confirmReset && (
+            <button
+              onClick={() => setConfirmReset(false)}
+              className="ml-2 text-xs text-txt-muted hover:text-txt-secondary transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-[#242428] text-center">
+        <p className="text-xs text-txt-muted font-body">
+          Showtime v{__APP_VERSION__}
+        </p>
+        <p className="text-[10px] text-txt-muted mt-1">
+          An ADHD-friendly day planner
+        </p>
+      </div>
+    </motion.div>
+  )
+}

@@ -42,6 +42,7 @@ export interface CluiAPI {
   onDayBoundary(callback: () => void): () => void
   onToggleExpanded(callback: () => void): () => void
   onResetShow(callback: () => void): () => void
+  onOpenSettings(callback: () => void): () => void
 
   // ─── Showtime data persistence ───
   dataHydrate(): Promise<ShowStateSnapshot | null>
@@ -141,6 +142,12 @@ const api: CluiAPI = {
     const handler = () => callback()
     ipcRenderer.on(IPC.RESET_SHOW, handler)
     return () => ipcRenderer.removeListener(IPC.RESET_SHOW, handler)
+  },
+
+  onOpenSettings: (callback) => {
+    const handler = () => callback()
+    ipcRenderer.on(IPC.OPEN_SETTINGS, handler)
+    return () => ipcRenderer.removeListener(IPC.OPEN_SETTINGS, handler)
   },
 
   // ─── Showtime data persistence ───

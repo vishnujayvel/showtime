@@ -17,6 +17,13 @@ export function createTray(
     Menu.buildFromTemplate([
       { label: 'Show Showtime', click: () => showWindow('tray menu') },
       { type: 'separator' },
+      { label: 'Preferences…', click: () => {
+        const mainWindow = getMainWindow()
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          showWindow('tray preferences')
+          mainWindow.webContents.send(IPC.OPEN_SETTINGS)
+        }
+      }},
       { label: 'Reset Show', click: () => {
         const mainWindow = getMainWindow()
         if (mainWindow && !mainWindow.isDestroyed()) {

@@ -6,6 +6,7 @@ declare module '*.mp3' {
 }
 
 declare global {
+  const __APP_VERSION__: string
   interface Window {
     clui: CluiAPI
   }
