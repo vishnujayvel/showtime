@@ -103,6 +103,7 @@ export function HistoryView({ onBack }: HistoryViewProps) {
           return (
             <div key={show.showId}>
               <motion.button
+                data-testid={`show-entry-${show.showId}`}
                 className="w-full flex items-center gap-3 py-3 border-b border-[#242428] last:border-b-0 hover:bg-surface-hover/50 transition-colors rounded px-1 -mx-1 text-left"
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -167,7 +168,7 @@ export function HistoryView({ onBack }: HistoryViewProps) {
                     transition={springTransition}
                     className="overflow-hidden"
                   >
-                    <div className="pl-8 pr-2 py-3 border-b border-[#242428]">
+                    <div data-testid={`show-detail-${show.showId}`} className="pl-8 pr-2 py-3 border-b border-[#242428]">
                       {detailLoading && (
                         <p className="text-xs text-txt-muted">Loading detail...</p>
                       )}
@@ -200,7 +201,7 @@ export function HistoryView({ onBack }: HistoryViewProps) {
                                   const drifted = actual && actual !== planned
 
                                   return (
-                                    <div key={act.id} className="flex items-center gap-2 text-xs">
+                                    <div key={act.id} data-testid={`act-row-${act.status}`} className="flex items-center gap-2 text-xs">
                                       <span className={cn('font-mono text-[9px] w-[42px] shrink-0 uppercase', statusInfo.color)}>
                                         {statusInfo.label}
                                       </span>
@@ -210,7 +211,7 @@ export function HistoryView({ onBack }: HistoryViewProps) {
                                       <span className="text-txt-muted shrink-0">
                                         {planned}
                                         {drifted && (
-                                          <span className="text-accent ml-1">→ {actual}</span>
+                                          <span data-testid="drift-indicator" className="text-accent ml-1">→ {actual}</span>
                                         )}
                                       </span>
                                     </div>
