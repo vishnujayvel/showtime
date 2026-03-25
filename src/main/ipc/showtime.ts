@@ -161,6 +161,25 @@ export function registerShowtimeIpc(): void {
     }
   })
 
+  ipcMain.on(IPC.METRICS_RECORD, (_event, name: string, durationMs: number, metadata?: Record<string, string>) => {
+    try {
+      const data = DataService.getInstance()
+      data.metrics.recordTiming(name, durationMs, metadata)
+    } catch (err: unknown) {
+      log(`METRICS_RECORD error: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  })
+
+  ipcMain.handle(IPC.METRICS_SUMMARY, (_event, name: string, days?: number) => {
+    try {
+      const data = DataService.getInstance()
+      return data.metrics.getSummary(name, days)
+    } catch (err: unknown) {
+      log(`METRICS_SUMMARY error: ${err instanceof Error ? err.message : String(err)}`)
+      return { avg: 0, p95: 0, min: 0, max: 0, count: 0 }
+    }
+  })
+
   // ─── Theme Detection ───
 
   ipcMain.handle(IPC.GET_THEME, () => {

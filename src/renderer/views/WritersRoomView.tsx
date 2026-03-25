@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
@@ -29,6 +29,7 @@ export function WritersRoomView() {
   const [showNudge, setShowNudge] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadingPhase, setLoadingPhase] = useState<'initial' | 'extended' | 'timeout'>('initial')
+  const lineupStartRef = useRef<number | null>(null)
 
   // 20-minute nudge timer
   useEffect(() => {
@@ -70,6 +71,7 @@ Energy "${energy}" means: low=shorter acts, fewer total. medium=balanced. high=l
 User's plan:
 ${planText}`
 
+    lineupStartRef.current = Date.now()
     sendMessage(prompt)
   }
 
@@ -86,6 +88,10 @@ ${planText}`
     if (lastAssistant) {
       const lineup = tryParseLineup(lastAssistant.content)
       if (lineup) {
+        if (lineupStartRef.current) {
+          window.clui.recordMetricTiming('claude.lineup_generation', Date.now() - lineupStartRef.current)
+          lineupStartRef.current = null
+        }
         setLineup(lineup)
         setWritersRoomStep('lineup')
         setIsSubmitting(false)

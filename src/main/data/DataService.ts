@@ -7,6 +7,7 @@ import { ShowRepository } from './ShowRepository'
 import { ActRepository } from './ActRepository'
 import { TimelineRepository } from './TimelineRepository'
 import { ClaudeContextRepository } from './ClaudeContextRepository'
+import { MetricsRepository } from './MetricsRepository'
 
 let instance: DataService | null = null
 
@@ -17,6 +18,7 @@ export class DataService {
   readonly acts: ActRepository
   readonly timeline: TimelineRepository
   readonly claudeCtx: ClaudeContextRepository
+  readonly metrics: MetricsRepository
 
   private constructor(dbPath: string) {
     this.raw = new Database(dbPath)
@@ -27,6 +29,7 @@ export class DataService {
     this.acts = new ActRepository(this.db)
     this.timeline = new TimelineRepository(this.db)
     this.claudeCtx = new ClaudeContextRepository(this.db)
+    this.metrics = new MetricsRepository(this.db)
   }
 
   static init(): DataService {

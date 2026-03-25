@@ -58,13 +58,20 @@ export class SyncEngine {
    * Returns null if no resumable show exists for today.
    */
   hydrate(): ShowStateSnapshot | null {
+    const start = Date.now()
     const today = new Date().toISOString().slice(0, 10)
     const show = this.data.shows.getShow(today)
-    if (!show) return null
-    if (show.phase === 'no_show' || show.phase === 'strike') return null
+    if (!show) {
+      this.data.metrics.recordTiming('sqlite.hydrate', Date.now() - start)
+      return null
+    }
+    if (show.phase === 'no_show' || show.phase === 'strike') {
+      this.data.metrics.recordTiming('sqlite.hydrate', Date.now() - start)
+      return null
+    }
 
     const actRows = this.data.acts.getActsForShow(today)
-    return {
+    const result = {
       showId: show.id,
       phase: show.phase,
       energy: show.energy,
@@ -89,6 +96,8 @@ export class SyncEngine {
         actualEndAt: a.actualEndAt,
       })),
     }
+    this.data.metrics.recordTiming('sqlite.hydrate', Date.now() - start)
+    return result
   }
 
   /**
@@ -106,6 +115,7 @@ export class SyncEngine {
     const snapshot = this.pendingSnapshot
     if (!snapshot) return
     this.pendingSnapshot = null
+    const start = Date.now()
 
     // Upsert show
     this.data.shows.upsertShow({
@@ -140,5 +150,6 @@ export class SyncEngine {
         })
       }
     }
+    this.data.metrics.recordTiming('sqlite.sync', Date.now() - start)
   }
 }

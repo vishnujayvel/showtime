@@ -38,6 +38,8 @@ if (process.env.SHOWTIME_USER_DATA) {
 
 // ─── App Lifecycle ───
 
+const appStartTime = Date.now()
+
 app.whenReady().then(async () => {
   // macOS: become an accessory app. Accessory apps can have key windows (keyboard works)
   // without deactivating the currently active app (hover preserved in browsers).
@@ -59,6 +61,7 @@ app.whenReady().then(async () => {
   try {
     const dataService = DataService.init()
     setSyncEngine(new SyncEngine(dataService))
+    dataService.metrics.prune(30)
     log('DataService initialized')
   } catch (err: unknown) {
     log(`DataService initialization failed: ${err instanceof Error ? err.message : String(err)}`)
@@ -67,6 +70,11 @@ app.whenReady().then(async () => {
   buildAppMenu()
   createWindow()
   snapshotWindowState('after createWindow')
+
+  // Record app startup timing
+  try {
+    DataService.getInstance().metrics.recordTiming('app.startup', Date.now() - appStartTime)
+  } catch { /* DataService may not be initialized */ }
 
   // Start day boundary detection (checks every minute for midnight crossing)
   startDayBoundaryCheck()

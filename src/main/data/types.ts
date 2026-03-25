@@ -68,6 +68,14 @@ export interface ShowHistoryEntry {
   completedActCount: number
 }
 
+export interface MetricsSummary {
+  avg: number
+  p95: number
+  min: number
+  max: number
+  count: number
+}
+
 export interface ShowDetailEntry {
   showId: string
   phase: string

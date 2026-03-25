@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
 import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError } from '../shared/types'
-import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry } from '../main/data/types'
+import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry, MetricsSummary } from '../main/data/types'
 
 export interface CluiAPI {
   // ─── Request-response (renderer → main) ───
@@ -56,6 +56,8 @@ export interface CluiAPI {
   getClaudeContext(showId: string): Promise<ClaudeContextPayload | null>
   getShowHistory(limit?: number): Promise<ShowHistoryEntry[]>
   getShowDetail(showId: string): Promise<ShowDetailEntry | null>
+  recordMetricTiming(name: string, durationMs: number, metadata?: Record<string, string>): void
+  getMetricsSummary(name: string, days?: number): Promise<MetricsSummary>
 
   // ─── Test-only (NODE_ENV=test) ───
   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
@@ -162,6 +164,8 @@ const api: CluiAPI = {
   getClaudeContext: (showId: string) => ipcRenderer.invoke(IPC.CLAUDE_CONTEXT_GET, showId),
   getShowHistory: (limit?: number) => ipcRenderer.invoke(IPC.SHOW_HISTORY, limit),
   getShowDetail: (showId: string) => ipcRenderer.invoke(IPC.SHOW_DETAIL, showId),
+  recordMetricTiming: (name: string, durationMs: number, metadata?: Record<string, string>) => ipcRenderer.send(IPC.METRICS_RECORD, name, durationMs, metadata),
+  getMetricsSummary: (name: string, days?: number) => ipcRenderer.invoke(IPC.METRICS_SUMMARY, name, days),
 
   // Test-only IPC (NODE_ENV=test)
   ...(process.env.NODE_ENV === 'test' ? {

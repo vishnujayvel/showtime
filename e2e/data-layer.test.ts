@@ -67,6 +67,30 @@ test.describe('Data Layer — SQLite', () => {
     }
   })
 
+  test('metrics table exists and getMetricsSummary IPC works', async ({ mainPage: page }) => {
+    // Verify metrics table exists and IPC returns the expected shape
+    const summary = await page.evaluate(async () => {
+      return await (window as any).clui.getMetricsSummary('app.startup')
+    })
+
+    expect(summary).toBeDefined()
+    expect(typeof summary.avg).toBe('number')
+    expect(typeof summary.count).toBe('number')
+    expect(typeof summary.p95).toBe('number')
+    expect(typeof summary.min).toBe('number')
+    expect(typeof summary.max).toBe('number')
+
+    // Verify querying a nonexistent metric returns zeros
+    const empty = await page.evaluate(async () => {
+      return await (window as any).clui.getMetricsSummary('nonexistent.metric')
+    })
+    expect(empty.count).toBe(0)
+    expect(empty.avg).toBe(0)
+    expect(empty.p95).toBe(0)
+    expect(empty.min).toBe(0)
+    expect(empty.max).toBe(0)
+  })
+
   test('show detail IPC responds with acts and plan', async ({ mainPage: page }) => {
     const showId = new Date().toISOString().slice(0, 10)
 
