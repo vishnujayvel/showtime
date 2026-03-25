@@ -185,6 +185,12 @@ function flushToSQLite(state: ShowStoreState): void {
   } catch { /* ignore if clui not ready */ }
 }
 
+function logEvent(event: string, data?: Record<string, unknown>): void {
+  try {
+    window.clui.logEvent('INFO', event, data)
+  } catch { /* ignore if clui not ready */ }
+}
+
 function recordTimeline(eventType: string, showId: string, actId?: string | null, extra?: Record<string, unknown>): void {
   try {
     window.clui.timelineRecord({
@@ -208,15 +214,21 @@ export const useShowStore = create<ShowStore>()(
 
       // ─── Writer's Room ───
 
-      enterWritersRoom: () => set({
-        phase: 'writers_room',
-        writersRoomStep: 'energy',
-        writersRoomEnteredAt: Date.now(),
-      }),
+      enterWritersRoom: () => {
+        logEvent('phase_change', { from: get().phase, to: 'writers_room' })
+        set({
+          phase: 'writers_room',
+          writersRoomStep: 'energy',
+          writersRoomEnteredAt: Date.now(),
+        })
+      },
 
       setWritersRoomStep: (step) => set({ writersRoomStep: step }),
 
-      setEnergy: (level) => set({ energy: level }),
+      setEnergy: (level) => {
+        logEvent('energy_selected', { level })
+        set({ energy: level })
+      },
 
       setLineup: (lineup) => {
         const acts: Act[] = lineup.acts.map((a, i) => ({
@@ -238,6 +250,7 @@ export const useShowStore = create<ShowStore>()(
       startShow: () => {
         const { acts } = get()
         if (acts.length === 0) return
+        logEvent('phase_change', { from: get().phase, to: 'live', actCount: acts.length })
 
         const firstAct = acts[0]
         const now = Date.now()
@@ -364,6 +377,7 @@ export const useShowStore = create<ShowStore>()(
       // ─── Beat Tracking ───
 
       lockBeat: () => {
+        logEvent('beat_locked', { beatsLocked: get().beatsLocked + 1 })
         // Clear any in-flight celebration timeout to prevent race conditions
         if (celebrationTimeout) {
           clearTimeout(celebrationTimeout)
@@ -406,6 +420,7 @@ export const useShowStore = create<ShowStore>()(
       },
 
       skipBeat: () => {
+        logEvent('beat_skipped')
         set({ beatCheckPending: false })
 
         // Start next act or strike
@@ -421,6 +436,7 @@ export const useShowStore = create<ShowStore>()(
       // ─── Intermission ───
 
       enterIntermission: () => {
+        logEvent('phase_change', { from: get().phase, to: 'intermission' })
         const { timerEndAt } = get()
         const remaining = timerEndAt ? Math.max(0, timerEndAt - Date.now()) : null
 
@@ -458,7 +474,10 @@ export const useShowStore = create<ShowStore>()(
 
       // ─── Director Mode ───
 
-      enterDirector: () => set({ phase: 'director' }),
+      enterDirector: () => {
+        logEvent('phase_change', { from: get().phase, to: 'director' })
+        set({ phase: 'director' })
+      },
 
       exitDirector: () => {
         const { currentActId } = get()
@@ -478,6 +497,7 @@ export const useShowStore = create<ShowStore>()(
       },
 
       callShowEarly: () => {
+        logEvent('phase_change', { from: get().phase, to: 'strike', reason: 'called_early' })
         set((s) => ({
           acts: s.acts.map((a) =>
             a.status === 'upcoming' || a.status === 'active'
@@ -582,6 +602,7 @@ export const useShowStore = create<ShowStore>()(
       // ─── Strike the Stage ───
 
       strikeTheStage: () => {
+        logEvent('phase_change', { from: get().phase, to: 'strike' })
         const { beatsLocked, beatThreshold } = get()
         let verdict: ShowVerdict
 

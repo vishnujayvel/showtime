@@ -452,4 +452,7 @@ export const IPC = {
   // App lifecycle
   APP_QUIT: 'app:quit',
 
+  // Application logging (renderer → main)
+  LOG_EVENT: 'showtime:log-event',
+
 } as const
