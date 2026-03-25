@@ -37,6 +37,13 @@ Desktop.ini
 # Internal working docs — not for public consumption
 docs-internal/
 
+# VitePress cache and build output
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+
+# Test artifacts
+test-results/
+
 # Temporary files
 *.tmp
 *.bak
