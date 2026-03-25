@@ -64,7 +64,14 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
     const goLiveButton = page.locator('button').filter({ hasText: /live/i }).first()
     if (await goLiveButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await goLiveButton.click()
-      await page.waitForTimeout(3000)
+      await page.waitForTimeout(2000)
+
+      // Going Live transition now requires clicking the "Go Live" button
+      const goLiveConfirm = page.getByTestId('go-live-button')
+      if (await goLiveConfirm.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await goLiveConfirm.click()
+        await page.waitForTimeout(1000)
+      }
       await screenshot(page, '06-going-live')
     }
   })

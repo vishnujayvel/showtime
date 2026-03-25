@@ -18,6 +18,7 @@ import { HistoryView } from './views/HistoryView'
 import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
+import { HelpDialog } from './components/HelpDialog'
 import type { ViewTier } from '../shared/types'
 
 // View modes that the IPC bridge accepts for window sizing
@@ -59,6 +60,7 @@ export default function App() {
   })
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   // ─── Listen for tray-triggered reset ───
   const resetShow = useShowStore((s) => s.resetShow)
@@ -149,10 +151,9 @@ export default function App() {
     }
   }, [enterWritersRoom])
 
-  // ─── Help button re-triggers onboarding ───
+  // ─── Help button opens help dialog ───
   const handleHelpClick = useCallback(() => {
-    localStorage.removeItem('showtime-onboarding-complete')
-    setShowOnboarding(true)
+    setShowHelp(true)
   }, [])
 
   // ─── View routing ───
@@ -226,6 +227,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>
+      <HelpDialog open={showHelp} onOpenChange={setShowHelp} />
       <BeatCheckModal />
     </div>
   )

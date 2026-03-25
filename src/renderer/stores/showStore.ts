@@ -140,7 +140,7 @@ const initialState: ShowStoreState = {
   writersRoomStep: 'energy',
   writersRoomEnteredAt: null,
   breathingPauseEndAt: null,
-  calendarAvailable: false,
+  calendarAvailable: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-gcal-connected') === 'true',
   calendarEnabled: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-calendar-enabled') === 'true',
 }
 
