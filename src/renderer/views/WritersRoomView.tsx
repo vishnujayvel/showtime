@@ -3,6 +3,7 @@ import { useShowStore } from '../stores/showStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
 import { EnergySelector } from '../components/EnergySelector'
+import { LineupChatInput } from '../components/LineupChatInput'
 import { LineupPanel } from '../panels/LineupPanel'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -30,6 +31,8 @@ export function WritersRoomView() {
   const [error, setError] = useState<string | null>(null)
   const [loadingPhase, setLoadingPhase] = useState<'initial' | 'extended' | 'timeout'>('initial')
   const lineupStartRef = useRef<number | null>(null)
+  const [refinementConversations, setRefinementConversations] = useState<Array<{ role: 'user' | 'writer'; text: string }>>([])
+  const [isRefining, setIsRefining] = useState(false)
 
   // 20-minute nudge timer
   useEffect(() => {
@@ -127,6 +130,53 @@ ${planText}`
       clearTimeout(timeoutTimer)
     }
   }, [isSubmitting])
+
+  // ─── Lineup Refinement ───
+
+  const handleRefinement = (message: string) => {
+    setRefinementConversations((prev) => [...prev, { role: 'user', text: message }])
+    setIsRefining(true)
+
+    const prompt = `The user wants to change the lineup: "${message}"
+
+Respond with the complete updated lineup as a showtime-lineup JSON block.
+Keep the same format as before. Only modify what the user asked for.`
+
+    sendMessage(prompt)
+  }
+
+  // Watch for refined lineup response
+  useEffect(() => {
+    if (!isRefining) return
+
+    const tab = tabs.find((t) => t.id === activeTabId)
+    if (!tab) return
+
+    const messages = tab.messages
+    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
+
+    if (lastAssistant) {
+      const lineup = tryParseLineup(lastAssistant.content)
+      if (lineup) {
+        setLineup(lineup)
+        setRefinementConversations((prev) => [...prev, { role: 'writer', text: 'Done \u2014 lineup updated.' }])
+        setIsRefining(false)
+        return
+      }
+
+      // No lineup in response — show as clarification
+      if (tab.status === 'completed' || tab.status === 'idle') {
+        const writerText = lastAssistant.content.slice(0, 200)
+        setRefinementConversations((prev) => [...prev, { role: 'writer', text: writerText }])
+        setIsRefining(false)
+      }
+    }
+
+    if (tab.status === 'failed' || tab.status === 'dead') {
+      setRefinementConversations((prev) => [...prev, { role: 'writer', text: 'Something went wrong. Try again?' }])
+      setIsRefining(false)
+    }
+  }, [tabs, activeTabId, isRefining, setLineup])
 
   return (
     <div
@@ -287,9 +337,17 @@ ${planText}`
 
               <LineupPanel variant="full" />
 
+              {/* Refinement chat */}
+              <LineupChatInput
+                onSend={handleRefinement}
+                disabled={isRefining}
+                conversations={refinementConversations}
+              />
+
               <Button
                 variant="primary"
-                className="mt-8"
+                className="mt-6"
+                disabled={isRefining}
                 onClick={() => triggerGoingLive()}
               >
                 WE&apos;RE LIVE!
