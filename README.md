@@ -1,240 +1,98 @@
-# Clui CC — Command Line User Interface for Claude Code
+# Showtime
 
-A lightweight, transparent desktop overlay for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) on macOS. Clui CC wraps the Claude Code CLI in a floating pill interface with multi-tab sessions, a permission approval UI, voice input, and a skills marketplace.
+An ADHD-friendly day planner for macOS. Your day is a live TV show. You're the performer.
 
-## Demo
+Showtime turns your task list into a production — with Acts (time-boxed tasks), Beats (moments of presence), and a show that runs from Dark Studio to Strike. No streaks. No guilt. No dead trees. Just a stage, a spotlight, and a Writer's Room that helps you plan what tonight's show looks like.
 
-[![Watch the demo](https://img.youtube.com/vi/NqRBIpaA4Fk/maxresdefault.jpg)](https://www.youtube.com/watch?v=NqRBIpaA4Fk)
+## The idea
 
-<p align="center"><a href="https://www.youtube.com/watch?v=NqRBIpaA4Fk">▶ Watch the full demo on YouTube</a></p>
+Most productivity apps assume you'll do what you planned. ADHD brains don't work that way. Plans fall apart, energy fluctuates, and guilt from yesterday's incomplete list makes today worse.
 
-## Features
+Showtime reframes the whole thing. You're not an employee filing task reports. You're a performer on a live variety show. Acts get cut from tonight's broadcast — that's a production decision, not a personal failure. The intermission has no timer because rest is free. And the end-of-day verdict doesn't ask "did you finish everything?" It asks "were you present?"
 
-- **Floating overlay** — transparent, content-tight window that stays on top. Toggle with `⌥ + Space` (fallback: `Cmd+Shift+K`).
-- **Multi-tab sessions** — each tab spawns its own `claude -p` process with independent session state.
-- **Permission approval UI** — intercepts tool calls via PreToolUse HTTP hooks so you can review and approve/deny from the UI.
-- **Conversation history** — browse and resume past Claude Code sessions.
-- **Skills marketplace** — install plugins from Anthropic's GitHub repos without leaving Clui CC.
-- **Voice input** — local speech-to-text via Whisper (required, installed automatically).
-- **File & screenshot attachments** — paste images or attach files directly.
-- **Dual theme** — dark/light mode with system-follow option.
+## How it works
 
-## Why Clui CC
+1. **Dark Studio** — the app opens to an empty stage. No backlog, no overdue items. Just a spotlight.
+2. **Writer's Room** — pick your energy level, brain dump your tasks, and Claude structures them into a lineup of Acts.
+3. **Going Live** — the ON AIR light ignites. You're on stage.
+4. **Acts** — time-boxed blocks (45-90 min) with a countdown timer. When time's up, you get a Beat Check: were you present?
+5. **Intermission** — rest between Acts. No timer. No guilt.
+6. **Strike the Stage** — end-of-day summary with one of four verdicts: DAY WON, SOLID SHOW, GOOD EFFORT, or SHOW CALLED EARLY. None of them is "you failed."
 
-- **Claude Code, but visual** — keep CLI power while getting a fast desktop UX for approvals, history, and multitasking.
-- **Human-in-the-loop safety** — tool calls are reviewed and approved in-app before execution.
-- **Session-native workflow** — each tab runs an independent Claude session you can resume later.
-- **Local-first** — everything runs through your local Claude CLI. No telemetry, no cloud dependency.
+## Screenshots
 
-## How It Works
+<p align="center">
+  <img src="e2e/screenshots/01-dark-studio.png" width="400" alt="Dark Studio — empty stage with spotlight" />
+  <img src="e2e/screenshots/04-plan-filled.png" width="400" alt="Writer's Room — plan dump with AI lineup" />
+</p>
+<p align="center">
+  <img src="e2e/screenshots/10-strike-day-won.png" width="400" alt="Strike — DAY WON verdict" />
+  <img src="e2e/screenshots/tier-expanded-onair.png" width="300" alt="Expanded view — ON AIR with timer" />
+</p>
 
-```
-UI prompt → Main process spawns claude -p → NDJSON stream → live render
-                                         → tool call? → permission UI → approve/deny
-```
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full deep-dive.
-
-## Install App (Recommended)
-
-The fastest way to get Clui CC running as a regular Mac app. This installs dependencies, voice support (Whisper), builds the app, copies it to `/Applications`, and launches it.
-
-**1) Clone the repo**
+## Quick start
 
 ```bash
-git clone https://github.com/lcoutodemos/clui-cc.git
-```
-
-**2) Double-click `install-app.command`**
-
-Open the `clui-cc` folder in Finder and double-click `install-app.command`.
-
-> **First launch:** macOS may block the app because it's unsigned. Go to **System Settings → Privacy & Security → Open Anyway**. You only need to do this once.
-> **Folder cleanup:** the installer removes temporary `dist/` and `release/` folders after a successful install to keep the repo tidy.
-
-<p align="center"><img src="docs/shortcut.png" width="520" alt="Press Option + Space to show or hide Clui CC" /></p>
-
-After the initial install, just open **Clui CC** from your Applications folder or Spotlight.
-
-<details>
-<summary><strong>Terminal / Developer Commands</strong></summary>
-
-Only `install-app.command` is kept at root intentionally for non-technical users. Developer scripts live in `commands/`.
-
-### Quick Start (Terminal)
-
-```bash
-git clone https://github.com/lcoutodemos/clui-cc.git
-```
-
-```bash
-cd clui-cc
-```
-
-```bash
-./commands/setup.command
-```
-
-```bash
-./commands/start.command
-```
-
-> Press **⌥ + Space** to show/hide the overlay. If your macOS input source claims that combo, use **Cmd+Shift+K**.
-
-To stop:
-
-```bash
-./commands/stop.command
-```
-
-### Developer Workflow
-
-```bash
+git clone https://github.com/vishnujayvel/showtime.git
+cd showtime
 npm install
-```
-
-```bash
 npm run dev
 ```
 
-Renderer changes update instantly. Main-process changes require restarting `npm run dev`.
+Requires **macOS** and **Node.js 20+**. The app uses native macOS window APIs (NSPanel) so Linux/Windows aren't supported yet.
 
-### Other Commands
+## Tech stack
 
-| Command | Purpose |
-|---------|---------|
-| `./commands/setup.command` | Environment check + install dependencies |
-| `./commands/start.command` | Build and launch from source |
-| `./commands/stop.command` | Stop all Clui CC processes |
-| `npm run build` | Production build (no packaging) |
-| `npm run dist` | Package as macOS `.app` into `release/` |
-| `npm run doctor` | Run environment diagnostic |
+| Layer | What |
+|-------|------|
+| Shell | Electron 35 + electron-vite |
+| UI | React 19, Tailwind CSS v4, shadcn/ui, Framer Motion |
+| State | Zustand |
+| Data | SQLite (better-sqlite3) |
+| AI | Claude Code CLI (plans your lineup from a brain dump) |
+| Tests | Vitest (235 unit) + Playwright (115 E2E) |
 
-</details>
+## View tiers
 
-<details>
-<summary><strong>Setup Prerequisites (Detailed)</strong></summary>
+The window adapts to what you need:
 
-You need **macOS 13+**. Then install these one at a time — copy each command and paste it into Terminal.
+- **Pill** (320x64) — tiny floating capsule with timer and tally light. For when you're in the zone.
+- **Compact** (340x140) — act name, timer, beat count.
+- **Dashboard** (400x320) — full control room with lineup sidebar.
+- **Expanded** (560x620) — hero timer, full lineup, ON AIR bar.
 
-**Step 1.** Install Xcode Command Line Tools (needed to compile native modules):
+Click the pill to expand. Press Escape to collapse. The show runs either way.
 
-```bash
-xcode-select --install
-```
+## Documentation
 
-**Step 2.** Install Node.js (recommended: current LTS such as 20 or 22; minimum supported: 18). Download from [nodejs.org](https://nodejs.org), or use Homebrew:
+Full docs at [vishnujayvel.github.io/showtime](https://vishnujayvel.github.io/showtime/) (or run `cd docs && npm i && npx vitepress dev` locally).
 
-```bash
-brew install node
-```
+Covers the framework, the science behind it, all the concepts, and contributor guides.
 
-Verify it's on your PATH:
+## The framework
 
-```bash
-node --version
-```
+Showtime is built on real research, not just vibes:
 
-**Step 3.** Make sure Python has `setuptools` (needed by the native module compiler). On Python 3.12+ this is missing by default:
+- **Ultradian rhythms** — 45-90 minute Acts match natural performance cycles
+- **Mindfulness anchors** — Beat Checks are brief presence moments, not productivity metrics
+- **Self-compassion** — no guilt language, ever. "That Act got cut from tonight's show" instead of "you failed"
+- **Narrative identity** — casting yourself as the performer creates engagement that checklists can't
+- **ADHD-specific** — novelty through daily variation, energy-based planning, permission to rest without earning it
 
-```bash
-python3 -m pip install --upgrade pip setuptools
-```
+More detail in the [framework guide](https://vishnujayvel.github.io/showtime/framework/).
 
-**Step 4.** Install Claude Code CLI:
+## Scripts
 
-```bash
-npm install -g @anthropic-ai/claude-code
-```
+| Command | What it does |
+|---------|-------------|
+| `npm run dev` | Dev mode with hot-reload |
+| `npm run build` | Production build |
+| `npm run test` | Vitest unit tests |
+| `npm run test:e2e` | Playwright E2E tests (build first) |
 
-**Step 5.** Authenticate Claude Code (follow the prompts that appear):
+## Credits
 
-```bash
-claude
-```
-
-**Step 6.** Install Whisper for voice input:
-
-```bash
-# Apple Silicon (M1/M2/M3/M4) — preferred:
-brew install whisperkit-cli
-# Apple Silicon fallback, or Intel Mac:
-brew install whisper-cpp
-```
-
-> **No API keys or `.env` file required.** Clui CC uses your existing Claude Code CLI authentication (Pro/Team/Enterprise subscription).
-
-</details>
-
-<details>
-<summary><strong>Architecture and Internals</strong></summary>
-
-### Project Structure
-
-```
-src/
-├── main/                   # Electron main process
-│   ├── claude/             # ControlPlane, RunManager, EventNormalizer
-│   ├── hooks/              # PermissionServer (PreToolUse HTTP hooks)
-│   ├── marketplace/        # Plugin catalog fetching + install
-│   ├── skills/             # Skill auto-installer
-│   └── index.ts            # Window creation, IPC handlers, tray
-├── renderer/               # React frontend
-│   ├── components/         # TabStrip, ConversationView, InputBar, etc.
-│   ├── stores/             # Zustand session store
-│   ├── hooks/              # Event listeners, health reconciliation
-│   └── theme.ts            # Dual palette + CSS custom properties
-├── preload/                # Secure IPC bridge (window.clui API)
-└── shared/                 # Canonical types, IPC channel definitions
-```
-
-### How It Works
-
-1. Each tab creates a `claude -p --output-format stream-json` subprocess.
-2. NDJSON events are parsed by `RunManager` and normalized by `EventNormalizer`.
-3. `ControlPlane` manages tab lifecycle (connecting → idle → running → completed/failed/dead).
-4. Tool permission requests arrive via HTTP hooks to `PermissionServer` (localhost only).
-5. The renderer polls backend health every 1.5s and reconciles tab state.
-6. Sessions are resumed with `--resume <session-id>` for continuity.
-
-### Network Behavior
-
-Clui CC operates almost entirely offline. The only outbound network calls are:
-
-| Endpoint | Purpose | Required |
-|----------|---------|----------|
-| `raw.githubusercontent.com/anthropics/*` | Marketplace catalog (cached 5 min) | No — graceful fallback |
-| `api.github.com/repos/anthropics/*/tarball/*` | Skill auto-install on startup | No — skipped on failure |
-
-No telemetry, analytics, or auto-update mechanisms. All core Claude Code interaction goes through the local CLI.
-
-</details>
-
-## Troubleshooting
-
-For setup issues and recovery commands, see [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
-
-Quick self-check:
-
-```bash
-npm run doctor
-```
-
-## Tested On
-
-| Component | Version |
-|-----------|---------|
-| macOS | 15.x (Sequoia) |
-| Node.js | 20.x LTS, 22.x |
-| Python | 3.12 (with setuptools installed) |
-| Electron | 33.x |
-| Claude Code CLI | 2.1.71 |
-
-## Known Limitations
-
-- **macOS only** — transparent overlay, tray icon, and node-pty are macOS-specific. Windows/Linux support is not currently implemented.
-- **Requires Claude Code CLI** — Clui CC is a UI layer, not a standalone AI client. You need an authenticated `claude` CLI.
-- **Permission mode** — uses `--permission-mode default`. The PTY interactive transport is legacy and disabled by default.
+Forked from [Clui CC](https://github.com/lcoutodemos/clui-cc) by [@lcoutodemos](https://github.com/lcoutodemos).
 
 ## License
 
