@@ -421,6 +421,7 @@ export const IPC = {
 
   // Showtime window management
   SET_VIEW_MODE: 'showtime:set-view-mode',
+  FORCE_REPAINT: 'showtime:force-repaint',
   RESET_SHOW: 'showtime:reset-show',
   OPEN_SETTINGS: 'showtime:open-settings',
 

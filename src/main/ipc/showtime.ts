@@ -1,6 +1,6 @@
 import { app, ipcMain, Notification, nativeTheme } from 'electron'
 import { getMainWindow, getSyncEngine, log, broadcast } from '../state'
-import { applyViewMode } from '../window'
+import { applyViewMode, forceRepaint } from '../window'
 import { DataService } from '../data/DataService'
 import { IPC } from '../../shared/types'
 import type { ShowStateSnapshot, TimelineEventInput, ClaudeContextPayload } from '../data/types'
@@ -53,8 +53,12 @@ export function registerShowtimeIpc(): void {
 
   // ─── Showtime window management ───
 
-  ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'expanded' | 'full') => {
+  ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full') => {
     applyViewMode(mode)
+  })
+
+  ipcMain.on(IPC.FORCE_REPAINT, () => {
+    forceRepaint()
   })
 
   // ─── Showtime data persistence IPC ───

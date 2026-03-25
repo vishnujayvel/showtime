@@ -39,6 +39,7 @@ export interface CluiAPI {
 
   // ─── Showtime window management ───
   setViewMode(mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'): void
+  forceRepaint(): void
   onDayBoundary(callback: () => void): () => void
   onToggleExpanded(callback: () => void): () => void
   onResetShow(callback: () => void): () => void
@@ -127,6 +128,7 @@ const api: CluiAPI = {
 
   // ─── Showtime window management ───
   setViewMode: (mode) => ipcRenderer.send(IPC.SET_VIEW_MODE, mode),
+  forceRepaint: () => ipcRenderer.send(IPC.FORCE_REPAINT),
 
   onDayBoundary: (callback) => {
     const handler = () => callback()

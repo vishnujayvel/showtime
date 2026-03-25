@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useShowStore, selectCurrentAct } from '../stores/showStore'
 import { useTimer } from '../hooks/useTimer'
@@ -18,8 +19,23 @@ export function PillView() {
 
   const showStrip = phase === 'live' || phase === 'intermission'
 
+  // Stuck pill detection: if content isn't rendering after 3s, request force-repaint
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const el = document.querySelector('[data-pill-content]')
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0) {
+          window.clui.forceRepaint()
+        }
+      }
+    }, 3000)
+    return () => clearTimeout(timeout)
+  }, [])
+
   return (
     <motion.div
+      data-pill-content
       className={cn(
         'w-80 rounded-full flex flex-col',
         'bg-surface/85 backdrop-blur-[20px]',
