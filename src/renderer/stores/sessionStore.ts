@@ -250,6 +250,10 @@ export const useSessionStore = create<State>((set, get) => ({
               )
               if (hasCalendar) {
                 useShowStore.getState().setCalendarAvailable(true)
+                localStorage.setItem('showtime-gcal-connected', 'true')
+              } else {
+                localStorage.removeItem('showtime-gcal-connected')
+                useShowStore.getState().setCalendarAvailable(false)
               }
             }
             if (!event.isWarmup) {

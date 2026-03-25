@@ -14,7 +14,7 @@ export default defineConfig({
     { name: 'smoke', testMatch: /app-launch|onboarding/ },
     { name: 'core-flow', testMatch: /writers-room|live-show|strike-reset/ },
     { name: 'data-views', testMatch: /data-layer|temporal|temporal-copy|view-tiers|history/ },
-    { name: 'visual', testMatch: /visual-regression|visual-validation|consistency/ },
+    { name: 'visual', testMatch: /visual-regression|visual-validation|consistency/, use: { deviceScaleFactor: 1 } },
   ],
   testIgnore: ['showtime.test.ts'],
 })
