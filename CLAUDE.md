@@ -234,6 +234,14 @@ These CLUI-specific files should be removed:
 - `src/renderer/components/SlashCommandMenu.tsx` — Not needed
 - `src/renderer/components/PopoverLayer.tsx` — Replace with shadcn/ui
 
+## Documentation Rules
+
+- `docs/` is the PUBLIC documentation website (VitePress). Every file here is deployed to GitHub Pages.
+- Internal session notes, retrospectives, and working docs go in `docs-internal/` (gitignored).
+- Design docs for features go in `docs/plans/` (public, useful for contributors).
+- Never put date-stamped session logs in `docs/`.
+- Run `npm run docs:build --prefix docs` to verify docs build before committing doc changes.
+
 ## Git Workflow
 
 - Commit at each working milestone

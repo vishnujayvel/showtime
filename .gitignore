@@ -1,5 +1,6 @@
 # Build output
 node_modules/
+docs/node_modules/
 dist/
 out/
 build/
@@ -32,6 +33,9 @@ Desktop.ini
 
 # Runtime
 .clui.pid
+
+# Internal working docs — not for public consumption
+docs-internal/
 
 # Temporary files
 *.tmp
