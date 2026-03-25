@@ -32,6 +32,9 @@ export interface CluiAPI {
   onError(callback: (tabId: string, error: EnrichedError) => void): () => void
   onSkillStatus(callback: (status: { name: string; state: string; error?: string; reason?: string }) => void): () => void
 
+  // ─── Application logging ───
+  logEvent(level: 'ERROR' | 'WARN' | 'INFO' | 'DEBUG', event: string, data?: Record<string, unknown>): void
+
   // ─── Showtime notifications ───
   notifyActComplete(actName: string, sketch: string): void
   notifyBeatCheck(actName: string): void
@@ -123,6 +126,10 @@ const api: CluiAPI = {
     ipcRenderer.on(IPC.SKILL_STATUS, handler)
     return () => ipcRenderer.removeListener(IPC.SKILL_STATUS, handler)
   },
+
+  // ─── Application logging ───
+  logEvent: (level: 'ERROR' | 'WARN' | 'INFO' | 'DEBUG', event: string, data?: Record<string, unknown>) =>
+    ipcRenderer.send(IPC.LOG_EVENT, level, event, data),
 
   // ─── Showtime notifications ───
   notifyActComplete: (actName: string, sketch: string) => ipcRenderer.send(IPC.NOTIFY_ACT_COMPLETE, actName, sketch),
