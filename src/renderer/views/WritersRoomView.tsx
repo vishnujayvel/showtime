@@ -3,6 +3,8 @@ import { useShowStore } from '../stores/showStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
 import { EnergySelector } from '../components/EnergySelector'
+import { CalendarBanner } from '../components/CalendarBanner'
+import { CalendarToggle } from '../components/CalendarToggle'
 import { LineupChatInput } from '../components/LineupChatInput'
 import { LineupPanel } from '../panels/LineupPanel'
 import { Button } from '../ui/button'
@@ -20,6 +22,9 @@ export function WritersRoomView() {
   const setLineup = useShowStore((s) => s.setLineup)
   const triggerGoingLive = useShowStore((s) => s.triggerGoingLive)
   const writersRoomEnteredAt = useShowStore((s) => s.writersRoomEnteredAt)
+  const calendarAvailable = useShowStore((s) => s.calendarAvailable)
+  const calendarEnabled = useShowStore((s) => s.calendarEnabled)
+  const setCalendarEnabled = useShowStore((s) => s.setCalendarEnabled)
 
   const sendMessage = useSessionStore((s) => s.sendMessage)
   const tabs = useSessionStore((s) => s.tabs)
@@ -55,7 +60,19 @@ export function WritersRoomView() {
     setIsSubmitting(true)
     setError(null)
 
-    const prompt = `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy}" and wants to plan their day. Based on their input below, create a show lineup.
+    const calendarInstruction = calendarEnabled && calendarAvailable
+      ? `IMPORTANT: First, check the user's Google Calendar for today's events using your calendar tools.
+Incorporate calendar events as acts in the lineup.
+For calendar events: use event title as act name, event duration as planned duration.
+Categorize: meetings/1:1s → "Admin", focus blocks → "Deep Work", gym → "Exercise", creative → "Creative", social → "Social".
+Add "(from calendar)" to the sketch field for calendar-sourced acts.
+Fill gaps with tasks appropriate for the energy level.
+
+`
+      : ''
+
+    const prompt = `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy}" and wants to plan their day.
+${calendarInstruction}Based on their input below, create a show lineup.
 
 Respond with a JSON block in this exact format:
 \`\`\`showtime-lineup
@@ -279,6 +296,14 @@ Keep the same format as before. Only modify what the user asked for.`
                     <p className="text-sm text-txt-muted mb-6">
                       Dump everything. Claude will organize it into {getTemporalShowLabel()} lineup.
                     </p>
+
+                    {!calendarAvailable && <CalendarBanner />}
+                    {calendarAvailable && (
+                      <CalendarToggle
+                        checked={calendarEnabled}
+                        onChange={setCalendarEnabled}
+                      />
+                    )}
 
                     <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
                       <textarea
