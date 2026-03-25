@@ -49,7 +49,7 @@ test.describe('Pill ↔ Expanded', () => {
       await page.waitForTimeout(500)
       await screenshot(page, '11-pill-view')
 
-      const pill = page.locator('[data-clui-ui]').first()
+      const pill = page.locator('[data-pill-content]').first()
       if (await pill.isVisible().catch(() => false)) {
         await pill.click()
         await page.waitForTimeout(500)

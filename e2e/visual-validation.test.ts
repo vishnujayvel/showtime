@@ -9,7 +9,7 @@ test.describe('Visual Validation', () => {
     })
 
     const inlineStyleViolations = await page.evaluate(() => {
-      const uiElements = document.querySelectorAll('[data-clui-ui] *')
+      const uiElements = document.querySelectorAll('[data-testid="showtime-app"] *')
       const violations: string[] = []
       uiElements.forEach((el) => {
         const style = (el as HTMLElement).style
@@ -73,7 +73,7 @@ test.describe('Visual Validation', () => {
       beatCheckPending: false,
     })
 
-    const viewContainer = page.locator('[data-clui-ui]').first()
+    const viewContainer = page.locator('[data-testid="showtime-app"]').first()
     if (await viewContainer.isVisible().catch(() => false)) {
       const box = await viewContainer.boundingBox()
       if (box) {
@@ -215,7 +215,7 @@ test.describe('Issue-Specific UI Verification', () => {
     }
   })
 
-  test('#10 View dimensions: [data-clui-ui] width is between 300-600px', async ({ mainPage: page }) => {
+  test('#10 View dimensions: app container width is between 300-600px', async ({ mainPage: page }) => {
     await setShowState(page, {
       phase: 'writers_room',
       writersRoomStep: 'energy',
@@ -223,7 +223,7 @@ test.describe('Issue-Specific UI Verification', () => {
       goingLiveActive: false,
     })
 
-    const viewContainer = page.locator('[data-clui-ui]').first()
+    const viewContainer = page.locator('[data-testid="showtime-app"]').first()
     if (await viewContainer.isVisible().catch(() => false)) {
       const box = await viewContainer.boundingBox()
       if (box) {

@@ -234,10 +234,10 @@ test.describe('Visual Validation', () => {
     })
     await navigateAndWait()
 
-    // Check no element within [data-clui-ui] has inline background/color/display styles
+    // Check no element within the app root has inline background/color/display styles
     // (only -webkit-app-region: drag is allowed)
     const inlineStyleViolations = await page.evaluate(() => {
-      const uiElements = document.querySelectorAll('[data-clui-ui] *')
+      const uiElements = document.querySelectorAll('[data-testid="showtime-app"] *')
       const violations: string[] = []
       uiElements.forEach((el) => {
         const style = (el as HTMLElement).style
@@ -318,7 +318,7 @@ test.describe('Visual Validation', () => {
     })
     await navigateAndWait()
 
-    const viewContainer = page.locator('[data-clui-ui]').first()
+    const viewContainer = page.locator('[data-testid="showtime-app"]').first()
     if (await viewContainer.isVisible().catch(() => false)) {
       const box = await viewContainer.boundingBox()
       if (box) {
@@ -381,7 +381,7 @@ test.describe('Pill ↔ Expanded', () => {
       await screenshot('11-pill-view')
 
       // Click to expand back
-      const pill = page.locator('[data-clui-ui]').first()
+      const pill = page.locator('[data-pill-content]').first()
       if (await pill.isVisible().catch(() => false)) {
         await pill.click()
         await page.waitForTimeout(500)
@@ -565,7 +565,7 @@ test.describe('Issue-Specific UI Verification', () => {
     }
   })
 
-  test('#10 View dimensions: [data-clui-ui] width is between 300-600px', async () => {
+  test('#10 View dimensions: app container width is between 300-600px', async () => {
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')
       if (raw) {
@@ -579,7 +579,7 @@ test.describe('Issue-Specific UI Verification', () => {
     })
     await navigateAndWait()
 
-    const viewContainer = page.locator('[data-clui-ui]').first()
+    const viewContainer = page.locator('[data-testid="showtime-app"]').first()
     if (await viewContainer.isVisible().catch(() => false)) {
       const box = await viewContainer.boundingBox()
       if (box) {

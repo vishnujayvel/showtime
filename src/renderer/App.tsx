@@ -213,7 +213,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-full relative bg-transparent flex flex-col">
+    <div data-testid="showtime-app" className="w-full h-full relative bg-transparent flex flex-col">
       {/* Help button — visible on DarkStudio when onboarding was completed */}
       {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && !showHistory && (
         <button
