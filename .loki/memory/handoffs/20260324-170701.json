@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "timestamp": "2026-03-25T00:07:01Z",
+  "reason": "session_end_result_0",
+  "iteration": 1,
+  "files_modified": [
+    ".loki/CONTINUITY.md",
+    ".loki/STATUS.txt",
+    ".loki/app-runner/detection.json",
+    ".loki/app-runner/state.json",
+    ".loki/autonomy-state.json",
+    ".loki/context/last_offset.txt",
+    ".loki/context/tracking.json",
+    ".loki/council/state.json",
+    ".loki/dashboard-state.json",
+    ".loki/dashboard/dashboard.pid",
+    ".loki/events.jsonl",
+    ".loki/logs/agent-audit.jsonl",
+    ".loki/logs/audit-20260324.jsonl",
+    ".loki/memory/semantic/patterns.json",
+    ".loki/memory/timeline.json",
+    ".loki/metrics/efficiency/iteration-1.json",
+    ".loki/prd-observations.md",
+    ".loki/quality/gate-failure-count.json",
+    ".loki/quality/gate-failures.txt",
+    ".loki/quality/static-analysis.json"
+  ],
+  "recent_commits": [
+    "1057d6a feat: add performance metrics \u2014 MetricsRepository + migration + instrumentation (#38)",
+    "1c82f40 feat: add UX mockups for HistoryView, multi-turn dialog, and calendar sync (#41)",
+    "5d64612 fix: improve HistoryView E2E tests \u2014 add data-testid attributes, better selectors (#37)",
+    "321eab8 checkpoint: OpenSpec proposals for Wave 2 (#39, #38) and Wave 3 (#36)",
+    "4e369d2 feat: add HistoryView E2E tests + fix SQLite migration bundling (#37)"
+  ],
+  "task_status": {
+    "pending": 0,
+    "completed": 19
+  },
+  "open_questions": [],
+  "key_decisions": [],
+  "blockers": []
+}

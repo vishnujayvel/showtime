@@ -1,0 +1,22 @@
+{
+  "id": "sig-eee14574",
+  "type": "success_pattern",
+  "source": "cli",
+  "action": "session_complete",
+  "context": {},
+  "outcome": "success",
+  "confidence": 0.8,
+  "timestamp": "2026-03-24T21:33:23.327777+00:00Z",
+  "metadata": {},
+  "pattern_name": "full_session",
+  "action_sequence": [
+    "init",
+    "setup",
+    "run_iterations",
+    "extract_learnings",
+    "cleanup"
+  ],
+  "preconditions": [],
+  "postconditions": [],
+  "duration_seconds": 0
+}

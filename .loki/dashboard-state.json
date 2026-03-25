@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-24T20:50:49Z",
+  "timestamp": "2026-03-25T06:38:34Z",
   "version": "unknown",
   "project": {
     "name": "showtime",
@@ -17,15 +17,7 @@
   },
   "tasks": {
     "pending": [],
-    "inProgress": [
-  {
-    "id": "todo-0",
-    "type": "todo",
-    "payload": {
-      "action": "Commit changes"
-    }
-  }
-],
+    "inProgress": [],
     "review": [],
     "completed": [
   {
@@ -171,120 +163,80 @@
     "completedAt": "2026-03-24T20:35:40Z",
     "exitCode": 0,
     "provider": "claude"
-  }
-],
-    "failed": [
-  {
-    "id": "iteration-1",
-    "type": "iteration",
-    "title": "Iteration 1",
-    "status": "failed",
-    "completedAt": "2026-03-21T06:08:07Z",
-    "exitCode": 141,
-    "provider": "claude"
-  },
-  {
-    "id": "iteration-1",
-    "type": "iteration",
-    "title": "Iteration 1",
-    "status": "failed",
-    "completedAt": "2026-03-21T17:19:59Z",
-    "exitCode": 141,
-    "provider": "claude"
-  },
-  {
-    "id": "iteration-1",
-    "type": "iteration",
-    "title": "Iteration 1",
-    "status": "failed",
-    "completedAt": "2026-03-21T21:15:33Z",
-    "exitCode": 141,
-    "provider": "claude"
-  },
-  {
-    "id": "iteration-1",
-    "type": "iteration",
-    "title": "Iteration 1",
-    "status": "failed",
-    "completedAt": "2026-03-22T16:59:54Z",
-    "exitCode": 141,
-    "provider": "claude"
-  },
-  {
-    "id": "iteration-2",
-    "type": "iteration",
-    "title": "Iteration 2",
-    "status": "failed",
-    "completedAt": "2026-03-22T17:52:50Z",
-    "exitCode": 141,
-    "provider": "claude"
   },
   {
     "id": "iteration-3",
     "type": "iteration",
     "title": "Iteration 3",
-    "status": "failed",
-    "completedAt": "2026-03-22T18:18:49Z",
-    "exitCode": 137,
+    "status": "completed",
+    "completedAt": "2026-03-24T21:14:48Z",
+    "exitCode": 0,
     "provider": "claude"
   },
   {
     "id": "iteration-1",
     "type": "iteration",
     "title": "Iteration 1",
-    "status": "failed",
-    "completedAt": "2026-03-24T19:10:48Z",
-    "exitCode": 137,
+    "status": "completed",
+    "completedAt": "2026-03-24T21:30:30Z",
+    "exitCode": 0,
     "provider": "claude"
   },
   {
     "id": "iteration-1",
     "type": "iteration",
     "title": "Iteration 1",
-    "status": "failed",
-    "completedAt": "2026-03-24T20:20:55Z",
-    "exitCode": 137,
+    "status": "completed",
+    "completedAt": "2026-03-25T00:04:50Z",
+    "exitCode": 0,
+    "provider": "claude"
+  },
+  {
+    "id": "iteration-1",
+    "type": "iteration",
+    "title": "Iteration 1",
+    "status": "completed",
+    "completedAt": "2026-03-25T06:37:41Z",
+    "exitCode": 0,
     "provider": "claude"
   }
-]
+],
+    "failed": []
   },
   "agents": [],
   "metrics": {
     "tasksCompleted": 0,
     "tasksFailed": 0,
-    "cpuUsage": 100,
-    "memoryUsage": 68,
-    "resourceStatus": "warning"
+    "cpuUsage": 21,
+    "memoryUsage": 63,
+    "resourceStatus": "ok"
   },
   "memory": {
-    "episodic": 24,
+    "episodic": 29,
     "semantic": 2,
     "procedural": 0
   },
   "qualityGates": null,
   "council": {
-  "initialized": true,
-  "enabled": true,
-  "total_votes": 0,
-  "approve_votes": 0,
-  "reject_votes": 0,
-  "last_check_iteration": 0,
-  "consecutive_no_change": 0,
-  "done_signals": 0,
-  "convergence_history": [],
-  "verdicts": [],
-  "total_done_signals": 0,
-  "last_track_iteration": 1,
-  "files_changed": 69
+    "initialized": true,
+    "enabled": true,
+    "total_votes": 0,
+    "approve_votes": 0,
+    "reject_votes": 0,
+    "last_check_iteration": 0,
+    "consecutive_no_change": 0,
+    "done_signals": 0,
+    "convergence_history": [],
+    "verdicts": []
 },
   "checklist": null,
   "appRunner": {
-    "main_pid": 0,
-    "process_group": "-0",
+    "main_pid": 30712,
+    "process_group": "-30712",
     "method": "npm run dev",
     "port": 5173,
     "url": "http://localhost:5173",
-    "started_at": "2026-03-24T20:40:23Z",
+    "started_at": "2026-03-25T06:37:44Z",
     "restart_count": 1,
     "status": "stopped",
     "last_health": {"ok": false},
@@ -293,17 +245,17 @@
   "playwright": null,
   "budget": null,
   "context": {
-  "session_id": "e65b1622-5258-46af-826d-d1f420659767",
+  "session_id": "7ddf9918-6730-4978-ab7c-6d27a00af330",
   "provider": "claude",
-  "updated_at": "2026-03-24T20:35:40.230426+00:00",
+  "updated_at": "2026-03-25T06:37:41.410174+00:00",
   "current": {
     "input_tokens": 1,
-    "output_tokens": 20105,
-    "cache_read_tokens": 97668,
-    "cache_creation_tokens": 295989,
-    "total_tokens": 97669,
-    "context_window_pct": 48.83,
-    "estimated_cost_usd": 181.915
+    "output_tokens": 13567,
+    "cache_read_tokens": 112374,
+    "cache_creation_tokens": 393612,
+    "total_tokens": 112375,
+    "context_window_pct": 56.19,
+    "estimated_cost_usd": 322.7064
   },
   "compactions": [
     {
@@ -352,13 +304,13 @@
     }
   ],
   "totals": {
-    "total_input": 97816,
-    "total_output": 535066,
-    "total_cost_usd": 181.915,
+    "total_input": 113374,
+    "total_output": 764601,
+    "total_cost_usd": 322.7064,
     "compaction_count": 2,
     "iterations_tracked": 3
   }
 },
-  "tokens": {"input": 97816, "output": 535066, "cost_usd": 181.915},
+  "tokens": {"input": 113374, "output": 764601, "cost_usd": 322.7064},
   "notifications": {"total":0,"unacknowledged":0,"critical":0,"warning":0,"info":0}
 }

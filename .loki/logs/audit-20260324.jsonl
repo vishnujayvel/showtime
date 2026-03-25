@@ -33,3 +33,94 @@
   "user": "vishnu",
   "pid": 42293
 }
+{
+  "timestamp": "2026-03-24T20:51:41Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/claude-warmup.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 17456
+}
+{
+  "timestamp": "2026-03-24T21:05:37Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/tmp/claude-warmup.md",
+  "user": "vishnu",
+  "pid": 17456
+}
+{
+  "timestamp": "2026-03-24T21:13:51Z",
+  "event": "SESSION_START",
+  "data": "prd=openspec/changes/history-view-e2e/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 83564
+}
+{
+  "timestamp": "2026-03-24T21:17:25Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/tmp/app-identity-proposal.md",
+  "user": "vishnu",
+  "pid": 82225
+}
+{
+  "timestamp": "2026-03-24T21:33:23Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=openspec/changes/history-view-e2e/proposal.md",
+  "user": "vishnu",
+  "pid": 83564
+}
+{
+  "timestamp": "2026-03-24T21:35:26Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/wave2-combined-prd.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 55552
+}
+{
+  "timestamp": "2026-03-24T23:39:14Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/wave2-combined-prd.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 81576
+}
+{
+  "timestamp": "2026-03-24T23:39:49Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/wave2-combined-prd.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 83570
+}
+{
+  "timestamp": "2026-03-24T23:40:28Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/wave2-combined-prd.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 85803
+}
+{
+  "timestamp": "2026-03-24T23:48:05Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/perf-metrics-only-prd.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 5113
+}
+{
+  "timestamp": "2026-03-25T00:07:01Z",
+  "event": "SESSION_END",
+  "data": "result=0,prd=/tmp/perf-metrics-only-prd.md",
+  "user": "vishnu",
+  "pid": 5113
+}
+{
+  "timestamp": "2026-03-25T01:00:51Z",
+  "event": "SESSION_START",
+  "data": "prd=/tmp/multi-turn-dialog-prd.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 5174
+}
+{
+  "timestamp": "2026-03-25T06:30:23Z",
+  "event": "SESSION_START",
+  "data": "prd=openspec/changes/pill-window-fix/proposal.md,dashboard=true,staged_autonomy=false,parallel=true",
+  "user": "vishnu",
+  "pid": 10590
+}

@@ -1,0 +1,8 @@
+{
+  "id": "0878cd34",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-24T23:39:32.571Z",
+  "payload": {"action":"stop","reason":"user_requested"},
+  "version": "1.0"
+}

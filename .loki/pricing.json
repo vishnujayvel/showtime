@@ -1,6 +1,6 @@
 {
   "provider": "claude",
-  "updated": "2026-03-24",
+  "updated": "2026-03-25",
   "source": "static",
   "models": {
     "opus":            {"input": 5.00,  "output": 25.00, "label": "Opus (latest)",   "provider": "claude"},

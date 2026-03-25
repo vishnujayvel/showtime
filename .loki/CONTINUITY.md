@@ -1,6 +1,6 @@
 # Session Continuity
 
-Updated: 2026-03-24T20:35:45Z
+Updated: 2026-03-25T06:37:45Z
 
 ## Current State
 
@@ -12,9 +12,9 @@ Updated: 2026-03-24T20:35:45Z
 
 ## Last Completed Task
 
-- Last commit: feat: implement macOS app identity — menu bar, settings view, about panel (#35)
-- Files changed: electron.vite.config.ts, package.json, src/main/index.ts, src/main/menu.ts, src/main/tray.ts
-  (+5 more)
+- Last commit: fix: pill window ghost frames — opacity fade, debounce, force-repaint (#43)
+- Files changed: e2e/fixtures.ts, e2e/view-tiers.test.ts, src/__tests__/setup.ts, src/main/ipc/showtime.ts, src/main/window.ts
+  (+3 more)
 
 ## Active Blockers
 
