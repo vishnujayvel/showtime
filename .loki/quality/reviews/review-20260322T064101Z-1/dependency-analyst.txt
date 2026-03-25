@@ -1,7 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- None
-
-The dependency changes are clean:
-- **Removed** `react-markdown` and `remark-gfm` from production dependencies, eliminating ~40+ transitive packages (unified, micromark-*, mdast-util-*, hast-util-*, etc.) — significant bloat reduction.
-- **Added** `fast-check@^4.6.0`, `xstate@^5.28.0`, `@xstate/graph@^3.0.4` correctly as `devDependencies` since they're only used in test files. All MIT licensed, no known CVEs.

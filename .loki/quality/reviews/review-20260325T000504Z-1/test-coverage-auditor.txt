@@ -1,9 +1,0 @@
-VERDICT: FAIL
-
-FINDINGS:
-- [Medium] No E2E test for `recordMetricTiming` IPC path — only `getMetricsSummary` is tested in E2E, so the fire-and-forget `ipcMain.on(METRICS_RECORD)` handler is never exercised end-to-end (e2e/data-layer.test.ts:70)
-- [Medium] No test for `recordTiming` error path when DataService is not initialized — `METRICS_RECORD` handler catches errors silently, `METRICS_SUMMARY` returns zeros on error, but neither path is tested (src/main/ipc/showtime.ts:164-181)
-- [Medium] WritersRoomView lineup timing only records success — if Claude times out or returns unparseable JSON, `lineupStartRef` leaks without recording a failure metric; no test verifies timeout/error timing behavior (src/renderer/views/WritersRoomView.tsx:91-94)
-- [Low] SyncEngine hydrate/flush timing instrumentation has no dedicated test — `recordTiming('sqlite.hydrate')` and `recordTiming('sqlite.sync')` calls are added but never asserted in any test; the 3 early-return timing paths in `hydrate()` are covered only implicitly (src/main/data/SyncEngine.ts:65,69,99,153)
-- [Low] p95 calculation not tested at boundary — only tested with 5 values where p95 trivially equals max; missing test with 20+ values to verify the `Math.ceil(length * 0.95) - 1` index math produces a true percentile vs just the max (src/__tests__/dataLayer.test.ts:270)
-- [Low] `prune()` called at startup (`DataService.init`) but no test verifies the startup prune actually runs or handles DB errors gracefully (src/main/index.ts:64)

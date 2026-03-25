@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- None
-
-The diff contains no dependency changes. The two source file modifications (`control-plane.ts` idempotency guard, `App.tsx` warm-up effect) introduce zero new imports or packages. All remaining changes are `.loki/` operational state files, binary screenshots, and test result metadata — none of which affect the dependency graph.

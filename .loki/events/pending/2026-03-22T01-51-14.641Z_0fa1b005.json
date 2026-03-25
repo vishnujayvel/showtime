@@ -1,8 +1,0 @@
-{
-  "id": "0fa1b005",
-  "type": "session",
-  "source": "cli",
-  "timestamp": "2026-03-22T01:51:14.641Z",
-  "payload": {"action":"start","provider":"claude","prd_path":"/Users/vishnu/workplace/showtime/openspec/changes/showtime-v3-polish/wave-2-features.md"},
-  "version": "1.0"
-}

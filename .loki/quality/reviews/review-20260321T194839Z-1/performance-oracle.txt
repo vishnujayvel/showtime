@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- None
-
-The diff is a net performance **improvement**: it removes the per-mousemove `document.elementFromPoint()` + IPC `setIgnoreMouseEvents` overhead that fired on every cursor movement. The new anchor-based window sizing uses only synchronous Electron APIs (`screen.getDisplayMatching`, `getBounds`, `setBounds`) at low-frequency view transitions — no loops, no leaks, no unbounded work.

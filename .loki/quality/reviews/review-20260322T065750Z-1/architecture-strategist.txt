@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- [Medium] Renderer imports types (`ShowDetailEntry`, `ActSnapshot`) from `src/main/data/types.ts` — dependency flows renderer → main, violating layer boundaries. These shared types should live in `src/shared/types.ts` alongside existing shared contracts. Pre-existing for `ShowHistoryEntry` but this change deepens the coupling. (src/renderer/views/HistoryView.tsx:5)
-- [Low] `HistoryView` is accumulating responsibilities: list fetching, expand/collapse state, detail fetching, and rendering both summary rows and detail panels. Extract a `ShowDetailPanel` sub-component to keep single-responsibility as this view grows. (src/renderer/views/HistoryView.tsx:99-235)
-- [Low] Inline `.replace(/^./, c => c.toUpperCase())` for title-casing the temporal label in WritersRoomView — a small presentation concern leaking into the view. `getTemporalShowLabelUpper` exists for all-caps; consider a parallel `getTemporalShowLabelTitle` to keep formatting in the utility layer. (src/renderer/views/WritersRoomView.tsx:279)

@@ -1,4 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- [Low] `HistoryView` renders 30 `<AnimatePresence>` wrappers inside the map loop, but only one row can expand at a time — a single `AnimatePresence` around the expanded detail would reduce DOM overhead (`src/renderer/views/HistoryView.tsx:112`)
-- [Low] `getShowDetail` issues 3 sequential SQLite queries (show, acts, claude_contexts) that could be a single JOIN, but since it's on-demand per user click and SQLite is local, the latency is negligible (`src/main/data/ShowRepository.ts:70-90`)

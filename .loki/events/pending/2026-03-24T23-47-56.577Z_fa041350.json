@@ -1,8 +1,0 @@
-{
-  "id": "fa041350",
-  "type": "session",
-  "source": "cli",
-  "timestamp": "2026-03-24T23:47:56.577Z",
-  "payload": {"action":"start","provider":"claude","prd_path":"/tmp/perf-metrics-only-prd.md"},
-  "version": "1.0"
-}

@@ -1,8 +1,0 @@
-{
-  "review_id": "review-20260322T020454Z-1",
-  "iteration": 1,
-  "pass_count": 2,
-  "fail_count": 1,
-  "has_blocking": true,
-  "verdicts": "architecture-strategist:FAIL performance-oracle:**PASS** security-sentinel:PASS"
-}

@@ -44,6 +44,12 @@ docs/.vitepress/dist/
 # Test artifacts
 test-results/
 
+# Loki autonomy framework runtime state
+.loki/
+
+# OpenSpec local changes (only openspec/specs/ is public)
+openspec/changes/
+
 # Temporary files
 *.tmp
 *.bak

@@ -1,8 +1,0 @@
-{
-  "id": "67b0326e",
-  "type": "session",
-  "source": "cli",
-  "timestamp": "2026-03-22T06:46:11.182Z",
-  "payload": {"action":"start","provider":"claude","prd_path":"/tmp/batch2-proposal.md"},
-  "version": "1.0"
-}

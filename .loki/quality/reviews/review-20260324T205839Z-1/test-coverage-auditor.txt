@@ -1,7 +1,0 @@
-VERDICT: FAIL
-FINDINGS:
-- [High] `initSession` missing from `window.clui` mock — any unit test that triggers the Writer's Room warm-up path will silently throw `TypeError: window.clui.initSession is not a function` instead of exercising the code (`src/__tests__/setup.ts:9-35`)
-- [High] No unit test for the new idempotency guard in `ControlPlane.initSession()` — three branches are untested: (1) skip when `initRequestIds` already has the requestId, (2) skip when `tab.claudeSessionId` is already set, (3) the `.catch` path that cleans up `initRequestIds` on failure (`src/main/claude/control-plane.ts:460`)
-- [Medium] No unit test for the App.tsx warm-up `useEffect` — the effect that calls `initSession` when `phase === 'writers_room'` is not verified: should fire on phase transition, should not fire for other phases, should be a no-op when `activeTabId` is null (`src/renderer/App.tsx:108-114`)
-- [Medium] Double-fire / re-render edge case untested — if the component re-renders while still in `writers_room` phase (e.g., store update from energy selection), `initSession` is called again; the idempotency guard in the main process protects against this, but no test verifies the round-trip behavior (`src/renderer/App.tsx:110`)
-- [Low] No test for the `.catch` error-handling path in `initSession` — when `submitPrompt` rejects, the requestId should be cleaned from `initRequestIds` to allow retry; this recovery path is untested (`src/main/claude/control-plane.ts:468-471`)

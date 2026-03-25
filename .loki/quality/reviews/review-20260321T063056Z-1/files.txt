@@ -1,5 +1,0 @@
-.loki/CONTINUITY.md
-docs/plans/pipeline-journal.md
-e2e/screenshots/02-writers-room.png
-e2e/screenshots/03-energy-selected.png
-e2e/showtime.test.ts
