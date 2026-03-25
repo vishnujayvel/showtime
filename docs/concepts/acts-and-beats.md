@@ -25,7 +25,7 @@ Every Act has a Sketch -- its category. Sketches help the Writer's Room build a 
 | **Creative** | Amber | Brainstorming, art, music, side projects |
 | **Social** | Pink | Meetings, calls, catch-ups, collaboration |
 
-The lineup is shaped by your morning energy check. High energy days get more Deep Work acts. Recovery days lean toward Admin and gentle activities. The framework meets you where you are.
+The lineup is shaped by your morning energy check. High energy days get more Deep Work acts. Recovery days lean toward Admin and gentle activities. The plan meets you where you are.
 
 ### What happens when an Act ends
 
