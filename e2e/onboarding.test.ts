@@ -155,7 +155,7 @@ test.describe('Onboarding (#15)', () => {
     await screenshot(page, 'onboarding-09-back')
   })
 
-  test('Help button re-triggers onboarding', async ({ mainPage: page }) => {
+  test('Help button opens help dialog', async ({ mainPage: page }) => {
     await page.evaluate(() => {
       localStorage.setItem('showtime-onboarding-complete', 'true')
       localStorage.removeItem('showtime-show-state')
@@ -167,12 +167,13 @@ test.describe('Onboarding (#15)', () => {
       await helpBtn.click()
       await page.waitForTimeout(1000)
 
-      const welcomeTitle = page.getByText('Welcome to the Show')
-      await expect(welcomeTitle).toBeVisible({ timeout: 5000 })
+      const helpTitle = page.getByText('How Showtime Works')
+      await expect(helpTitle).toBeVisible({ timeout: 5000 })
 
+      // Onboarding should NOT re-trigger
       const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
-      expect(flag).toBeNull()
+      expect(flag).toBe('true')
     }
-    await screenshot(page, 'onboarding-10-help-retrigger')
+    await screenshot(page, 'onboarding-10-help-dialog')
   })
 })
