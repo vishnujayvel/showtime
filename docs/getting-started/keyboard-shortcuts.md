@@ -1,6 +1,6 @@
 # Keyboard Shortcuts
 
-Quick reference for navigating Showtime without reaching for the mouse. All shortcuts use the macOS `Cmd` key.
+Quick reference for getting around Showtime without reaching for the mouse. All shortcuts use the macOS `Cmd` key.
 
 ## View Navigation
 

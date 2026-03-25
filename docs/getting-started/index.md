@@ -1,6 +1,6 @@
 # Install & First Show
 
-You found this page, which means you're probably tired of productivity tools that make you feel bad. Good news: Showtime doesn't do that. Your day is a live TV show. You're the star. Let's get you on stage.
+You found this page, which probably means you're tired of productivity tools that make you feel bad. Good news: Showtime doesn't do that. Your day is a live TV show. You're the star. Let's get you on stage.
 
 ## Installation
 
@@ -22,7 +22,7 @@ That's it. The app opens and you're looking at a dark stage.
 
 ## Your First Show
 
-Here's what happens the first time you run Showtime, from curtain up to curtain call.
+Here's what happens the first time you run Showtime.
 
 ### 1. Dark Studio
 
@@ -32,9 +32,9 @@ Click **Enter the Writer's Room** when you're ready. No rush.
 
 ### 2. Writer's Room
 
-This is where you plan your day, and it takes about three minutes -- not thirty. Three steps:
+This is where you plan your day, and it takes about three minutes, not thirty. Three steps:
 
-**Energy Check** -- The app asks how you're feeling today. Pick one: High, Medium, Low, or Recovery. Be honest. There is no wrong answer. Recovery days are valid days. See [Energy Levels](./energy-levels) for what each level means.
+**Energy Check** -- The app asks how you're feeling today. Pick one: High, Medium, Low, or Recovery. Be honest. There's no wrong answer. Recovery days are valid days. See [Energy Levels](./energy-levels) for what each level means.
 
 **Plan Dump** -- Type out everything on your plate in plain text. Don't organize it, don't prioritize it, just get it out of your head. "finish the API thing, need to email alex, maybe gym if I feel like it, groceries." That's plenty.
 
@@ -42,13 +42,13 @@ This is where you plan your day, and it takes about three minutes -- not thirty.
 
 ### 3. "We're Live!"
 
-You hit the button and the ON AIR light ignites. "Live from your desk, it's [today's date]!" This is not decoration -- it's a threshold. Before this moment, you were a person sitting at a desk. After this moment, you're a Performer on stage.
+You hit the button and the ON AIR light ignites. "Live from your desk, it's [today's date]!" This isn't decoration. It's a threshold. Before this moment, you were a person sitting at a desk. Now you're a Performer on stage.
 
 The show has started.
 
 ### 4. Act Timer
 
-Your first Act begins with a countdown timer -- a studio clock in big monospaced numbers. The pill view floats on your screen showing the Act name, timer, and Beat count so you can see where you are while you work.
+Your first Act begins with a countdown timer, a studio clock in big monospaced numbers. The pill view floats on your screen showing the Act name, timer, and Beat count so you can see where you are while you work.
 
 Acts are typically 45-90 minutes. When the timer runs out, the Act is over. You don't have to finish the task perfectly. The Act is done because the time is done.
 
@@ -56,7 +56,7 @@ Acts are typically 45-90 minutes. When the timer runs out, the Act is over. You 
 
 After each Act, a spotlight narrows and the app asks: **"Did you have a moment of presence?"**
 
-A Beat is not about productivity. It's about noticing. Were you there? Did you feel alive inside the work, even for a second? "That solution clicked." "I was actually enjoying this." "I noticed I was focused."
+A Beat isn't about productivity. It's about noticing. Were you there? Did you feel alive inside the work, even for a second? "That solution clicked." "I was actually enjoying this." "I noticed I was focused."
 
 If yes, lock the Beat. A golden star ignites. That moment was real.
 
@@ -64,15 +64,15 @@ If no, that's fine too. The Act still counted. You still showed up.
 
 ### 6. Intermission
 
-Between Acts, the ON AIR light goes dark. A vintage card appears: **"WE'LL BE RIGHT BACK."** There's no timer. There's no guilt. Rest costs zero capacity. It always has.
+Between Acts, the ON AIR light goes dark. A vintage card appears: **"WE'LL BE RIGHT BACK."** There's no timer. There's no guilt. Rest costs zero capacity. Always has.
 
-Get a coffee. Stretch. Stare at the wall. The show is not going anywhere.
+Get a coffee. Stretch. Stare at the wall. The show isn't going anywhere.
 
 Tap **Back to the show** when you're ready for the next Act.
 
 ### 7. Director Mode
 
-If things go sideways -- you're overwhelmed, you've skipped a couple of Acts, the day is not going as planned -- the Director steps in. Four options, all of them valid:
+If things go sideways -- you're overwhelmed, you've skipped a couple of Acts, the day isn't going as planned -- the Director steps in. Four options, all of them valid:
 
 - Skip to the next Act
 - Take a longer break

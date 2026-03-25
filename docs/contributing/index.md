@@ -1,6 +1,6 @@
 # Development Setup
 
-Showtime is an ADHD-friendly macOS day planner built as an Electron desktop app. This guide covers everything you need to get a development environment running.
+Showtime is an ADHD-friendly macOS day planner built with Electron. Here's how to get it running locally.
 
 ## Prerequisites
 
@@ -66,11 +66,11 @@ Showtime (Electron App)
 
 ### Main Process
 
-The main process owns window management and system integration. It creates frameless, transparent `BrowserWindow` instances sized to match the current view (Pill, Expanded, Writer's Room, etc.) and manages always-on-top behavior via native macOS NSPanel APIs.
+Owns window management and system integration. Creates frameless, transparent `BrowserWindow` instances sized to the current view and handles always-on-top via macOS NSPanel.
 
 ### Preload / IPC Bridge
 
-The renderer communicates with the main process **only** through the typed `window.clui` API defined in `preload/index.ts`. This is a hard boundary:
+The renderer talks to main **only** through the typed `window.clui` API in `preload/index.ts`. Hard boundary:
 
 - The preload script uses Electron's `contextBridge` to expose a strict, typed interface.
 - The renderer never imports Node.js modules directly.
@@ -86,11 +86,11 @@ import { ipcRenderer } from 'electron' // WRONG
 
 ### Renderer
 
-The renderer is a standard React 19 app. Views correspond to Showtime's production phases (Dark Studio, Writer's Room, ON AIR via Expanded/Pill, Intermission, Strike). Global state lives in Zustand stores, primarily `showStore`.
+Standard React 19 app. Views map to show phases (Dark Studio, Writer's Room, ON AIR, Intermission, Strike). State lives in Zustand, mainly `showStore`.
 
 ### Persistence
 
-SQLite via better-sqlite3 runs in the main process. Drizzle ORM provides the query layer. The renderer accesses data through IPC, never directly.
+SQLite (better-sqlite3) in the main process. Renderer accesses data through IPC, never directly.
 
 ::: warning
 `better-sqlite3` is a native Node module. If you see build errors after switching Node versions, run `npx electron-rebuild` to recompile it against Electron's ABI.
