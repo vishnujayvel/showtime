@@ -1,0 +1,22 @@
+{
+  "id": "sig-5ba932bf",
+  "type": "success_pattern",
+  "source": "cli",
+  "action": "session_complete",
+  "context": {},
+  "outcome": "success",
+  "confidence": 0.8,
+  "timestamp": "2026-03-24T21:05:40.114261+00:00Z",
+  "metadata": {},
+  "pattern_name": "full_session",
+  "action_sequence": [
+    "init",
+    "setup",
+    "run_iterations",
+    "extract_learnings",
+    "cleanup"
+  ],
+  "preconditions": [],
+  "postconditions": [],
+  "duration_seconds": 0
+}

@@ -1,0 +1,8 @@
+{
+  "id": "68a5a884",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-25T01:00:45.208Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"/tmp/multi-turn-dialog-prd.md"},
+  "version": "1.0"
+}

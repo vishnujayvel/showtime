@@ -1,0 +1,8 @@
+{
+  "id": "70948bb0",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-24T20:58:39.238Z",
+  "payload": {"action":"load","count":"0","prd_provided":"true"},
+  "version": "1.0"
+}

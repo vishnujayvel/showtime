@@ -1,0 +1,8 @@
+{
+  "id": "2d566e75",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-24T21:35:17.448Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"/tmp/wave2-combined-prd.md"},
+  "version": "1.0"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "cd8f8ff0",
+  "type": "session",
+  "source": "cli",
+  "timestamp": "2026-03-25T06:30:17.766Z",
+  "payload": {"action":"start","provider":"claude","prd_path":"openspec/changes/pill-window-fix/proposal.md"},
+  "version": "1.0"
+}

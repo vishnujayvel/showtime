@@ -1,0 +1,13 @@
+{
+  "id": "eecccacb",
+  "type": "memory",
+  "source": "cli",
+  "timestamp": "2026-03-24T23:40:21.993395+00:00",
+  "payload": {
+    "action": "learning_signal",
+    "signal_id": "sig-0b2f8d2f",
+    "signal_type": "workflow_pattern",
+    "outcome": "success"
+  },
+  "version": "1.0"
+}

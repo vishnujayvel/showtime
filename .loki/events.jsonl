@@ -134,3 +134,47 @@
 {"timestamp":"2026-03-24T20:36:27Z","type":"code_review_start","data":{"review_id":"review-20260324T203623Z-1","reviewers":"architecture-strategist, performance-oracle, dependency-analyst","iteration":1}}
 {"timestamp":"2026-03-24T20:39:14Z","type":"code_review_complete","data":{"review_id":"review-20260324T203623Z-1","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":1}}
 {"timestamp":"2026-03-24T20:40:05Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-24T20:51:41Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/claude-warmup.md","parallel":true,"complexity":"standard","pid":17456}}
+{"timestamp":"2026-03-24T20:51:43Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/claude-warmup.md"}}
+{"timestamp":"2026-03-24T20:58:03Z","type":"iteration_complete","data":{"iteration":1,"status":"failed","exitCode":141,"provider":"claude"}}
+{"timestamp":"2026-03-24T20:58:43Z","type":"code_review_start","data":{"review_id":"review-20260324T205839Z-1","reviewers":"architecture-strategist, dependency-analyst, test-coverage-auditor","iteration":1}}
+{"timestamp":"2026-03-24T21:02:45Z","type":"code_review_complete","data":{"review_id":"review-20260324T205839Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+{"timestamp":"2026-03-24T21:03:42Z","type":"iteration_complete","data":{"iteration":2,"status":"failed","exitCode":137,"provider":"claude"}}
+{"timestamp":"2026-03-24T21:04:10Z","type":"code_review_start","data":{"review_id":"review-20260324T210410Z-2","reviewers":"architecture-strategist, dependency-analyst, test-coverage-auditor","iteration":2}}
+{"timestamp":"2026-03-24T21:05:37Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":2}}
+{"timestamp":"2026-03-24T21:06:03Z","type":"code_review_complete","data":{"review_id":"review-20260324T210410Z-2","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":2}}
+{"timestamp":"2026-03-24T21:08:41Z","type":"iteration_start","data":{"iteration":3,"provider":"claude","prd":"/tmp/app-identity-proposal.md"}}
+{"timestamp":"2026-03-24T21:13:51Z","type":"session_start","data":{"provider":"claude","prd":"openspec/changes/history-view-e2e/proposal.md","parallel":true,"complexity":"standard","pid":83564}}
+{"timestamp":"2026-03-24T21:13:52Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"openspec/changes/history-view-e2e/proposal.md"}}
+{"timestamp":"2026-03-24T21:14:48Z","type":"iteration_complete","data":{"iteration":3,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-24T21:15:01Z","type":"code_review_start","data":{"review_id":"review-20260324T211501Z-3","reviewers":"architecture-strategist, test-coverage-auditor, dependency-analyst","iteration":3}}
+{"timestamp":"2026-03-24T21:17:19Z","type":"code_review_complete","data":{"review_id":"review-20260324T211501Z-3","pass_count":3,"fail_count":0,"has_blocking":false,"iteration":3}}
+{"timestamp":"2026-03-24T21:17:25Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":3}}
+{"timestamp":"2026-03-24T21:30:30Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-24T21:30:35Z","type":"code_review_start","data":{"review_id":"review-20260324T213035Z-1","reviewers":"architecture-strategist, test-coverage-auditor, dependency-analyst","iteration":1}}
+{"timestamp":"2026-03-24T21:33:21Z","type":"code_review_complete","data":{"review_id":"review-20260324T213035Z-1","pass_count":2,"fail_count":1,"has_blocking":true,"iteration":1}}
+{"timestamp":"2026-03-24T21:33:23Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-24T21:35:26Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/wave2-combined-prd.md","parallel":true,"complexity":"standard","pid":55552}}
+{"timestamp":"2026-03-24T21:35:26Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/wave2-combined-prd.md"}}
+{"timestamp":"2026-03-24T23:39:00Z","type":"session_end","data":{"result":0,"reason":"stop_requested"}}
+{"timestamp":"2026-03-24T23:39:14Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/wave2-combined-prd.md","parallel":true,"complexity":"standard","pid":81576}}
+{"timestamp":"2026-03-24T23:39:15Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/wave2-combined-prd.md"}}
+{"timestamp":"2026-03-24T23:39:31Z","type":"session_end","data":{"result":0,"reason":"stop_requested"}}
+{"timestamp":"2026-03-24T23:39:49Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/wave2-combined-prd.md","parallel":true,"complexity":"standard","pid":83570}}
+{"timestamp":"2026-03-24T23:39:50Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/wave2-combined-prd.md"}}
+{"timestamp":"2026-03-24T23:40:13Z","type":"session_end","data":{"result":0,"reason":"stop_requested"}}
+{"timestamp":"2026-03-24T23:40:28Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/wave2-combined-prd.md","parallel":true,"complexity":"standard","pid":85803}}
+{"timestamp":"2026-03-24T23:40:29Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/wave2-combined-prd.md"}}
+{"timestamp":"2026-03-24T23:48:05Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/perf-metrics-only-prd.md","parallel":true,"complexity":"standard","pid":5113}}
+{"timestamp":"2026-03-24T23:48:05Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/perf-metrics-only-prd.md"}}
+{"timestamp":"2026-03-25T00:04:49Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-25T00:05:05Z","type":"code_review_start","data":{"review_id":"review-20260325T000504Z-1","reviewers":"architecture-strategist, test-coverage-auditor, dependency-analyst","iteration":1}}
+{"timestamp":"2026-03-25T00:06:59Z","type":"code_review_complete","data":{"review_id":"review-20260325T000504Z-1","pass_count":2,"fail_count":1,"has_blocking":false,"iteration":1}}
+{"timestamp":"2026-03-25T00:07:01Z","type":"session_end","data":{"result":0,"provider":"claude","iterations":1}}
+{"timestamp":"2026-03-25T01:00:51Z","type":"session_start","data":{"provider":"claude","prd":"/tmp/multi-turn-dialog-prd.md","parallel":true,"complexity":"standard","pid":5174}}
+{"timestamp":"2026-03-25T01:00:51Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"/tmp/multi-turn-dialog-prd.md"}}
+{"timestamp":"2026-03-25T01:26:09Z","type":"session_end","data":{"result":0,"reason":"stop_requested"}}
+{"timestamp":"2026-03-25T06:30:23Z","type":"session_start","data":{"provider":"claude","prd":"openspec/changes/pill-window-fix/proposal.md","parallel":true,"complexity":"standard","pid":10590}}
+{"timestamp":"2026-03-25T06:30:23Z","type":"iteration_start","data":{"iteration":1,"provider":"claude","prd":"openspec/changes/pill-window-fix/proposal.md"}}
+{"timestamp":"2026-03-25T06:37:41Z","type":"iteration_complete","data":{"iteration":1,"status":"completed","exitCode":0,"provider":"claude"}}
+{"timestamp":"2026-03-25T06:37:50Z","type":"code_review_start","data":{"review_id":"review-20260325T063750Z-1","reviewers":"architecture-strategist, test-coverage-auditor, dependency-analyst","iteration":1}}

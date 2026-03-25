@@ -1,0 +1,23 @@
+VERDICT: FAIL
+
+FINDINGS:
+
+- **[High] Hardcoded `waitForTimeout` throughout — classic flaky test pattern.** Seven instances of `page.waitForTimeout(500/1000/1500)` used instead of Playwright's auto-waiting (`waitForSelector`, `waitForFunction`, `expect().toBeVisible()`). These are timing-dependent and will cause intermittent failures on slow CI or under load. (e2e/history.test.ts:48, 57, 83, 102, 112, 154, 177)
+
+- **[High] No SQLite cleanup between tests — stale data leaks across test cases.** Tests 2, 3, and 4 all seed shows using `yesterday` as the showId (same ISO date string). Because SQLite persists across tests in the same Electron process and `dataFlush` does an upsert, Test 3's DAY_WON seed overwrites Test 2's SOLID_SHOW seed. Test 1 assumes empty history but will fail if run after any seeding test. No `beforeEach` cleanup or DB reset. (e2e/history.test.ts:92, 121, 163)
+
+- **[Medium] Only 2 of 4 verdict types tested.** Tests cover DAY_WON and SOLID_SHOW but never verify GOOD_EFFORT or SHOW_CALLED_EARLY display in the history list. The HistoryView maps verdict to badge color/text — untested verdict mapping could silently break. (e2e/history.test.ts:122, 164)
+
+- **[Medium] No test for multiple shows or chronological ordering.** All tests seed 0 or 1 show. The `getRecentShows` query uses `ORDER BY id DESC LIMIT 30` — no test verifies correct reverse-chronological display when multiple shows exist. (e2e/history.test.ts)
+
+- **[Medium] Cut act display not verified in expanded detail.** The seeded data includes a cut act (`Email & Slack`, status: `cut`) but Test 4 only asserts `Deep Work Session` and `Exercise Break` names. No assertion verifies cut acts render with their distinct "Cut" label/color. (e2e/history.test.ts:179-181)
+
+- **[Medium] Duration drift formatting untested.** HistoryView renders drift as "45m → 52m" with accent color when planned vs actual differ. The seeded acts have drift (planned 45m, actual 40m; planned 25m, actual 30m) but no test verifies the drift indicator renders. (e2e/history.test.ts:184-185)
+
+- **[Medium] No error path coverage for IPC failures.** No test for `getShowHistory` or `getShowDetail` returning errors, empty results unexpectedly, or `dataFlush` failing. The SyncEngine swallows errors — a silent data loss path with no test. (e2e/history.test.ts)
+
+- **[Low] Fragile CSS class selector for expand click.** `page.locator('.overflow-y-auto button').first()` depends on internal layout CSS class. A Tailwind class rename or layout change breaks this without clear error. Should use `data-testid` or semantic locator. (e2e/history.test.ts:174)
+
+- **[Low] `copyMigrations` plugin has no error handling for missing source directory.** If `src/main/data/migrations` doesn't exist, `cpSync` throws and kills the build with a cryptic error. No build-time test verifies migrations directory exists. (electron.vite.config.ts:13-18)
+
+- **[Low] No test for collapse after expand.** Test 4 expands a show entry but never tests collapsing it. The expand/collapse toggle could have state bugs where a second click doesn't properly re-collapse. (e2e/history.test.ts:160-204)

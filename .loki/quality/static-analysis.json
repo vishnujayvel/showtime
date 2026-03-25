@@ -1,1 +1,1 @@
-{"timestamp":"2026-03-24T20:35:50Z","files_checked":9,"findings":2,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/App.tsx. Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/SettingsView.tsx. ","pass":false}
+{"timestamp":"2026-03-25T06:37:47Z","files_checked":8,"findings":1,"summary":"Syntax error: /Users/vishnu/workplace/showtime/src/renderer/views/PillView.tsx. ","pass":false}

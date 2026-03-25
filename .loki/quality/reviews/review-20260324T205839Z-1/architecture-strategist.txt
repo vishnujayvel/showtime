@@ -1,0 +1,5 @@
+VERDICT: PASS
+FINDINGS:
+- [Low] Warm-up logic in App.tsx directly reaches into `useSessionStore.getState()` — couples App (view router) to session store internals. A thin `getActiveTabId()` selector or moving the warm-up trigger into the session store itself would improve cohesion, but this is minor for current codebase size. (src/renderer/App.tsx:110)
+
+The changes are minimal and well-scoped. The `ControlPlane.initSession` idempotency guard is correctly placed at the domain boundary. The `useEffect` in App.tsx is a reasonable place for this lifecycle trigger given the existing pattern of similar effects in the same file. All `.loki/` and screenshot changes are operational state — no architecture concerns.

@@ -1,0 +1,6 @@
+VERDICT: PASS
+FINDINGS:
+- [Low] App.tsx reaches into sessionStore from inside a showStore-driven effect, creating implicit coupling between two stores (src/renderer/App.tsx:110) — the warm-up trigger depends on `phase` from showStore but reads `activeTabId` from sessionStore via `.getState()`. This is acceptable for a side-effect but would be cleaner as a dedicated hook (e.g., `useClaudeWarmup`) to keep App.tsx from accumulating more cross-store orchestration.
+- [Low] The idempotency guard in `initSession` uses two separate checks (`initRequestIds.has(requestId)` and `tab.claudeSessionId`) that represent different lifecycle stages — this is fine for now but if more init states emerge, consider a single state enum on the tab entry to avoid shotgun surgery (src/main/claude/control-plane.ts:460).
+
+No SOLID violations, no excessive coupling, no wrong patterns. The `.loki/` changes are all operational state files, not architecture-relevant code.
