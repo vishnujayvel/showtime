@@ -8,7 +8,7 @@ This file is the source of truth for ALL agents working in this codebase.
 ## Active Specification
 
 - **Spec:** `.claude/specs/showtime-v2/` (active)
-- **Superseded:** `.claude/specs/showtime-snl-planner/` (v1 — thin product context, do not use)
+- **Superseded:** `.claude/specs/showtime-snl-planner/` (v1 — archived, do not use)
 
 ## Product Context
 
@@ -27,7 +27,7 @@ Read `docs/plans/product-context.md` for the full product vision. Key points:
 Showtime (Electron App, macOS only)
 ├── Main Process (Node.js)
 │   ├── claude/              ← KEEP: subprocess management (RunManager, ControlPlane, StreamParser)
-│   ├── window management    ← KEEP: NSPanel, always-on-top, click-through
+│   ├── window management    ← NSPanel, always-on-top, content-tight sizing
 │   └── IPC handlers         ← KEEP: notification triggers, theme sync
 ├── Preload (contextBridge)
 │   └── window.clui API      ← KEEP: typed IPC bridge, strict process isolation
@@ -212,7 +212,7 @@ Full reference: `docs/plans/design-system.md`
 |------|------|-------|
 | Dark Studio | Full window | Empty stage with spotlight |
 | Writer's Room | 560 x 680px | Energy → Plan → Lineup → "WE'RE LIVE!" |
-| Pill | 320 x 48px | Floating, always-on-top, rounded-full |
+| Pill | 320 x 64px | Floating, always-on-top, rounded-full |
 | Expanded | 560 x 620px | Timer hero + lineup sidebar + ON AIR bar |
 | Beat Check | 380px card | Centered modal with spotlight |
 | Intermission | 560 x 500px | "WE'LL BE RIGHT BACK" card |
@@ -224,15 +224,9 @@ Full reference: `docs/plans/design-system.md`
 The definitive UI mockup is at `docs/mockups/direction-4-the-show.html`.
 Open it in a browser to see all views. When implementing, match this mockup.
 
-## Files to Delete (CLUI Dead Weight)
+## CLUI Legacy Notes
 
-These CLUI-specific files should be removed:
-- `src/renderer/components/ConversationView.tsx` — General chat rendering
-- `src/renderer/components/InputBar.tsx` — Rich input (rebuild simplified for Showtime)
-- `src/renderer/components/PermissionCard.tsx` — Keep but simplify
-- `src/renderer/components/AttachmentChips.tsx` — Not needed
-- `src/renderer/components/SlashCommandMenu.tsx` — Not needed
-- `src/renderer/components/PopoverLayer.tsx` — Replace with shadcn/ui
+The original CLUI components (ConversationView, InputBar, PermissionCard, AttachmentChips, SlashCommandMenu, PopoverLayer) have been removed. If you find any remaining inline `style={{}}` patterns, they're CLUI leftovers — replace with Tailwind classes.
 
 ## Documentation Rules
 
