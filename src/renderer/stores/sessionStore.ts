@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { TabStatus, NormalizedEvent, EnrichedError, Message, TabState } from '../../shared/types'
 import { useThemeStore } from '../theme'
+import { useShowStore } from './showStore'
 // @ts-expect-error Vite handles mp3 imports at build time
 import notificationSrc from '../../../resources/notification.mp3'
 
@@ -240,6 +241,17 @@ export const useSessionStore = create<State>((set, get) => ({
             updated.sessionMcpServers = event.mcpServers
             updated.sessionSkills = event.skills
             updated.sessionVersion = event.version
+            // Detect Google Calendar MCP availability
+            {
+              const hasCalendar = event.tools.some((t: string) =>
+                t.toLowerCase().includes('gcal') ||
+                t.toLowerCase().includes('google_calendar') ||
+                t.toLowerCase().includes('calendar')
+              )
+              if (hasCalendar) {
+                useShowStore.getState().setCalendarAvailable(true)
+              }
+            }
             if (!event.isWarmup) {
               updated.status = 'running'
               updated.currentActivity = 'Thinking...'

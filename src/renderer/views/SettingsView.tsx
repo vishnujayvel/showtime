@@ -16,6 +16,9 @@ export function SettingsView({ onBack }: SettingsViewProps) {
   const soundEnabled = useThemeStore((s) => s.soundEnabled)
   const setSoundEnabled = useThemeStore((s) => s.setSoundEnabled)
   const resetShow = useShowStore((s) => s.resetShow)
+  const calendarAvailable = useShowStore((s) => s.calendarAvailable)
+  const calendarEnabled = useShowStore((s) => s.calendarEnabled)
+  const setCalendarEnabled = useShowStore((s) => s.setCalendarEnabled)
 
   const [confirmReset, setConfirmReset] = useState(false)
 
@@ -51,6 +54,55 @@ export function SettingsView({ onBack }: SettingsViewProps) {
 
       {/* Settings content */}
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+        {/* Calendar Sync */}
+        <div>
+          <p className="font-mono text-[10px] tracking-[0.15em] uppercase text-txt-muted mb-3">
+            CALENDAR SYNC
+          </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span
+                className={`w-2 h-2 rounded-full ${calendarAvailable ? 'bg-green-500' : 'bg-txt-muted'}`}
+              />
+              <p className="text-sm font-body text-txt-primary">
+                {calendarAvailable ? 'Connected' : 'Not configured'}
+              </p>
+            </div>
+          </div>
+          {!calendarAvailable && (
+            <p className="text-xs text-txt-muted mb-2">
+              Add the Google Calendar MCP in Claude Code settings to enable calendar sync.
+            </p>
+          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-body text-txt-primary">Import calendar events</p>
+              <p className="text-xs text-txt-muted mt-0.5">
+                Pull today&apos;s events into the Writer&apos;s Room lineup
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (calendarAvailable) setCalendarEnabled(!calendarEnabled)
+              }}
+              disabled={!calendarAvailable}
+              className={`relative w-10 h-6 rounded-full transition-colors ${
+                !calendarAvailable
+                  ? 'bg-surface-hover opacity-50 cursor-not-allowed'
+                  : calendarEnabled
+                    ? 'bg-accent'
+                    : 'bg-surface-hover'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                  calendarEnabled && calendarAvailable ? 'translate-x-4' : ''
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
         {/* Sound */}
         <div className="flex items-center justify-between">
           <div>

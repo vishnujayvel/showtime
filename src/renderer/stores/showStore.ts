@@ -76,6 +76,12 @@ interface ShowActions {
   // Reset
   resetShow: () => void
 
+  // Calendar
+  calendarAvailable: boolean
+  calendarEnabled: boolean
+  setCalendarAvailable: (available: boolean) => void
+  setCalendarEnabled: (enabled: boolean) => void
+
   // Session
   setClaudeSessionId: (id: string) => void
 
@@ -104,6 +110,8 @@ interface ShowStoreState {
   writersRoomStep: WritersRoomStep
   writersRoomEnteredAt: number | null
   breathingPauseEndAt: number | null
+  calendarAvailable: boolean
+  calendarEnabled: boolean
 }
 
 export type ShowStore = ShowStoreState & ShowActions
@@ -132,6 +140,8 @@ const initialState: ShowStoreState = {
   writersRoomStep: 'energy',
   writersRoomEnteredAt: null,
   breathingPauseEndAt: null,
+  calendarAvailable: false,
+  calendarEnabled: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-calendar-enabled') === 'true',
 }
 
 // ─── SQLite sync helpers ───
@@ -619,6 +629,17 @@ export const useShowStore = create<ShowStore>()(
         set({ ...initialState, showDate: today(), showStartedAt: null, viewTier: 'expanded' as ViewTier })
       },
 
+      // ─── Calendar ───
+
+      setCalendarAvailable: (available) => set({ calendarAvailable: available }),
+
+      setCalendarEnabled: (enabled) => {
+        try {
+          localStorage.setItem('showtime-calendar-enabled', String(enabled))
+        } catch { /* ignore storage errors */ }
+        set({ calendarEnabled: enabled })
+      },
+
       // ─── Session ───
 
       setClaudeSessionId: (id) => set({ claudeSessionId: id }),
@@ -668,7 +689,7 @@ export const useShowStore = create<ShowStore>()(
       name: 'showtime-show-state',
       partialize: (state) => {
         // Don't persist transient UI state
-        const { beatCheckPending: _bcp, celebrationActive: _ca, coldOpenActive: _coa, goingLiveActive: _gla, ...rest } = state
+        const { beatCheckPending: _bcp, celebrationActive: _ca, coldOpenActive: _coa, goingLiveActive: _gla, calendarAvailable: _calA, calendarEnabled: _calE, ...rest } = state
         return rest
       },
       onRehydrateStorage: () => {
