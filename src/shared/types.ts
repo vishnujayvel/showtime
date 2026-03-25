@@ -442,6 +442,8 @@ export const IPC = {
   CLAUDE_CONTEXT_GET: 'showtime:claude-context-get',
   SHOW_HISTORY: 'showtime:show-history',
   SHOW_DETAIL: 'showtime:show-detail',
+  METRICS_SUMMARY: 'showtime:metrics-summary',
+  METRICS_RECORD: 'showtime:metrics-record',
 
   // App lifecycle
   APP_QUIT: 'app:quit',

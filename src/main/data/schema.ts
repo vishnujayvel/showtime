@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 
 export const shows = sqliteTable('shows', {
   id: text('id').primaryKey(), // ISO date string: "2026-03-21"
@@ -49,6 +49,14 @@ export const claudeContexts = sqliteTable('claude_contexts', {
   planText: text('plan_text'),
   lineupJson: text('lineup_json'),
   sessionId: text('session_id'),
+  createdAt: integer('created_at').notNull(),
+})
+
+export const metrics = sqliteTable('metrics', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  durationMs: real('duration_ms').notNull(),
+  metadata: text('metadata'),
   createdAt: integer('created_at').notNull(),
 })
 

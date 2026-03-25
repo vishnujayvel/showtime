@@ -266,6 +266,69 @@ describe('ClaudeContextRepository', () => {
   })
 })
 
+describe('MetricsRepository', () => {
+  it('recordTiming + getSummary returns correct stats', () => {
+    data.metrics.recordTiming('app.startup', 100)
+    data.metrics.recordTiming('app.startup', 200)
+    data.metrics.recordTiming('app.startup', 300)
+    data.metrics.recordTiming('app.startup', 400)
+    data.metrics.recordTiming('app.startup', 500)
+
+    const summary = data.metrics.getSummary('app.startup')
+    expect(summary.count).toBe(5)
+    expect(summary.avg).toBe(300)
+    expect(summary.min).toBe(100)
+    expect(summary.max).toBe(500)
+    expect(summary.p95).toBe(500)
+  })
+
+  it('prune removes old entries, keeps recent ones', () => {
+    // Insert an "old" entry by manipulating created_at via raw SQL
+    data.raw.prepare(
+      'INSERT INTO metrics (name, duration_ms, created_at) VALUES (?, ?, ?)'
+    ).run('app.startup', 150, Date.now() - 31 * 24 * 60 * 60 * 1000) // 31 days ago
+
+    // Insert a recent entry
+    data.metrics.recordTiming('app.startup', 200)
+
+    const deleted = data.metrics.prune(30)
+    expect(deleted).toBe(1)
+
+    const summary = data.metrics.getSummary('app.startup')
+    expect(summary.count).toBe(1)
+    expect(summary.avg).toBe(200)
+  })
+
+  it('getSummary with no data returns zeros', () => {
+    const summary = data.metrics.getSummary('nonexistent')
+    expect(summary).toEqual({ avg: 0, p95: 0, min: 0, max: 0, count: 0 })
+  })
+
+  it('getSummary filters by sinceDays', () => {
+    // Insert an "old" entry
+    data.raw.prepare(
+      'INSERT INTO metrics (name, duration_ms, created_at) VALUES (?, ?, ?)'
+    ).run('sqlite.hydrate', 50, Date.now() - 10 * 24 * 60 * 60 * 1000) // 10 days ago
+
+    // Insert a recent entry
+    data.metrics.recordTiming('sqlite.hydrate', 100)
+
+    const last7 = data.metrics.getSummary('sqlite.hydrate', 7)
+    expect(last7.count).toBe(1)
+    expect(last7.avg).toBe(100)
+
+    const last30 = data.metrics.getSummary('sqlite.hydrate', 30)
+    expect(last30.count).toBe(2)
+  })
+
+  it('recordTiming stores metadata as JSON', () => {
+    data.metrics.recordTiming('app.startup', 250, { version: '1.0.0' })
+
+    const row = data.raw.prepare('SELECT metadata FROM metrics WHERE name = ?').get('app.startup') as { metadata: string }
+    expect(JSON.parse(row.metadata)).toEqual({ version: '1.0.0' })
+  })
+})
+
 describe('MigrationRunner', () => {
   it('creates all tables and is idempotent', () => {
     // Tables already exist from beforeEach init
