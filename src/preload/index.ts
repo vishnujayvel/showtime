@@ -60,6 +60,9 @@ export interface CluiAPI {
   recordMetricTiming(name: string, durationMs: number, metadata?: Record<string, string>): void
   getMetricsSummary(name: string, days?: number): Promise<MetricsSummary>
 
+  // ─── Data reset ───
+  resetAllData(): Promise<{ ok: boolean; error?: string }>
+
   // ─── Test-only (NODE_ENV=test) ───
   testGetWindowConfig?: () => Promise<{ alwaysOnTop: boolean; visibleOnAllWorkspaces: boolean; backgroundColor: string; bounds: { x: number; y: number; width: number; height: number } }>
   testGetTrayMenu?: () => Promise<string[]>
@@ -168,6 +171,9 @@ const api: CluiAPI = {
   getShowDetail: (showId: string) => ipcRenderer.invoke(IPC.SHOW_DETAIL, showId),
   recordMetricTiming: (name: string, durationMs: number, metadata?: Record<string, string>) => ipcRenderer.send(IPC.METRICS_RECORD, name, durationMs, metadata),
   getMetricsSummary: (name: string, days?: number) => ipcRenderer.invoke(IPC.METRICS_SUMMARY, name, days),
+
+  // ─── Data reset ───
+  resetAllData: () => ipcRenderer.invoke(IPC.RESET_ALL_DATA),
 
   // Test-only IPC (NODE_ENV=test)
   ...(process.env.NODE_ENV === 'test' ? {

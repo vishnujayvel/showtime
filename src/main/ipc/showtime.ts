@@ -61,6 +61,21 @@ export function registerShowtimeIpc(): void {
     forceRepaint()
   })
 
+  // ─── Showtime data reset (truncates all tables + notifies renderer) ───
+
+  ipcMain.handle(IPC.RESET_ALL_DATA, () => {
+    try {
+      const data = DataService.getInstance()
+      data.resetAllData()
+      broadcast(IPC.RESET_SHOW)
+      log('Showtime: All data reset (tables truncated, renderer notified)')
+      return { ok: true }
+    } catch (err: unknown) {
+      log(`RESET_ALL_DATA error: ${err instanceof Error ? err.message : String(err)}`)
+      return { ok: false, error: err instanceof Error ? err.message : String(err) }
+    }
+  })
+
   // ─── Showtime data persistence IPC ───
 
   ipcMain.handle(IPC.DATA_HYDRATE, () => {

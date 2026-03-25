@@ -329,6 +329,45 @@ describe('MetricsRepository', () => {
   })
 })
 
+describe('resetAllData', () => {
+  it('truncates all data tables', () => {
+    // Seed data in every table
+    data.shows.upsertShow({ id: '2026-03-21', phase: 'live', energy: 'high' })
+    data.acts.insertActs('2026-03-21', [
+      { id: 'act1', name: 'Deep Work', sketch: 'Deep Work', plannedDurationMs: 1800000, sortOrder: 0, status: 'active' },
+    ])
+    data.timeline.recordEvent({ showId: '2026-03-21', actId: 'act1', eventType: 'act_started' })
+    data.claudeCtx.saveContext({ showId: '2026-03-21', energy: 'high', planText: 'test' })
+    data.metrics.recordTiming('app.startup', 100)
+
+    // Verify data exists
+    expect(data.shows.getRecentShows(10)).toHaveLength(1)
+    expect(data.acts.getActsForShow('2026-03-21')).toHaveLength(1)
+    expect(data.timeline.getEventsForShow('2026-03-21')).toHaveLength(1)
+    expect(data.claudeCtx.getLatestContext('2026-03-21')).toBeDefined()
+    expect(data.metrics.getSummary('app.startup').count).toBe(1)
+
+    // Reset
+    data.resetAllData()
+
+    // Verify all tables are empty
+    expect(data.shows.getRecentShows(10)).toHaveLength(0)
+    expect(data.acts.getActsForShow('2026-03-21')).toHaveLength(0)
+    expect(data.timeline.getEventsForShow('2026-03-21')).toHaveLength(0)
+    expect(data.claudeCtx.getLatestContext('2026-03-21')).toBeUndefined()
+    expect(data.metrics.getSummary('app.startup').count).toBe(0)
+  })
+
+  it('preserves schema — can re-insert data after reset', () => {
+    data.shows.upsertShow({ id: '2026-03-21', phase: 'live' })
+    data.resetAllData()
+
+    // Should be able to insert fresh data
+    data.shows.upsertShow({ id: '2026-03-22', phase: 'writers_room' })
+    expect(data.shows.getShow('2026-03-22')!.phase).toBe('writers_room')
+  })
+})
+
 describe('MigrationRunner', () => {
   it('creates all tables and is idempotent', () => {
     // Tables already exist from beforeEach init
