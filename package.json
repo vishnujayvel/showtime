@@ -17,6 +17,7 @@
     "pretest": "npm rebuild better-sqlite3 --silent 2>/dev/null || true",
     "test": "vitest run",
     "test:watch": "vitest",
+    "pretest:e2e": "npx electron-rebuild -f -w better-sqlite3 --silent 2>/dev/null || true",
     "test:e2e": "npx playwright test",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
