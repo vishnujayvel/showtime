@@ -226,4 +226,67 @@ test.describe('View Tier Verification', () => {
 
     await screenshot(page, 'tier-strike-full')
   })
+
+  // ─── Pill transition tests (ghost frame fix) ───
+
+  test('expanded → pill transition renders content without ghost frames', async ({ app, mainPage: page }) => {
+    // Start in expanded live state
+    await seedFixture(page, FIXTURES.live_expanded)
+    await waitForBounds(app, VIEW_DIMENSIONS.expanded.width, VIEW_DIMENSIONS.expanded.height)
+
+    // Transition to pill by setting viewTier to micro
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-show-state', JSON.stringify({
+        state: {
+          ...JSON.parse(localStorage.getItem('showtime-show-state')!).state,
+          viewTier: 'micro',
+        },
+        version: 0,
+      }))
+    })
+    // Navigate to apply the state change
+    const url = page.url()
+    await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
+    await page.waitForTimeout(3000)
+
+    // Wait for pill dimensions
+    const bounds = await waitForBounds(app, VIEW_DIMENSIONS.pill.width, VIEW_DIMENSIONS.pill.height)
+    expect(bounds?.width).toBe(VIEW_DIMENSIONS.pill.width)
+    expect(bounds?.height).toBe(VIEW_DIMENSIONS.pill.height)
+
+    // Verify pill content actually rendered (not a ghost frame)
+    const pillContent = page.locator('[data-pill-content]')
+    await expect(pillContent).toBeVisible({ timeout: 5000 })
+
+    await screenshot(page, 'tier-pill-transition')
+  })
+
+  test('pill → expanded transition renders correctly', async ({ app, mainPage: page }) => {
+    // Start in pill state
+    await seedFixture(page, FIXTURES.live_micro)
+    await waitForBounds(app, VIEW_DIMENSIONS.pill.width, VIEW_DIMENSIONS.pill.height)
+
+    // Transition to expanded
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-show-state', JSON.stringify({
+        state: {
+          ...JSON.parse(localStorage.getItem('showtime-show-state')!).state,
+          viewTier: 'expanded',
+        },
+        version: 0,
+      }))
+    })
+    const url = page.url()
+    await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
+    await page.waitForTimeout(3000)
+
+    const bounds = await waitForBounds(app, VIEW_DIMENSIONS.expanded.width, VIEW_DIMENSIONS.expanded.height)
+    expect(bounds?.width).toBe(VIEW_DIMENSIONS.expanded.width)
+    expect(bounds?.height).toBe(VIEW_DIMENSIONS.expanded.height)
+
+    // Verify expanded content rendered
+    await expect(page.getByText('Deep Work Session').first()).toBeVisible({ timeout: 5000 })
+
+    await screenshot(page, 'tier-pill-to-expanded')
+  })
 })

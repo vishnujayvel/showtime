@@ -9,7 +9,7 @@ const PILL_BOTTOM_MARGIN = 24
 // ─── Content-tight window sizing ───
 // Window resizes to match view content exactly. No transparent dead zones.
 export const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  pill: { width: 320, height: 56 },
+  pill: { width: 320, height: 64 },   // 56px content + 8px for MiniRundownStrip
   compact: { width: 340, height: 140 },
   dashboard: { width: 400, height: 320 },
   expanded: { width: 560, height: 620 },
@@ -61,7 +61,24 @@ function clampToDisplay(bounds: { x: number; y: number; width: number; height: n
   return clampToWorkArea(bounds, display.workArea)
 }
 
+// Debounce rapid view mode changes — prevents ghost frames from queued setBounds() calls
+let pendingViewMode: string | null = null
+let viewModeTimer: ReturnType<typeof setTimeout> | null = null
+
 export function applyViewMode(mode: string): void {
+  // Debounce: coalesce rapid calls into a single setBounds
+  pendingViewMode = mode
+  if (viewModeTimer) clearTimeout(viewModeTimer)
+  viewModeTimer = setTimeout(() => {
+    viewModeTimer = null
+    if (pendingViewMode) {
+      applyViewModeImmediate(pendingViewMode)
+      pendingViewMode = null
+    }
+  }, 16) // One frame debounce at 60fps
+}
+
+function applyViewModeImmediate(mode: string): void {
   const mainWindow = getMainWindow()
   if (!mainWindow || mainWindow.isDestroyed()) return
   const dims = VIEW_DIMENSIONS[mode]
@@ -77,7 +94,28 @@ export function applyViewMode(mode: string): void {
   }
 
   const newBounds = clampToDisplay(computeBoundsFromAnchor(anchorPoint, dims))
-  mainWindow.setBounds(newBounds)
+
+  // Ghost frame fix: when shrinking (e.g. expanded → pill), the macOS compositor
+  // retains the old frame buffer causing black bars and ghost artifacts.
+  // Opacity fade prevents the flash while giving the compositor time to render at new size.
+  const currentBounds = mainWindow.getBounds()
+  const isShrinking = newBounds.width < currentBounds.width || newBounds.height < currentBounds.height
+
+  if (isShrinking) {
+    mainWindow.setOpacity(0)
+    mainWindow.setBounds(newBounds)
+    // Give compositor ~2 frames at 60fps to render at new size before revealing
+    setTimeout(() => {
+      if (!mainWindow.isDestroyed()) {
+        mainWindow.webContents.invalidate()
+        mainWindow.setOpacity(1)
+      }
+    }, 32)
+  } else {
+    mainWindow.setBounds(newBounds)
+    mainWindow.webContents.invalidate()
+  }
+
   anchorPoint = computeAnchorFromBounds(newBounds)
   log(`Showtime: applyViewMode(${mode}) → bounds=(${newBounds.x},${newBounds.y},${newBounds.width}x${newBounds.height})`)
 }
@@ -243,4 +281,21 @@ export function toggleWindow(source = 'unknown'): void {
   } else {
     showWindow(source)
   }
+}
+
+/**
+ * Force a window repaint — recovery mechanism for stuck/ghost frames.
+ * Nudges the window by 1px and back to force the macOS compositor to redraw.
+ */
+export function forceRepaint(): void {
+  const win = getMainWindow()
+  if (!win || win.isDestroyed()) return
+  const bounds = win.getBounds()
+  win.setBounds({ ...bounds, width: bounds.width + 1 })
+  setTimeout(() => {
+    if (!win.isDestroyed()) {
+      win.setBounds(bounds)
+      win.webContents.invalidate()
+    }
+  }, 16)
 }

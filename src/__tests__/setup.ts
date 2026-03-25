@@ -32,6 +32,9 @@ if (typeof window !== 'undefined') {
     getTimelineDriftPerAct: vi.fn().mockResolvedValue([]),
     saveClaudeContext: vi.fn(),
     getClaudeContext: vi.fn().mockResolvedValue(null),
+    // Window management
+    setViewMode: vi.fn(),
+    forceRepaint: vi.fn(),
   }
 
   Object.defineProperty(window, 'clui', {
