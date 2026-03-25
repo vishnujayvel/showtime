@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Settings View</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Settings row */
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(90, 88, 85, 0.15);
+  }
+  .setting-row:last-child {
+    border-bottom: none;
+  }
+
+  /* Toggle switch */
+  .toggle-track {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-track.on { background: #d97757; }
+  .toggle-track.off { background: #3a3a3e; }
+  .toggle-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 3px;
+    transition: left 0.2s;
+  }
+  .toggle-track.on .toggle-thumb { left: 21px; }
+  .toggle-track.off .toggle-thumb { left: 3px; }
+
+  /* Select dropdown appearance */
+  .setting-select {
+    background: #242428;
+    color: #e8e6e0;
+    border: 1px solid rgba(90, 88, 85, 0.3);
+    border-radius: 6px;
+    padding: 6px 28px 6px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9890' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .setting-select:hover {
+    border-color: rgba(217, 119, 87, 0.4);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Sidebar nav item */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #9a9890;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-item:hover {
+    background: rgba(90, 88, 85, 0.1);
+    color: #e8e6e0;
+  }
+  .nav-item.active {
+    background: rgba(217, 119, 87, 0.1);
+    color: #d97757;
+  }
+  .nav-item .nav-icon {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Settings</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Settings View</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    All settings states for Showtime. The control room behind the show — adjust your preferences without disrupting the flow.
+  </p>
+</header>
+
+
+<!-- ============================================================ -->
+<!-- 1. GENERAL PREFERENCES                                         -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">General Preferences</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x auto</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Default timing, notifications, and sound. The backstage tech check.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Settings</span>
+      </div>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&times;</button>
+    </div>
+
+    <!-- Body with sidebar nav -->
+    <div class="flex" style="min-height: 480px;">
+      <!-- Sidebar -->
+      <div class="py-5 px-3" style="width:170px; border-right: 1px solid rgba(90,88,85,0.15); background:#151517;">
+        <div class="nav-item active">
+          <span class="nav-icon">&#9881;</span>
+          <span>General</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">&#128197;</span>
+          <span>Calendar</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">&#128451;</span>
+          <span>Data</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">&#9432;</span>
+          <span>About</span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="flex-1 px-7 py-6">
+        <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-5">General</p>
+
+        <!-- Default Act Duration -->
+        <div class="setting-row">
+          <div>
+            <p class="text-sm font-medium text-txt-primary">Default Act Duration</p>
+            <p class="text-xs text-txt-muted mt-0.5">How long each Act runs before intermission</p>
+          </div>
+          <select class="setting-select">
+            <option>25 min</option>
+            <option selected>45 min</option>
+            <option>60 min</option>
+            <option>90 min</option>
+          </select>
+        </div>
+
+        <!-- Beat Check Frequency -->
+        <div class="setting-row">
+          <div>
+            <p class="text-sm font-medium text-txt-primary">Beat Check Frequency</p>
+            <p class="text-xs text-txt-muted mt-0.5">How often the presence check appears</p>
+          </div>
+          <select class="setting-select">
+            <option>Every Act</option>
+            <option selected>Every 2 Acts</option>
+            <option>Every 3 Acts</option>
+            <option>Manual only</option>
+          </select>
+        </div>
+
+        <!-- Notification sounds -->
+        <div class="setting-row">
+          <div>
+            <p class="text-sm font-medium text-txt-primary">Notification Sounds</p>
+            <p class="text-xs text-txt-muted mt-0.5">Play sounds for Act transitions and Beat checks</p>
+          </div>
+          <div class="toggle-track on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- System notifications -->
+        <div class="setting-row">
+          <div>
+            <p class="text-sm font-medium text-txt-primary">System Notifications</p>
+            <p class="text-xs text-txt-muted mt-0.5">Show macOS banners for timer events</p>
+          </div>
+          <div class="toggle-track on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Timer warning sound -->
+        <div class="setting-row">
+          <div>
+            <p class="text-sm font-medium text-txt-primary">5-Minute Warning Sound</p>
+            <p class="text-xs text-txt-muted mt-0.5">Chime when Act timer is running low</p>
+          </div>
+          <div class="toggle-track off">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Auto-start intermission -->
+        <div class="setting-row">
+          <div>
+            <p class="text-sm font-medium text-txt-primary">Auto-start Intermission</p>
+            <p class="text-xs text-txt-muted mt-0.5">Automatically go to break when an Act ends</p>
+          </div>
+          <div class="toggle-track on">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 2. CALENDAR SETTINGS                                           -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">Calendar Settings</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x auto</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Sync your schedule from Google Calendar. The show knows what's already booked.</p>
+
+  <!-- State 2a: Connected -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Connected State</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+        <div class="flex items-center gap-3">
+          <div class="traffic-lights">
+            <div class="traffic-light" style="background:#ff5f57;"></div>
+            <div class="traffic-light" style="background:#febc2e;"></div>
+            <div class="traffic-light" style="background:#28c840;"></div>
+          </div>
+          <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Settings</span>
+        </div>
+        <button class="text-xs text-txt-muted hover:text-txt-primary">&times;</button>
+      </div>
+
+      <div class="flex" style="min-height: 380px;">
+        <!-- Sidebar -->
+        <div class="py-5 px-3" style="width:170px; border-right: 1px solid rgba(90,88,85,0.15); background:#151517;">
+          <div class="nav-item">
+            <span class="nav-icon">&#9881;</span>
+            <span>General</span>
+          </div>
+          <div class="nav-item active">
+            <span class="nav-icon">&#128197;</span>
+            <span>Calendar</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#128451;</span>
+            <span>Data</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#9432;</span>
+            <span>About</span>
+          </div>
+        </div>
+
+        <div class="flex-1 px-7 py-6">
+          <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-5">Calendar</p>
+
+          <!-- Connection status card -->
+          <div class="rounded-lg p-4 mb-5" style="background:#242428; border: 1px solid rgba(34,197,94,0.2);">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-2 h-2 rounded-full" style="background:#22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5);"></div>
+              <p class="text-sm font-medium text-txt-primary">Connected to Google Calendar</p>
+            </div>
+            <p class="text-xs text-txt-muted ml-5">user@gmail.com &middot; Last synced 2 min ago</p>
+          </div>
+
+          <!-- Sync toggle -->
+          <div class="setting-row">
+            <div>
+              <p class="text-sm font-medium text-txt-primary">Calendar Sync</p>
+              <p class="text-xs text-txt-muted mt-0.5">Import events as pre-booked Acts in the Writer's Room</p>
+            </div>
+            <div class="toggle-track on">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+
+          <!-- Show calendar events in lineup -->
+          <div class="setting-row">
+            <div>
+              <p class="text-sm font-medium text-txt-primary">Show in Lineup</p>
+              <p class="text-xs text-txt-muted mt-0.5">Display synced events alongside your Acts</p>
+            </div>
+            <div class="toggle-track on">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+
+          <!-- Disconnect button -->
+          <div class="mt-6">
+            <button class="text-xs font-medium px-4 py-2 rounded-md transition-colors" style="color:#9a9890; background:rgba(90,88,85,0.1); border:1px solid rgba(90,88,85,0.2);">
+              Disconnect Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 2b: Not Connected -->
+  <div>
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Disconnected State</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+        <div class="flex items-center gap-3">
+          <div class="traffic-lights">
+            <div class="traffic-light" style="background:#ff5f57;"></div>
+            <div class="traffic-light" style="background:#febc2e;"></div>
+            <div class="traffic-light" style="background:#28c840;"></div>
+          </div>
+          <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Settings</span>
+        </div>
+        <button class="text-xs text-txt-muted hover:text-txt-primary">&times;</button>
+      </div>
+
+      <div class="flex" style="min-height: 320px;">
+        <!-- Sidebar -->
+        <div class="py-5 px-3" style="width:170px; border-right: 1px solid rgba(90,88,85,0.15); background:#151517;">
+          <div class="nav-item">
+            <span class="nav-icon">&#9881;</span>
+            <span>General</span>
+          </div>
+          <div class="nav-item active">
+            <span class="nav-icon">&#128197;</span>
+            <span>Calendar</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#128451;</span>
+            <span>Data</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#9432;</span>
+            <span>About</span>
+          </div>
+        </div>
+
+        <div class="flex-1 px-7 py-6">
+          <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-5">Calendar</p>
+
+          <!-- Not connected card -->
+          <div class="rounded-lg p-5 text-center" style="background:#242428; border: 1px solid rgba(90,88,85,0.2);">
+            <div class="text-3xl mb-3" style="color:#5a5855;">&#128197;</div>
+            <p class="text-sm font-medium text-txt-primary mb-1">No Calendar Connected</p>
+            <p class="text-xs text-txt-muted mb-5">Connect Google Calendar to auto-import events into your Lineup.</p>
+            <button class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+              Connect Google Calendar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 3. RESET SHOW CONFIRMATION                                     -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Reset Show Confirmation</h2>
+    <span class="text-xs text-txt-muted font-mono">~380px dialog</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The "pull the plug" moment. Confirmation before resetting today's show. Centered modal with spotlight.</p>
+
+  <div class="relative rounded-xl overflow-hidden" style="height:400px; background:#0d0d0f;">
+    <!-- Dimmed backdrop -->
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);"></div>
+    <!-- Spotlight from above -->
+    <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:500px; height:350px; background: radial-gradient(ellipse 350px 250px at 50% 0%, rgba(239,68,68,0.06) 0%, transparent 70%); pointer-events:none;"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="rounded-xl p-8 text-center" style="width:380px; background:#1a1a1e; border:1px solid rgba(239,68,68,0.15); box-shadow: 0 24px 80px rgba(0,0,0,0.6);">
+        <!-- Warning icon -->
+        <div class="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2);">
+          <span class="text-xl" style="color:#ef4444;">&#9888;</span>
+        </div>
+
+        <p class="text-lg font-semibold text-txt-primary mb-2">Reset Today's Show?</p>
+        <p class="text-sm text-txt-secondary mb-1" style="line-height:1.6;">
+          Are you sure you want to reset today's show?
+        </p>
+        <p class="text-xs text-txt-muted mb-8">
+          All Acts, Beats, and timer progress will be cleared. This can't be undone.
+        </p>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 justify-center">
+          <button class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all" style="background:#242428; color:#9a9890; border:1px solid rgba(90,88,85,0.3);">
+            Cancel
+          </button>
+          <button class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);">
+            Reset Show
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 4. ABOUT SECTION                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">About</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x auto</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Credits, version, links. The playbill for the app itself.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Settings</span>
+      </div>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&times;</button>
+    </div>
+
+    <div class="flex" style="min-height: 420px;">
+      <!-- Sidebar -->
+      <div class="py-5 px-3" style="width:170px; border-right: 1px solid rgba(90,88,85,0.15); background:#151517;">
+        <div class="nav-item">
+          <span class="nav-icon">&#9881;</span>
+          <span>General</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">&#128197;</span>
+          <span>Calendar</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">&#128451;</span>
+          <span>Data</span>
+        </div>
+        <div class="nav-item active">
+          <span class="nav-icon">&#9432;</span>
+          <span>About</span>
+        </div>
+      </div>
+
+      <div class="flex-1 px-7 py-6">
+        <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-6">About</p>
+
+        <!-- App identity -->
+        <div class="text-center mb-8 pt-2">
+          <!-- Logo / wordmark -->
+          <p class="font-mono text-xs tracking-widest uppercase mb-3" style="color:#d97757;">&#9670; &#9670; &#9670;</p>
+          <p class="text-2xl font-black tracking-tight text-txt-primary mb-1">Showtime</p>
+          <p class="text-sm text-txt-secondary mb-1">ADHD-friendly macOS day planner</p>
+          <p class="font-mono text-xs text-txt-muted">v2.0.0</p>
+        </div>
+
+        <div class="w-full h-px mb-6" style="background:rgba(90,88,85,0.2);"></div>
+
+        <!-- Credits -->
+        <div class="mb-6">
+          <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-3">Credits</p>
+          <p class="text-sm text-txt-secondary leading-relaxed">
+            Built on the <span class="text-txt-primary font-medium">SNL Day Framework</span>. Your day is a Show. Tasks are Acts. Presence moments are Beats. Rest costs zero.
+          </p>
+        </div>
+
+        <!-- Links -->
+        <div class="mb-2">
+          <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-3">Links</p>
+          <div class="space-y-2.5">
+            <a href="#" class="flex items-center gap-3 group">
+              <span class="text-xs" style="color:#5a5855;">&#9656;</span>
+              <span class="text-sm group-hover:text-accent transition-colors" style="color:#d97757;">Documentation</span>
+              <span class="text-xs text-txt-muted">showtime.dev/docs</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 group">
+              <span class="text-xs" style="color:#5a5855;">&#9656;</span>
+              <span class="text-sm group-hover:text-accent transition-colors" style="color:#d97757;">GitHub</span>
+              <span class="text-xs text-txt-muted">github.com/showtime</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 group">
+              <span class="text-xs" style="color:#5a5855;">&#9656;</span>
+              <span class="text-sm group-hover:text-accent transition-colors" style="color:#d97757;">Release Notes</span>
+              <span class="text-xs text-txt-muted">What's new in v2.0</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Footer legal -->
+        <div class="mt-6 pt-4" style="border-top:1px solid rgba(90,88,85,0.15);">
+          <p class="text-xs text-txt-muted">Made with care. Open source under MIT license.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 5. DATA MANAGEMENT                                             -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 5</span>
+    <h2 class="text-xl font-bold text-txt-primary">Data Management</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x auto</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">The nuclear options. Reset today's show or wipe everything. Clear warnings, no accidental triggers.</p>
+
+  <!-- Normal state -->
+  <div class="mb-8">
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">Default State</p>
+    <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+      <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+        <div class="flex items-center gap-3">
+          <div class="traffic-lights">
+            <div class="traffic-light" style="background:#ff5f57;"></div>
+            <div class="traffic-light" style="background:#febc2e;"></div>
+            <div class="traffic-light" style="background:#28c840;"></div>
+          </div>
+          <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Settings</span>
+        </div>
+        <button class="text-xs text-txt-muted hover:text-txt-primary">&times;</button>
+      </div>
+
+      <div class="flex" style="min-height: 420px;">
+        <!-- Sidebar -->
+        <div class="py-5 px-3" style="width:170px; border-right: 1px solid rgba(90,88,85,0.15); background:#151517;">
+          <div class="nav-item">
+            <span class="nav-icon">&#9881;</span>
+            <span>General</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#128197;</span>
+            <span>Calendar</span>
+          </div>
+          <div class="nav-item active">
+            <span class="nav-icon">&#128451;</span>
+            <span>Data</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#9432;</span>
+            <span>About</span>
+          </div>
+        </div>
+
+        <div class="flex-1 px-7 py-6">
+          <p class="font-mono text-xs tracking-widest uppercase text-txt-muted mb-5">Data Management</p>
+
+          <!-- Storage info -->
+          <div class="rounded-lg p-4 mb-6" style="background:#242428;">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-sm font-medium text-txt-primary">Local Storage</p>
+              <span class="font-mono text-xs text-txt-muted">12.4 MB used</span>
+            </div>
+            <!-- Usage bar -->
+            <div class="w-full h-1.5 rounded-full" style="background:#333;">
+              <div class="h-full rounded-full" style="width:15%; background:linear-gradient(90deg, #d97757, #f59e0b);"></div>
+            </div>
+            <p class="text-xs text-txt-muted mt-2">Show history, preferences, and cached calendar data</p>
+          </div>
+
+          <!-- Reset Today's Show -->
+          <div class="rounded-lg p-4 mb-4" style="background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.1);">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-txt-primary">Reset Today's Show</p>
+                <p class="text-xs text-txt-muted mt-0.5">Clear Acts, Beats, and timer for today. History is kept.</p>
+              </div>
+              <button class="text-xs font-medium px-4 py-2 rounded-md transition-colors" style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2);">
+                Reset Show
+              </button>
+            </div>
+          </div>
+
+          <!-- Danger zone -->
+          <div class="rounded-lg p-4" style="background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.15);">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs" style="color:#ef4444;">&#9888;</span>
+              <p class="font-mono text-xs tracking-widest uppercase" style="color:#ef4444;">Danger Zone</p>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-txt-primary">Reset All Data</p>
+                <p class="text-xs text-txt-muted mt-0.5">Permanently delete all shows, history, Beats, and preferences. This cannot be undone.</p>
+              </div>
+              <button class="text-xs font-semibold px-4 py-2 rounded-md transition-colors whitespace-nowrap" style="color:#fff; background:#ef4444; border:1px solid #ef4444;">
+                Erase Everything
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation dialog for Reset All Data -->
+  <div>
+    <p class="text-xs text-txt-muted font-mono uppercase tracking-wider mb-3">After clicking "Erase Everything"</p>
+    <div class="relative rounded-xl overflow-hidden" style="height:380px; background:#0d0d0f;">
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px);"></div>
+      <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:500px; height:350px; background: radial-gradient(ellipse 350px 250px at 50% 0%, rgba(239,68,68,0.08) 0%, transparent 70%); pointer-events:none;"></div>
+
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="rounded-xl p-8 text-center" style="width:400px; background:#1a1a1e; border:1px solid rgba(239,68,68,0.2); box-shadow: 0 24px 80px rgba(0,0,0,0.6);">
+          <!-- Danger icon -->
+          <div class="mx-auto mb-4 w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(239,68,68,0.12); border:1.5px solid rgba(239,68,68,0.3);">
+            <span class="text-2xl" style="color:#ef4444;">&#9888;</span>
+          </div>
+
+          <p class="text-lg font-semibold text-txt-primary mb-2">Erase All Data?</p>
+          <p class="text-sm text-txt-secondary mb-2" style="line-height:1.6;">
+            This will permanently delete:
+          </p>
+          <div class="text-left mx-auto mb-6" style="max-width:260px;">
+            <p class="text-xs text-txt-muted leading-5">&bull; All show history and statistics</p>
+            <p class="text-xs text-txt-muted leading-5">&bull; Every Beat you've ever locked</p>
+            <p class="text-xs text-txt-muted leading-5">&bull; All preferences and settings</p>
+            <p class="text-xs text-txt-muted leading-5">&bull; Calendar connection data</p>
+          </div>
+
+          <!-- Type-to-confirm hint -->
+          <div class="rounded-md px-3 py-2 mb-6" style="background:#242428; border:1px solid rgba(239,68,68,0.15);">
+            <p class="text-xs text-txt-muted mb-1.5">Type <span class="font-mono font-semibold" style="color:#ef4444;">STRIKE THE SET</span> to confirm</p>
+            <div class="rounded px-3 py-2 font-mono text-sm" style="background:#1a1a1e; border:1px solid rgba(90,88,85,0.2); color:#ef4444;">
+              STRIKE THE SET<span class="text-txt-muted">|</span>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3 justify-center">
+            <button class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all" style="background:#242428; color:#9a9890; border:1px solid rgba(90,88,85,0.3);">
+              Cancel
+            </button>
+            <button class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all" style="background:#ef4444; color:#fff; border:1px solid #ef4444;">
+              Erase Everything
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
