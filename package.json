@@ -6,12 +6,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lcoutodemos/clui-cc.git"
+    "url": "https://github.com/vishnujayvel/showtime.git"
   },
   "bugs": {
-    "url": "https://github.com/lcoutodemos/clui-cc/issues"
+    "url": "https://github.com/vishnujayvel/showtime/issues"
   },
-  "homepage": "https://github.com/lcoutodemos/clui-cc#readme",
+  "homepage": "https://github.com/vishnujayvel/showtime#readme",
   "main": "dist/main/index.js",
   "scripts": {
     "pretest": "npm rebuild better-sqlite3 --silent 2>/dev/null || true",

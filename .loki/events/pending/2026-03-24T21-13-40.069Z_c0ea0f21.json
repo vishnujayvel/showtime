@@ -1,8 +1,0 @@
-{
-  "id": "c0ea0f21",
-  "type": "session",
-  "source": "cli",
-  "timestamp": "2026-03-24T21:13:40.069Z",
-  "payload": {"action":"start","provider":"claude","prd_path":"openspec/changes/history-view-e2e/proposal.md"},
-  "version": "1.0"
-}

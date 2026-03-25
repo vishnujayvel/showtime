@@ -1,6 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- [Medium] Dead code: `useAudio()` hook is exported and mocked in tests but never consumed by any component — all 6 call sites use `playAudioCue()` directly. The hook's `playTimerWarningOnce` duplicates logic that `useTimer` reimplements with its own ref. Remove the hook or make components use it consistently. (src/renderer/hooks/useAudio.ts:124)
-- [Medium] SRP violation: `useTimer` now owns both timer calculation AND audio cue triggering (5-minute warning). The audio side-effect should live in the consuming component or a dedicated hook, not inside a pure timer hook — callers can't opt out of the sound. (src/renderer/hooks/useTimer.ts:47-52)
-- [Low] `formatDateLabel()` is duplicated identically in ExpandedView and WritersRoomView. Extract to a shared util to avoid shotgun surgery when format changes. (src/renderer/views/ExpandedView.tsx:13, src/renderer/views/WritersRoomView.tsx:12)
-- [Low] Confetti in StrikeView uses `Math.random()` during render (lines 174-176), producing non-deterministic output on every re-render. Stabilize with `useMemo` or pre-computed positions. Also uses inline `style={{}}` which technically violates the project's mandatory no-inline-styles rule, though dynamic positional values are a legitimate exception. (src/renderer/views/StrikeView.tsx:169-180)

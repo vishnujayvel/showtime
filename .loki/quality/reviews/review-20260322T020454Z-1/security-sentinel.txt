@@ -1,6 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- [Low] SQL subquery in `getRecentShows` uses template literal interpolation with `${shows.id}`, but this is Drizzle ORM's `sql` tagged template which parameterizes values — not raw string interpolation. Safe as-is. (src/main/data/ShowRepository.ts:57-58)
-- [Low] `limit` parameter in `getRecentShows` and IPC handler `SHOW_HISTORY` is not validated for type/range — a malicious renderer could pass a negative or extremely large number. Impact is minimal (local Electron app, no auth boundary between renderer and main). (src/main/index.ts:533)
-
-No critical, high, or medium severity issues. The codebase changes are UI/state management focused with no injection vectors, no secrets in code, no auth bypass, and no insecure defaults.

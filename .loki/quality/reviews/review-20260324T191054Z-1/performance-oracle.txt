@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- None
-
-The only production code change is `OnboardingView.tsx:21` — `getTemporalShowLabel()` is called once at module scope to build a static `steps` array. No re-render cost, no unbounded work. All other changes are E2E tests, screenshots, and Loki infrastructure files — none relevant to runtime performance.

@@ -1,8 +1,0 @@
-{
-  "id": "91f867ef",
-  "type": "memory",
-  "source": "cli",
-  "timestamp": "2026-03-22T06:34:15.800Z",
-  "payload": {"action":"load","count":"0","prd_provided":"true"},
-  "version": "1.0"
-}

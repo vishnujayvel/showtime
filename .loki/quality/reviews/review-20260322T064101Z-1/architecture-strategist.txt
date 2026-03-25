@@ -1,9 +1,0 @@
-VERDICT: **PASS**
-
-FINDINGS:
-- [Medium] Temporal helpers (`getGreeting`, `isForTomorrow`, `getPlanTargetCopy`) are re-implemented in the test file rather than imported from production code. The test validates its own copy of the logic — if production view code diverges, these tests will still pass, creating a false-green scenario. Extract these to a shared module and import in both production views and tests. (`src/__tests__/property/temporal.property.test.ts:15-29`)
-- [Medium] Verdict computation logic (lines 158-186) is duplicated from `showStore.ts:578-585`. The test re-implements the same if/else ladder instead of importing or testing the store's `strikeTheStage()` directly. If the store's thresholds change, this test won't catch the regression. (`src/__tests__/property/temporal.property.test.ts:158-186`)
-- [Low] `resetStore()` and `sampleLineup` are duplicated across `show-machine.test.ts` and `show-store.property.test.ts`. Both manually set ~17 state fields, tightly coupling to internal store shape. Extract a shared `createTestFixtures` module to reduce maintenance surface. (`src/__tests__/model/show-machine.test.ts:29-51`, `src/__tests__/property/show-store.property.test.ts:27-49`)
-- [Low] `assertInvariants()` and `checkInvariants()` are near-identical functions in two test files — same checks, different names. Violates DRY across the test layer. (`src/__tests__/model/show-machine.test.ts:121-148`, `src/__tests__/property/show-store.property.test.ts:53-90`)
-- [Low] `SET_LINEUP` is declared in `ShowMachineEvent` union type (line 9) but has no transition in the XState machine — it's a dead event type. The model and its event type are out of sync. (`src/__tests__/model/show-machine.ts:9`)
-- [Low] `createActor` is imported but unused in `show-machine.test.ts`. (`src/__tests__/model/show-machine.test.ts:12`)

@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- None
-
-The changes are purely presentational layout fixes — removing hardcoded dimensions (`w-[560px]`, `min-h-[620px]`) from individual views and letting them fill their parent with `w-full h-full`. This actually *improves* dependency direction: views no longer dictate their own sizing (that responsibility correctly belongs to the parent/window). The vibrancy removal in `index.ts` is a clean deletion of a platform concern that was causing visual bugs. No SOLID violations, coupling issues, or missing abstractions.

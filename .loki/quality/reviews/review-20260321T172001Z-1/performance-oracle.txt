@@ -1,9 +1,0 @@
-> *"Low energy is data, not failure."*
-
-VERDICT: **PASS**
-
-FINDINGS:
-- [Medium] `OnboardingView` is statically imported but only shown once on first launch — dead bundle weight for all returning users. Use `React.lazy()` + `Suspense` to code-split it. (`src/renderer/App.tsx:14`)
-- [Low] Dynamic window sizing `useEffect` fires on `[phase, isExpanded, goingLiveActive]` — if multiple change in one tick (e.g., Going Live sets both `goingLiveActive` and phase), it could send redundant `setViewMode` IPC calls. Unlikely to cause visible issues since React batches, but a debounce or early-return guard on "same mode as last" would be cleaner. (`src/renderer/App.tsx:97`)
-
-No N+1 queries, memory leaks, unbounded loops, missing pagination, or excessive re-renders detected. The `steps` array and `springTransition` are correctly hoisted to module scope. Store selectors are granular (no full-store subscriptions).

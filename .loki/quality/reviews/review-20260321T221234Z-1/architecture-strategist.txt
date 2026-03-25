@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- [Low] Preload imports type definitions from `main/data/types` — while these are compile-time-only `import type` statements (no runtime coupling), this creates a knowledge dependency where the IPC bridge layer knows about main-process internal data structures. Consider a shared `src/shared/data-types.ts` to keep the dependency arrow pointing inward toward shared types rather than preload → main. (src/preload/index.ts:4)
-
-The rest of this diff is clean architecture work: dead code removal (ChatPanel, PermissionCard, unused selectors, no-op IPC handlers, unused UI primitives), DRY extraction (`formatDateLabel`), inline style elimination (`spotlightClass`), and `any` → proper types at the IPC boundary. All changes improve cohesion and reduce coupling. No SOLID violations, god classes, or wrong patterns detected.

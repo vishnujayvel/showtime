@@ -1,5 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- None
-
-This is a clean decomposition refactor — the monolithic `index.ts` was split into `state.ts`, `window.ts`, `ipc/core.ts`, `ipc/showtime.ts`, `tray.ts`, `shortcuts.ts`, `permissions.ts`, and `day-boundary.ts` with no new allocations, loops, or query patterns introduced. Dead CLUI code (process-manager, marketplace, session loading, screenshot/clipboard/audio transcription) was correctly deleted, reducing attack surface for leaks. The `setInterval` in `day-boundary.ts` (60s tick) and `dragTimeout` safety valve (5s) are both bounded and properly cleaned up.

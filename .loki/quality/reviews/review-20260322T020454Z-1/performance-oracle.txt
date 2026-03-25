@@ -1,6 +1,0 @@
-VERDICT: **PASS**
-
-FINDINGS:
-- [Medium] `acts.sort()` on line 45 mutates the Zustand store array in-place — should be `[...acts].sort()` to avoid corrupting shared state and triggering unpredictable re-renders. The `upcomingActs` useMemo on line 39 correctly spreads first, but `currentActIndex` does not. (`src/renderer/views/DashboardView.tsx:45`)
-- [Low] `count` imported from `drizzle-orm` but never used — dead import that tree-shaking should eliminate, but cleaner to remove. (`src/main/data/ShowRepository.ts:1`)
-- [Low] Two correlated subqueries per row in `getRecentShows` (2 × 30 = 60 subqueries). A single `LEFT JOIN acts ... GROUP BY` would scan once. Acceptable for SQLite with limit=30 on a personal app, but worth noting. (`src/main/data/ShowRepository.ts:59-60`)

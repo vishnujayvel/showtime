@@ -1,8 +1,0 @@
-{
-  "review_id": "review-20260322T181854Z-3",
-  "iteration": 3,
-  "pass_count": 0,
-  "fail_count": 0,
-  "has_blocking": false,
-  "verdicts": "architecture-strategist:NO_OUTPUT test-coverage-auditor:NO_OUTPUT performance-oracle:NO_OUTPUT"
-}

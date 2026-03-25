@@ -1,8 +1,0 @@
-{
-  "id": "51af58fb",
-  "type": "session",
-  "source": "cli",
-  "timestamp": "2026-03-24T20:21:25.150Z",
-  "payload": {"action":"start","provider":"claude","prd_path":"/tmp/app-identity-v2.md"},
-  "version": "1.0"
-}

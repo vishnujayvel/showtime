@@ -1,8 +1,0 @@
-{
-  "review_id": "review-20260324T211501Z-3",
-  "iteration": 3,
-  "pass_count": 3,
-  "fail_count": 0,
-  "has_blocking": false,
-  "verdicts": "architecture-strategist:PASS test-coverage-auditor:**FAIL** dependency-analyst:PASS"
-}

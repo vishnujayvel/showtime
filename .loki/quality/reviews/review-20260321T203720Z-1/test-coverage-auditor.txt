@@ -1,8 +1,0 @@
-VERDICT: FAIL
-FINDINGS:
-- [Medium] No test for `clampToWorkArea` when window is larger than work area (width > workArea.width). The function would produce `workArea.x + workArea.width - bounds.width` which is negative, then `Math.max(workArea.x, negative)` clamps to `workArea.x` — correct but untested boundary. (`src/__tests__/windowGeometry.test.ts`)
-- [Medium] No test for `clampToWorkArea` with non-zero work area origin (e.g., `{x: 1920, y: 0, ...}` for external monitors). All tests use `x: 0, y: 25` — multi-monitor clamping is unverified. (`src/__tests__/windowGeometry.test.ts`)
-- [Medium] Drag safety valve (5s timeout resetting `isDragging`, replaying `deferredViewMode`) in `index.ts:182-192` is new logic with no unit or E2E test coverage. The timeout/deferred-replay path is an error recovery mechanism that should be verified.
-- [Low] `applyViewMode` with invalid mode name (not in `VIEW_DIMENSIONS`) silently returns — no test verifies this guard. (`src/main/index.ts:112-113`)
-- [Low] Drag region elements added to `DarkStudioView.tsx:12` and `OnboardingView.tsx:66` have no E2E assertion verifying they exist or have the correct `-webkit-app-region: drag` CSS property.
-- [Low] `computeBoundsFromAnchor` rounding with odd-width dimensions (e.g., width=561) is untested — `Math.round` could produce off-by-one pixel shifts during transitions. (`src/main/window-geometry.ts:21`)

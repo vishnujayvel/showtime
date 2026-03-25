@@ -1,6 +1,0 @@
-VERDICT: PASS
-
-FINDINGS:
-- [Medium] `ColdOpenTransition` and `GoingLiveTransition` are structurally identical — both are fullscreen overlays with `playAudioCue('going-live')`, a `setTimeout(onComplete, N)`, spotlight background, and spring-animated text. Extract a shared `TransitionOverlay` component parameterized by content, duration, and audio cue to eliminate the duplication (`src/renderer/views/ColdOpenTransition.tsx:1`, `src/renderer/views/GoingLiveTransition.tsx:1`)
-- [Low] `showStore` accumulates a second transition boolean pair (`coldOpenActive`/`triggerColdOpen`/`completeColdOpen`) that mirrors the existing `goingLiveActive` pattern exactly. Two instances is tolerable, but if a third transition type appears, extract a generic `createTransitionSlice(name, onComplete)` helper to avoid the store growing another 3 fields per transition (`src/renderer/stores/showStore.ts:247-252`)
-- [Low] `App.tsx` renderView guard clause now checks 5 conditions: `showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive`. Consider a derived selector like `selectShowsOnboarding` to encapsulate this logic and keep routing readable (`src/renderer/App.tsx:123`)

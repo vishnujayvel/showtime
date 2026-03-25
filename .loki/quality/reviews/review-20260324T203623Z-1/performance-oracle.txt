@@ -1,3 +1,0 @@
-VERDICT: PASS
-FINDINGS:
-- [Low] `SettingsView` is statically imported but only rendered on-demand — could use `React.lazy()` to shave it from the initial bundle (src/renderer/App.tsx:18). Marginal impact since its dependencies (framer-motion, zustand stores, Button) are already in the bundle from other views.
