@@ -1,0 +1,40 @@
+language: en-US
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "src/renderer/**"
+      instructions: |
+        - NEVER use React inline styles (style={{}}). All styling must use Tailwind CSS utility classes.
+        - Use shadcn/ui + Radix UI for interactive components (buttons, modals, dialogs).
+        - All animations must use Framer Motion with spring physics (type: "spring"). Never use linear transitions or duration-based timing.
+        - Use Zustand for state management. No React Context for state.
+    - path: "src/main/**"
+      instructions: |
+        - Do NOT use setIgnoreMouseEvents. Use content-tight window sizing instead.
+        - Do NOT use Electron vibrancy. Use CSS backgrounds.
+        - Do NOT use titleBarStyle with frame:false.
+        - Window must use transparent: true, frame: false, hasShadow: true.
+    - path: "src/preload/**"
+      instructions: |
+        - All IPC channels must be typed via the IPC enum in shared/types.ts.
+        - The renderer communicates with main ONLY through the window.clui API.
+    - path: "e2e/**"
+      instructions: |
+        - Every feature must have E2E test coverage using Playwright.
+        - Use seedFixture() or freshStart() for test state setup.
+        - Screenshots on failure for debugging.
+    - path: "docs/**"
+      instructions: |
+        - docs/ is the PUBLIC documentation website (VitePress). Every file here deploys to GitHub Pages.
+        - No date-stamped session logs. No internal working notes.
+        - Keep language human and direct. Avoid AI vocabulary (comprehensive, leverage, seamlessly).
+chat:
+  auto_reply: true

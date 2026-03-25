@@ -1,64 +1,78 @@
-# Contributing to Clui CC
+# Contributing to Showtime
 
-Thanks for your interest in contributing! Clui CC is a desktop overlay for Claude Code, and we welcome bug reports, feature ideas, and pull requests.
+Thanks for your interest in contributing! Showtime is an ADHD-friendly macOS day planner built on the SNL Day Framework.
 
-## Getting Started
+## Getting started
 
-1. Make sure you have the [prerequisites](README.md#prerequisites) installed (macOS, Xcode CLT, Node.js 18+, Claude Code CLI 2.1+)
-2. Fork and clone the repo:
+1. Fork and clone:
    ```bash
-   git clone https://github.com/<your-username>/clui-cc.git
-   cd clui-cc
+   git clone https://github.com/<your-username>/showtime.git
+   cd showtime
    ```
-3. Check your environment (optional but recommended):
-   ```bash
-   npm run doctor
-   ```
-4. Install dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
-   > If `npm install` fails, run `npm run doctor` to see which dependency is missing.
-5. Start the dev server:
+3. Start dev mode:
    ```bash
    npm run dev
    ```
-6. Make your changes in `src/`
-7. Verify your changes build cleanly:
-   ```bash
-   npm run build
-   ```
 
-## Development Tips
+Requires **macOS** and **Node.js 20+**.
 
-- **Main process** changes (`src/main/`) require a full restart (`Ctrl+C` then `npm run dev`).
+## Development tips
+
+- **Main process** changes (`src/main/`) require a full restart.
 - **Renderer** changes (`src/renderer/`) hot-reload automatically.
-- Set `CLUI_DEBUG=1` to enable verbose main-process logging to `~/.clui-debug.log`.
-- The app creates a transparent, content-tight floating window. Use `⌥ + Space` to toggle visibility (fallback: `Cmd+Shift+K`).
+- Toggle the window with `Opt+Space` (fallback: `Cmd+Shift+K`).
+- Dev reset: `Cmd+Shift+R` clears all state and reloads.
 
-## Code Style
+## Pull request workflow
 
-- TypeScript strict mode is enforced.
-- Use `useColors()` hook for all color references — never hardcode color values.
-- Zustand selectors should be narrow and use custom equality functions for performance.
-- Prefer editing existing files over creating new ones.
+All changes go through PRs. No direct pushes to `main`.
 
-## Pull Requests
+1. Create a branch: `git checkout -b feat/my-change`
+2. Make your changes
+3. Run tests: `npm run test && npm run build && npm run test:e2e`
+4. Push and open a PR against `main`
+5. **CodeRabbit** will auto-review your PR — address its feedback
+6. Get a human review
+7. Squash-merge when approved
 
-1. Create a feature branch from `main`.
-2. Keep PRs focused — one concern per PR.
-3. Include a brief description of what changed and why.
-4. Ensure `npm run build` passes with zero errors.
+### Branch naming
 
-## Reporting Bugs
+- `feat/` — new features
+- `fix/` — bug fixes
+- `docs/` — documentation
+- `chore/` — build, CI, tooling
+- `refactor/` — restructuring without behavior change
+
+## Code style
+
+These are non-negotiable (CodeRabbit enforces them):
+
+- **No inline styles.** Use Tailwind CSS utility classes, never `style={{}}`.
+- **shadcn/ui for interactive components.** Buttons, modals, dialogs — use the primitives.
+- **Spring physics only.** Framer Motion with `type: "spring"`. No linear transitions.
+- **Zustand for state.** No React Context for state management.
+- **Typed IPC.** All channels go through the `IPC` enum and `window.clui` bridge.
+- **E2E tests required.** Every feature needs Playwright coverage.
+
+See [CLAUDE.md](CLAUDE.md) for the full rule set.
+
+## Reporting bugs
 
 Open an issue with:
 - macOS version
 - Node.js version (`node --version`)
-- Claude Code CLI version (`claude --version`)
 - Steps to reproduce
 - Expected vs. actual behavior
+- Screenshots if it's a visual bug
 
-## Security
+## Documentation
 
-If you discover a security vulnerability, please report it privately. See [SECURITY.md](SECURITY.md).
+`docs/` is the public VitePress site. Internal notes go in `docs-internal/` (gitignored). See CLAUDE.md "Documentation Rules" for details.
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).

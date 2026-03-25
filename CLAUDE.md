@@ -244,10 +244,36 @@ These CLUI-specific files should be removed:
 
 ## Git Workflow
 
-- Commit at each working milestone
-- Branch: `main` (no feature branches for MLP)
-- Test before commit: `npm run test && npm run test:e2e`
-- Never commit with failing tests
+**All changes go through pull requests. Never push directly to `main`.**
+
+1. Create a feature branch from `main`: `git checkout -b feat/my-change`
+2. Commit at each working milestone with clear messages
+3. Test before pushing: `npm run test && npm run test:e2e`
+4. Never push with failing tests
+5. Open a PR against `main` — CodeRabbit will auto-review
+6. Address CodeRabbit feedback before merging
+7. Squash-merge PRs to keep `main` history clean
+
+### Branch naming
+
+| Prefix | Use |
+|--------|-----|
+| `feat/` | New features |
+| `fix/` | Bug fixes |
+| `docs/` | Documentation only |
+| `chore/` | Build, CI, tooling |
+| `refactor/` | Code restructuring (no behavior change) |
+
+### CodeRabbit
+
+CodeRabbit reviews every PR automatically. It checks for:
+- Inline styles (must use Tailwind)
+- Missing E2E test coverage
+- IPC type safety
+- Animation physics (spring only, no linear)
+- CLAUDE.md rule violations
+
+Fix CodeRabbit comments before merging. If a comment is a false positive, reply explaining why.
 
 ## Known Pitfalls (from prior runs)
 <!-- Auto-injected by openspec-loki-loop. Do not edit manually. -->
