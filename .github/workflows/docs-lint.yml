@@ -1,0 +1,20 @@
+name: Lint docs
+
+on:
+  pull_request:
+    paths: ['docs/**']
+
+jobs:
+  no-session-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for date-stamped session notes in docs/
+        run: |
+          DATED_FILES=$(find docs/ -name '202*-*' -type f 2>/dev/null || true)
+          if [ -n "$DATED_FILES" ]; then
+            echo "::error::Date-stamped session notes found in docs/ (should be in docs-internal/):"
+            echo "$DATED_FILES"
+            exit 1
+          fi
+          echo "No date-stamped session notes in docs/ — clean."
