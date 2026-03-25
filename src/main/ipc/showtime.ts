@@ -3,6 +3,8 @@ import { getMainWindow, getSyncEngine, log, broadcast } from '../state'
 import { applyViewMode, forceRepaint } from '../window'
 import { DataService } from '../data/DataService'
 import { IPC } from '../../shared/types'
+import { appLog } from '../app-logger'
+import type { LogLevel } from '../app-logger'
 import type { ShowStateSnapshot, TimelineEventInput, ClaudeContextPayload } from '../data/types'
 
 export function registerShowtimeIpc(): void {
@@ -54,6 +56,7 @@ export function registerShowtimeIpc(): void {
   // ─── Showtime window management ───
 
   ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full') => {
+    appLog('DEBUG', 'view_mode_change', { mode })
     applyViewMode(mode)
   })
 
@@ -78,11 +81,17 @@ export function registerShowtimeIpc(): void {
 
   // ─── Showtime data persistence IPC ───
 
+  // ─── Renderer-side log events ───
+  ipcMain.on(IPC.LOG_EVENT, (_event, level: LogLevel, eventName: string, data?: Record<string, unknown>) => {
+    appLog(level, eventName, data)
+  })
+
   ipcMain.handle(IPC.DATA_HYDRATE, () => {
     try {
       return getSyncEngine()?.hydrate() ?? null
     } catch (err: unknown) {
       log(`DATA_HYDRATE error: ${err instanceof Error ? err.message : String(err)}`)
+      appLog('ERROR', 'data_hydrate_error', { error: err instanceof Error ? err.message : String(err) })
       return null
     }
   })

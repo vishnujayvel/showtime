@@ -1,6 +1,7 @@
 import { app, globalShortcut, ipcMain, screen } from 'electron'
 import { ensureSkills, type SkillStatus } from './skills/installer'
 import { flushLogs } from './logger'
+import { initAppLogger, flushAppLogs, appLog } from './app-logger'
 import { DataService } from './data/DataService'
 import { SyncEngine } from './data/SyncEngine'
 import type { NormalizedEvent, EnrichedError } from '../shared/types'
@@ -41,6 +42,8 @@ if (process.env.SHOWTIME_USER_DATA) {
 const appStartTime = Date.now()
 
 app.whenReady().then(async () => {
+  // Initialize structured application logger (JSONL to ~/Library/Logs/Showtime/)
+  initAppLogger({ level: process.env.SHOWTIME_LOG_LEVEL as any || 'INFO' })
   // macOS: become an accessory app. Accessory apps can have key windows (keyboard works)
   // without deactivating the currently active app (hover preserved in browsers).
   // This is how Spotlight, Alfred, Raycast work.
@@ -63,8 +66,11 @@ app.whenReady().then(async () => {
     setSyncEngine(new SyncEngine(dataService))
     dataService.metrics.prune(30)
     log('DataService initialized')
+    appLog('INFO', 'data_service_init', { status: 'ok' })
   } catch (err: unknown) {
-    log(`DataService initialization failed: ${err instanceof Error ? err.message : String(err)}`)
+    const msg = err instanceof Error ? err.message : String(err)
+    log(`DataService initialization failed: ${msg}`)
+    appLog('ERROR', 'data_service_init', { status: 'failed', error: msg })
   }
 
   buildAppMenu()
@@ -137,6 +143,8 @@ app.whenReady().then(async () => {
 })
 
 app.on('will-quit', () => {
+  appLog('INFO', 'app_quit')
+  flushAppLogs()
   globalShortcut.unregisterAll()
   controlPlane.shutdown()
   getSyncEngine()?.finalFlush()
