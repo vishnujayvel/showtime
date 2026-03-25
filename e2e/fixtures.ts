@@ -186,6 +186,22 @@ export const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> 
   full: { width: 560, height: 740 },
 }
 
+/**
+ * Reset to a completely fresh state — clears SQLite (via IPC), localStorage,
+ * and navigates so Zustand boots from scratch. Use at the start of any test
+ * that needs a guaranteed clean slate.
+ */
+export async function freshStart(page: Page) {
+  // Truncate all DB tables via main process IPC
+  await page.evaluate(() => window.clui.resetAllData())
+  // Clear renderer-side persisted state
+  await page.evaluate(() => {
+    localStorage.removeItem('showtime-show-state')
+    localStorage.setItem('showtime-onboarding-complete', 'true')
+  })
+  await navigateAndWaitPage(page)
+}
+
 /** Take screenshot without waiting for web fonts */
 export async function screenshot(page: Page, name: string) {
   try {

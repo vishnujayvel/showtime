@@ -1,5 +1,6 @@
 import { globalShortcut } from 'electron'
 import { getMainWindow, broadcast, log } from './state'
+import { DataService } from './data/DataService'
 import { IPC } from '../shared/types'
 
 export function registerShortcuts(
@@ -22,4 +23,17 @@ export function registerShortcuts(
     log('Alt+Space shortcut registration failed — macOS input sources may claim it')
   }
   globalShortcut.register('CommandOrControl+Shift+K', () => toggleWindow('shortcut Cmd/Ctrl+Shift+K'))
+
+  // Dev-only: Cmd+Shift+R — reset all data (truncate DB + clear renderer state)
+  if (process.env.NODE_ENV !== 'production') {
+    globalShortcut.register('CommandOrControl+Shift+R', () => {
+      try {
+        DataService.getInstance().resetAllData()
+        broadcast(IPC.RESET_SHOW)
+        log('Showtime: Dev reset triggered via Cmd+Shift+R')
+      } catch (err: unknown) {
+        log(`Dev reset error: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    })
+  }
 }

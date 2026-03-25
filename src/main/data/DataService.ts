@@ -53,6 +53,15 @@ export class DataService {
     return instance
   }
 
+  /** Truncate all data tables (preserves schema). Used by test reset and dev Cmd+Shift+R. */
+  resetAllData(): void {
+    this.raw.exec('DELETE FROM metrics')
+    this.raw.exec('DELETE FROM claude_contexts')
+    this.raw.exec('DELETE FROM timeline_events')
+    this.raw.exec('DELETE FROM acts')
+    this.raw.exec('DELETE FROM shows')
+  }
+
   close(): void {
     this.raw.close()
     if (instance === this) instance = null

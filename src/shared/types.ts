@@ -431,6 +431,9 @@ export const IPC = {
   // Showtime expanded toggle (main → renderer, triggered by global hotkey)
   TOGGLE_EXPANDED: 'showtime:toggle-expanded',
 
+  // Showtime data reset (truncates all tables + notifies renderer)
+  RESET_ALL_DATA: 'showtime:reset-all-data',
+
   // Showtime data persistence
   DATA_HYDRATE: 'showtime:data-hydrate',
   DATA_SYNC: 'showtime:data-sync',

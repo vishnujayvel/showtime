@@ -30,36 +30,32 @@ The test infrastructure in `e2e/fixtures.ts` already provides solid isolation:
 
 Per-worker isolation is already in place. The missing piece is **intra-worker reset** for tests that need a clean slate without relaunching the entire app.
 
-### Implementation: `resetAllData()` IPC
+### Implementation: `resetAllData()` IPC — IMPLEMENTED
 
 ```typescript
-// src/main/ipc/showtime.ts
-ipcMain.handle(IPC.RESET_ALL_DATA, () => {
-  try {
-    const data = DataService.getInstance()
-    data.resetAll() // Truncates all tables, resets sequences
-    log('Showtime: All data reset via IPC')
-    return { success: true }
-  } catch (err: unknown) {
-    log(`RESET_ALL_DATA error: ${err instanceof Error ? err.message : String(err)}`)
-    return { success: false, error: String(err) }
-  }
-})
-```
-
-```typescript
-// src/main/data/DataService.ts — add method
-resetAll(): void {
-  const tables = ['shows', 'timeline_events', 'metrics', 'claude_context']
-  for (const table of tables) {
-    this.db.exec(`DELETE FROM ${table}`)
-  }
+// src/main/data/DataService.ts — resetAllData()
+resetAllData(): void {
+  this.raw.exec('DELETE FROM metrics')
+  this.raw.exec('DELETE FROM claude_contexts')
+  this.raw.exec('DELETE FROM timeline_events')
+  this.raw.exec('DELETE FROM acts')
+  this.raw.exec('DELETE FROM shows')
 }
 ```
 
 ```typescript
-// src/preload/index.ts — expose on window.clui
-resetAllData: () => ipcRenderer.invoke('showtime:reset-all-data'),
+// src/main/ipc/showtime.ts — handler
+ipcMain.handle(IPC.RESET_ALL_DATA, () => {
+  const data = DataService.getInstance()
+  data.resetAllData()
+  broadcast(IPC.RESET_SHOW) // notifies renderer to reset Zustand
+  return { ok: true }
+})
+```
+
+```typescript
+// src/preload/index.ts — bridge
+resetAllData: () => ipcRenderer.invoke(IPC.RESET_ALL_DATA),
 ```
 
 ### Why Not In-Memory DB (Option C)
@@ -201,23 +197,17 @@ export const RESUME_FIXTURES = {
 }
 ```
 
-## 6. Dev-Mode Reset
+## 6. Dev-Mode Reset — IMPLEMENTED
 
 ### Keyboard Shortcut: `Cmd+Shift+R` (dev only)
 
 ```typescript
-// src/main/shortcuts.ts — add to registerShortcuts()
+// src/main/shortcuts.ts — registered in registerShortcuts()
 if (process.env.NODE_ENV !== 'production') {
   globalShortcut.register('CommandOrControl+Shift+R', () => {
-    const win = getMainWindow()
-    if (win) {
-      DataService.getInstance().resetAll()
-      win.webContents.executeJavaScript(`
-        localStorage.removeItem('showtime-show-state');
-        location.reload();
-      `)
-      log('Dev: Full reset triggered via Cmd+Shift+R')
-    }
+    DataService.getInstance().resetAllData()
+    broadcast(IPC.RESET_SHOW)
+    log('Showtime: Dev reset triggered via Cmd+Shift+R')
   })
 }
 ```
@@ -242,7 +232,7 @@ The tray already has a "Reset Show" item. Verify it calls `resetAllData()` and a
 
 1. Add `resetAllData()` IPC (non-breaking — new endpoint)
 2. Update `seedFixture()` to call it (backward-compatible — just adds a reset before seed)
-3. Add `data-testid="app-root"` to App.tsx root div (for faster ready detection)
+3. Add `data-testid="showtime-app"` to App.tsx root div (for faster ready detection) — DONE
 4. Reduce `navigateAndWaitPage` timeout from 3s to 500ms
 5. Add resume test fixtures
 6. Add `Cmd+Shift+R` dev shortcut
