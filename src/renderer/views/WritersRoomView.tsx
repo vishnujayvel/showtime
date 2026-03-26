@@ -44,6 +44,7 @@ export function WritersRoomView() {
   // Unified conversation state (replaces separate refinementConversations + loading)
   const [writerConversations, setWriterConversations] = useState<Array<{ role: 'user' | 'writer'; text: string }>>([])
   const [isWaiting, setIsWaiting] = useState(false)
+  const responseOffsetRef = useRef<number | null>(null)
   const hasLineup = acts.length > 0
 
   // 20-minute nudge timer
@@ -120,6 +121,10 @@ Return ONLY the JSON array, nothing else.`
     if (!planText.trim()) return
     setError(null)
 
+    // Track message offset so the response watcher only sees new messages
+    const tab = tabs.find((t) => t.id === activeTabId)
+    responseOffsetRef.current = tab ? tab.messages.length : 0
+
     const useCalendar = overrideCalendar ?? calendarEnabled
     const calendarInstruction = useCalendar && calendarEvents.length > 0
       ? `Here are today's calendar events (already fetched):
@@ -164,12 +169,14 @@ ${planText}`
 
   useEffect(() => {
     if (!isWaiting) return
+    if (responseOffsetRef.current === null) return
 
     const tab = tabs.find((t) => t.id === activeTabId)
     if (!tab) return
 
-    const messages = tab.messages
-    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
+    // Only look at messages AFTER the prompt was sent (prevents stale re-detection on turn 2+)
+    const newMessages = tab.messages.slice(responseOffsetRef.current)
+    const lastAssistant = [...newMessages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
 
     if (lastAssistant) {
       const lineup = tryParseLineup(lastAssistant.content)
@@ -181,6 +188,7 @@ ${planText}`
         setLineup(lineup)
         setWriterConversations((prev) => [...prev, { role: 'writer', text: 'Done \u2014 lineup updated.' }])
         setIsWaiting(false)
+        responseOffsetRef.current = null
         setError(null)
         return
       }
@@ -190,7 +198,7 @@ ${planText}`
         const writerText = lastAssistant.content.slice(0, 300)
         setWriterConversations((prev) => [...prev, { role: 'writer', text: writerText }])
         setIsWaiting(false)
-        // No error — user can continue the conversation
+        responseOffsetRef.current = null
         return
       }
     }
@@ -198,6 +206,7 @@ ${planText}`
     if (tab.status === 'failed' || tab.status === 'dead') {
       setWriterConversations((prev) => [...prev, { role: 'writer', text: 'The writer stepped out. Try again?' }])
       setIsWaiting(false)
+      responseOffsetRef.current = null
       setError('subprocess')
     }
   }, [tabs, activeTabId, isWaiting, setLineup])
@@ -219,6 +228,10 @@ ${planText}`
   // ─── Refinement (subsequent messages in conversation) ───
 
   const handleRefinement = (message: string) => {
+    // Track message offset so the response watcher only sees new messages
+    const tab = tabs.find((t) => t.id === activeTabId)
+    responseOffsetRef.current = tab ? tab.messages.length : 0
+
     setWriterConversations((prev) => [...prev, { role: 'user', text: message }])
     setIsWaiting(true)
 
