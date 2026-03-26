@@ -221,6 +221,8 @@ export interface RunOptions {
   hookSettingsPath?: string
   /** Extra directories to add via --add-dir (session-preserving) */
   addDirs?: string[]
+  /** Name of VCR cassette file for playback mode (without .ndjson extension) */
+  cassetteName?: string
 }
 
 // ─── Control Plane Types ───
