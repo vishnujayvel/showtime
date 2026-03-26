@@ -300,3 +300,11 @@ textarea:focus {
 .animate-confetti {
   animation: confetti-fall 3s ease-in forwards;
 }
+
+/* Confetti color palette — matches design system category colors */
+.confetti-0 { background-color: #f59e0b; }
+.confetti-1 { background-color: #ef4444; }
+.confetti-2 { background-color: #8b5cf6; }
+.confetti-3 { background-color: #22c55e; }
+.confetti-4 { background-color: #60a5fa; }
+.confetti-5 { background-color: #ec4899; }
