@@ -239,7 +239,7 @@ ${planText}`
       setIsWaiting(false)
       setWriterConversations((prev) => [...prev, { role: 'writer', text: 'The writers need a coffee break. Try again?' }])
       setError('timeout')
-    }, 30000)
+    }, 90000)
 
     return () => clearTimeout(timeoutTimer)
   }, [isWaiting])
