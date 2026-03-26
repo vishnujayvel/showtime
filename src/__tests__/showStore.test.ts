@@ -718,6 +718,11 @@ describe('showStore', () => {
       useShowStore.getState().setWritersRoomStep('plan')
       expect(useShowStore.getState().writersRoomStep).toBe('plan')
     })
+
+    it('supports conversation step', () => {
+      useShowStore.getState().setWritersRoomStep('conversation')
+      expect(useShowStore.getState().writersRoomStep).toBe('conversation')
+    })
   })
 
   // ─── Cold Open Transition ───
