@@ -377,31 +377,27 @@ interface AppLogEntry {
  * In test mode, logs go to the userData dir.
  */
 export async function readClaudeLogEvents(app: ElectronApplication): Promise<AppLogEntry[]> {
-  const logEntries = await app.evaluate(async ({ app: electronApp }) => {
-    // Must require inside evaluate — outer-scope imports aren't serialized into the Electron main process
-    const nodePath = require('path') as typeof import('path')
-    const nodeFs = require('fs') as typeof import('fs')
+  // Get userData path from Electron main process, then read logs from test's Node.js process
+  // (app.evaluate runs in an isolated V8 context where require() is not available)
+  const userDataPath = await app.evaluate(({ app: electronApp }) => electronApp.getPath('userData'))
 
-    const logDir = nodePath.join(electronApp.getPath('userData'), 'logs')
-    if (!nodeFs.existsSync(logDir)) return []
+  const logDir = path.join(userDataPath, 'logs')
+  if (!fs.existsSync(logDir)) return []
 
-    const files = nodeFs.readdirSync(logDir).filter((f: string) => f.endsWith('.log')).sort()
-    if (files.length === 0) return []
+  const files = fs.readdirSync(logDir).filter((f: string) => f.endsWith('.log')).sort()
+  if (files.length === 0) return []
 
-    const content = nodeFs.readFileSync(nodePath.join(logDir, files[files.length - 1]), 'utf-8')
-    return content
-      .split('\n')
-      .filter(Boolean)
-      .map((line: string) => {
-        try { return JSON.parse(line) } catch { return null }
-      })
-      .filter((e: unknown): e is AppLogEntry =>
-        e !== null && typeof e === 'object' && 'event' in (e as Record<string, unknown>)
-      )
-      .filter((e: AppLogEntry) => e.event.startsWith('claude.'))
-  })
-
-  return logEntries as AppLogEntry[]
+  const content = fs.readFileSync(path.join(logDir, files[files.length - 1]), 'utf-8')
+  return content
+    .split('\n')
+    .filter(Boolean)
+    .map((line: string) => {
+      try { return JSON.parse(line) } catch { return null }
+    })
+    .filter((e: unknown): e is AppLogEntry =>
+      e !== null && typeof e === 'object' && 'event' in (e as Record<string, unknown>)
+    )
+    .filter((e: AppLogEntry) => e.event.startsWith('claude.'))
 }
 
 /**
