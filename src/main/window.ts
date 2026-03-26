@@ -3,12 +3,13 @@ import { join } from 'path'
 import { computeAnchorFromBounds, computeBoundsFromAnchor, clampToWorkArea } from './window-geometry'
 import { getMainWindow, setMainWindow, SPACES_DEBUG, log, broadcast } from './state'
 import { IPC } from '../shared/types'
+import type { ViewMode } from '../shared/types'
 
 const PILL_BOTTOM_MARGIN = 24
 
 // ─── Content-tight window sizing ───
 // Window resizes to match view content exactly. No transparent dead zones.
-export const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
+export const VIEW_DIMENSIONS: Record<ViewMode, { width: number; height: number }> = {
   pill: { width: 320, height: 64 },   // 56px content + 8px for MiniRundownStrip
   compact: { width: 340, height: 140 },
   dashboard: { width: 400, height: 320 },
@@ -16,10 +17,17 @@ export const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> 
   full: { width: 560, height: 740 },
 }
 
+const VALID_VIEW_MODES = new Set<string>(Object.keys(VIEW_DIMENSIONS))
+
+/** Runtime check for untrusted IPC input. */
+export function isValidViewMode(mode: unknown): mode is ViewMode {
+  return typeof mode === 'string' && VALID_VIEW_MODES.has(mode)
+}
+
 // Anchor-based position tracking: center-bottom point preserved across view transitions and user drags.
 let anchorPoint: { x: number; y: number } | null = null
 let isDragging = false
-let deferredViewMode: string | null = null
+let deferredViewMode: ViewMode | null = null
 let toggleSequence = 0
 
 export function snapshotWindowState(reason: string): void {
@@ -62,10 +70,10 @@ function clampToDisplay(bounds: { x: number; y: number; width: number; height: n
 }
 
 // Debounce rapid view mode changes — prevents ghost frames from queued setBounds() calls
-let pendingViewMode: string | null = null
+let pendingViewMode: ViewMode | null = null
 let viewModeTimer: ReturnType<typeof setTimeout> | null = null
 
-export function applyViewMode(mode: string): void {
+export function applyViewMode(mode: ViewMode): void {
   // Debounce: coalesce rapid calls into a single setBounds
   pendingViewMode = mode
   if (viewModeTimer) clearTimeout(viewModeTimer)
@@ -78,7 +86,7 @@ export function applyViewMode(mode: string): void {
   }, 16) // One frame debounce at 60fps
 }
 
-function applyViewModeImmediate(mode: string): void {
+function applyViewModeImmediate(mode: ViewMode): void {
   const mainWindow = getMainWindow()
   if (!mainWindow || mainWindow.isDestroyed()) return
   const dims = VIEW_DIMENSIONS[mode]

@@ -88,7 +88,7 @@ export interface ResultEvent {
     cache_read_input_tokens?: number
     cache_creation_input_tokens?: number
   }
-  permission_denials: string[]
+  permission_denials: Array<{ tool_name: string; tool_use_id: string }>
   uuid: string
 }
 
@@ -221,6 +221,8 @@ export interface RunOptions {
   hookSettingsPath?: string
   /** Extra directories to add via --add-dir (session-preserving) */
   addDirs?: string[]
+  /** Name of VCR cassette file for playback mode (without .ndjson extension) */
+  cassetteName?: string
 }
 
 // ─── Control Plane Types ───
@@ -302,6 +304,7 @@ export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
 export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
 export type WritersRoomStep = 'energy' | 'plan' | 'conversation'
 export type ViewTier = 'micro' | 'compact' | 'dashboard' | 'expanded'
+export type ViewMode = 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'
 
 const VIEW_TIER_ORDER: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
 

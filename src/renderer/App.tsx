@@ -19,13 +19,10 @@ import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 import { HelpDialog } from './components/HelpDialog'
-import type { ViewTier } from '../shared/types'
-
-// View modes that the IPC bridge accepts for window sizing
-type ViewMode = 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'
+import type { ViewTier, ViewMode, ShowPhase } from '../shared/types'
 
 // Map viewTier + phase to the IPC view mode that determines window size
-function tierToViewMode(tier: ViewTier, phase: string): ViewMode {
+function tierToViewMode(tier: ViewTier, phase: ShowPhase): ViewMode {
   // Full-screen phases always use 'full' regardless of tier
   if (phase === 'no_show' || phase === 'writers_room' || phase === 'strike') {
     return 'full'

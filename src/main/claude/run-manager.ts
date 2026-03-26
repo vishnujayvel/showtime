@@ -2,14 +2,23 @@ import { spawn, execSync, ChildProcess } from 'child_process'
 import { EventEmitter } from 'events'
 import { homedir } from 'os'
 import { join } from 'path'
+import { existsSync, mkdirSync, createWriteStream, readFileSync } from 'fs'
+import type { WriteStream } from 'fs'
 import { StreamParser } from '../stream-parser'
 import { normalize } from './event-normalizer'
 import { log as _log } from '../logger'
 import { getCliEnv } from '../cli-env'
-import type { ClaudeEvent, NormalizedEvent, RunOptions, EnrichedError } from '../../shared/types'
+import { appLog } from '../app-logger'
+import type { ClaudeEvent, NormalizedEvent, RunOptions, EnrichedError, ResultEvent, InitEvent } from '../../shared/types'
 
 const MAX_RING_LINES = 100
 const DEBUG = process.env.CLUI_DEBUG === '1'
+
+// ─── VCR Cassette Mode ───
+const VCR_RECORD = !!process.env.SHOWTIME_RECORD
+const VCR_PLAYBACK = !!process.env.SHOWTIME_PLAYBACK
+const VCR_PLAYBACK_SPEED = Number(process.env.SHOWTIME_PLAYBACK_SPEED) || 1
+const CASSETTE_DIR = process.env.SHOWTIME_CASSETTE_DIR || join(process.cwd(), 'e2e', 'cassettes')
 
 // Appended to Claude's default system prompt so it knows it's running inside CLUI.
 // Uses --append-system-prompt (additive) not --system-prompt (replacement).
@@ -136,6 +145,12 @@ export class RunManager extends EventEmitter {
   }
 
   startRun(requestId: string, options: RunOptions): RunHandle {
+    // ─── VCR Playback: replay from cassette instead of spawning ───
+    if (VCR_PLAYBACK) {
+      log(`VCR PLAYBACK mode active — replaying cassette for ${requestId}`)
+      return this._playbackFromCassette(requestId, options)
+    }
+
     const cwd = options.projectPath === '~' ? homedir() : options.projectPath
 
     const args: string[] = [
@@ -218,45 +233,19 @@ export class RunManager extends EventEmitter {
       permissionDenials: [],
     }
 
+    // ─── VCR Record: set up cassette writer (no-op if not recording) ───
+    const recorder = VCR_RECORD
+      ? this._recordToCassette(requestId, handle.startedAt)
+      : null
+
     // ─── stdout → NDJSON parser → normalizer → events ───
     const parser = StreamParser.fromStream(child.stdout!)
 
     parser.on('event', (raw: ClaudeEvent) => {
-      // Track session ID
-      if (raw.type === 'system' && 'subtype' in raw && raw.subtype === 'init') {
-        handle.sessionId = (raw as any).session_id
-      }
+      // VCR Record: tee raw event to cassette (side-effect only)
+      if (recorder) recorder.record(raw)
 
-      // Track permission_request events
-      if (raw.type === 'permission_request' || (raw.type === 'system' && 'subtype' in raw && (raw as any).subtype === 'permission_request')) {
-        handle.sawPermissionRequest = true
-        log(`Permission request seen [${requestId}]`)
-      }
-
-      // Extract permission_denials from result event
-      if (raw.type === 'result') {
-        const denials = (raw as any).permission_denials
-        if (Array.isArray(denials) && denials.length > 0) {
-          handle.permissionDenials = denials.map((d: any) => ({
-            tool_name: d.tool_name || '',
-            tool_use_id: d.tool_use_id || '',
-          }))
-          log(`Permission denials [${requestId}]: ${JSON.stringify(handle.permissionDenials)}`)
-        }
-      }
-
-      // Ring buffer stdout lines (raw JSON for diagnostics)
-      this._ringPush(handle.stdoutTail, JSON.stringify(raw).substring(0, 300))
-
-      // Emit raw event for debugging
-      this.emit('raw', requestId, raw)
-
-      // Normalize and emit canonical events
-      const normalized = normalize(raw)
-      for (const evt of normalized) {
-        if (evt.type === 'tool_call') handle.toolCallCount++
-        this.emit('normalized', requestId, evt)
-      }
+      this._processEvent(requestId, handle, raw)
 
       // Close stdin after result event — with stream-json input the process
       // stays alive waiting for more input; closing stdin triggers clean exit.
@@ -285,6 +274,12 @@ export class RunManager extends EventEmitter {
     // Snapshot diagnostics BEFORE deleting the handle so callers can still read them.
     child.on('close', (code, signal) => {
       log(`Process closed [${requestId}]: code=${code} signal=${signal}`)
+      // VCR Record: write exit event and close cassette file
+      if (recorder) {
+        recorder.recordExit(code, signal)
+        recorder.end()
+        log(`VCR RECORD: cassette finalized for ${requestId}`)
+      }
       // Move handle to finished map so getEnrichedError still works after exit
       this._finishedRuns.set(requestId, handle)
       this.activeRuns.delete(requestId)
@@ -295,6 +290,11 @@ export class RunManager extends EventEmitter {
 
     child.on('error', (err) => {
       log(`Process error [${requestId}]: ${err.message}`)
+      // VCR Record: close cassette on process error
+      if (recorder) {
+        recorder.recordExit(null, 'ERROR')
+        recorder.end()
+      }
       this._finishedRuns.set(requestId, handle)
       this.activeRuns.delete(requestId)
       this.emit('error', requestId, err)
@@ -314,6 +314,13 @@ export class RunManager extends EventEmitter {
     child.stdin!.write(userMessage + '\n')
 
     this.activeRuns.set(requestId, handle)
+
+    appLog('INFO', 'claude.session_start', {
+      requestId,
+      promptLength: options.prompt?.length,
+      model: options.model,
+    })
+
     return handle
   }
 
@@ -381,6 +388,192 @@ export class RunManager extends EventEmitter {
 
   getActiveRunIds(): string[] {
     return Array.from(this.activeRuns.keys())
+  }
+
+  // ─── VCR Cassette: Record ───
+
+  /**
+   * Returns a recorder function that appends timestamped events to a cassette file.
+   * Call the returned function for each raw NDJSON event. Call .end() when done.
+   */
+  private _recordToCassette(requestId: string, startTime: number): {
+    record: (event: ClaudeEvent) => void
+    recordExit: (code: number | null, signal: string | null) => void
+    end: () => void
+  } {
+    if (!existsSync(CASSETTE_DIR)) {
+      mkdirSync(CASSETTE_DIR, { recursive: true })
+      log(`Created cassette directory: ${CASSETTE_DIR}`)
+    }
+
+    const cassettePath = join(CASSETTE_DIR, `${requestId}.ndjson`)
+    const ws: WriteStream = createWriteStream(cassettePath, { flags: 'w' })
+    log(`VCR RECORD: writing cassette to ${cassettePath}`)
+
+    return {
+      record: (event: ClaudeEvent) => {
+        const line = JSON.stringify({ ts: Date.now() - startTime, event })
+        ws.write(line + '\n')
+      },
+      recordExit: (code: number | null, signal: string | null) => {
+        const line = JSON.stringify({ ts: Date.now() - startTime, exit: { code, signal } })
+        ws.write(line + '\n')
+      },
+      end: () => {
+        ws.end()
+      },
+    }
+  }
+
+  // ─── VCR Cassette: Playback ───
+
+  /**
+   * Creates a mock RunHandle that replays events from a recorded cassette file
+   * through the same EventEmitter pipeline as a real run.
+   */
+  private _playbackFromCassette(requestId: string, options: RunOptions): RunHandle {
+    const cassetteName = options.cassetteName || requestId
+    const cassettePath = join(CASSETTE_DIR, `${cassetteName}.ndjson`)
+
+    if (!existsSync(cassettePath)) {
+      throw new Error(`VCR PLAYBACK: cassette not found at ${cassettePath}`)
+    }
+
+    log(`VCR PLAYBACK: reading cassette from ${cassettePath} (speed=${VCR_PLAYBACK_SPEED}x)`)
+
+    // Read and parse all cassette lines
+    const raw = readFileSync(cassettePath, 'utf-8')
+    const lines = raw.split('\n').filter((l) => l.trim())
+    const entries: Array<{ ts: number; event?: ClaudeEvent; exit?: { code: number | null; signal: string | null } }> = []
+    for (const line of lines) {
+      try {
+        entries.push(JSON.parse(line))
+      } catch {
+        log(`VCR PLAYBACK: skipping unparseable line: ${line.substring(0, 100)}`)
+      }
+    }
+
+    // Create a mock ChildProcess-like EventEmitter for the handle
+    const mockProcess = new EventEmitter() as any as ChildProcess
+    // Stub out methods that might be called on the process
+    ;(mockProcess as any).kill = (_signal?: string) => {
+      log(`VCR PLAYBACK: mock process kill called [${requestId}]`)
+      return true
+    }
+    ;(mockProcess as any).pid = -1
+    ;(mockProcess as any).exitCode = null
+    ;(mockProcess as any).stdin = { write: () => true, end: () => {}, destroyed: false }
+
+    const handle: RunHandle = {
+      runId: requestId,
+      sessionId: options.sessionId || null,
+      process: mockProcess,
+      pid: -1,
+      startedAt: Date.now(),
+      stderrTail: [],
+      stdoutTail: [],
+      toolCallCount: 0,
+      sawPermissionRequest: false,
+      permissionDenials: [],
+    }
+
+    this.activeRuns.set(requestId, handle)
+
+    // Schedule events at their recorded timestamps (adjusted by playback speed)
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    for (const entry of entries) {
+      const delay = VCR_PLAYBACK_SPEED > 0 ? entry.ts / VCR_PLAYBACK_SPEED : 0
+
+      if (entry.exit) {
+        // Schedule the exit event
+        const exitEntry = entry.exit
+        timers.push(setTimeout(() => {
+          log(`VCR PLAYBACK: exit [${requestId}] code=${exitEntry.code} signal=${exitEntry.signal}`)
+          ;(mockProcess as any).exitCode = exitEntry.code
+          this._finishedRuns.set(requestId, handle)
+          this.activeRuns.delete(requestId)
+          this.emit('exit', requestId, exitEntry.code, exitEntry.signal, handle.sessionId)
+          setTimeout(() => this._finishedRuns.delete(requestId), 5000)
+        }, delay))
+      } else if (entry.event) {
+        // Schedule the event through the normal pipeline
+        const event = entry.event
+        timers.push(setTimeout(() => {
+          this._processEvent(requestId, handle, event)
+        }, delay))
+      }
+    }
+
+    // If no exit entry was in the cassette, auto-exit after the last event
+    const lastTs = entries.length > 0 ? entries[entries.length - 1].ts : 0
+    const hasExitEntry = entries.some((e) => !!e.exit)
+    if (!hasExitEntry) {
+      const autoExitDelay = VCR_PLAYBACK_SPEED > 0 ? (lastTs + 100) / VCR_PLAYBACK_SPEED : 100
+      timers.push(setTimeout(() => {
+        log(`VCR PLAYBACK: auto-exit [${requestId}] (no exit entry in cassette)`)
+        ;(mockProcess as any).exitCode = 0
+        this._finishedRuns.set(requestId, handle)
+        this.activeRuns.delete(requestId)
+        this.emit('exit', requestId, 0, null, handle.sessionId)
+        setTimeout(() => this._finishedRuns.delete(requestId), 5000)
+      }, autoExitDelay))
+    }
+
+    // Store timers on the mock process so cancel() can clear them
+    ;(mockProcess as any)._vcrTimers = timers
+    ;(mockProcess as any).kill = (_signal?: string) => {
+      log(`VCR PLAYBACK: cancelling playback [${requestId}]`)
+      for (const t of timers) clearTimeout(t)
+      this._finishedRuns.set(requestId, handle)
+      this.activeRuns.delete(requestId)
+      this.emit('exit', requestId, -1, 'SIGINT', handle.sessionId)
+      return true
+    }
+
+    return handle
+  }
+
+  /**
+   * Shared event processing pipeline used by both real runs and VCR playback.
+   * Tracks session state, emits raw + normalized events.
+   */
+  private _processEvent(requestId: string, handle: RunHandle, event: ClaudeEvent): void {
+    // Track session ID from init event
+    if (event.type === 'system' && 'subtype' in event && (event as InitEvent).subtype === 'init') {
+      handle.sessionId = (event as InitEvent).session_id
+    }
+
+    // Track permission_request events
+    if (event.type === 'permission_request') {
+      handle.sawPermissionRequest = true
+      log(`Permission request seen [${requestId}]`)
+    }
+
+    // Extract permission_denials from result event
+    if (event.type === 'result') {
+      const { permission_denials } = event as ResultEvent
+      if (permission_denials.length > 0) {
+        handle.permissionDenials = permission_denials.map((d) => ({
+          tool_name: d.tool_name || '',
+          tool_use_id: d.tool_use_id || '',
+        }))
+        log(`Permission denials [${requestId}]: ${JSON.stringify(handle.permissionDenials)}`)
+      }
+    }
+
+    // Ring buffer stdout lines (raw JSON for diagnostics)
+    this._ringPush(handle.stdoutTail, JSON.stringify(event).substring(0, 300))
+
+    // Emit raw event for debugging
+    this.emit('raw', requestId, event)
+
+    // Normalize and emit canonical events
+    const normalized = normalize(event)
+    for (const evt of normalized) {
+      if (evt.type === 'tool_call') handle.toolCallCount++
+      this.emit('normalized', requestId, evt)
+    }
   }
 
   private _ringPush(buffer: string[], line: string): void {
