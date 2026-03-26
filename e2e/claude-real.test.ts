@@ -16,11 +16,24 @@ import { test, expect, screenshot, FIXTURES, seedFixture, freshStart, readClaude
 test.describe('Real Claude Integration', () => {
   test.setTimeout(180_000)
 
+  // Track which log events each test expects (set by tests, verified by afterEach)
+  let expectedLogEvents: string[] = []
+
   test.beforeEach(async ({ mainPage: page }) => {
+    expectedLogEvents = []
     await freshStart(page)
   })
 
+  test.afterEach(async ({ app }) => {
+    if (expectedLogEvents.length === 0) return
+    const logs = await readClaudeLogEvents(app)
+    for (const event of expectedLogEvents) {
+      assertLogContains(logs, event)
+    }
+  })
+
   test('happy path: energy -> plan -> lineup', async ({ mainPage: page, app }) => {
+    expectedLogEvents = ['claude.lineup_parsed']
     // 1. Seed Writer's Room at the energy step
     await seedFixture(page, FIXTURES.writersRoom_energy)
 
@@ -51,73 +64,43 @@ test.describe('Real Claude Integration', () => {
     // 6. Wait for act cards to appear — REAL Claude, this takes 10-60s
     // Act cards in the full lineup use the bg-surface-hover/50 class
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
-    const retryLink = page.locator('button').filter({ hasText: /Retry/i }).first()
 
-    let claudePath = 'timeout' as string
-
-    try {
-      await Promise.race([
-        actCardSelector.waitFor({ state: 'visible', timeout: 120000 }).then(() => { claudePath = 'lineup' }),
-        retryLink.waitFor({ state: 'visible', timeout: 120000 }).then(() => { claudePath = 'retry' }),
-      ])
-    } catch {
-      // Check if retry appeared after the race
-      const hasRetry = await retryLink.isVisible().catch(() => false)
-      if (hasRetry) claudePath = 'retry'
-    }
-
+    // Anti-hallucination pattern #3: If Claude doesn't produce a lineup, the test FAILS. Period.
+    // No fallback branch that accepts Claude unavailability as passing.
+    await actCardSelector.waitFor({ state: 'visible', timeout: 120000 })
     await screenshot(page, 'claude-real-04-result')
 
-    if (claudePath === 'lineup') {
-      // 7. Assert lineup appeared with at least 2 acts
-      const actCards = page.locator('.bg-surface-hover\\/50')
-      const cardCount = await actCards.count()
-      expect(cardCount).toBeGreaterThanOrEqual(2)
+    // 7. Assert lineup appeared with at least 2 acts
+    const actCards = page.locator('.bg-surface-hover\\/50')
+    const cardCount = await actCards.count()
+    expect(cardCount).toBeGreaterThanOrEqual(2)
 
-      // Verify act cards have names
-      const firstCardName = actCards.first().locator('.font-medium')
-      await expect(firstCardName).toBeVisible()
-      const nameText = await firstCardName.textContent()
-      expect(nameText!.trim().length).toBeGreaterThan(0)
+    // Verify act cards have names
+    const firstCardName = actCards.first().locator('.font-medium')
+    await expect(firstCardName).toBeVisible()
+    const nameText = await firstCardName.textContent()
+    expect(nameText!.trim().length).toBeGreaterThan(0)
 
-      // Verify act cards have durations
-      const durationText = actCards.first().locator('span.text-xs.text-txt-muted')
-      await expect(durationText).toBeVisible()
-      const duration = await durationText.textContent()
-      expect(duration).toMatch(/\d+m/)
+    // Verify act cards have durations
+    const durationText = actCards.first().locator('span.text-xs.text-txt-muted')
+    await expect(durationText).toBeVisible()
+    const duration = await durationText.textContent()
+    expect(duration).toMatch(/\d+m/)
 
-      // Verify conversation thread has writer response
-      const writerMessages = writerConvo.locator('.justify-start')
-      expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
+    // Verify conversation thread has writer response
+    const writerMessages = writerConvo.locator('.justify-start')
+    expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
 
-      // Verify "WE'RE LIVE!" button appeared (lineup exists)
-      const goLiveBtn = page.locator('button').filter({ hasText: /LIVE/i }).first()
-      await expect(goLiveBtn).toBeVisible({ timeout: 5000 })
+    // Verify "WE'RE LIVE!" button appeared (lineup exists)
+    const goLiveBtn = page.locator('button').filter({ hasText: /LIVE/i }).first()
+    await expect(goLiveBtn).toBeVisible({ timeout: 5000 })
 
-      console.log(`Claude path: lineup generated with ${cardCount} acts`)
-    } else {
-      // Claude was unavailable — conversation shows error/retry
-      console.log(`Claude path: ${claudePath} — Claude subprocess not available`)
-      const writerMessages = writerConvo.locator('.justify-start')
-      const msgCount = await writerMessages.count()
-      expect(msgCount).toBeGreaterThanOrEqual(1)
-    }
-
+    console.log(`Claude path: lineup generated with ${cardCount} acts`)
     await screenshot(page, 'claude-real-05-complete')
-
-    // 8. Cross-reference with app logs (Layer 4 verification)
-    const logs = await readClaudeLogEvents(app)
-    if (claudePath === 'lineup') {
-      try {
-        assertLogContains(logs, 'claude.lineup_parsed')
-      } catch {
-        // Log events may not be present in all test environments
-        console.log('Log verification: claude.lineup_parsed not found (may not be available in test userData)')
-      }
-    }
   })
 
   test('refinement updates lineup', async ({ mainPage: page, app }) => {
+    expectedLogEvents = ['claude.lineup_parsed', 'claude.refinement_parsed']
     // Setup: seed Writer's Room at energy step
     await seedFixture(page, FIXTURES.writersRoom_energy)
 
@@ -136,15 +119,9 @@ test.describe('Real Claude Integration', () => {
     const buildBtn = page.getByText('Build my lineup')
     await buildBtn.click()
 
-    // Wait for initial lineup
+    // Wait for initial lineup — must succeed, no fallback
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
-    try {
-      await actCardSelector.waitFor({ state: 'visible', timeout: 120000 })
-    } catch {
-      console.log('Refinement test: initial lineup did not appear, skipping refinement')
-      await screenshot(page, 'claude-real-refine-skipped')
-      return
-    }
+    await actCardSelector.waitFor({ state: 'visible', timeout: 120000 })
 
     const initialCards = page.locator('.bg-surface-hover\\/50')
     const initialCount = await initialCards.count()
@@ -183,14 +160,6 @@ test.describe('Real Claude Integration', () => {
 
     // The refined lineup should have at least as many acts (we asked to add one)
     expect(refinedCount).toBeGreaterThanOrEqual(initialCount)
-
-    // Check logs for refinement event
-    const logs = await readClaudeLogEvents(app)
-    try {
-      assertLogContains(logs, 'claude.refinement_parsed')
-    } catch {
-      console.log('Log verification: claude.refinement_parsed not found (may not be available)')
-    }
   })
 
   test('Claude error produces visible error state', async ({ mainPage: page }) => {
@@ -268,15 +237,9 @@ test.describe('Real Claude Integration', () => {
     await page.waitForTimeout(300)
     await page.getByText('Build my lineup').click()
 
-    // Wait for lineup
+    // Wait for lineup — must succeed, no fallback
     const actCard = page.locator('.bg-surface-hover\\/50').first()
-    try {
-      await actCard.waitFor({ state: 'visible', timeout: 120000 })
-    } catch {
-      console.log('Full flow test: lineup did not appear, cannot proceed to go live')
-      await screenshot(page, 'claude-real-full-flow-no-lineup')
-      return
-    }
+    await actCard.waitFor({ state: 'visible', timeout: 120000 })
 
     await screenshot(page, 'claude-real-full-flow-01-lineup')
 
@@ -307,5 +270,68 @@ test.describe('Real Claude Integration', () => {
     expect(hasLiveUI).toBe(true)
 
     await screenshot(page, 'claude-real-full-flow-04-complete')
+  })
+
+  test('session continuity: refinement references initial lineup context', async ({ mainPage: page, app }) => {
+    expectedLogEvents = ['claude.lineup_parsed', 'claude.refinement_parsed']
+
+    // Build initial lineup
+    await seedFixture(page, FIXTURES.writersRoom_energy)
+    await page.getByText('High Energy').click()
+    await page.waitForTimeout(500)
+
+    const textarea = page.locator('textarea').first()
+    await expect(textarea).toBeVisible({ timeout: 5000 })
+    await textarea.fill('Morning: 90 min deep work on the API refactor. Then 30 min yoga. Then 45 min code review.')
+    await page.waitForTimeout(300)
+    await page.getByText('Build my lineup').click()
+
+    // Wait for lineup
+    const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
+    await actCardSelector.waitFor({ state: 'visible', timeout: 120000 })
+
+    const initialCards = page.locator('.bg-surface-hover\\/50')
+    const initialCount = await initialCards.count()
+    await screenshot(page, 'claude-real-continuity-01-initial')
+
+    // Capture first act name for later reference
+    const firstActName = await initialCards.first().locator('.font-medium').textContent()
+    console.log(`Session continuity: initial lineup has ${initialCount} acts, first act: "${firstActName}"`)
+
+    // Send a refinement that references the initial lineup — proves Claude remembers turn 1
+    const chatInput = page.getByTestId('lineup-chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Make the first act shorter — 45 minutes instead — and add a 15 min coffee break right after it')
+    await page.getByTestId('lineup-chat-send').click()
+
+    await screenshot(page, 'claude-real-continuity-02-refinement-sent')
+
+    // Wait for refinement to complete
+    const rewritingIndicator = page.getByText('Rewriting the lineup...')
+    if (await rewritingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await rewritingIndicator.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
+    } else {
+      const revisingIndicator = page.getByText('The writers are revising')
+      if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await revisingIndicator.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
+      } else {
+        await page.waitForTimeout(30000)
+      }
+    }
+
+    const refinedCards = page.locator('.bg-surface-hover\\/50')
+    const refinedCount = await refinedCards.count()
+    console.log(`Session continuity: refined lineup has ${refinedCount} acts`)
+    await screenshot(page, 'claude-real-continuity-03-refined')
+
+    // Session continuity proof: refined lineup should have MORE acts (we asked to add one)
+    expect(refinedCount).toBeGreaterThan(initialCount)
+
+    // The conversation thread should show both the user refinement and a writer response
+    const writerConvo = page.getByTestId('writer-conversation')
+    const userMessages = writerConvo.locator('.justify-end')
+    const writerMessages = writerConvo.locator('.justify-start')
+    expect(await userMessages.count()).toBeGreaterThanOrEqual(1)
+    expect(await writerMessages.count()).toBeGreaterThanOrEqual(2) // initial + refinement response
   })
 })
