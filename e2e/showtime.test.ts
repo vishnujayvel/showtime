@@ -335,6 +335,29 @@ test.describe('Visual Validation', () => {
     expect(spotlightElements).toBeGreaterThan(0)
   })
 
+  test('no data-clui-ui attributes in the DOM', async () => {
+    // Reset to writers_room to check for legacy CLUI attributes
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('showtime-show-state')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        parsed.state.phase = 'writers_room'
+        parsed.state.writersRoomStep = 'energy'
+        parsed.state.viewTier = 'expanded'
+        parsed.state.goingLiveActive = false
+        parsed.state.beatCheckPending = false
+        parsed.state.celebrationActive = false
+        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
+      }
+    })
+    await navigateAndWait()
+
+    // Query all elements with data-clui-ui attribute — these are legacy CLUI leftovers
+    const elements = await page.locator('[data-clui-ui]').all()
+    expect(elements).toHaveLength(0)
+    await screenshot('16-no-clui-ui')
+  })
+
   test('BeatCheckModal uses spotlight-golden class not inline (#8 follow-up)', async () => {
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')

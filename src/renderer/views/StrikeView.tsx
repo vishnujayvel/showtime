@@ -59,7 +59,24 @@ export function StrikeView({ onShowHistory }: StrikeViewProps) {
         <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
           SHOWTIME
         </span>
-        <OnAirIndicator isLive={false} />
+        <div className="flex items-center gap-1">
+          <OnAirIndicator isLive={false} />
+          <button
+            onClick={() => setViewTier('micro')}
+            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
+            data-testid="strike-collapse-btn"
+          >
+            ▼
+          </button>
+          <button
+            onClick={() => window.clui.quit()}
+            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm no-drag"
+            title="Quit Showtime"
+            data-testid="strike-quit-btn"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
@@ -173,10 +190,12 @@ export function StrikeView({ onShowHistory }: StrikeViewProps) {
           {Array.from({ length: 24 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 rounded-full animate-confetti"
+              className={cn(
+                'absolute w-2 h-2 rounded-full animate-confetti',
+                `confetti-${i % 6}`
+              )}
               style={{
                 left: `${Math.random() * 100}%`,
-                backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#22c55e', '#60a5fa', '#ec4899'][i % 6],
                 animationDelay: `${Math.random() * 1.5}s`,
               }}
             />

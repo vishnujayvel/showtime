@@ -4,6 +4,7 @@ import { PtyRunManager } from './pty-run-manager'
 import { PermissionServer, maskSensitiveFields } from '../hooks/permission-server'
 import type { HookToolRequest, PermissionOption } from '../hooks/permission-server'
 import { log as _log } from '../logger'
+import { appLog } from '../app-logger'
 import type {
   TabStatus,
   TabRegistryEntry,
@@ -149,6 +150,12 @@ export class ControlPlane extends EventEmitter {
       if (event.type === 'session_init') {
         tab.claudeSessionId = event.sessionId
 
+        appLog('INFO', 'claude.session_init', {
+          sessionId: event.sessionId,
+          model: event.model,
+          tabId,
+        })
+
         if (this.initRequestIds.has(requestId)) {
           // Warmup init — emit session_init with isWarmup flag, don't change status
           this.emit('event', tabId, { ...event, isWarmup: true })
@@ -158,6 +165,33 @@ export class ControlPlane extends EventEmitter {
         if (tab.status === 'connecting') {
           this._setTabStatus(tabId, 'running')
         }
+      }
+
+      // Log claude errors
+      if (event.type === 'error') {
+        appLog('ERROR', 'claude.error', {
+          message: event.message,
+          tabId,
+        })
+      }
+
+      // Log session_dead
+      if (event.type === 'session_dead') {
+        appLog('ERROR', 'claude.error', {
+          message: 'Session dead',
+          tabId,
+          exitCode: event.exitCode,
+        })
+      }
+
+      // Log task_complete timing
+      if (event.type === 'task_complete') {
+        appLog('INFO', 'claude.timing', {
+          durationMs: event.durationMs,
+          numTurns: event.numTurns,
+          costUsd: event.costUsd,
+          tabId,
+        })
       }
 
       // Suppress all events from init requests (session_init already handled above)

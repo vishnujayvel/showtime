@@ -337,3 +337,78 @@ export async function clearMockHour(page: Page) {
     localStorage.removeItem('__test_mock_hour')
   })
 }
+
+// ─── Refinement Wait Helper ───
+
+/**
+ * Wait for a Claude refinement to complete. Checks for known progress indicators
+ * ("Rewriting the lineup...", "The writers are revising") and waits for them to disappear.
+ * Falls back to a fixed wait if no indicator is visible.
+ */
+export async function waitForRefinementComplete(page: Page, timeoutMs = 60000): Promise<void> {
+  const rewritingIndicator = page.getByText('Rewriting the lineup...')
+  if (await rewritingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await rewritingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {})
+    return
+  }
+
+  const revisingIndicator = page.getByText('The writers are revising')
+  if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await revisingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {})
+    return
+  }
+
+  // No indicator found — wait a reasonable time for Claude to respond
+  await page.waitForTimeout(30000)
+}
+
+// ─── Log Verification (Layer 4 of Testing Pyramid) ───
+
+interface AppLogEntry {
+  ts: string
+  level: string
+  event: string
+  data?: Record<string, unknown>
+}
+
+/**
+ * Read Claude-specific log events from the app log file.
+ * The app writes JSONL to ~/Library/Logs/Showtime/showtime-YYYY-MM-DD.log
+ * In test mode, logs go to the userData dir.
+ */
+export async function readClaudeLogEvents(app: ElectronApplication): Promise<AppLogEntry[]> {
+  // Get userData path from Electron main process, then read logs from test's Node.js process
+  // (app.evaluate runs in an isolated V8 context where require() is not available)
+  const userDataPath = await app.evaluate(({ app: electronApp }) => electronApp.getPath('userData'))
+
+  const logDir = path.join(userDataPath, 'logs')
+  if (!fs.existsSync(logDir)) return []
+
+  const files = fs.readdirSync(logDir).filter((f: string) => f.endsWith('.log')).sort()
+  if (files.length === 0) return []
+
+  const content = fs.readFileSync(path.join(logDir, files[files.length - 1]), 'utf-8')
+  return content
+    .split('\n')
+    .filter(Boolean)
+    .map((line: string) => {
+      try { return JSON.parse(line) } catch { return null }
+    })
+    .filter((e: unknown): e is AppLogEntry =>
+      e !== null && typeof e === 'object' && 'event' in (e as Record<string, unknown>)
+    )
+    .filter((e: AppLogEntry) => e.event.startsWith('claude.'))
+}
+
+/**
+ * Assert that specific Claude log events were recorded.
+ * Used in afterEach hooks to cross-reference UI assertions with log evidence.
+ */
+export function assertLogContains(logs: AppLogEntry[], eventName: string, predicate?: (data: Record<string, unknown>) => boolean): AppLogEntry {
+  const match = logs.find(e => e.event === eventName && (!predicate || (e.data && predicate(e.data))))
+  if (!match) {
+    const available = logs.map(e => e.event).join(', ')
+    throw new Error(`Expected log event "${eventName}" not found. Available: [${available}]`)
+  }
+  return match
+}
