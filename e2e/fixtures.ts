@@ -337,3 +337,54 @@ export async function clearMockHour(page: Page) {
     localStorage.removeItem('__test_mock_hour')
   })
 }
+
+// ─── Log Verification (Layer 4 of Testing Pyramid) ───
+
+interface AppLogEntry {
+  ts: string
+  level: string
+  event: string
+  data?: Record<string, unknown>
+}
+
+/**
+ * Read Claude-specific log events from the app log file.
+ * The app writes JSONL to ~/Library/Logs/Showtime/showtime-YYYY-MM-DD.log
+ * In test mode, logs go to the userData dir.
+ */
+export async function readClaudeLogEvents(app: ElectronApplication): Promise<AppLogEntry[]> {
+  const logEntries = await app.evaluate(async ({ app: electronApp }) => {
+    const logDir = path.join(electronApp.getPath('userData'), 'logs')
+    if (!fs.existsSync(logDir)) return []
+
+    const files = fs.readdirSync(logDir).filter((f: string) => f.endsWith('.log')).sort()
+    if (files.length === 0) return []
+
+    const content = fs.readFileSync(path.join(logDir, files[files.length - 1]), 'utf-8')
+    return content
+      .split('\n')
+      .filter(Boolean)
+      .map((line: string) => {
+        try { return JSON.parse(line) } catch { return null }
+      })
+      .filter((e: unknown): e is AppLogEntry =>
+        e !== null && typeof e === 'object' && 'event' in (e as Record<string, unknown>)
+      )
+      .filter((e: AppLogEntry) => e.event.startsWith('claude.'))
+  })
+
+  return logEntries as AppLogEntry[]
+}
+
+/**
+ * Assert that specific Claude log events were recorded.
+ * Used in afterEach hooks to cross-reference UI assertions with log evidence.
+ */
+export function assertLogContains(logs: AppLogEntry[], eventName: string, predicate?: (data: Record<string, unknown>) => boolean): AppLogEntry {
+  const match = logs.find(e => e.event === eventName && (!predicate || (e.data && predicate(e.data))))
+  if (!match) {
+    const available = logs.map(e => e.event).join(', ')
+    throw new Error(`Expected log event "${eventName}" not found. Available: [${available}]`)
+  }
+  return match
+}
