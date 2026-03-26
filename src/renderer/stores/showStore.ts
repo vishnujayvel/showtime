@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep, ViewTier } from '../../shared/types'
+import type { ShowPhase, EnergyLevel, Act, ActStatus, ShowVerdict, ShowLineup, WritersRoomStep, ViewTier, CalendarEvent, CalendarFetchStatus } from '../../shared/types'
 import { nextViewTier, expandTier, collapseTier } from '../../shared/types'
 
 function today(): string {
@@ -79,8 +79,14 @@ interface ShowActions {
   // Calendar
   calendarAvailable: boolean
   calendarEnabled: boolean
+  calendarEvents: CalendarEvent[]
+  calendarFetchStatus: CalendarFetchStatus
+  calendarFetchedAt: number | null
   setCalendarAvailable: (available: boolean) => void
   setCalendarEnabled: (enabled: boolean) => void
+  setCalendarEvents: (events: CalendarEvent[]) => void
+  setCalendarFetchStatus: (status: CalendarFetchStatus) => void
+  clearCalendarCache: () => void
 
   // Session
   setClaudeSessionId: (id: string) => void
@@ -112,6 +118,9 @@ interface ShowStoreState {
   breathingPauseEndAt: number | null
   calendarAvailable: boolean
   calendarEnabled: boolean
+  calendarEvents: CalendarEvent[]
+  calendarFetchStatus: CalendarFetchStatus
+  calendarFetchedAt: number | null
 }
 
 export type ShowStore = ShowStoreState & ShowActions
@@ -142,6 +151,9 @@ const initialState: ShowStoreState = {
   breathingPauseEndAt: null,
   calendarAvailable: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-gcal-connected') === 'true',
   calendarEnabled: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-calendar-enabled') === 'true',
+  calendarEvents: [],
+  calendarFetchStatus: 'idle',
+  calendarFetchedAt: null,
 }
 
 // ─── SQLite sync helpers ───
@@ -661,6 +673,20 @@ export const useShowStore = create<ShowStore>()(
         set({ calendarEnabled: enabled })
       },
 
+      setCalendarEvents: (events) => set({
+        calendarEvents: events,
+        calendarFetchStatus: events.length > 0 ? 'ready' : 'ready',
+        calendarFetchedAt: Date.now(),
+      }),
+
+      setCalendarFetchStatus: (status) => set({ calendarFetchStatus: status }),
+
+      clearCalendarCache: () => set({
+        calendarEvents: [],
+        calendarFetchStatus: 'idle',
+        calendarFetchedAt: null,
+      }),
+
       // ─── Session ───
 
       setClaudeSessionId: (id) => set({ claudeSessionId: id }),
@@ -710,7 +736,7 @@ export const useShowStore = create<ShowStore>()(
       name: 'showtime-show-state',
       partialize: (state) => {
         // Don't persist transient UI state
-        const { beatCheckPending: _bcp, celebrationActive: _ca, coldOpenActive: _coa, goingLiveActive: _gla, calendarAvailable: _calA, calendarEnabled: _calE, ...rest } = state
+        const { beatCheckPending: _bcp, celebrationActive: _ca, coldOpenActive: _coa, goingLiveActive: _gla, calendarAvailable: _calA, calendarEnabled: _calE, calendarEvents: _calEvt, calendarFetchStatus: _calFs, calendarFetchedAt: _calFa, ...rest } = state
         return rest
       },
       onRehydrateStorage: () => {
