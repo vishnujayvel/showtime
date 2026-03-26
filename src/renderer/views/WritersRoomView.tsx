@@ -55,14 +55,20 @@ export function WritersRoomView() {
     return () => clearInterval(interval)
   }, [writersRoomEnteredAt])
 
-  const handleBuildLineup = () => {
+  const handleBuildLineup = (overrideCalendar?: boolean) => {
     if (!planText.trim()) return
     setIsSubmitting(true)
     setError(null)
 
-    const calendarInstruction = calendarEnabled && calendarAvailable
-      ? `IMPORTANT: First, check the user's Google Calendar for today's events using your calendar tools.
-Incorporate calendar events as acts in the lineup.
+    const useCalendar = overrideCalendar ?? calendarEnabled
+    const calendarInstruction = useCalendar && calendarAvailable
+      ? `IMPORTANT: First, try to check the user's Google Calendar for today's events using your calendar tools.
+If the calendar tool is unavailable, fails, or returns an error:
+- DO NOT mention the failure to the user
+- Generate the lineup from the user's text input only
+- This is normal — not all setups have calendar access
+
+If calendar events are found: incorporate them as acts in the lineup.
 For calendar events: use event title as act name, event duration as planned duration.
 Categorize: meetings/1:1s → "Admin", focus blocks → "Deep Work", gym → "Exercise", creative → "Creative", social → "Social".
 Add "(from calendar)" to the sketch field for calendar-sourced acts.
@@ -123,30 +129,55 @@ ${planText}`
     // Check for errors/completion without valid lineup
     if (tab.status === 'failed' || tab.status === 'dead') {
       setIsSubmitting(false)
-      setError('Claude couldn\'t generate a lineup. Try again?')
+      if (calendarEnabled && calendarAvailable) {
+        setError('Lineup generation failed. Try unchecking "Import calendar events" and trying again.')
+      } else {
+        setError('Claude couldn\'t generate a lineup. Try again?')
+      }
       return
     }
-  }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep])
 
-  // Loading phase progression: initial → extended (10s) → timeout (30s)
+    // If completed/idle but no lineup parsed from response, show specific error
+    if (tab.status === 'completed' || tab.status === 'idle') {
+      const hasAssistantMessage = messages.some((m) => m.role === 'assistant' && !m.toolName)
+      if (hasAssistantMessage) {
+        setIsSubmitting(false)
+        if (calendarEnabled && calendarAvailable) {
+          setError('Lineup generation failed. Try unchecking "Import calendar events" and trying again.')
+        } else {
+          setError('Claude couldn\'t generate a lineup. Try again?')
+        }
+      }
+    }
+  }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep, calendarEnabled, calendarAvailable])
+
+  // Loading phase progression: initial → extended → timeout
+  // Calendar tool calls add 3-10s, so extend timeout when calendar is enabled
+  const timeoutMs = calendarEnabled && calendarAvailable ? 60000 : 30000
+  const extendedMs = calendarEnabled && calendarAvailable ? 15000 : 10000
+
   useEffect(() => {
     if (!isSubmitting) {
       setLoadingPhase('initial')
       return
     }
 
-    const extendedTimer = setTimeout(() => setLoadingPhase('extended'), 10000)
+    const extendedTimer = setTimeout(() => setLoadingPhase('extended'), extendedMs)
     const timeoutTimer = setTimeout(() => {
       setLoadingPhase('timeout')
       setIsSubmitting(false)
-      setError('The writers need a coffee break. Try again?')
-    }, 30000)
+      if (calendarEnabled && calendarAvailable) {
+        setError('Calendar import took too long. Try without calendar or try again?')
+      } else {
+        setError('The writers need a coffee break. Try again?')
+      }
+    }, timeoutMs)
 
     return () => {
       clearTimeout(extendedTimer)
       clearTimeout(timeoutTimer)
     }
-  }, [isSubmitting])
+  }, [isSubmitting, timeoutMs, extendedMs, calendarEnabled, calendarAvailable])
 
   // ─── Lineup Refinement ───
 
@@ -325,7 +356,7 @@ Keep the same format as before. Only modify what the user asked for.`
                     </Button>
 
                     {error && (
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <p className="text-xs text-onair">{error}</p>
                         <button
                           onClick={handleBuildLineup}
@@ -333,6 +364,18 @@ Keep the same format as before. Only modify what the user asked for.`
                         >
                           Try again
                         </button>
+                        {calendarEnabled && calendarAvailable && (
+                          <button
+                            onClick={() => {
+                              setCalendarEnabled(false)
+                              handleBuildLineup(false)
+                            }}
+                            className="text-xs text-accent hover:text-accent-dark underline"
+                            data-testid="retry-without-calendar"
+                          >
+                            Generate without calendar
+                          </button>
+                        )}
                       </div>
                     )}
 

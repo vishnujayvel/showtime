@@ -1,19 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ShowLineup } from '../shared/types'
-
-// Extract the parser function to test in isolation
-// (same logic as ChatPanel.tryParseLineup)
-function tryParseLineup(text: string): ShowLineup | null {
-  const match = text.match(/```showtime-lineup\s*\n([\s\S]*?)```/)
-  if (!match) return null
-  try {
-    const parsed = JSON.parse(match[1])
-    if (parsed.acts && Array.isArray(parsed.acts) && typeof parsed.beatThreshold === 'number') {
-      return parsed as ShowLineup
-    }
-  } catch {}
-  return null
-}
+import { tryParseLineup } from '../renderer/lib/lineup-parser'
 
 describe('tryParseLineup', () => {
   it('parses valid showtime-lineup JSON block', () => {
@@ -75,11 +61,11 @@ Good luck today!`
   })
 
   it('ignores other code blocks', () => {
-    const text = '```json\n{"acts": [], "beatThreshold": 3}\n```'
+    const text = '```python\nprint("hello")\n```'
     expect(tryParseLineup(text)).toBeNull()
   })
 
-  it('extracts first lineup when multiple blocks exist', () => {
+  it('prefers the last lineup block when multiple exist', () => {
     const text = `\`\`\`showtime-lineup
 {"acts": [{"name": "First", "sketch": "A", "durationMinutes": 30}], "beatThreshold": 1, "openingNote": "first"}
 \`\`\`
@@ -89,7 +75,7 @@ Some text
 \`\`\``
 
     const result = tryParseLineup(text)
-    expect(result!.acts[0].name).toBe('First')
+    expect(result!.acts[0].name).toBe('Second')
   })
 
   it('handles lineup with optional act fields', () => {
@@ -114,5 +100,174 @@ Some text
     expect(result).not.toBeNull()
     expect(result!.acts).toHaveLength(0)
     expect(result!.beatThreshold).toBe(0)
+  })
+
+  // ─── Resilience: tool call stripping ───
+
+  it('strips tool_use blocks before parsing lineup', () => {
+    const text = `I'll check your calendar first.
+
+\`\`\`tool_use
+{"name": "gcal_list_events", "input": {"date": "2026-03-25"}}
+\`\`\`
+
+Here are your events. Now let me build the lineup:
+
+\`\`\`showtime-lineup
+{
+  "acts": [
+    { "name": "Standup", "sketch": "Admin", "durationMinutes": 15 },
+    { "name": "Deep Focus", "sketch": "Deep Work", "durationMinutes": 90 }
+  ],
+  "beatThreshold": 2,
+  "openingNote": "Calendar synced!"
+}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts).toHaveLength(2)
+    expect(result!.acts[0].name).toBe('Standup')
+    expect(result!.openingNote).toBe('Calendar synced!')
+  })
+
+  it('strips tool_result blocks before parsing lineup', () => {
+    const text = `\`\`\`tool_result
+{"events": [{"summary": "Team standup", "start": "09:00"}]}
+\`\`\`
+
+Based on your calendar:
+
+\`\`\`showtime-lineup
+{
+  "acts": [{ "name": "Team standup", "sketch": "Admin", "durationMinutes": 30 }],
+  "beatThreshold": 1,
+  "openingNote": "One meeting day"
+}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts[0].name).toBe('Team standup')
+  })
+
+  it('strips tool_call blocks before parsing lineup', () => {
+    const text = `\`\`\`tool_call
+{"function": "calendar_search"}
+\`\`\`
+
+\`\`\`showtime-lineup
+{
+  "acts": [{ "name": "Focus", "sketch": "Deep Work", "durationMinutes": 60 }],
+  "beatThreshold": 1,
+  "openingNote": "Focused day"
+}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts[0].name).toBe('Focus')
+  })
+
+  // ─── Resilience: fallback JSON parsing ───
+
+  it('falls back to json code block when no showtime-lineup fence', () => {
+    const text = `Here's your lineup:
+
+\`\`\`json
+{
+  "acts": [
+    { "name": "Workout", "sketch": "Exercise", "durationMinutes": 45 }
+  ],
+  "beatThreshold": 1,
+  "openingNote": "Get moving!"
+}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts[0].name).toBe('Workout')
+  })
+
+  it('falls back to bare JSON object with acts array', () => {
+    const text = `Here's your lineup for today:
+
+{
+  "acts": [
+    { "name": "Email triage", "sketch": "Admin", "durationMinutes": 30 }
+  ],
+  "beatThreshold": 1,
+  "openingNote": "Quick start"
+}`
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts[0].name).toBe('Email triage')
+  })
+
+  it('prefers showtime-lineup block over json fallback', () => {
+    const text = `\`\`\`json
+{"acts": [{"name": "Wrong", "sketch": "A", "durationMinutes": 10}], "beatThreshold": 1, "openingNote": "wrong"}
+\`\`\`
+
+Actually, let me format that properly:
+
+\`\`\`showtime-lineup
+{"acts": [{"name": "Right", "sketch": "B", "durationMinutes": 20}], "beatThreshold": 2, "openingNote": "right"}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result!.acts[0].name).toBe('Right')
+  })
+
+  it('handles tool error followed by retry with valid lineup', () => {
+    const text = `I'll check your calendar.
+
+\`\`\`tool_use
+{"name": "gcal_list_events", "input": {"date": "2026-03-25"}}
+\`\`\`
+
+\`\`\`tool_result
+{"error": "Calendar MCP tool not available"}
+\`\`\`
+
+No worries, I'll build the lineup from your text input:
+
+\`\`\`showtime-lineup
+{
+  "acts": [
+    { "name": "Morning Focus", "sketch": "Deep Work", "durationMinutes": 90 }
+  ],
+  "beatThreshold": 1,
+  "openingNote": "No calendar needed"
+}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts[0].name).toBe('Morning Focus')
+  })
+
+  it('returns null when bare JSON does not have acts array', () => {
+    const text = '{"foo": "bar", "baz": [1, 2, 3]}'
+    expect(tryParseLineup(text)).toBeNull()
+  })
+
+  it('falls back to unfenced code block', () => {
+    const text = `Here's your lineup:
+
+\`\`\`
+{
+  "acts": [
+    { "name": "Reading", "sketch": "Deep Work", "durationMinutes": 60 }
+  ],
+  "beatThreshold": 1,
+  "openingNote": "Quiet morning"
+}
+\`\`\``
+
+    const result = tryParseLineup(text)
+    expect(result).not.toBeNull()
+    expect(result!.acts[0].name).toBe('Reading')
   })
 })
