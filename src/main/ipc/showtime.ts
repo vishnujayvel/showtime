@@ -1,6 +1,6 @@
 import { app, ipcMain, Notification, nativeTheme } from 'electron'
 import { getMainWindow, getSyncEngine, log, broadcast } from '../state'
-import { applyViewMode, forceRepaint } from '../window'
+import { applyViewMode, forceRepaint, isValidViewMode } from '../window'
 import { DataService } from '../data/DataService'
 import { IPC } from '../../shared/types'
 import { appLog } from '../app-logger'
@@ -55,7 +55,8 @@ export function registerShowtimeIpc(): void {
 
   // ─── Showtime window management ───
 
-  ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full') => {
+  ipcMain.on(IPC.SET_VIEW_MODE, (_event, mode: unknown) => {
+    if (!isValidViewMode(mode)) return
     appLog('DEBUG', 'view_mode_change', { mode })
     applyViewMode(mode)
   })

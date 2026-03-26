@@ -289,4 +289,69 @@ test.describe('View Tier Verification', () => {
 
     await screenshot(page, 'tier-pill-to-expanded')
   })
+
+  // ─── Anchor-point preservation ───
+
+  test('pill-to-expanded preserves anchor point', async ({ app, mainPage: page }) => {
+    // Start in expanded live state, then collapse to pill
+    await seedFixture(page, FIXTURES.live_expanded)
+    await waitForBounds(app, VIEW_DIMENSIONS.expanded.width, VIEW_DIMENSIONS.expanded.height)
+
+    // Transition to pill (micro) view
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-show-state', JSON.stringify({
+        state: {
+          ...JSON.parse(localStorage.getItem('showtime-show-state')!).state,
+          viewTier: 'micro',
+        },
+        version: 0,
+      }))
+    })
+    let url = page.url()
+    await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
+    await page.waitForTimeout(3000)
+    await waitForBounds(app, VIEW_DIMENSIONS.pill.width, VIEW_DIMENSIONS.pill.height)
+
+    // Record pill bounds (center-x and bottom-y)
+    const pillBounds = await app.evaluate(({ BrowserWindow }) => {
+      const win = BrowserWindow.getAllWindows()[0]
+      return win?.getBounds()
+    })
+    expect(pillBounds).toBeTruthy()
+    const pillCenterX = pillBounds!.x + pillBounds!.width / 2
+    const pillBottomY = pillBounds!.y + pillBounds!.height
+
+    await screenshot(page, 'anchor-pill-before')
+
+    // Transition back to expanded
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-show-state', JSON.stringify({
+        state: {
+          ...JSON.parse(localStorage.getItem('showtime-show-state')!).state,
+          viewTier: 'expanded',
+        },
+        version: 0,
+      }))
+    })
+    url = page.url()
+    await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
+    await page.waitForTimeout(3000)
+    await waitForBounds(app, VIEW_DIMENSIONS.expanded.width, VIEW_DIMENSIONS.expanded.height)
+
+    // Record expanded bounds
+    const expandedBounds = await app.evaluate(({ BrowserWindow }) => {
+      const win = BrowserWindow.getAllWindows()[0]
+      return win?.getBounds()
+    })
+    expect(expandedBounds).toBeTruthy()
+    const expandedCenterX = expandedBounds!.x + expandedBounds!.width / 2
+    const expandedBottomY = expandedBounds!.y + expandedBounds!.height
+
+    await screenshot(page, 'anchor-expanded-after')
+
+    // Assert: center-x is preserved within ±2px tolerance
+    expect(Math.abs(expandedCenterX - pillCenterX)).toBeLessThanOrEqual(2)
+    // Assert: bottom-y is preserved within ±2px tolerance
+    expect(Math.abs(expandedBottomY - pillBottomY)).toBeLessThanOrEqual(2)
+  })
 })

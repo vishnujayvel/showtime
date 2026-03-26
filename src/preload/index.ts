@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
-import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError } from '../shared/types'
+import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode } from '../shared/types'
 import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry, MetricsSummary } from '../main/data/types'
 
 export interface CluiAPI {
@@ -41,7 +41,7 @@ export interface CluiAPI {
   notifyVerdict(verdict: string, message: string): void
 
   // ─── Showtime window management ───
-  setViewMode(mode: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'): void
+  setViewMode(mode: ViewMode): void
   forceRepaint(): void
   onDayBoundary(callback: () => void): () => void
   onToggleExpanded(callback: () => void): () => void
