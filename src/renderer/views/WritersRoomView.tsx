@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
+import { tryParseCalendarEvents } from '../lib/calendar-parser'
 import { EnergySelector } from '../components/EnergySelector'
 import { CalendarBanner } from '../components/CalendarBanner'
 import { CalendarToggle } from '../components/CalendarToggle'
@@ -25,6 +26,10 @@ export function WritersRoomView() {
   const calendarAvailable = useShowStore((s) => s.calendarAvailable)
   const calendarEnabled = useShowStore((s) => s.calendarEnabled)
   const setCalendarEnabled = useShowStore((s) => s.setCalendarEnabled)
+  const calendarEvents = useShowStore((s) => s.calendarEvents)
+  const calendarFetchStatus = useShowStore((s) => s.calendarFetchStatus)
+  const setCalendarEvents = useShowStore((s) => s.setCalendarEvents)
+  const setCalendarFetchStatus = useShowStore((s) => s.setCalendarFetchStatus)
 
   const sendMessage = useSessionStore((s) => s.sendMessage)
   const tabs = useSessionStore((s) => s.tabs)
@@ -38,6 +43,7 @@ export function WritersRoomView() {
   const lineupStartRef = useRef<number | null>(null)
   const [refinementConversations, setRefinementConversations] = useState<Array<{ role: 'user' | 'writer'; text: string }>>([])
   const [isRefining, setIsRefining] = useState(false)
+  const calendarFetchMsgCountRef = useRef<number | null>(null)
 
   // 20-minute nudge timer
   useEffect(() => {
@@ -55,24 +61,76 @@ export function WritersRoomView() {
     return () => clearInterval(interval)
   }, [writersRoomEnteredAt])
 
+  // ─── Calendar Prefetch ───
+  // Trigger calendar fetch when Writer's Room opens and calendar is available
+  useEffect(() => {
+    if (!calendarAvailable || calendarFetchStatus !== 'idle') return
+
+    // Record current message count to identify the calendar response later
+    const tab = tabs.find((t) => t.id === activeTabId)
+    if (!tab) return
+
+    calendarFetchMsgCountRef.current = tab.messages.length
+    setCalendarFetchStatus('fetching')
+
+    const prompt = `List all of today's Google Calendar events as a JSON array.
+Each event: {"title": "...", "start": "HH:MM", "end": "HH:MM", "allDay": false}.
+If no calendar access or no events, return: []
+Return ONLY the JSON array, nothing else.`
+
+    sendMessage(prompt)
+  }, [calendarAvailable, calendarFetchStatus, tabs, activeTabId, sendMessage, setCalendarFetchStatus])
+
+  // Watch for calendar prefetch response
+  useEffect(() => {
+    if (calendarFetchStatus !== 'fetching') return
+    if (calendarFetchMsgCountRef.current === null) return
+
+    const tab = tabs.find((t) => t.id === activeTabId)
+    if (!tab) return
+
+    // Look for assistant messages that appeared after the calendar fetch was sent
+    const newMessages = tab.messages.slice(calendarFetchMsgCountRef.current)
+    const assistantMsg = newMessages.find((m) => m.role === 'assistant' && !m.toolName)
+
+    if (assistantMsg) {
+      const events = tryParseCalendarEvents(assistantMsg.content)
+      if (events !== null) {
+        setCalendarEvents(events)
+        calendarFetchMsgCountRef.current = null
+        return
+      }
+    }
+
+    // Handle completion without valid response
+    if (tab.status === 'completed' || tab.status === 'idle') {
+      const hasNewAssistant = newMessages.some((m) => m.role === 'assistant' && !m.toolName)
+      if (hasNewAssistant) {
+        // Response came but wasn't valid calendar JSON — mark unavailable
+        setCalendarFetchStatus('unavailable')
+        calendarFetchMsgCountRef.current = null
+      }
+    }
+
+    if (tab.status === 'failed' || tab.status === 'dead') {
+      setCalendarFetchStatus('error')
+      calendarFetchMsgCountRef.current = null
+    }
+  }, [tabs, activeTabId, calendarFetchStatus, setCalendarEvents, setCalendarFetchStatus])
+
   const handleBuildLineup = (overrideCalendar?: boolean) => {
     if (!planText.trim()) return
     setIsSubmitting(true)
     setError(null)
 
     const useCalendar = overrideCalendar ?? calendarEnabled
-    const calendarInstruction = useCalendar && calendarAvailable
-      ? `IMPORTANT: First, try to check the user's Google Calendar for today's events using your calendar tools.
-If the calendar tool is unavailable, fails, or returns an error:
-- DO NOT mention the failure to the user
-- Generate the lineup from the user's text input only
-- This is normal — not all setups have calendar access
-
-If calendar events are found: incorporate them as acts in the lineup.
-For calendar events: use event title as act name, event duration as planned duration.
+    const calendarInstruction = useCalendar && calendarEvents.length > 0
+      ? `Here are today's calendar events (already fetched):
+${JSON.stringify(calendarEvents, null, 2)}
+Incorporate these as acts in the lineup. Use event title as act name, event duration for planned duration.
 Categorize: meetings/1:1s → "Admin", focus blocks → "Deep Work", gym → "Exercise", creative → "Creative", social → "Social".
 Add "(from calendar)" to the sketch field for calendar-sourced acts.
-Fill gaps with tasks appropriate for the energy level.
+Fill remaining time with tasks from the user's text input.
 
 `
       : ''
@@ -129,11 +187,7 @@ ${planText}`
     // Check for errors/completion without valid lineup
     if (tab.status === 'failed' || tab.status === 'dead') {
       setIsSubmitting(false)
-      if (calendarEnabled && calendarAvailable) {
-        setError('Lineup generation failed. Try unchecking "Import calendar events" and trying again.')
-      } else {
-        setError('Claude couldn\'t generate a lineup. Try again?')
-      }
+      setError('Claude couldn\'t generate a lineup. Try again?')
       return
     }
 
@@ -142,19 +196,15 @@ ${planText}`
       const hasAssistantMessage = messages.some((m) => m.role === 'assistant' && !m.toolName)
       if (hasAssistantMessage) {
         setIsSubmitting(false)
-        if (calendarEnabled && calendarAvailable) {
-          setError('Lineup generation failed. Try unchecking "Import calendar events" and trying again.')
-        } else {
-          setError('Claude couldn\'t generate a lineup. Try again?')
-        }
+        setError('Claude couldn\'t generate a lineup. Try again?')
       }
     }
-  }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep, calendarEnabled, calendarAvailable])
+  }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep])
 
   // Loading phase progression: initial → extended → timeout
-  // Calendar tool calls add 3-10s, so extend timeout when calendar is enabled
-  const timeoutMs = calendarEnabled && calendarAvailable ? 60000 : 30000
-  const extendedMs = calendarEnabled && calendarAvailable ? 15000 : 10000
+  // Calendar events are pre-fetched, so no extra latency for calendar-enabled lineups
+  const timeoutMs = 30000
+  const extendedMs = 10000
 
   useEffect(() => {
     if (!isSubmitting) {
@@ -166,18 +216,14 @@ ${planText}`
     const timeoutTimer = setTimeout(() => {
       setLoadingPhase('timeout')
       setIsSubmitting(false)
-      if (calendarEnabled && calendarAvailable) {
-        setError('Calendar import took too long. Try without calendar or try again?')
-      } else {
-        setError('The writers need a coffee break. Try again?')
-      }
+      setError('The writers need a coffee break. Try again?')
     }, timeoutMs)
 
     return () => {
       clearTimeout(extendedTimer)
       clearTimeout(timeoutTimer)
     }
-  }, [isSubmitting, timeoutMs, extendedMs, calendarEnabled, calendarAvailable])
+  }, [isSubmitting, timeoutMs, extendedMs])
 
   // ─── Lineup Refinement ───
 
@@ -333,6 +379,8 @@ Keep the same format as before. Only modify what the user asked for.`
                       <CalendarToggle
                         checked={calendarEnabled}
                         onChange={setCalendarEnabled}
+                        fetchStatus={calendarFetchStatus}
+                        eventCount={calendarEvents.length}
                       />
                     )}
 
@@ -350,7 +398,7 @@ Keep the same format as before. Only modify what the user asked for.`
                       variant="accent"
                       className="mt-4"
                       disabled={!planText.trim()}
-                      onClick={handleBuildLineup}
+                      onClick={() => handleBuildLineup()}
                     >
                       Build my lineup
                     </Button>
@@ -359,23 +407,11 @@ Keep the same format as before. Only modify what the user asked for.`
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <p className="text-xs text-onair">{error}</p>
                         <button
-                          onClick={handleBuildLineup}
+                          onClick={() => handleBuildLineup()}
                           className="text-xs text-accent hover:text-accent-dark underline"
                         >
                           Try again
                         </button>
-                        {calendarEnabled && calendarAvailable && (
-                          <button
-                            onClick={() => {
-                              setCalendarEnabled(false)
-                              handleBuildLineup(false)
-                            }}
-                            className="text-xs text-accent hover:text-accent-dark underline"
-                            data-testid="retry-without-calendar"
-                          >
-                            Generate without calendar
-                          </button>
-                        )}
                       </div>
                     )}
 
