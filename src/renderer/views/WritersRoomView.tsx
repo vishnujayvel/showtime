@@ -181,10 +181,26 @@ ${planText}`
     if (lastAssistant) {
       const lineup = tryParseLineup(lastAssistant.content)
       if (lineup) {
+        const elapsed = lineupStartRef.current ? Date.now() - lineupStartRef.current : undefined
         if (lineupStartRef.current) {
           window.clui.recordMetricTiming('claude.lineup_generation', Date.now() - lineupStartRef.current)
           lineupStartRef.current = null
         }
+
+        // Log refinement_parsed if we already had acts, otherwise lineup_parsed
+        const oldActCount = acts.length
+        if (oldActCount > 0) {
+          window.clui.logEvent('INFO', 'claude.refinement_parsed', {
+            oldActCount,
+            newActCount: lineup.acts.length,
+          })
+        } else {
+          window.clui.logEvent('INFO', 'claude.lineup_parsed', {
+            actCount: lineup.acts.length,
+            ...(elapsed !== undefined ? { durationMs: elapsed } : {}),
+          })
+        }
+
         setLineup(lineup)
         setWriterConversations((prev) => [...prev, { role: 'writer', text: 'Done \u2014 lineup updated.' }])
         setIsWaiting(false)
@@ -195,6 +211,9 @@ ${planText}`
 
       // Claude responded but no lineup — show what Claude said
       if (tab.status === 'completed' || tab.status === 'idle') {
+        window.clui.logEvent('INFO', 'claude.lineup_failed', {
+          responseSnippet: lastAssistant.content.slice(0, 200),
+        })
         const writerText = lastAssistant.content.slice(0, 300)
         setWriterConversations((prev) => [...prev, { role: 'writer', text: writerText }])
         setIsWaiting(false)
@@ -231,6 +250,10 @@ ${planText}`
     // Track message offset so the response watcher only sees new messages
     const tab = tabs.find((t) => t.id === activeTabId)
     responseOffsetRef.current = tab ? tab.messages.length : 0
+
+    window.clui.logEvent('INFO', 'claude.refinement_sent', {
+      messageText: message.slice(0, 100),
+    })
 
     setWriterConversations((prev) => [...prev, { role: 'user', text: message }])
     setIsWaiting(true)
