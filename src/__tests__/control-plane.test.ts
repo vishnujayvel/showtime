@@ -106,8 +106,6 @@ describe('ControlPlane', () => {
     // Suppress error/rejection events during shutdown cleanup
     cp.on('error', () => {})
     // Swallow rejections from inflight promises during tab closure
-    const origReject = Promise.reject
-    process.removeAllListeners('unhandledRejection')
     const suppress = () => {}
     process.on('unhandledRejection', suppress)
     cp.shutdown()

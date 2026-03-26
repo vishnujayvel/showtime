@@ -8,7 +8,7 @@
 
 ## 1. Component Map
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │  RENDERER (React 19 + Zustand)                                  │
 │                                                                 │
@@ -64,7 +64,7 @@
 
 ## 2. Claude Subprocess Lifecycle
 
-```
+```text
 Renderer                    Main Process                   Claude CLI
    │                           │                              │
    │ clui.prompt(tabId,reqId)  │                              │
@@ -181,7 +181,7 @@ Renderer                    Main Process                   Claude CLI
 
 ### TabStatus (ControlPlane)
 
-```
+```text
 idle ──submitPrompt()──> connecting (no sessionId)
 idle ──submitPrompt()──> running    (has sessionId)
 
@@ -199,7 +199,7 @@ dead ──────retry(clearSess)─> idle
 
 ### Show Phase (showStore)
 
-```
+```text
 no_show ──enterWritersRoom()──> writers_room
 writers_room ──triggerGoingLive()──> going_live
 going_live ──(animation)──> live
@@ -238,44 +238,37 @@ strike ──startNewShow()──> no_show
 4. **Permission server startup is silent** — failure falls back to `--allowedTools` without user notification
 5. **StrikeView confetti uses inline styles** — only `style={{}}` violation in codebase
 
-## 9. Test Coverage Gaps (Critical)
+## 9. Test Coverage
+
+> **Updated post-PR #66** — coverage gaps addressed by the integration test suite.
 
 | Component | Lines | Unit | Integration | E2E |
 |-----------|-------|------|-------------|-----|
-| RunManager | 393 | NONE | NONE | NONE |
-| ControlPlane | 829 | NONE | NONE | NONE |
-| EventNormalizer | 173 | NONE | NONE | NONE |
-| StreamParser | 62 | NONE | NONE | NONE |
+| RunManager | 393 | 26 tests | NONE | NONE |
+| ControlPlane | 829 | 39 tests | NONE | NONE |
+| EventNormalizer | 173 | 23 tests | NONE | NONE |
+| StreamParser | 62 | 14 tests | NONE | NONE |
 | PermissionServer | ~400 | NONE | NONE | NONE |
-| sessionStore event handling | 526 | NONE | NONE | NONE |
-| Multi-turn conversation | N/A | NONE | NONE | NONE |
+| sessionStore event handling | 526 | 46 tests | NONE | NONE |
+| Mock event stream library | N/A | (shared utility) | N/A | N/A |
 | IPC round-trip | N/A | mocked | NONE | smoke |
 | showStore | 763 | 825 tests | N/A | partial |
 | dataLayer (SQLite) | N/A | 90 tests | N/A | N/A |
 
-**The entire Claude Code integration pipeline — RunManager, ControlPlane, EventNormalizer, StreamParser, PermissionServer — has zero test coverage.** This is the highest-risk surface in the architecture.
+**Remaining gaps:** PermissionServer, IPC contract tests, E2E multi-turn with real Claude.
 
-## 10. Test Infrastructure Recommendations
+## 10. Future Test Recommendations
 
-### Priority 1: Mock Event Stream Library
-Create a generator that yields NDJSON events in the exact format Claude produces. This unblocks all other test work.
+### Priority 1: PermissionServer Unit Tests
+Hook server lifecycle, per-run token management, safe Bash whitelist.
 
-### Priority 2: EventNormalizer Snapshot Tests
-Stateless function = trivially testable. Fixture-driven: one JSON per event type, verify output.
-
-### Priority 3: ControlPlane Unit Tests
-Tab lifecycle, queue behavior, idempotency, session guard, backpressure.
-
-### Priority 4: RunManager Unit Tests
-Process lifecycle, NDJSON parsing edge cases, ring buffer overflow, diagnostic capture.
-
-### Priority 5: Multi-Turn Scenario Tests
-Replay recorded event streams through sessionStore + WritersRoomView, verify lineup detection across turns.
-
-### Priority 6: IPC Contract Tests
+### Priority 2: IPC Contract Tests
 Verify main and renderer agree on types for every channel. Schema-driven.
 
+### Priority 3: E2E Multi-Turn Scenario Tests
+Replay recorded event streams through real Electron app with mocked Claude subprocess.
+
 ### Test Layer Strategy
-- **Layer 1 (Fast, CI):** Unit tests — mocked everything — 30s
-- **Layer 2 (Medium):** Integration — real SQLite, mock Claude streams — 2min
+- **Layer 1 (Fast, CI):** Unit tests — mocked everything — 3s (415 tests)
+- **Layer 2 (Medium):** Integration — real SQLite, mock Claude streams — future
 - **Layer 3 (Slow, Manual):** E2E — real Electron, real Claude — 10min+
