@@ -36,14 +36,15 @@ export function WritersRoomView() {
   const activeTabId = useSessionStore((s) => s.activeTabId)
 
   const [planText, setPlanText] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showNudge, setShowNudge] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingPhase, setLoadingPhase] = useState<'initial' | 'extended' | 'timeout'>('initial')
   const lineupStartRef = useRef<number | null>(null)
-  const [refinementConversations, setRefinementConversations] = useState<Array<{ role: 'user' | 'writer'; text: string }>>([])
-  const [isRefining, setIsRefining] = useState(false)
   const calendarFetchMsgCountRef = useRef<number | null>(null)
+
+  // Unified conversation state (replaces separate refinementConversations + loading)
+  const [writerConversations, setWriterConversations] = useState<Array<{ role: 'user' | 'writer'; text: string }>>([])
+  const [isWaiting, setIsWaiting] = useState(false)
+  const hasLineup = acts.length > 0
 
   // 20-minute nudge timer
   useEffect(() => {
@@ -62,11 +63,9 @@ export function WritersRoomView() {
   }, [writersRoomEnteredAt])
 
   // ─── Calendar Prefetch ───
-  // Trigger calendar fetch when Writer's Room opens and calendar is available
   useEffect(() => {
     if (!calendarAvailable || calendarFetchStatus !== 'idle') return
 
-    // Record current message count to identify the calendar response later
     const tab = tabs.find((t) => t.id === activeTabId)
     if (!tab) return
 
@@ -89,7 +88,6 @@ Return ONLY the JSON array, nothing else.`
     const tab = tabs.find((t) => t.id === activeTabId)
     if (!tab) return
 
-    // Look for assistant messages that appeared after the calendar fetch was sent
     const newMessages = tab.messages.slice(calendarFetchMsgCountRef.current)
     const assistantMsg = newMessages.find((m) => m.role === 'assistant' && !m.toolName)
 
@@ -102,11 +100,9 @@ Return ONLY the JSON array, nothing else.`
       }
     }
 
-    // Handle completion without valid response
     if (tab.status === 'completed' || tab.status === 'idle') {
       const hasNewAssistant = newMessages.some((m) => m.role === 'assistant' && !m.toolName)
       if (hasNewAssistant) {
-        // Response came but wasn't valid calendar JSON — mark unavailable
         setCalendarFetchStatus('unavailable')
         calendarFetchMsgCountRef.current = null
       }
@@ -118,9 +114,10 @@ Return ONLY the JSON array, nothing else.`
     }
   }, [tabs, activeTabId, calendarFetchStatus, setCalendarEvents, setCalendarFetchStatus])
 
+  // ─── Build Lineup (first message in conversation) ───
+
   const handleBuildLineup = (overrideCalendar?: boolean) => {
     if (!planText.trim()) return
-    setIsSubmitting(true)
     setError(null)
 
     const useCalendar = overrideCalendar ?? calendarEnabled
@@ -155,13 +152,18 @@ Energy "${energy}" means: low=shorter acts, fewer total. medium=balanced. high=l
 User's plan:
 ${planText}`
 
+    // Add plan text as first user message and transition to conversation
+    setWriterConversations([{ role: 'user', text: planText }])
+    setIsWaiting(true)
     lineupStartRef.current = Date.now()
+    setWritersRoomStep('conversation')
     sendMessage(prompt)
   }
 
-  // Watch for Claude's response with lineup
+  // ─── Watch for Claude's response (both initial and refinement) ───
+
   useEffect(() => {
-    if (!isSubmitting) return
+    if (!isWaiting) return
 
     const tab = tabs.find((t) => t.id === activeTabId)
     if (!tab) return
@@ -177,59 +179,48 @@ ${planText}`
           lineupStartRef.current = null
         }
         setLineup(lineup)
-        setWritersRoomStep('lineup')
-        setIsSubmitting(false)
+        setWriterConversations((prev) => [...prev, { role: 'writer', text: 'Done \u2014 lineup updated.' }])
+        setIsWaiting(false)
         setError(null)
+        return
+      }
+
+      // Claude responded but no lineup — show what Claude said
+      if (tab.status === 'completed' || tab.status === 'idle') {
+        const writerText = lastAssistant.content.slice(0, 300)
+        setWriterConversations((prev) => [...prev, { role: 'writer', text: writerText }])
+        setIsWaiting(false)
+        // No error — user can continue the conversation
         return
       }
     }
 
-    // Check for errors/completion without valid lineup
     if (tab.status === 'failed' || tab.status === 'dead') {
-      setIsSubmitting(false)
-      setError('Claude couldn\'t generate a lineup. Try again?')
-      return
+      setWriterConversations((prev) => [...prev, { role: 'writer', text: 'The writer stepped out. Try again?' }])
+      setIsWaiting(false)
+      setError('subprocess')
     }
+  }, [tabs, activeTabId, isWaiting, setLineup])
 
-    // If completed/idle but no lineup parsed from response, show specific error
-    if (tab.status === 'completed' || tab.status === 'idle') {
-      const hasAssistantMessage = messages.some((m) => m.role === 'assistant' && !m.toolName)
-      if (hasAssistantMessage) {
-        setIsSubmitting(false)
-        setError('Claude couldn\'t generate a lineup. Try again?')
-      }
-    }
-  }, [tabs, activeTabId, isSubmitting, setLineup, setWritersRoomStep])
-
-  // Loading phase progression: initial → extended → timeout
-  // Calendar events are pre-fetched, so no extra latency for calendar-enabled lineups
-  const timeoutMs = 30000
-  const extendedMs = 10000
+  // ─── Conversation timeout ───
 
   useEffect(() => {
-    if (!isSubmitting) {
-      setLoadingPhase('initial')
-      return
-    }
+    if (!isWaiting) return
 
-    const extendedTimer = setTimeout(() => setLoadingPhase('extended'), extendedMs)
     const timeoutTimer = setTimeout(() => {
-      setLoadingPhase('timeout')
-      setIsSubmitting(false)
-      setError('The writers need a coffee break. Try again?')
-    }, timeoutMs)
+      setIsWaiting(false)
+      setWriterConversations((prev) => [...prev, { role: 'writer', text: 'The writers need a coffee break. Try again?' }])
+      setError('timeout')
+    }, 30000)
 
-    return () => {
-      clearTimeout(extendedTimer)
-      clearTimeout(timeoutTimer)
-    }
-  }, [isSubmitting, timeoutMs, extendedMs])
+    return () => clearTimeout(timeoutTimer)
+  }, [isWaiting])
 
-  // ─── Lineup Refinement ───
+  // ─── Refinement (subsequent messages in conversation) ───
 
   const handleRefinement = (message: string) => {
-    setRefinementConversations((prev) => [...prev, { role: 'user', text: message }])
-    setIsRefining(true)
+    setWriterConversations((prev) => [...prev, { role: 'user', text: message }])
+    setIsWaiting(true)
 
     const prompt = `The user wants to change the lineup: "${message}"
 
@@ -238,39 +229,6 @@ Keep the same format as before. Only modify what the user asked for.`
 
     sendMessage(prompt)
   }
-
-  // Watch for refined lineup response
-  useEffect(() => {
-    if (!isRefining) return
-
-    const tab = tabs.find((t) => t.id === activeTabId)
-    if (!tab) return
-
-    const messages = tab.messages
-    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
-
-    if (lastAssistant) {
-      const lineup = tryParseLineup(lastAssistant.content)
-      if (lineup) {
-        setLineup(lineup)
-        setRefinementConversations((prev) => [...prev, { role: 'writer', text: 'Done \u2014 lineup updated.' }])
-        setIsRefining(false)
-        return
-      }
-
-      // No lineup in response — show as clarification
-      if (tab.status === 'completed' || tab.status === 'idle') {
-        const writerText = lastAssistant.content.slice(0, 200)
-        setRefinementConversations((prev) => [...prev, { role: 'writer', text: writerText }])
-        setIsRefining(false)
-      }
-    }
-
-    if (tab.status === 'failed' || tab.status === 'dead') {
-      setRefinementConversations((prev) => [...prev, { role: 'writer', text: 'Something went wrong. Try again?' }])
-      setIsRefining(false)
-    }
-  }, [tabs, activeTabId, isRefining, setLineup])
 
   return (
     <div
@@ -293,12 +251,12 @@ Keep the same format as before. Only modify what the user asked for.`
           className="text-txt-muted hover:text-onair transition-colors text-sm no-drag"
           title="Quit Showtime"
         >
-          ✕
+          &#10005;
         </button>
       </div>
 
       {/* Content */}
-      <div className="px-8 py-8 flex-1 flex flex-col relative">
+      <div className="px-8 py-8 flex-1 flex flex-col relative overflow-y-auto">
         {/* Spotlight gradient overlay */}
         <div className="absolute inset-0 pointer-events-none spotlight-warm" />
 
@@ -324,7 +282,7 @@ Keep the same format as before. Only modify what the user asked for.`
             </motion.div>
           )}
 
-          {/* Step 2: Plan Dump / Loading Overlay */}
+          {/* Step 2: Plan Dump */}
           {writersRoomStep === 'plan' && (
             <motion.div
               key="plan"
@@ -333,129 +291,174 @@ Keep the same format as before. Only modify what the user asked for.`
               exit={{ opacity: 0, y: -12 }}
               transition={springTransition}
             >
-              <AnimatePresence mode="wait">
-                {isSubmitting ? (
-                  <motion.div
-                    key="loading"
-                    className="flex flex-col items-center justify-center py-20 relative"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={springTransition}
-                  >
-                    {/* Spotlight sweep background */}
-                    <div className="absolute inset-0 spotlight-sweep rounded-lg" />
+              <h2 className="font-body text-xl font-semibold text-txt-primary mb-2">
+                What&apos;s on the schedule?
+              </h2>
+              <p className="text-sm text-txt-muted mb-6">
+                Dump everything. Claude will organize it into {getTemporalShowLabel()} lineup.
+              </p>
 
-                    <p className="font-body text-lg text-txt-secondary mb-4 relative z-10">
-                      {loadingPhase === 'extended'
-                        ? 'Still writing... almost there'
-                        : 'The writers are working...'}
-                    </p>
+              {!calendarAvailable && <CalendarBanner />}
+              {calendarAvailable && (
+                <CalendarToggle
+                  checked={calendarEnabled}
+                  onChange={setCalendarEnabled}
+                  fetchStatus={calendarFetchStatus}
+                  eventCount={calendarEvents.length}
+                />
+              )}
 
-                    {/* Pulsing dots */}
-                    <div className="flex gap-2 relative z-10">
-                      <span className="w-2 h-2 rounded-full bg-accent writers-dot-1" />
-                      <span className="w-2 h-2 rounded-full bg-accent writers-dot-2" />
-                      <span className="w-2 h-2 rounded-full bg-accent writers-dot-3" />
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="form"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={springTransition}
-                  >
-                    <h2 className="font-body text-xl font-semibold text-txt-primary mb-2">
-                      What&apos;s on the schedule?
-                    </h2>
-                    <p className="text-sm text-txt-muted mb-6">
-                      Dump everything. Claude will organize it into {getTemporalShowLabel()} lineup.
-                    </p>
+              <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
+                <textarea
+                  value={planText}
+                  onChange={(e) => setPlanText(e.target.value)}
+                  placeholder="meetings, tasks, errands, whatever..."
+                  className="w-full h-[200px] resize-none bg-transparent font-body text-sm text-notepad-text placeholder:text-txt-muted focus:outline-none"
+                  autoFocus
+                />
+              </div>
 
-                    {!calendarAvailable && <CalendarBanner />}
-                    {calendarAvailable && (
-                      <CalendarToggle
-                        checked={calendarEnabled}
-                        onChange={setCalendarEnabled}
-                        fetchStatus={calendarFetchStatus}
-                        eventCount={calendarEvents.length}
-                      />
-                    )}
+              <Button
+                variant="accent"
+                className="mt-4"
+                disabled={!planText.trim()}
+                onClick={() => handleBuildLineup()}
+              >
+                Build my lineup
+              </Button>
 
-                    <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
-                      <textarea
-                        value={planText}
-                        onChange={(e) => setPlanText(e.target.value)}
-                        placeholder="meetings, tasks, errands, whatever..."
-                        className="w-full h-[200px] resize-none bg-transparent font-body text-sm text-notepad-text placeholder:text-txt-muted focus:outline-none"
-                        autoFocus
-                      />
-                    </div>
-
-                    <Button
-                      variant="accent"
-                      className="mt-4"
-                      disabled={!planText.trim()}
-                      onClick={() => handleBuildLineup()}
-                    >
-                      Build my lineup
-                    </Button>
-
-                    {error && (
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <p className="text-xs text-onair">{error}</p>
-                        <button
-                          onClick={() => handleBuildLineup()}
-                          className="text-xs text-accent hover:text-accent-dark underline"
-                        >
-                          Try again
-                        </button>
-                      </div>
-                    )}
-
-                    {showNudge && (
-                      <p className="text-xs text-txt-muted mt-4 animate-breathe">
-                        Still writing? No rush — the show starts when you&apos;re ready.
-                      </p>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {showNudge && (
+                <p className="text-xs text-txt-muted mt-4 animate-breathe">
+                  Still writing? No rush — the show starts when you&apos;re ready.
+                </p>
+              )}
             </motion.div>
           )}
 
-          {/* Step 3: Lineup Preview */}
-          {writersRoomStep === 'lineup' && (
+          {/* Step 3: Conversation (replaces old loading + lineup steps) */}
+          {writersRoomStep === 'conversation' && (
             <motion.div
-              key="lineup"
+              key="conversation"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={springTransition}
+              className="flex flex-col flex-1"
             >
-              <h2 className="font-body text-xl font-semibold text-txt-primary mb-6">
-                {getTemporalShowLabel().replace(/^./, c => c.toUpperCase())} Lineup
-              </h2>
+              {/* Compact header with energy badge */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-body text-xl font-semibold text-txt-primary">
+                    {hasLineup
+                      ? `${getTemporalShowLabel().replace(/^./, (c: string) => c.toUpperCase())} Lineup`
+                      : 'Building your lineup...'}
+                  </h2>
+                  {energy && (
+                    <span className="text-xs text-txt-muted font-mono uppercase tracking-wider">
+                      Energy: {energy}
+                      {calendarEnabled && calendarEvents.length > 0 && (
+                        <> &middot; {calendarEvents.length} calendar event{calendarEvents.length !== 1 ? 's' : ''}</>
+                      )}
+                    </span>
+                  )}
+                </div>
+                {hasLineup && (
+                  <span className="font-mono text-xs text-txt-muted">
+                    {acts.length} ACT{acts.length !== 1 ? 'S' : ''}
+                  </span>
+                )}
+              </div>
 
-              <LineupPanel variant="full" />
+              {/* Lineup preview (appears when lineup exists) */}
+              {hasLineup && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={springTransition}
+                  className={isWaiting ? 'opacity-50' : ''}
+                >
+                  <LineupPanel variant="full" />
+                </motion.div>
+              )}
 
-              {/* Refinement chat */}
+              {/* Conversation thread */}
+              <div className="mt-4 border-t border-surface-hover pt-4 space-y-3" data-testid="writer-conversation">
+                <AnimatePresence initial={false}>
+                  {writerConversations.map((msg, i) => (
+                    <motion.div
+                      key={`conv-${i}-${msg.role}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`px-4 py-2.5 max-w-[85%] text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-accent/10 border border-accent/20 rounded-xl rounded-br-sm text-txt-primary'
+                            : 'bg-txt-secondary/[0.08] border border-txt-secondary/[0.12] rounded-xl rounded-bl-sm text-txt-secondary'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* Writers typing indicator */}
+                {isWaiting && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={springTransition}
+                    className="flex justify-start"
+                  >
+                    <div className="bg-txt-secondary/[0.08] border border-txt-secondary/[0.12] rounded-xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
+                      <span className="text-xs text-txt-secondary mr-1">The writers are revising</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-1" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-2" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-3" />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Chat input for refinement / follow-up */}
               <LineupChatInput
                 onSend={handleRefinement}
-                disabled={isRefining}
-                conversations={refinementConversations}
+                disabled={isWaiting}
+                conversations={writerConversations}
+                hasLineup={hasLineup}
               />
 
-              <Button
-                variant="primary"
-                className="mt-6"
-                disabled={isRefining}
-                onClick={() => triggerGoingLive()}
-              >
-                WE&apos;RE LIVE!
-              </Button>
+              {/* "We're live!" button (only when lineup exists) */}
+              {hasLineup && (
+                <Button
+                  variant="primary"
+                  className="mt-6"
+                  disabled={isWaiting}
+                  onClick={() => triggerGoingLive()}
+                >
+                  WE&apos;RE LIVE!
+                </Button>
+              )}
+
+              {/* Subprocess error — retry option */}
+              {error === 'subprocess' && (
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      setError(null)
+                      setIsWaiting(true)
+                      lineupStartRef.current = Date.now()
+                      sendMessage(planText)
+                    }}
+                    className="text-xs text-accent hover:text-accent-dark underline"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -43,12 +43,13 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
     await screenshot(page, '04-plan-filled')
   })
 
-  test('can submit plan and see lineup preview', async ({ mainPage: page }) => {
+  test('can submit plan and see conversation view', async ({ mainPage: page }) => {
     const nextButton = page.getByText('Build my lineup')
     if (await nextButton.isVisible().catch(() => false)) {
       await nextButton.click()
-      const loadingText = page.getByText('The writers are working...')
-      await expect(loadingText).toBeVisible({ timeout: 5000 }).catch(() => {})
+      // Conversation step shows typing indicator instead of loading spinner
+      const writerConvo = page.getByTestId('writer-conversation')
+      await expect(writerConvo).toBeVisible({ timeout: 5000 }).catch(() => {})
       await page.waitForTimeout(5000)
     } else {
       const altButton = page.locator('button').filter({ hasText: /lineup|next|continue/i }).first()
@@ -57,7 +58,7 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
         await page.waitForTimeout(5000)
       }
     }
-    await screenshot(page, '05-lineup-preview')
+    await screenshot(page, '05-conversation-view')
   })
 
   test('can go live', async ({ mainPage: page }) => {
@@ -135,21 +136,22 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
-    const loadingText = page.getByText('The writers are working...')
-    await expect(loadingText).toBeVisible({ timeout: 2000 }).catch(() => {})
+    // Conversation step appears immediately with writer typing indicator
+    const writerConvo = page.getByTestId('writer-conversation')
+    await expect(writerConvo).toBeVisible({ timeout: 5000 }).catch(() => {})
 
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
-    const retryButton = page.getByRole('button', { name: 'Try again' })
+    const retryLink = page.getByRole('link', { name: 'Retry' }).or(page.locator('button').filter({ hasText: 'Retry' }))
 
     let claudePath: 'lineup' | 'unavailable' = 'unavailable'
 
     try {
       await Promise.race([
         actCardSelector.waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'lineup' }),
-        retryButton.waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'unavailable' }),
+        retryLink.first().waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'unavailable' }),
       ])
     } catch {
-      const hasRetry = await retryButton.isVisible().catch(() => false)
+      const hasRetry = await retryLink.first().isVisible().catch(() => false)
       if (hasRetry) claudePath = 'unavailable'
     }
 
@@ -171,17 +173,16 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
 
       const badge = actCards.first().locator('.font-mono')
       await expect(badge).toBeVisible()
+
+      // Conversation thread should show writer response
+      const writerMessages = writerConvo.locator('.justify-start')
+      expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
     } else {
-      console.log('Claude path: unavailable, error UI verified')
-      const errorMessage = page.locator('.text-onair').first()
-      const hasError = await errorMessage.isVisible().catch(() => false)
-      if (hasError) {
-        const errorText = await errorMessage.textContent()
-        expect(errorText).not.toMatch(/^Error$/i)
-        expect(errorText).not.toMatch(/Something went wrong/i)
-        expect(errorText).not.toMatch(/^Failed$/i)
-      }
-      await expect(retryButton).toBeVisible()
+      console.log('Claude path: unavailable, conversation shows error message')
+      // In conversation flow, errors appear as writer messages, not separate error UI
+      const writerMessages = writerConvo.locator('.justify-start')
+      const msgCount = await writerMessages.count()
+      expect(msgCount).toBeGreaterThanOrEqual(1)
     }
 
     await screenshot(page, 'claude-e2e-verification')

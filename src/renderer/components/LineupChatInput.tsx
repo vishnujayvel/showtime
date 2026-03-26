@@ -11,11 +11,12 @@ interface LineupChatInputProps {
   onSend: (message: string) => void
   disabled: boolean
   conversations: Conversation[]
+  hasLineup?: boolean
 }
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
-export function LineupChatInput({ onSend, disabled, conversations }: LineupChatInputProps) {
+export function LineupChatInput({ onSend, disabled, conversations, hasLineup = true }: LineupChatInputProps) {
   const [text, setText] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -91,7 +92,10 @@ export function LineupChatInput({ onSend, disabled, conversations }: LineupChatI
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          placeholder="Tell the writers to change something..."
+          placeholder={hasLineup
+            ? (conversations.length > 1 ? 'Anything else to change?' : 'Tell the writers to change something...')
+            : 'Reply to the writer...'
+          }
           className="flex-1 rounded-lg bg-[#151517] border border-[#242428] px-3 py-2 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50 disabled:opacity-50"
           data-testid="lineup-chat-input"
         />

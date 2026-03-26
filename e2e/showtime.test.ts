@@ -705,69 +705,54 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
-    // Loading indicator should appear immediately
-    const loadingText = page.getByText('The writers are working...')
-    await expect(loadingText).toBeVisible({ timeout: 2000 }).catch(() => {})
+    // Conversation step appears immediately with typing indicator
+    const writerConvo = page.getByTestId('writer-conversation')
+    await expect(writerConvo).toBeVisible({ timeout: 5000 }).catch(() => {})
 
-    // Wait for either: Act cards in lineup OR error/retry UI (30s timeout matches app timeout)
+    // Wait for either: Act cards in lineup OR conversation error message (30s timeout)
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
-    const retryButton = page.getByText('Try again')
+    const retryLink = page.locator('button').filter({ hasText: 'Retry' })
 
     let claudePath: 'lineup' | 'unavailable' = 'unavailable'
 
     try {
-      // Race: wait for either Act cards or retry button
       await Promise.race([
         actCardSelector.waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'lineup' }),
-        retryButton.waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'unavailable' }),
+        retryLink.first().waitFor({ state: 'visible', timeout: 35000 }).then(() => { claudePath = 'unavailable' }),
       ])
     } catch {
-      // If both timeout, check current state
-      const hasRetry = await retryButton.isVisible().catch(() => false)
+      const hasRetry = await retryLink.first().isVisible().catch(() => false)
       if (hasRetry) claudePath = 'unavailable'
     }
 
     if (claudePath === 'lineup') {
-      // Claude responded — verify Act cards structure
       console.log('Claude path: lineup generated successfully')
 
-      // Count Act cards (they use bg-surface-hover/50 class)
       const actCards = page.locator('.bg-surface-hover\\/50')
       const cardCount = await actCards.count()
-      expect(cardCount).toBeGreaterThanOrEqual(2) // Plan mentions 3 activities
+      expect(cardCount).toBeGreaterThanOrEqual(2)
 
-      // Each card should have a name (non-empty text in font-medium)
       const firstCardName = actCards.first().locator('.font-medium')
       await expect(firstCardName).toBeVisible()
       const nameText = await firstCardName.textContent()
       expect(nameText!.trim().length).toBeGreaterThan(0)
 
-      // Each card should have a duration (Xm pattern)
       const durationText = actCards.first().locator('span.text-xs.text-txt-muted')
       await expect(durationText).toBeVisible()
       const duration = await durationText.textContent()
       expect(duration).toMatch(/\d+m/)
 
-      // Each card should have a ClapperboardBadge (category indicator)
       const badge = actCards.first().locator('.font-mono')
       await expect(badge).toBeVisible()
+
+      // Conversation thread should show writer response
+      const writerMessages = writerConvo.locator('.justify-start')
+      expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
     } else {
-      // Claude unavailable — verify error/retry UI
-      console.log('Claude path: unavailable, error UI verified')
-
-      // Error message should be visible (uses show-metaphor language)
-      const errorMessage = page.locator('.text-onair').first()
-      const hasError = await errorMessage.isVisible().catch(() => false)
-      if (hasError) {
-        const errorText = await errorMessage.textContent()
-        // Should NOT use generic error language
-        expect(errorText).not.toMatch(/^Error$/i)
-        expect(errorText).not.toMatch(/Something went wrong/i)
-        expect(errorText).not.toMatch(/^Failed$/i)
-      }
-
-      // Retry button should be visible and clickable
-      await expect(retryButton).toBeVisible()
+      // Claude unavailable — errors shown as writer messages in conversation
+      console.log('Claude path: unavailable, conversation shows error')
+      const writerMessages = writerConvo.locator('.justify-start')
+      expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
     }
 
     await screenshot('claude-e2e-verification')
