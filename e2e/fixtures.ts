@@ -338,6 +338,30 @@ export async function clearMockHour(page: Page) {
   })
 }
 
+// ─── Refinement Wait Helper ───
+
+/**
+ * Wait for a Claude refinement to complete. Checks for known progress indicators
+ * ("Rewriting the lineup...", "The writers are revising") and waits for them to disappear.
+ * Falls back to a fixed wait if no indicator is visible.
+ */
+export async function waitForRefinementComplete(page: Page, timeoutMs = 60000): Promise<void> {
+  const rewritingIndicator = page.getByText('Rewriting the lineup...')
+  if (await rewritingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await rewritingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {})
+    return
+  }
+
+  const revisingIndicator = page.getByText('The writers are revising')
+  if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await revisingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {})
+    return
+  }
+
+  // No indicator found — wait a reasonable time for Claude to respond
+  await page.waitForTimeout(30000)
+}
+
 // ─── Log Verification (Layer 4 of Testing Pyramid) ───
 
 interface AppLogEntry {
