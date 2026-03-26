@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { cn } from '../lib/utils'
 
 interface Conversation {
@@ -18,14 +18,6 @@ const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 
 
 export function LineupChatInput({ onSend, disabled, conversations, hasLineup = true }: LineupChatInputProps) {
   const [text, setText] = useState('')
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  // Auto-scroll conversation to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [conversations.length])
 
   const handleSubmit = () => {
     const trimmed = text.trim()
@@ -41,8 +33,6 @@ export function LineupChatInput({ onSend, disabled, conversations, hasLineup = t
     }
   }
 
-  const visibleConversations = conversations.slice(-6) // Last 3 exchanges (6 messages)
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -51,38 +41,7 @@ export function LineupChatInput({ onSend, disabled, conversations, hasLineup = t
       className="mt-4"
       data-testid="lineup-chat"
     >
-      {/* Conversation history */}
-      {visibleConversations.length > 0 && (
-        <div
-          ref={scrollRef}
-          className="mb-3 max-h-[120px] overflow-y-auto space-y-2 scrollbar-thin"
-          data-testid="lineup-chat-history"
-        >
-          <AnimatePresence initial={false}>
-            {visibleConversations.map((msg, i) => (
-              <motion.div
-                key={`${conversations.length - visibleConversations.length + i}-${msg.role}`}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                className={cn(
-                  'flex',
-                  msg.role === 'user' ? 'justify-end' : 'justify-start',
-                )}
-              >
-                <span
-                  className={cn(
-                    'inline-block max-w-[80%] px-3 py-1.5 rounded-full text-xs text-txt-secondary',
-                    msg.role === 'user' ? 'bg-surface-hover' : 'bg-[#151517]',
-                  )}
-                >
-                  {msg.text}
-                </span>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+      {/* Conversation history is rendered by WritersRoomView — not duplicated here */}
 
       {/* Input row */}
       <div className="flex items-center gap-2">

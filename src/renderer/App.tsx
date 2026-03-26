@@ -84,7 +84,11 @@ export default function App() {
     return unsub
   }, [setSystemTheme])
 
-  // ─── Session initialization ───
+  // ─── Session initialization + immediate warmup ───
+  // CLUI CC's secret sauce: create tab then IMMEDIATELY warm up the Claude
+  // subprocess. The ~20s CLI startup happens in the background while the user
+  // is on Dark Studio or selecting energy. By the time they click "Build my
+  // lineup", the session is already hot and uses --resume (instant).
   useEffect(() => {
     useSessionStore.getState().initStaticInfo().then(() => {
       const homeDir = useSessionStore.getState().staticInfo?.homePath || '~'
@@ -98,20 +102,12 @@ export default function App() {
             tabs: s.tabs.map((t, i) => (i === 0 ? { ...t, id: tabId } : t)),
             activeTabId: tabId,
           }))
+          // Warm up immediately after tab is created — don't wait for Writer's Room
+          window.clui.initSession(tabId)
         }).catch(() => {})
       }
     })
   }, [])
-
-  // ─── Warm up Claude subprocess during Writer's Room ───
-  useEffect(() => {
-    if (phase === 'writers_room') {
-      const tabId = useSessionStore.getState().activeTabId
-      if (tabId) {
-        window.clui.initSession(tabId)
-      }
-    }
-  }, [phase])
 
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {

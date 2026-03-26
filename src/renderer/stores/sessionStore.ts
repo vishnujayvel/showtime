@@ -173,10 +173,16 @@ export const useSessionStore = create<State>((set, get) => ({
     const { activeTabId, tabs, staticInfo } = get()
     const tab = tabs.find((t) => t.id === activeTabId)
     const resolvedPath = projectPath || (tab?.hasChosenDirectory ? tab.workingDirectory : (staticInfo?.homePath || tab?.workingDirectory || '~'))
-    if (!tab) return
-    if (tab.status === 'connecting') return
+    if (!tab) {
+      window.clui.logEvent('ERROR', 'sendMessage.dropped', { reason: 'no tab', activeTabId })
+      return
+    }
+    // Don't drop messages while connecting — queue them instead.
+    // The warmup (initSession) sets status to 'connecting' for 20-40s.
+    // User prompts during this window must be queued, not silently discarded.
+    window.clui.logEvent('INFO', 'sendMessage.dispatching', { tabId: tab.id, status: tab.status, promptLength: prompt.length })
 
-    const isBusy = tab.status === 'running'
+    const isBusy = tab.status === 'running' || tab.status === 'connecting'
     const requestId = crypto.randomUUID()
 
     const title = tab.messages.length === 0
@@ -211,7 +217,7 @@ export const useSessionStore = create<State>((set, get) => ({
       prompt,
       projectPath: resolvedPath,
       sessionId: tab.claudeSessionId || undefined,
-      model: preferredModel || undefined,
+      model: preferredModel || 'claude-sonnet-4-6',
       addDirs: tab.additionalDirs.length > 0 ? tab.additionalDirs : undefined,
     }).catch((err: Error) => {
       get().handleError(activeTabId, {
