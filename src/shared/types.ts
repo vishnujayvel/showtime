@@ -325,6 +325,15 @@ export function collapseTier(current: ViewTier): ViewTier {
   return idx > 0 ? VIEW_TIER_ORDER[idx - 1] : current
 }
 
+export interface CalendarEvent {
+  title: string
+  start: string  // "HH:MM"
+  end: string    // "HH:MM"
+  allDay: boolean
+}
+
+export type CalendarFetchStatus = 'idle' | 'fetching' | 'ready' | 'unavailable' | 'error'
+
 export interface Act {
   id: string
   name: string

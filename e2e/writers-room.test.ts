@@ -77,6 +77,51 @@ test.describe('7.3 — Writer\'s Room Flow', () => {
   })
 })
 
+test.describe('Calendar Prefetch (#58)', () => {
+  test('shows CalendarBanner when calendar MCP is not available', async ({ mainPage: page }) => {
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-gcal-connected')
+    })
+    await seedFixture(page, FIXTURES.writersRoom_plan)
+
+    const banner = page.getByTestId('calendar-banner')
+    await expect(banner).toBeVisible({ timeout: 5000 })
+    await screenshot(page, 'calendar-banner-no-mcp')
+  })
+
+  test('shows CalendarToggle when calendar MCP is available', async ({ mainPage: page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('showtime-gcal-connected', 'true')
+      localStorage.setItem('showtime-calendar-enabled', 'true')
+    })
+    await seedFixture(page, FIXTURES.writersRoom_plan)
+
+    const toggle = page.getByTestId('calendar-toggle')
+    await expect(toggle).toBeVisible({ timeout: 5000 })
+
+    // Status label should be visible (may show fetching, idle, or status text)
+    const statusLabel = page.getByTestId('calendar-status')
+    await expect(statusLabel).toBeVisible({ timeout: 3000 })
+    await screenshot(page, 'calendar-toggle-with-status')
+  })
+
+  test('CalendarBanner can be dismissed', async ({ mainPage: page }) => {
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-gcal-connected')
+    })
+    await seedFixture(page, FIXTURES.writersRoom_plan)
+
+    const banner = page.getByTestId('calendar-banner')
+    await expect(banner).toBeVisible({ timeout: 5000 })
+
+    const dismissBtn = page.getByTestId('calendar-banner-dismiss')
+    await dismissBtn.click()
+    await page.waitForTimeout(500)
+    await expect(banner).not.toBeVisible()
+    await screenshot(page, 'calendar-banner-dismissed')
+  })
+})
+
 test.describe('Claude E2E Verification (#6, #13)', () => {
   test('Writer\'s Room generates real lineup via Claude (conditional)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.writersRoom_plan)
