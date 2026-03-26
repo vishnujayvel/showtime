@@ -290,17 +290,13 @@ Cassettes have a recorded date. If a cassette is >30 days old, the test emits a 
 
 **Total estimated effort:** ~18h across phases.
 
-## Open Questions for Review
+## Decisions (Resolved)
 
-1. **Cassette storage** — Cassettes are ~50-200KB each (NDJSON). Store in git? Artifact storage? Git is simplest and provides history.
-
-2. **How many real Claude scenarios?** — Starting with 3 (happy path, refinement, error). More over time?
-
-3. **CI integration** — Real Claude tests as a separate GitHub Actions workflow triggered by `/test-claude` comment? Or nightly schedule?
-
-4. **Log events granularity** — The proposed 8 events above sufficient? Or add more (permission requests, tool calls, etc.)?
-
-5. **Cassette invalidation** — When prompt templates change, cassettes become stale. Auto-detect via hash of prompt template? Manual refresh?
+1. **Cassette storage** — Git. Simple, provides history, ~50-200KB each is negligible.
+2. **Real Claude scenarios** — 3 to start (happy path, refinement, error). Add more over time.
+3. **CI integration** — Real Claude tests run **locally only** as part of developer workflow, not in GitHub Actions. Cassette playback runs in CI.
+4. **Log events granularity** — 8 base events plus additional events where useful (permission requests, tool calls).
+5. **Cassette invalidation** — Auto-detect via hash of prompt template. When template hash changes, cassette is marked stale and test warns.
 
 ## References
 
