@@ -9,7 +9,7 @@ import { normalize } from './event-normalizer'
 import { log as _log } from '../logger'
 import { getCliEnv } from '../cli-env'
 import { appLog } from '../app-logger'
-import type { ClaudeEvent, NormalizedEvent, RunOptions, EnrichedError } from '../../shared/types'
+import type { ClaudeEvent, NormalizedEvent, RunOptions, EnrichedError, ResultEvent, InitEvent } from '../../shared/types'
 
 const MAX_RING_LINES = 100
 const DEBUG = process.env.CLUI_DEBUG === '1'
@@ -540,24 +540,23 @@ export class RunManager extends EventEmitter {
    */
   private _processEvent(requestId: string, handle: RunHandle, event: ClaudeEvent): void {
     // Track session ID from init event
-    if (event.type === 'system' && 'subtype' in event && (event as Record<string, unknown>).subtype === 'init') {
-      handle.sessionId = (event as Record<string, unknown>).session_id as string
+    if (event.type === 'system' && 'subtype' in event && (event as InitEvent).subtype === 'init') {
+      handle.sessionId = (event as InitEvent).session_id
     }
 
     // Track permission_request events
-    if (event.type === 'permission_request' || (event.type === 'system' && 'subtype' in event && (event as Record<string, unknown>).subtype === 'permission_request')) {
+    if (event.type === 'permission_request') {
       handle.sawPermissionRequest = true
       log(`Permission request seen [${requestId}]`)
     }
 
     // Extract permission_denials from result event
     if (event.type === 'result') {
-      const resultEvent = event as Record<string, unknown>
-      const denials = resultEvent.permission_denials
-      if (Array.isArray(denials) && denials.length > 0) {
-        handle.permissionDenials = denials.map((d: Record<string, unknown>) => ({
-          tool_name: (d.tool_name as string) || '',
-          tool_use_id: (d.tool_use_id as string) || '',
+      const { permission_denials } = event as ResultEvent
+      if (permission_denials.length > 0) {
+        handle.permissionDenials = permission_denials.map((d) => ({
+          tool_name: d.tool_name || '',
+          tool_use_id: d.tool_use_id || '',
         }))
         log(`Permission denials [${requestId}]: ${JSON.stringify(handle.permissionDenials)}`)
       }

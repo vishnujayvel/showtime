@@ -88,7 +88,7 @@ export interface ResultEvent {
     cache_read_input_tokens?: number
     cache_creation_input_tokens?: number
   }
-  permission_denials: string[]
+  permission_denials: Array<{ tool_name: string; tool_use_id: string }>
   uuid: string
 }
 

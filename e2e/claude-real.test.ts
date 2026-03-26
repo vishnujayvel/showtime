@@ -11,7 +11,7 @@
  *   - Claude CLI installed and authenticated
  *   - App built: npm run build
  */
-import { test, expect, screenshot, FIXTURES, seedFixture, freshStart, readClaudeLogEvents, assertLogContains } from './fixtures'
+import { test, expect, screenshot, FIXTURES, seedFixture, freshStart, readClaudeLogEvents, assertLogContains, waitForRefinementComplete } from './fixtures'
 
 test.describe('Real Claude Integration', () => {
   test.setTimeout(180_000)
@@ -136,22 +136,7 @@ test.describe('Real Claude Integration', () => {
 
     await screenshot(page, 'claude-real-refine-02-sent')
 
-    // Wait for the writers to finish (typing indicator disappears or new writer message appears)
-    // The "Rewriting the lineup..." indicator appears while Claude is working
-    const rewritingIndicator = page.getByText('Rewriting the lineup...')
-    if (await rewritingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Wait for it to disappear (Claude finished)
-      await rewritingIndicator.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
-    } else {
-      // Also check for "The writers are revising" in the conversation thread
-      const revisingIndicator = page.getByText('The writers are revising')
-      if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await revisingIndicator.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
-      } else {
-        // Just wait a reasonable time for Claude to respond
-        await page.waitForTimeout(30000)
-      }
-    }
+    await waitForRefinementComplete(page)
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
@@ -223,6 +208,7 @@ test.describe('Real Claude Integration', () => {
   })
 
   test('full flow: energy -> plan -> lineup -> go live', async ({ mainPage: page, app }) => {
+    expectedLogEvents = ['claude.lineup_parsed']
     // End-to-end: complete the Writer's Room and transition to live show
     await seedFixture(page, FIXTURES.writersRoom_energy)
 
@@ -306,18 +292,7 @@ test.describe('Real Claude Integration', () => {
 
     await screenshot(page, 'claude-real-continuity-02-refinement-sent')
 
-    // Wait for refinement to complete
-    const rewritingIndicator = page.getByText('Rewriting the lineup...')
-    if (await rewritingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await rewritingIndicator.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
-    } else {
-      const revisingIndicator = page.getByText('The writers are revising')
-      if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await revisingIndicator.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
-      } else {
-        await page.waitForTimeout(30000)
-      }
-    }
+    await waitForRefinementComplete(page)
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
