@@ -354,13 +354,17 @@ interface AppLogEntry {
  */
 export async function readClaudeLogEvents(app: ElectronApplication): Promise<AppLogEntry[]> {
   const logEntries = await app.evaluate(async ({ app: electronApp }) => {
-    const logDir = path.join(electronApp.getPath('userData'), 'logs')
-    if (!fs.existsSync(logDir)) return []
+    // Must require inside evaluate — outer-scope imports aren't serialized into the Electron main process
+    const nodePath = require('path') as typeof import('path')
+    const nodeFs = require('fs') as typeof import('fs')
 
-    const files = fs.readdirSync(logDir).filter((f: string) => f.endsWith('.log')).sort()
+    const logDir = nodePath.join(electronApp.getPath('userData'), 'logs')
+    if (!nodeFs.existsSync(logDir)) return []
+
+    const files = nodeFs.readdirSync(logDir).filter((f: string) => f.endsWith('.log')).sort()
     if (files.length === 0) return []
 
-    const content = fs.readFileSync(path.join(logDir, files[files.length - 1]), 'utf-8')
+    const content = nodeFs.readFileSync(nodePath.join(logDir, files[files.length - 1]), 'utf-8')
     return content
       .split('\n')
       .filter(Boolean)

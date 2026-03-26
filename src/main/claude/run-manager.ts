@@ -245,41 +245,7 @@ export class RunManager extends EventEmitter {
       // VCR Record: tee raw event to cassette (side-effect only)
       if (recorder) recorder.record(raw)
 
-      // Track session ID
-      if (raw.type === 'system' && 'subtype' in raw && raw.subtype === 'init') {
-        handle.sessionId = (raw as any).session_id
-      }
-
-      // Track permission_request events
-      if (raw.type === 'permission_request' || (raw.type === 'system' && 'subtype' in raw && (raw as any).subtype === 'permission_request')) {
-        handle.sawPermissionRequest = true
-        log(`Permission request seen [${requestId}]`)
-      }
-
-      // Extract permission_denials from result event
-      if (raw.type === 'result') {
-        const denials = (raw as any).permission_denials
-        if (Array.isArray(denials) && denials.length > 0) {
-          handle.permissionDenials = denials.map((d: any) => ({
-            tool_name: d.tool_name || '',
-            tool_use_id: d.tool_use_id || '',
-          }))
-          log(`Permission denials [${requestId}]: ${JSON.stringify(handle.permissionDenials)}`)
-        }
-      }
-
-      // Ring buffer stdout lines (raw JSON for diagnostics)
-      this._ringPush(handle.stdoutTail, JSON.stringify(raw).substring(0, 300))
-
-      // Emit raw event for debugging
-      this.emit('raw', requestId, raw)
-
-      // Normalize and emit canonical events
-      const normalized = normalize(raw)
-      for (const evt of normalized) {
-        if (evt.type === 'tool_call') handle.toolCallCount++
-        this.emit('normalized', requestId, evt)
-      }
+      this._processEvent(requestId, handle, raw)
 
       // Close stdin after result event — with stream-json input the process
       // stays alive waiting for more input; closing stdin triggers clean exit.
@@ -534,39 +500,7 @@ export class RunManager extends EventEmitter {
         // Schedule the event through the normal pipeline
         const event = entry.event
         timers.push(setTimeout(() => {
-          // Track session ID
-          if (event.type === 'system' && 'subtype' in event && (event as any).subtype === 'init') {
-            handle.sessionId = (event as any).session_id
-          }
-
-          // Track permission_request events
-          if (event.type === 'permission_request' || (event.type === 'system' && 'subtype' in event && (event as any).subtype === 'permission_request')) {
-            handle.sawPermissionRequest = true
-          }
-
-          // Extract permission_denials from result event
-          if (event.type === 'result') {
-            const denials = (event as any).permission_denials
-            if (Array.isArray(denials) && denials.length > 0) {
-              handle.permissionDenials = denials.map((d: any) => ({
-                tool_name: d.tool_name || '',
-                tool_use_id: d.tool_use_id || '',
-              }))
-            }
-          }
-
-          // Ring buffer
-          this._ringPush(handle.stdoutTail, JSON.stringify(event).substring(0, 300))
-
-          // Emit raw event
-          this.emit('raw', requestId, event)
-
-          // Normalize and emit
-          const normalized = normalize(event)
-          for (const evt of normalized) {
-            if (evt.type === 'tool_call') handle.toolCallCount++
-            this.emit('normalized', requestId, evt)
-          }
+          this._processEvent(requestId, handle, event)
         }, delay))
       }
     }
@@ -598,6 +532,49 @@ export class RunManager extends EventEmitter {
     }
 
     return handle
+  }
+
+  /**
+   * Shared event processing pipeline used by both real runs and VCR playback.
+   * Tracks session state, emits raw + normalized events.
+   */
+  private _processEvent(requestId: string, handle: RunHandle, event: ClaudeEvent): void {
+    // Track session ID from init event
+    if (event.type === 'system' && 'subtype' in event && (event as Record<string, unknown>).subtype === 'init') {
+      handle.sessionId = (event as Record<string, unknown>).session_id as string
+    }
+
+    // Track permission_request events
+    if (event.type === 'permission_request' || (event.type === 'system' && 'subtype' in event && (event as Record<string, unknown>).subtype === 'permission_request')) {
+      handle.sawPermissionRequest = true
+      log(`Permission request seen [${requestId}]`)
+    }
+
+    // Extract permission_denials from result event
+    if (event.type === 'result') {
+      const resultEvent = event as Record<string, unknown>
+      const denials = resultEvent.permission_denials
+      if (Array.isArray(denials) && denials.length > 0) {
+        handle.permissionDenials = denials.map((d: Record<string, unknown>) => ({
+          tool_name: (d.tool_name as string) || '',
+          tool_use_id: (d.tool_use_id as string) || '',
+        }))
+        log(`Permission denials [${requestId}]: ${JSON.stringify(handle.permissionDenials)}`)
+      }
+    }
+
+    // Ring buffer stdout lines (raw JSON for diagnostics)
+    this._ringPush(handle.stdoutTail, JSON.stringify(event).substring(0, 300))
+
+    // Emit raw event for debugging
+    this.emit('raw', requestId, event)
+
+    // Normalize and emit canonical events
+    const normalized = normalize(event)
+    for (const evt of normalized) {
+      if (evt.type === 'tool_call') handle.toolCallCount++
+      this.emit('normalized', requestId, evt)
+    }
   }
 
   private _ringPush(buffer: string[], line: string): void {
