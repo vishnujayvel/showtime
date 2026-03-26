@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Showtime — History View Mockup</title>
+<title>Showtime — History View</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
@@ -30,10 +30,55 @@ tailwind.config = {
   * { box-sizing: border-box; }
   body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
 
+  /* === ANIMATIONS === */
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes goldenGlow {
+    0%, 100% { text-shadow: 0 0 30px rgba(245,158,11,0.3); }
+    50% { text-shadow: 0 0 60px rgba(245,158,11,0.6), 0 0 100px rgba(245,158,11,0.2); }
+  }
+  @keyframes spotlightFadeIn {
+    0% { opacity: 0; filter: blur(8px); }
+    100% { opacity: 1; filter: blur(0); }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+  .golden-glow { animation: goldenGlow 3s ease-in-out infinite; }
+  .spotlight-in { animation: spotlightFadeIn 2s ease-out forwards; }
+  .breathe { animation: breathe 4s ease-in-out infinite; }
+  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .beat-dim { color: #5a5855; }
+
   /* macOS window chrome */
   .macos-chrome { border-radius: 12px; overflow: hidden; }
   .traffic-lights { display: flex; gap: 8px; }
   .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
 
   /* Section labels */
   .section-label {
@@ -49,55 +94,37 @@ tailwind.config = {
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
-  /* Animations */
-  @keyframes slideUp {
-    0% { opacity: 0; transform: translateY(12px); }
-    100% { opacity: 1; transform: translateY(0); }
+  /* Verdict badges */
+  .verdict-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
   }
-  .slide-up { animation: slideUp 0.5s ease-out forwards; }
 
-  @keyframes breathe {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+  /* Shimmer skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, #1a1a1e 25%, #242428 50%, #1a1a1e 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+    border-radius: 6px;
   }
-  .breathe { animation: breathe 4s ease-in-out infinite; }
 
-  @keyframes expandIn {
-    0% { max-height: 0; opacity: 0; }
-    100% { max-height: 500px; opacity: 1; }
+  /* Show row hover */
+  .show-row {
+    transition: background-color 0.15s ease, border-color 0.15s ease;
   }
-  .expand-in { animation: expandIn 0.35s ease-out forwards; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
+  .show-row:hover {
+    background-color: #242428 !important;
   }
-  .loading-dot { animation: pulse 1.4s ease-in-out infinite; }
-  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
-  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-
-  /* Verdict colors */
-  .verdict-day-won { color: #f59e0b; }
-  .verdict-solid-show { color: #d97757; }
-  .verdict-good-effort { color: #60a5fa; }
-  .verdict-called-early { color: #9a9890; }
-
-  /* Beat stars */
-  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
-  .beat-dim { color: #5a5855; }
-
-  /* Expand arrow rotation */
-  .expand-arrow { transition: transform 0.2s ease; }
-  .expand-arrow.open { transform: rotate(90deg); }
-
-  /* Act status colors */
-  .status-done { color: #22c55e; }
-  .status-live { color: #ef4444; }
-  .status-cut { color: #5a5855; }
-  .status-pending { color: #9a9890; }
-
-  /* Drift indicator */
-  .drift-arrow { color: #d97757; }
 </style>
 </head>
 <body class="min-h-screen pb-32">
@@ -107,739 +134,979 @@ tailwind.config = {
 <!-- ============================================================ -->
 <header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
   <p class="section-label mb-3">History View</p>
-  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Past Shows</h1>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Show Archive</h1>
   <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
-    The show archive. Every day's performance recorded with verdicts, act recaps, and beat counts. Expand any show to relive the rundown.
+    Every show you've ever put on stage. Browse past performances, see your streaks, relive the moments that mattered.
   </p>
 </header>
 
 <!-- ============================================================ -->
-<!-- STATE 1: LOADING                                               -->
+<!-- 1. EMPTY STATE                                                 -->
 <!-- ============================================================ -->
 <section class="max-w-3xl mx-auto px-6 mb-24">
   <div class="mb-4 flex items-baseline gap-3">
     <span class="section-label">State 1</span>
-    <h2 class="text-xl font-bold text-txt-primary">Loading</h2>
+    <h2 class="text-xl font-bold text-txt-primary">Empty State</h2>
+    <span class="text-xs text-txt-muted font-mono">No shows yet</span>
   </div>
-  <p class="text-sm text-txt-secondary mb-6">Initial load while fetching show history from storage.</p>
+  <p class="text-sm text-txt-secondary mb-6">First launch. The archive is empty. An invitation, not a failure.</p>
 
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
     <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
       <div class="flex items-center gap-3">
         <div class="traffic-lights">
           <div class="traffic-light" style="background:#ff5f57;"></div>
           <div class="traffic-light" style="background:#febc2e;"></div>
           <div class="traffic-light" style="background:#28c840;"></div>
         </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime — History</span>
       </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&#10005;</button>
     </div>
 
-    <!-- Loading content -->
-    <div class="px-5 py-4" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
-      <div class="text-center">
-        <p class="text-sm text-txt-muted mb-3">Loading...</p>
-        <div class="flex gap-2 justify-center">
-          <span class="w-1.5 h-1.5 rounded-full bg-accent loading-dot"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-accent loading-dot"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-accent loading-dot"></span>
-        </div>
-      </div>
-    </div>
+    <!-- Content -->
+    <div class="px-8 py-16 text-center" style="min-height:440px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <!-- Subtle radial spotlight -->
+      <div style="position:absolute; width:300px; height:250px; background: radial-gradient(ellipse at 50% 50%, rgba(217,119,87,0.05) 0%, transparent 70%); pointer-events:none;"></div>
 
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
+      <!-- Empty stage illustration -->
+      <div class="mb-8" style="position:relative;">
+        <!-- Spotlight cone -->
+        <div style="width:80px; height:100px; margin:0 auto; background: linear-gradient(180deg, rgba(217,119,87,0.08) 0%, rgba(217,119,87,0.02) 60%, transparent 100%); clip-path: polygon(30% 0%, 70% 0%, 100% 100%, 0% 100%);"></div>
+        <!-- Microphone stand -->
+        <div style="width:2px; height:60px; background: linear-gradient(180deg, #5a5855, #3a3a3e); margin:-50px auto 0; border-radius:1px;"></div>
+        <div style="width:12px; height:16px; border:2px solid #5a5855; border-radius:50% 50% 30% 30%; margin:-2px auto 0;"></div>
+        <!-- Stand base -->
+        <div style="width:30px; height:2px; background:#3a3a3e; margin:2px auto 0; border-radius:1px;"></div>
+        <!-- Stage floor -->
+        <div style="width:180px; height:2px; background: linear-gradient(90deg, transparent, rgba(217,119,87,0.3), transparent); margin:8px auto 0;"></div>
+      </div>
+
+      <p class="text-xl font-semibold text-txt-primary mb-2">No shows yet.</p>
+      <p class="text-sm text-txt-secondary mb-8" style="max-width:280px; line-height:1.6;">
+        Your archive is an empty stage. Start your first show and it'll appear here.
+      </p>
+
+      <button class="px-6 py-3 rounded-lg font-medium text-sm transition-all" style="background: rgba(217,119,87,0.1); border: 1px solid rgba(217,119,87,0.3); color: #d97757;">
+        Start Your First Show
       </button>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- STATE 2: EMPTY STATE                                           -->
+<!-- 2. FEW SHOWS (2-3)                                             -->
 <!-- ============================================================ -->
 <section class="max-w-3xl mx-auto px-6 mb-24">
   <div class="mb-4 flex items-baseline gap-3">
     <span class="section-label">State 2</span>
-    <h2 class="text-xl font-bold text-txt-primary">Empty State</h2>
+    <h2 class="text-xl font-bold text-txt-primary">Few Shows</h2>
+    <span class="text-xs text-txt-muted font-mono">2-3 shows</span>
   </div>
-  <p class="text-sm text-txt-secondary mb-6">No shows have been completed yet. First-time user experience.</p>
+  <p class="text-sm text-txt-secondary mb-6">A young archive. Each show is a full row with verdict, stats, and beats.</p>
 
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
     <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
       <div class="flex items-center gap-3">
         <div class="traffic-lights">
           <div class="traffic-light" style="background:#ff5f57;"></div>
           <div class="traffic-light" style="background:#febc2e;"></div>
           <div class="traffic-light" style="background:#28c840;"></div>
         </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime — History</span>
       </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&#10005;</button>
     </div>
 
-    <!-- Empty content -->
-    <div class="px-5 py-4" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
-      <div class="text-center max-w-xs">
-        <div class="text-4xl mb-4 opacity-30">&#127917;</div>
-        <p class="text-sm text-txt-muted">
-          No past shows yet. Your history will appear here after your first show.
-        </p>
+    <!-- Summary bar -->
+    <div class="flex items-center justify-between px-6 py-4" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-6">
+        <div class="text-center">
+          <p class="font-mono text-lg font-bold text-txt-primary">3</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Shows</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-lg font-bold" style="color:#f59e0b;">7</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Beats</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-lg font-bold text-txt-primary">12</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Acts</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-txt-muted font-mono">2 DAY WINS</span>
+        <span class="text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span>
+        </span>
       </div>
     </div>
 
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
-      </button>
+    <!-- Show list -->
+    <div class="px-4 py-3">
+      <!-- Show 1 — DAY WON -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer slide-up" style="background:transparent; animation-delay:0s;">
+        <!-- Date column -->
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">25</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <!-- Divider -->
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <!-- Main content -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">
+              <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Tuesday</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">5 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">3h 15m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider">
+              <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span>
+            </span>
+          </div>
+        </div>
+        <!-- Chevron -->
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+
+      <!-- Separator -->
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 2 — SOLID SHOW -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer slide-up" style="background:transparent; animation-delay:0.08s;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">24</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(154,152,144,0.4); color:#9a9890;">
+              SOLID SHOW
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Monday</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">4 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">2h 30m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider">
+              <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+            </span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+
+      <!-- Separator -->
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 3 — DAY WON -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer slide-up" style="background:transparent; animation-delay:0.16s;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">21</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">
+              <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Friday</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">3 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">2h 00m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider">
+              <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span>
+            </span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- STATE 3: SHORT LIST (1-3 shows)                                -->
+<!-- 3. MANY SHOWS (7+)                                             -->
 <!-- ============================================================ -->
 <section class="max-w-3xl mx-auto px-6 mb-24">
   <div class="mb-4 flex items-baseline gap-3">
     <span class="section-label">State 3</span>
-    <h2 class="text-xl font-bold text-txt-primary">Short List</h2>
-    <span class="text-xs text-txt-muted font-mono">1-3 shows</span>
+    <h2 class="text-xl font-bold text-txt-primary">Many Shows</h2>
+    <span class="text-xs text-txt-muted font-mono">Scrollable list &middot; 7+ shows</span>
   </div>
-  <p class="text-sm text-txt-secondary mb-6">A few days of history. Each row shows date, verdict badge, act count, and beat stars.</p>
+  <p class="text-sm text-txt-secondary mb-6">A seasoned performer's archive. Scrollable with week groupings and a running streak.</p>
 
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
     <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
       <div class="flex items-center gap-3">
         <div class="traffic-lights">
           <div class="traffic-light" style="background:#ff5f57;"></div>
           <div class="traffic-light" style="background:#febc2e;"></div>
           <div class="traffic-light" style="background:#28c840;"></div>
         </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime — History</span>
       </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&#10005;</button>
     </div>
 
-    <!-- Show list -->
-    <div class="px-5 py-4">
-      <!-- Show 1: DAY WON -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left slide-up" style="animation-delay:0s;">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0">
-          <p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p>
+    <!-- Summary bar -->
+    <div class="flex items-center justify-between px-6 py-4" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-6">
+        <div class="text-center">
+          <p class="font-mono text-lg font-bold text-txt-primary">9</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Shows</p>
         </div>
-        <div class="w-[90px] shrink-0">
-          <span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span>
+        <div class="text-center">
+          <p class="font-mono text-lg font-bold" style="color:#f59e0b;">19</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Beats</p>
         </div>
-        <div class="flex-1">
-          <span class="font-mono text-xs text-txt-secondary">5/5 acts</span>
+        <div class="text-center">
+          <p class="font-mono text-lg font-bold text-txt-primary">38</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Acts</p>
         </div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span>
-          <span class="text-sm beat-lit">&#9733;</span>
-          <span class="text-sm beat-lit">&#9733;</span>
-        </div>
-      </button>
-
-      <!-- Show 2: SOLID SHOW -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left slide-up" style="animation-delay:0.03s;">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0">
-          <p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 21</p>
-        </div>
-        <div class="w-[90px] shrink-0">
-          <span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span>
-        </div>
-        <div class="flex-1">
-          <span class="font-mono text-xs text-txt-secondary">4/5 acts</span>
-        </div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span>
-          <span class="text-sm beat-lit">&#9733;</span>
-          <span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-
-      <!-- Show 3: GOOD EFFORT -->
-      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left slide-up" style="animation-delay:0.06s;">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0">
-          <p class="font-body text-sm text-txt-primary font-medium">Thu, Mar 20</p>
-        </div>
-        <div class="w-[90px] shrink-0">
-          <span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-good-effort">Good Effort</span>
-        </div>
-        <div class="flex-1">
-          <span class="font-mono text-xs text-txt-secondary">2/4 acts</span>
-        </div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span>
-          <span class="text-sm beat-dim">&#9734;</span>
-          <span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-txt-muted font-mono">3-DAY STREAK</span>
+        <span class="text-sm" style="color:#d97757;">&#9632;&#9632;&#9632;</span>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
-      </button>
+    <!-- Scrollable show list -->
+    <div class="px-4 py-3 overflow-y-auto" style="max-height:480px;">
+
+      <!-- Week group header -->
+      <div class="px-4 pt-2 pb-2">
+        <p class="section-label text-[10px]">This Week</p>
+      </div>
+
+      <!-- Show 1 — DAY WON -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">25</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">
+              <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Tue</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">5 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">3h 15m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 2 — DAY WON -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">24</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">
+              <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Mon</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">4 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">2h 45m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+
+      <!-- Previous Week group -->
+      <div class="px-4 pt-5 pb-2">
+        <p class="section-label text-[10px]">Last Week</p>
+      </div>
+
+      <!-- Show 3 — DAY WON -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">21</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">
+              <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Fri</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">5 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">3h 00m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 4 — SOLID SHOW -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">20</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(154,152,144,0.4); color:#9a9890;">
+              SOLID SHOW
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Thu</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">4 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">2h 30m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 5 — GOOD EFFORT -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">19</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa;">
+              GOOD EFFORT
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Wed</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">3 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">1h 45m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 6 — SOLID SHOW -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">18</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(154,152,144,0.4); color:#9a9890;">
+              SOLID SHOW
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Tue</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">5 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">3h 10m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 7 — SHOW CALLED EARLY -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">17</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(90,88,85,0.4); color:#5a5855;">
+              SHOW CALLED EARLY
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Mon</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">2 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">0h 50m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+
+      <!-- Two weeks ago group -->
+      <div class="px-4 pt-5 pb-2">
+        <p class="section-label text-[10px]">Two Weeks Ago</p>
+      </div>
+
+      <!-- Show 8 — DAY WON -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">14</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b;">
+              <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Fri</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">4 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">2h 40m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Show 9 — SOLID SHOW -->
+      <div class="show-row flex items-center gap-4 p-4 rounded-lg cursor-pointer" style="background:transparent;">
+        <div class="flex-shrink-0 text-center" style="width:48px;">
+          <p class="font-mono text-lg font-bold text-txt-primary leading-none">13</p>
+          <p class="font-mono text-[10px] text-txt-muted uppercase">Mar</p>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="verdict-badge" style="border-color:rgba(154,152,144,0.4); color:#9a9890;">
+              SOLID SHOW
+            </span>
+            <span class="font-mono text-[10px] text-txt-muted">Thu</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-txt-secondary">4 acts</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs text-txt-secondary">2h 20m</span>
+            <span class="text-txt-muted text-[10px]">&#8226;</span>
+            <span class="text-xs tracking-wider"><span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span></span>
+          </div>
+        </div>
+        <span class="text-txt-muted text-sm flex-shrink-0">&#8250;</span>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="text-center py-4">
+        <span class="text-xs text-txt-muted font-mono">Scroll for older shows</span>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- STATE 4: FULL LIST WITH ALL VERDICT TYPES                      -->
+<!-- 4. EXPANDED DETAIL                                             -->
 <!-- ============================================================ -->
 <section class="max-w-3xl mx-auto px-6 mb-24">
   <div class="mb-4 flex items-baseline gap-3">
     <span class="section-label">State 4</span>
-    <h2 class="text-xl font-bold text-txt-primary">Full List — All Verdicts</h2>
+    <h2 class="text-xl font-bold text-txt-primary">Expanded Detail</h2>
+    <span class="text-xs text-txt-muted font-mono">Clicked show &middot; Full breakdown</span>
   </div>
-  <p class="text-sm text-txt-secondary mb-6">Demonstrating all four verdict types and scrollable history.</p>
+  <p class="text-sm text-txt-secondary mb-6">Tap a show row to expand it. Full act breakdown, timeline, and beat details.</p>
 
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
     <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
       <div class="flex items-center gap-3">
         <div class="traffic-lights">
           <div class="traffic-light" style="background:#ff5f57;"></div>
           <div class="traffic-light" style="background:#febc2e;"></div>
           <div class="traffic-light" style="background:#28c840;"></div>
         </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime — History</span>
       </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&#10005;</button>
     </div>
 
-    <!-- Scrollable show list -->
-    <div class="px-5 py-4 overflow-y-auto" style="max-height: 400px;">
-      <!-- DAY WON -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">5/5 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
-        </div>
-      </button>
-
-      <!-- SOLID SHOW -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 21</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">4/5 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-
-      <!-- GOOD EFFORT -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Thu, Mar 20</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-good-effort">Good Effort</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">2/4 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-
-      <!-- CALLED EARLY -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Wed, Mar 19</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-called-early">Called Early</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">1/3 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-
-      <!-- DAY WON (another) -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Tue, Mar 18</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">6/6 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
-        </div>
-      </button>
-
-      <!-- SOLID SHOW (another) -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 17</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">3/4 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-
-      <!-- In Progress -->
-      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 14</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] text-txt-muted">In Progress</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">2/5 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
+    <!-- Back navigation -->
+    <div class="flex items-center gap-2 px-6 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <button class="text-xs text-txt-secondary hover:text-txt-primary flex items-center gap-1">
+        <span>&#8249;</span> Back to archive
       </button>
     </div>
 
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
-      </button>
+    <!-- Show detail content -->
+    <div class="px-6 py-6" style="background: radial-gradient(ellipse 500px 300px at 50% 10%, rgba(245,158,11,0.04) 0%, transparent 70%);">
+
+      <!-- Header: Date + Verdict -->
+      <div class="text-center mb-8">
+        <p class="font-mono text-xs text-txt-muted uppercase tracking-widest mb-3">Tuesday, March 25, 2026</p>
+        <div class="text-2xl mb-4 tracking-widest">
+          <span class="beat-lit">&#9733;</span>
+          <span class="beat-lit">&#9733;</span>
+          <span class="beat-lit">&#9733;</span>
+        </div>
+        <h2 class="text-3xl font-black mb-2 golden-glow" style="color:#f59e0b; letter-spacing:0.02em;">DAY WON.</h2>
+        <p class="text-sm text-txt-secondary" style="max-width:300px; margin:0 auto;">
+          Standing ovation. You showed up and you were present.
+        </p>
+      </div>
+
+      <!-- Stats row -->
+      <div class="flex justify-center gap-8 mb-8">
+        <div class="text-center">
+          <p class="font-mono text-2xl font-bold text-txt-primary">5</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Acts</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-2xl font-bold text-txt-primary">0</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Cut</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-2xl font-bold" style="color:#f59e0b;">3</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Beats</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-2xl font-bold text-txt-primary">3:15</p>
+          <p class="text-[10px] text-txt-muted font-mono uppercase tracking-wider">Total</p>
+        </div>
+      </div>
+
+      <!-- Energy badge -->
+      <div class="flex justify-center mb-6">
+        <span class="clap-badge" style="border-color:rgba(245,158,11,0.3); color:#f59e0b; font-size:10px;">
+          HIGH ENERGY <span class="divider">|</span> 5 ACTS
+        </span>
+      </div>
+
+      <!-- Timeline / Act Breakdown -->
+      <div class="rounded-lg p-4 mb-6" style="background:#151517; border:1px solid #242428;">
+        <p class="section-label text-[10px] mb-4">Show Rundown</p>
+
+        <div class="space-y-0">
+          <!-- Act 1 -->
+          <div class="flex items-start gap-3 pb-3 mb-3" style="border-bottom:1px solid #1e1e22;">
+            <!-- Timeline dot and line -->
+            <div class="flex flex-col items-center flex-shrink-0" style="width:20px;">
+              <div class="w-3 h-3 rounded-full" style="background:#8b5cf6; box-shadow:0 0 6px rgba(139,92,246,0.4);"></div>
+              <div class="w-px flex-1 mt-1" style="background:#2a2a2e; min-height:20px;"></div>
+            </div>
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-2">
+                  <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6; font-size:9px; padding:2px 7px;">
+                    DEEP WORK <span class="divider">|</span> ACT 1
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-txt-muted">45:00</span>
+                  <span class="beat-lit text-sm">&#9733;</span>
+                </div>
+              </div>
+              <p class="text-sm text-txt-primary">API Integration — Client Dashboard</p>
+              <p class="text-[10px] text-txt-muted mt-1 font-mono">9:00 AM — 9:45 AM</p>
+            </div>
+          </div>
+
+          <!-- Act 2 -->
+          <div class="flex items-start gap-3 pb-3 mb-3" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex flex-col items-center flex-shrink-0" style="width:20px;">
+              <div class="w-3 h-3 rounded-full" style="background:#f59e0b; box-shadow:0 0 6px rgba(245,158,11,0.4);"></div>
+              <div class="w-px flex-1 mt-1" style="background:#2a2a2e; min-height:20px;"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b; font-size:9px; padding:2px 7px;">
+                  CREATIVE <span class="divider">|</span> ACT 2
+                </span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-txt-muted">30:00</span>
+                  <span class="beat-lit text-sm">&#9733;</span>
+                </div>
+              </div>
+              <p class="text-sm text-txt-primary">Review Design Mockups</p>
+              <p class="text-[10px] text-txt-muted mt-1 font-mono">9:50 AM — 10:20 AM</p>
+            </div>
+          </div>
+
+          <!-- Intermission marker -->
+          <div class="flex items-center gap-3 pb-3 mb-3" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex flex-col items-center flex-shrink-0" style="width:20px;">
+              <div class="w-2.5 h-2.5 rounded-sm" style="background:#3a3a3e;"></div>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs italic" style="color:#8b5cf6;">Intermission &mdash; 15 min</p>
+            </div>
+          </div>
+
+          <!-- Act 3 -->
+          <div class="flex items-start gap-3 pb-3 mb-3" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex flex-col items-center flex-shrink-0" style="width:20px;">
+              <div class="w-3 h-3 rounded-full" style="background:#22c55e; box-shadow:0 0 6px rgba(34,197,94,0.4);"></div>
+              <div class="w-px flex-1 mt-1" style="background:#2a2a2e; min-height:20px;"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e; font-size:9px; padding:2px 7px;">
+                  EXERCISE <span class="divider">|</span> ACT 3
+                </span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-txt-muted">30:00</span>
+                  <span class="beat-lit text-sm">&#9733;</span>
+                </div>
+              </div>
+              <p class="text-sm text-txt-primary">Afternoon Run</p>
+              <p class="text-[10px] text-txt-muted mt-1 font-mono">10:35 AM — 11:05 AM</p>
+            </div>
+          </div>
+
+          <!-- Act 4 -->
+          <div class="flex items-start gap-3 pb-3 mb-3" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex flex-col items-center flex-shrink-0" style="width:20px;">
+              <div class="w-3 h-3 rounded-full" style="background:#60a5fa; box-shadow:0 0 6px rgba(96,165,250,0.4);"></div>
+              <div class="w-px flex-1 mt-1" style="background:#2a2a2e; min-height:20px;"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="clap-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa; font-size:9px; padding:2px 7px;">
+                  ADMIN <span class="divider">|</span> ACT 4
+                </span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-txt-muted">20:00</span>
+                  <span class="text-sm text-txt-muted">&#8212;</span>
+                </div>
+              </div>
+              <p class="text-sm text-txt-primary">Email Catchup</p>
+              <p class="text-[10px] text-txt-muted mt-1 font-mono">11:10 AM — 11:30 AM</p>
+            </div>
+          </div>
+
+          <!-- Act 5 -->
+          <div class="flex items-start gap-3">
+            <div class="flex flex-col items-center flex-shrink-0" style="width:20px;">
+              <div class="w-3 h-3 rounded-full" style="background:#f59e0b; box-shadow:0 0 6px rgba(245,158,11,0.4);"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b; font-size:9px; padding:2px 7px;">
+                  CREATIVE <span class="divider">|</span> ACT 5
+                </span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-txt-muted">30:00</span>
+                  <span class="text-sm text-txt-muted">&#8212;</span>
+                </div>
+              </div>
+              <p class="text-sm text-txt-primary">Newsletter Brainstorm</p>
+              <p class="text-[10px] text-txt-muted mt-1 font-mono">11:35 AM — 12:05 PM</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Beat moments -->
+      <div class="rounded-lg p-4 mb-6" style="background:#151517; border:1px solid #242428;">
+        <p class="section-label text-[10px] mb-3">Beat Moments</p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="beat-lit text-lg">&#9733;</span>
+            <div>
+              <p class="text-sm text-txt-primary">API Integration</p>
+              <p class="text-[10px] text-txt-muted">Deep focus on the auth flow. Lost track of time in a good way.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="beat-lit text-lg">&#9733;</span>
+            <div>
+              <p class="text-sm text-txt-primary">Design Mockups</p>
+              <p class="text-[10px] text-txt-muted">Found a creative solution for the nav pattern.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="beat-lit text-lg">&#9733;</span>
+            <div>
+              <p class="text-sm text-txt-primary">Afternoon Run</p>
+              <p class="text-[10px] text-txt-muted">Runner's high at the 20-minute mark. Full presence.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back to list -->
+      <div class="text-center">
+        <button class="px-6 py-2.5 rounded-lg font-medium text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+          Back to Archive
+        </button>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- STATE 5: EXPANDED DETAIL — DAY WON                             -->
+<!-- 5. LOADING STATE                                               -->
 <!-- ============================================================ -->
 <section class="max-w-3xl mx-auto px-6 mb-24">
   <div class="mb-4 flex items-baseline gap-3">
     <span class="section-label">State 5</span>
-    <h2 class="text-xl font-bold text-txt-primary">Expanded Detail — Day Won</h2>
+    <h2 class="text-xl font-bold text-txt-primary">Loading State</h2>
+    <span class="text-xs text-txt-muted font-mono">Skeleton shimmer</span>
   </div>
-  <p class="text-sm text-txt-secondary mb-6">Click a show to expand its detail: plan text, acts with statuses, and duration drift indicators.</p>
+  <p class="text-sm text-txt-secondary mb-6">Data is loading from the local database. Skeleton placeholders maintain layout while content arrives.</p>
 
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
     <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
       <div class="flex items-center gap-3">
         <div class="traffic-lights">
           <div class="traffic-light" style="background:#ff5f57;"></div>
           <div class="traffic-light" style="background:#febc2e;"></div>
           <div class="traffic-light" style="background:#28c840;"></div>
         </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime — History</span>
       </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
+      <button class="text-xs text-txt-muted hover:text-txt-primary">&#10005;</button>
     </div>
 
-    <!-- Show list with one expanded -->
-    <div class="px-5 py-4 overflow-y-auto" style="max-height: 520px;">
+    <!-- Summary bar skeleton -->
+    <div class="flex items-center justify-between px-6 py-4" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-6">
+        <div class="text-center">
+          <div class="skeleton" style="width:24px; height:22px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:40px; height:10px;"></div>
+        </div>
+        <div class="text-center">
+          <div class="skeleton" style="width:24px; height:22px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:34px; height:10px;"></div>
+        </div>
+        <div class="text-center">
+          <div class="skeleton" style="width:24px; height:22px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:30px; height:10px;"></div>
+        </div>
+      </div>
+      <div class="skeleton" style="width:90px; height:16px;"></div>
+    </div>
 
-      <!-- Show 1: EXPANDED -->
-      <div>
-        <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left" style="background: rgba(36,36,40,0.5);">
-          <span class="text-txt-muted text-xs expand-arrow open">&#9654;</span>
-          <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p></div>
-          <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
-          <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">5/5 acts</span></div>
-          <div class="shrink-0 flex items-center gap-0.5">
-            <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
+    <!-- Skeleton rows -->
+    <div class="px-4 py-3">
+      <!-- Week header skeleton -->
+      <div class="px-4 pt-2 pb-3">
+        <div class="skeleton" style="width:80px; height:10px;"></div>
+      </div>
+
+      <!-- Row 1 -->
+      <div class="flex items-center gap-4 p-4">
+        <div class="flex-shrink-0" style="width:48px;">
+          <div class="skeleton" style="width:32px; height:24px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:28px; height:10px; margin:0 auto;"></div>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="skeleton" style="width:90px; height:18px;"></div>
+            <div class="skeleton" style="width:28px; height:12px;"></div>
           </div>
-        </button>
-
-        <!-- Expanded detail panel -->
-        <div class="pl-8 pr-2 py-3 border-b border-studio-hover expand-in">
-          <!-- Plan text -->
-          <div class="mb-3">
-            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">PLAN</span>
-            <p class="text-xs text-txt-secondary mt-1 whitespace-pre-wrap" style="line-height:1.6;">Finish API integration for client dashboard, review design mockups from Sarah, run for 30 min, reply to that email, brainstorm newsletter topic</p>
+          <div class="flex items-center gap-3">
+            <div class="skeleton" style="width:48px; height:12px;"></div>
+            <div class="skeleton" style="width:48px; height:12px;"></div>
+            <div class="skeleton" style="width:40px; height:12px;"></div>
           </div>
+        </div>
+        <div class="skeleton" style="width:8px; height:14px; flex-shrink:0;"></div>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
 
-          <!-- Acts detail -->
-          <div>
-            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">ACTS</span>
-            <div class="mt-1 space-y-1">
-              <!-- Act 1: Done, no drift -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
-                <span class="text-txt-primary flex-1 truncate">API Integration</span>
-                <span class="text-txt-muted shrink-0">45m</span>
-              </div>
-              <!-- Act 2: Done, with drift -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
-                <span class="text-txt-primary flex-1 truncate">Review Design Mockups</span>
-                <span class="text-txt-muted shrink-0">30m <span class="drift-arrow">&#8594; 42m</span></span>
-              </div>
-              <!-- Act 3: Done, no drift -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
-                <span class="text-txt-primary flex-1 truncate">Afternoon Run</span>
-                <span class="text-txt-muted shrink-0">30m</span>
-              </div>
-              <!-- Act 4: Done, with drift (under time) -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
-                <span class="text-txt-primary flex-1 truncate">Email Catchup</span>
-                <span class="text-txt-muted shrink-0">20m <span class="drift-arrow">&#8594; 12m</span></span>
-              </div>
-              <!-- Act 5: Done, no drift -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
-                <span class="text-txt-primary flex-1 truncate">Newsletter Brainstorm</span>
-                <span class="text-txt-muted shrink-0">30m</span>
-              </div>
-            </div>
+      <!-- Row 2 -->
+      <div class="flex items-center gap-4 p-4">
+        <div class="flex-shrink-0" style="width:48px;">
+          <div class="skeleton" style="width:32px; height:24px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:28px; height:10px; margin:0 auto;"></div>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="skeleton" style="width:80px; height:18px;"></div>
+            <div class="skeleton" style="width:28px; height:12px;"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="skeleton" style="width:44px; height:12px;"></div>
+            <div class="skeleton" style="width:52px; height:12px;"></div>
+            <div class="skeleton" style="width:40px; height:12px;"></div>
+          </div>
+        </div>
+        <div class="skeleton" style="width:8px; height:14px; flex-shrink:0;"></div>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Row 3 -->
+      <div class="flex items-center gap-4 p-4">
+        <div class="flex-shrink-0" style="width:48px;">
+          <div class="skeleton" style="width:32px; height:24px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:28px; height:10px; margin:0 auto;"></div>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="skeleton" style="width:100px; height:18px;"></div>
+            <div class="skeleton" style="width:24px; height:12px;"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="skeleton" style="width:40px; height:12px;"></div>
+            <div class="skeleton" style="width:48px; height:12px;"></div>
+            <div class="skeleton" style="width:44px; height:12px;"></div>
+          </div>
+        </div>
+        <div class="skeleton" style="width:8px; height:14px; flex-shrink:0;"></div>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Row 4 -->
+      <div class="flex items-center gap-4 p-4">
+        <div class="flex-shrink-0" style="width:48px;">
+          <div class="skeleton" style="width:32px; height:24px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:28px; height:10px; margin:0 auto;"></div>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="skeleton" style="width:72px; height:18px;"></div>
+            <div class="skeleton" style="width:28px; height:12px;"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="skeleton" style="width:48px; height:12px;"></div>
+            <div class="skeleton" style="width:44px; height:12px;"></div>
+            <div class="skeleton" style="width:36px; height:12px;"></div>
+          </div>
+        </div>
+        <div class="skeleton" style="width:8px; height:14px; flex-shrink:0;"></div>
+      </div>
+      <div class="mx-4" style="height:1px; background:#1e1e22;"></div>
+
+      <!-- Row 5 (partially visible, scroll hint) -->
+      <div class="flex items-center gap-4 p-4" style="opacity:0.5;">
+        <div class="flex-shrink-0" style="width:48px;">
+          <div class="skeleton" style="width:32px; height:24px; margin:0 auto 4px;"></div>
+          <div class="skeleton" style="width:28px; height:10px; margin:0 auto;"></div>
+        </div>
+        <div class="w-px h-10 flex-shrink-0" style="background:#2a2a2e;"></div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="skeleton" style="width:88px; height:18px;"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="skeleton" style="width:44px; height:12px;"></div>
+            <div class="skeleton" style="width:48px; height:12px;"></div>
           </div>
         </div>
       </div>
-
-      <!-- Show 2: Collapsed -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Fri, Mar 21</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-solid-show">Solid Show</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">4/5 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-
-      <!-- Show 3: Collapsed -->
-      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Thu, Mar 20</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-good-effort">Good Effort</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">2/4 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
-        </div>
-      </button>
-    </div>
-
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
-      </button>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- STATE 6: EXPANDED DETAIL — CALLED EARLY (mixed statuses)       -->
+<!-- DESIGN NOTES                                                   -->
 <!-- ============================================================ -->
-<section class="max-w-3xl mx-auto px-6 mb-24">
-  <div class="mb-4 flex items-baseline gap-3">
-    <span class="section-label">State 6</span>
-    <h2 class="text-xl font-bold text-txt-primary">Expanded Detail — Called Early</h2>
+<section class="max-w-3xl mx-auto px-6 mb-24" style="border-top:1px solid #242428; padding-top:48px;">
+  <div class="mb-8">
+    <span class="section-label">Reference</span>
+    <h2 class="text-2xl font-bold text-txt-primary mt-2">Design Notes</h2>
   </div>
-  <p class="text-sm text-txt-secondary mb-6">A show that ended early with mixed act statuses: Done, Cut, and Pending.</p>
 
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
-    <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
-      <div class="flex items-center gap-3">
-        <div class="traffic-lights">
-          <div class="traffic-light" style="background:#ff5f57;"></div>
-          <div class="traffic-light" style="background:#febc2e;"></div>
-          <div class="traffic-light" style="background:#28c840;"></div>
-        </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
+  <!-- Verdict badge reference -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Verdict Badges</h3>
+    <div class="space-y-3">
+      <div class="flex items-center gap-4">
+        <span class="verdict-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b; width:170px;">
+          <span class="beat-lit text-[9px]">&#9733;</span> DAY WON
+        </span>
+        <span class="text-xs text-txt-secondary">3/3 beats locked &mdash; Gold #f59e0b</span>
       </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
-    </div>
-
-    <!-- Show list with expanded "Called Early" -->
-    <div class="px-5 py-4 overflow-y-auto" style="max-height: 520px;">
-      <!-- Collapsed show above -->
-      <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Mon, Mar 24</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">5/5 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
-        </div>
-      </button>
-
-      <!-- EXPANDED: Called Early -->
-      <div>
-        <button class="w-full flex items-center gap-3 py-3 border-b border-studio-hover hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left" style="background: rgba(36,36,40,0.5);">
-          <span class="text-txt-muted text-xs expand-arrow open">&#9654;</span>
-          <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Wed, Mar 19</p></div>
-          <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-called-early">Called Early</span></div>
-          <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">1/3 acts</span></div>
-          <div class="shrink-0 flex items-center gap-0.5">
-            <span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span><span class="text-sm beat-dim">&#9734;</span>
-          </div>
-        </button>
-
-        <!-- Expanded detail panel -->
-        <div class="pl-8 pr-2 py-3 border-b border-studio-hover expand-in">
-          <!-- Plan text -->
-          <div class="mb-3">
-            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">PLAN</span>
-            <p class="text-xs text-txt-secondary mt-1 whitespace-pre-wrap" style="line-height:1.6;">catch up on PR reviews, write docs for the new endpoint, team sync call</p>
-          </div>
-
-          <!-- Acts detail with mixed statuses -->
-          <div>
-            <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">ACTS</span>
-            <div class="mt-1 space-y-1">
-              <!-- Done with drift -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-done">Done</span>
-                <span class="text-txt-primary flex-1 truncate">PR Reviews</span>
-                <span class="text-txt-muted shrink-0">45m <span class="drift-arrow">&#8594; 1h 10m</span></span>
-              </div>
-              <!-- Cut -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-cut">Cut</span>
-                <span class="text-txt-secondary flex-1 truncate" style="text-decoration: line-through; text-decoration-color: #5a5855;">Write API Docs</span>
-                <span class="text-txt-muted shrink-0">30m</span>
-              </div>
-              <!-- Pending -->
-              <div class="flex items-center gap-2 text-xs">
-                <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase status-pending">Pending</span>
-                <span class="text-txt-secondary flex-1 truncate">Team Sync Call</span>
-                <span class="text-txt-muted shrink-0">30m</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="flex items-center gap-4">
+        <span class="verdict-badge" style="border-color:rgba(154,152,144,0.4); color:#9a9890; width:170px;">
+          SOLID SHOW
+        </span>
+        <span class="text-xs text-txt-secondary">2/3 beats locked &mdash; Silver #9a9890</span>
       </div>
-
-      <!-- Collapsed show below -->
-      <button class="w-full flex items-center gap-3 py-3 hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left">
-        <span class="text-txt-muted text-xs expand-arrow">&#9654;</span>
-        <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">Tue, Mar 18</p></div>
-        <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider verdict-day-won">Day Won</span></div>
-        <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">6/6 acts</span></div>
-        <div class="shrink-0 flex items-center gap-0.5">
-          <span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span><span class="text-sm beat-lit">&#9733;</span>
-        </div>
-      </button>
+      <div class="flex items-center gap-4">
+        <span class="verdict-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa; width:170px;">
+          GOOD EFFORT
+        </span>
+        <span class="text-xs text-txt-secondary">1/3 beats locked &mdash; Blue #60a5fa</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="verdict-badge" style="border-color:rgba(90,88,85,0.4); color:#5a5855; width:170px;">
+          SHOW CALLED EARLY
+        </span>
+        <span class="text-xs text-txt-secondary">0/3 beats locked &mdash; Muted #5a5855</span>
+      </div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
-      </button>
+  <!-- Interaction notes -->
+  <div class="mb-12">
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Interaction Notes</h3>
+    <div class="space-y-3 text-sm text-txt-secondary">
+      <p>&bull; Show rows have hover state (surface-hover #242428) with subtle transition</p>
+      <p>&bull; Clicking a row navigates to the expanded detail view with a slide-up animation</p>
+      <p>&bull; Week group headers appear when archive spans multiple weeks</p>
+      <p>&bull; Summary bar at top provides at-a-glance stats and current streak</p>
+      <p>&bull; Loading state uses shimmer animation matching skeleton dimensions of real content</p>
+      <p>&bull; Empty state uses the "empty stage" metaphor &mdash; microphone on an empty stage</p>
+      <p>&bull; Beat moments in detail view are optional &mdash; shown only if the user provided descriptions</p>
+      <p>&bull; All transitions should use spring physics per the Showtime design system</p>
+    </div>
+  </div>
+
+  <!-- Typography reference -->
+  <div>
+    <h3 class="text-sm font-semibold text-txt-primary mb-4 uppercase tracking-wider">Typography</h3>
+    <div class="space-y-3 text-sm text-txt-secondary">
+      <p>&bull; <span class="font-mono text-txt-primary">JetBrains Mono</span> &mdash; Date numbers, verdict badges, stats, section labels, timestamps</p>
+      <p>&bull; <span class="text-txt-primary">Inter</span> &mdash; Act names, descriptions, body text, buttons</p>
     </div>
   </div>
 </section>
-
-<!-- ============================================================ -->
-<!-- STATE 7: INTERACTIVE DEMO                                      -->
-<!-- ============================================================ -->
-<section class="max-w-3xl mx-auto px-6 mb-24">
-  <div class="mb-4 flex items-baseline gap-3">
-    <span class="section-label">Interactive</span>
-    <h2 class="text-xl font-bold text-txt-primary">Click to Expand/Collapse</h2>
-  </div>
-  <p class="text-sm text-txt-secondary mb-6">Click any show row to toggle its detail panel. Demonstrates the real interaction pattern.</p>
-
-  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
-    <!-- Title bar -->
-    <div class="px-5 pt-4 pb-3 flex items-center justify-between" style="background:#151517; border-bottom: 1px solid #242428;">
-      <div class="flex items-center gap-3">
-        <div class="traffic-lights">
-          <div class="traffic-light" style="background:#ff5f57;"></div>
-          <div class="traffic-light" style="background:#febc2e;"></div>
-          <div class="traffic-light" style="background:#28c840;"></div>
-        </div>
-        <span class="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted ml-1">PAST SHOWS</span>
-      </div>
-      <button class="text-txt-muted hover:text-txt-secondary text-sm transition-colors">Back</button>
-    </div>
-
-    <!-- Interactive show list -->
-    <div class="px-5 py-4" id="interactive-list">
-      <!-- Show entries rendered by JS -->
-    </div>
-
-    <!-- Footer -->
-    <div class="px-5 py-4" style="border-top: 1px solid #242428;">
-      <button class="px-4 py-2 rounded-lg font-mono text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
-        Back to Stage
-      </button>
-    </div>
-  </div>
-</section>
-
-<script>
-const shows = [
-  {
-    id: '2026-03-24',
-    date: 'Mon, Mar 24',
-    verdict: { label: 'Day Won', class: 'verdict-day-won' },
-    acts: '5/5 acts',
-    beatsLocked: 3,
-    beatsTotal: 3,
-    plan: 'Finish API integration for client dashboard, review design mockups, afternoon run, email catchup, newsletter brainstorm',
-    actDetails: [
-      { status: 'Done', statusClass: 'status-done', name: 'API Integration', planned: '45m', actual: null },
-      { status: 'Done', statusClass: 'status-done', name: 'Review Design Mockups', planned: '30m', actual: '42m' },
-      { status: 'Done', statusClass: 'status-done', name: 'Afternoon Run', planned: '30m', actual: null },
-      { status: 'Done', statusClass: 'status-done', name: 'Email Catchup', planned: '20m', actual: '12m' },
-      { status: 'Done', statusClass: 'status-done', name: 'Newsletter Brainstorm', planned: '30m', actual: null },
-    ]
-  },
-  {
-    id: '2026-03-21',
-    date: 'Fri, Mar 21',
-    verdict: { label: 'Solid Show', class: 'verdict-solid-show' },
-    acts: '4/5 acts',
-    beatsLocked: 2,
-    beatsTotal: 3,
-    plan: 'deploy v2 to staging, user interviews, gym, expense report, team retro',
-    actDetails: [
-      { status: 'Done', statusClass: 'status-done', name: 'Deploy v2 to Staging', planned: '45m', actual: '52m' },
-      { status: 'Done', statusClass: 'status-done', name: 'User Interviews', planned: '30m', actual: null },
-      { status: 'Done', statusClass: 'status-done', name: 'Gym', planned: '30m', actual: null },
-      { status: 'Done', statusClass: 'status-done', name: 'Expense Report', planned: '15m', actual: null },
-      { status: 'Cut', statusClass: 'status-cut', name: 'Team Retro', planned: '30m', actual: null },
-    ]
-  },
-  {
-    id: '2026-03-20',
-    date: 'Thu, Mar 20',
-    verdict: { label: 'Good Effort', class: 'verdict-good-effort' },
-    acts: '2/4 acts',
-    beatsLocked: 1,
-    beatsTotal: 3,
-    plan: 'data migration script, design review, walk, inbox zero',
-    actDetails: [
-      { status: 'Done', statusClass: 'status-done', name: 'Data Migration Script', planned: '45m', actual: '1h 5m' },
-      { status: 'Done', statusClass: 'status-done', name: 'Design Review', planned: '30m', actual: null },
-      { status: 'Cut', statusClass: 'status-cut', name: 'Walk', planned: '20m', actual: null },
-      { status: 'Pending', statusClass: 'status-pending', name: 'Inbox Zero', planned: '20m', actual: null },
-    ]
-  },
-  {
-    id: '2026-03-19',
-    date: 'Wed, Mar 19',
-    verdict: { label: 'Called Early', class: 'verdict-called-early' },
-    acts: '1/3 acts',
-    beatsLocked: 0,
-    beatsTotal: 3,
-    plan: 'catch up on PR reviews, write docs, team sync',
-    actDetails: [
-      { status: 'Done', statusClass: 'status-done', name: 'PR Reviews', planned: '45m', actual: '1h 10m' },
-      { status: 'Cut', statusClass: 'status-cut', name: 'Write API Docs', planned: '30m', actual: null },
-      { status: 'Pending', statusClass: 'status-pending', name: 'Team Sync Call', planned: '30m', actual: null },
-    ]
-  }
-];
-
-let expandedId = null;
-
-function renderList() {
-  const container = document.getElementById('interactive-list');
-  container.innerHTML = '';
-
-  shows.forEach((show, i) => {
-    const isExpanded = expandedId === show.id;
-    const isLast = i === shows.length - 1;
-
-    // Row wrapper
-    const wrapper = document.createElement('div');
-
-    // Main row button
-    const row = document.createElement('button');
-    row.className = `w-full flex items-center gap-3 py-3 ${!isLast ? 'border-b border-studio-hover' : ''} hover:bg-studio-hover/50 transition-colors rounded px-1 -mx-1 text-left`;
-    if (isExpanded) row.style.background = 'rgba(36,36,40,0.5)';
-
-    // Build beat stars
-    let stars = '';
-    for (let j = 0; j < show.beatsTotal; j++) {
-      stars += j < show.beatsLocked
-        ? '<span class="text-sm beat-lit">&#9733;</span>'
-        : '<span class="text-sm beat-dim">&#9734;</span>';
-    }
-
-    row.innerHTML = `
-      <span class="text-txt-muted text-xs expand-arrow ${isExpanded ? 'open' : ''}" style="transition: transform 0.2s ease; ${isExpanded ? 'transform: rotate(90deg);' : ''}">&#9654;</span>
-      <div class="w-[100px] shrink-0"><p class="font-body text-sm text-txt-primary font-medium">${show.date}</p></div>
-      <div class="w-[90px] shrink-0"><span class="font-mono text-[10px] font-bold uppercase tracking-wider ${show.verdict.class}">${show.verdict.label}</span></div>
-      <div class="flex-1"><span class="font-mono text-xs text-txt-secondary">${show.acts}</span></div>
-      <div class="shrink-0 flex items-center gap-0.5">${stars}</div>
-    `;
-
-    row.addEventListener('click', () => {
-      expandedId = expandedId === show.id ? null : show.id;
-      renderList();
-    });
-
-    wrapper.appendChild(row);
-
-    // Detail panel
-    if (isExpanded) {
-      const detail = document.createElement('div');
-      detail.className = 'pl-8 pr-2 py-3 border-b border-studio-hover';
-      detail.style.animation = 'expandIn 0.3s ease-out forwards';
-
-      let actsHtml = show.actDetails.map(act => {
-        const nameClass = act.status === 'Cut' ? 'text-txt-secondary' : 'text-txt-primary';
-        const nameStyle = act.status === 'Cut' ? 'text-decoration: line-through; text-decoration-color: #5a5855;' : '';
-        const driftHtml = act.actual ? `<span class="drift-arrow"> &#8594; ${act.actual}</span>` : '';
-        return `
-          <div class="flex items-center gap-2 text-xs">
-            <span class="font-mono text-[9px] w-[42px] shrink-0 uppercase ${act.statusClass}">${act.status}</span>
-            <span class="${nameClass} flex-1 truncate" style="${nameStyle}">${act.name}</span>
-            <span class="text-txt-muted shrink-0">${act.planned}${driftHtml}</span>
-          </div>
-        `;
-      }).join('');
-
-      detail.innerHTML = `
-        <div class="mb-3">
-          <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">PLAN</span>
-          <p class="text-xs text-txt-secondary mt-1" style="line-height:1.6;">${show.plan}</p>
-        </div>
-        <div>
-          <span class="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">ACTS</span>
-          <div class="mt-1 space-y-1">${actsHtml}</div>
-        </div>
-      `;
-      wrapper.appendChild(detail);
-    }
-
-    container.appendChild(wrapper);
-  });
-}
-
-renderList();
-</script>
-
-<!-- ============================================================ -->
-<!-- E2E TEST CASES                                                 -->
-<!-- ============================================================ -->
-<!--
-E2E Test Cases:
-1. Navigate to HistoryView → verify empty state when no shows ("No past shows yet. Your history will appear here after your first show.")
-2. Navigate to HistoryView → verify loading state renders "Loading..." centered text
-3. Seed 1 show → verify show list renders with date, verdict badge, act count, and beat stars
-4. Seed 3 shows → verify all three show rows render in chronological order (newest first)
-5. Verify DAY_WON verdict renders gold "Day Won" text with 3/3 lit beat stars
-6. Verify SOLID_SHOW verdict renders accent-colored "Solid Show" text with 2/3 lit beat stars
-7. Verify GOOD_EFFORT verdict renders blue "Good Effort" text with 1/3 lit beat stars
-8. Verify SHOW_CALLED_EARLY verdict renders gray "Called Early" text with 0/3 lit beat stars
-9. Click show row → verify detail panel expands with plan text and acts
-10. Click expanded show row → verify detail panel collapses
-11. Verify expanded detail shows act names with correct statuses (Done/Live/Cut/Pending)
-12. Verify drift indicator (orange arrow) appears when actual duration differs from planned
-13. Verify drift indicator does NOT appear when actual matches planned
-14. Verify "Cut" acts display with line-through text decoration
-15. Verify "Back" button in title bar navigates away from HistoryView
-16. Verify "Back to Stage" footer button navigates away from HistoryView
-17. Verify expand arrow rotates 90 degrees when show is expanded
-18. Verify show with no verdict shows "In Progress" or "Complete" text
-19. Seed 10+ shows → verify list is scrollable
-20. Navigate to HistoryView → verify title bar reads "PAST SHOWS" in JetBrains Mono uppercase
--->
 
 </body>
 </html>
