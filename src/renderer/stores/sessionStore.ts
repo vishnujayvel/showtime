@@ -39,7 +39,7 @@ interface State {
   createTab: () => Promise<string>
   toggleExpanded: () => void
   addSystemMessage: (content: string) => void
-  sendMessage: (prompt: string, projectPath?: string) => void
+  sendMessage: (prompt: string, projectPath?: string, displayText?: string) => void
   respondPermission: (tabId: string, questionId: string, optionId: string) => void
   handleNormalizedEvent: (tabId: string, event: NormalizedEvent) => void
   handleStatusChange: (tabId: string, newStatus: string, oldStatus: string) => void
@@ -172,7 +172,7 @@ export const useSessionStore = create<State>((set, get) => ({
     }))
   },
 
-  sendMessage: (prompt, projectPath) => {
+  sendMessage: (prompt, projectPath, displayText) => {
     const { activeTabId, tabs, staticInfo, tabReady } = get()
     if (!tabReady) {
       window.clui.logEvent('WARN', 'sendMessage.dropped', { reason: 'tab not ready yet', activeTabId })
@@ -192,8 +192,9 @@ export const useSessionStore = create<State>((set, get) => ({
     const isBusy = tab.status === 'running' || tab.status === 'connecting'
     const requestId = crypto.randomUUID()
 
+    const visibleText = displayText || prompt
     const title = tab.messages.length === 0
-      ? (prompt.length > 30 ? prompt.substring(0, 27) + '...' : prompt)
+      ? (visibleText.length > 30 ? visibleText.substring(0, 27) + '...' : visibleText)
       : tab.title
 
     set((s) => ({
@@ -213,7 +214,7 @@ export const useSessionStore = create<State>((set, get) => ({
           title,
           messages: [
             ...withBase.messages,
-            { id: nextMsgId(), role: 'user' as const, content: prompt, timestamp: Date.now() },
+            { id: nextMsgId(), role: 'user' as const, content: visibleText, timestamp: Date.now() },
           ],
         }
       }),

@@ -88,7 +88,7 @@ Each event: {"title": "...", "start": "HH:MM", "end": "HH:MM", "allDay": false}.
 If no calendar access or no events, return: []
 Return ONLY the JSON array, nothing else.`
 
-    sendMessage(prompt)
+    sendMessage(prompt, undefined, '📅 Checking your calendar...')
   }, [tabReady, calendarAvailable, calendarFetchStatus, tab, sendMessage, setCalendarFetchStatus])
 
   // Watch for calendar prefetch response
@@ -166,14 +166,14 @@ Return ONLY the JSON array, nothing else.`
     if (!trimmed || isRunning) return
     setChatInput('')
 
-    // If we have a lineup, wrap in refinement prompt
+    // If we have a lineup, wrap in refinement prompt but show only user's text
     if (hasLineup) {
       lineupStartRef.current = Date.now()
       const prompt = buildRefinementPrompt(trimmed, energy ?? 'medium', acts)
       window.clui.logEvent('INFO', 'claude.refinement_sent', {
         messageText: trimmed.slice(0, 100),
       })
-      sendMessage(prompt)
+      sendMessage(prompt, undefined, trimmed)
     } else {
       sendMessage(trimmed)
     }
@@ -219,7 +219,7 @@ Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social
 Energy "${energy ?? 'medium'}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
 ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : ''}`
 
-    sendMessage(prompt)
+    sendMessage(prompt, undefined, '✨ Build my lineup')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
