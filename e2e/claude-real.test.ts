@@ -162,11 +162,17 @@ test.describe('Real Claude Integration', () => {
     const chatInput = page.getByTestId('lineup-chat-input')
     await expect(chatInput).toBeVisible({ timeout: 5000 })
     await chatInput.fill('Add a coffee break between the first and second acts')
+
+    // Sample writer message count BEFORE triggering refinement to avoid race
+    // where refinement completes before waitForRefinementComplete can sample it
+    const writerConvo = page.getByTestId('writer-conversation')
+    const writerMsgCountBeforeRefine = await writerConvo.locator('.justify-start').count()
+
     await page.getByTestId('lineup-chat-send').click()
 
     await screenshot(page, 'claude-real-refine-02-sent')
 
-    await waitForRefinementComplete(page)
+    await waitForRefinementComplete(page, writerMsgCountBeforeRefine)
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
@@ -322,11 +328,16 @@ test.describe('Real Claude Integration', () => {
     const chatInput = page.getByTestId('lineup-chat-input')
     await expect(chatInput).toBeVisible({ timeout: 5000 })
     await chatInput.fill('Make the first act shorter — 45 minutes instead — and add a 15 min coffee break right after it')
+
+    // Sample writer message count BEFORE triggering refinement to avoid race
+    const writerConvo = page.getByTestId('writer-conversation')
+    const writerMsgCountBeforeRefine = await writerConvo.locator('.justify-start').count()
+
     await page.getByTestId('lineup-chat-send').click()
 
     await screenshot(page, 'claude-real-continuity-02-refinement-sent')
 
-    await waitForRefinementComplete(page)
+    await waitForRefinementComplete(page, writerMsgCountBeforeRefine)
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
@@ -338,14 +349,13 @@ test.describe('Real Claude Integration', () => {
 
     // Context survival proof: the first act should still be present (possibly shorter)
     // This proves Claude retained turn-1 context when processing the refinement
-    if (firstActName) {
-      const refinedActNames = await refinedCards.locator('.font-medium').allTextContents()
-      const firstActStillPresent = refinedActNames.some(name =>
-        name.toLowerCase().includes(firstActName!.toLowerCase().split(' ')[0])
-      )
-      expect(firstActStillPresent).toBe(true)
-      console.log(`Context survived: "${firstActName}" still found in refined lineup`)
-    }
+    expect(firstActName, 'First act name selector returned null — context survival assertion would be skipped').toBeTruthy()
+    const refinedActNames = await refinedCards.locator('.font-medium').allTextContents()
+    const firstActStillPresent = refinedActNames.some(name =>
+      name.toLowerCase().includes(firstActName!.toLowerCase().split(' ')[0])
+    )
+    expect(firstActStillPresent).toBe(true)
+    console.log(`Context survived: "${firstActName}" still found in refined lineup`)
 
     // The conversation thread should show both the user refinement and a writer response
     const writerConvo = page.getByTestId('writer-conversation')

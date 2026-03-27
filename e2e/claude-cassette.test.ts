@@ -335,15 +335,15 @@ test.describe('Cassette Replay', () => {
 
     // Wait for the refinement to complete (cassette replays quickly at 100x)
     const revisingIndicator = page.getByText('The writers are revising')
-    if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await revisingIndicator.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {})
+    if (await revisingIndicator.isVisible({ timeout: 3000 })) {
+      await revisingIndicator.waitFor({ state: 'hidden', timeout: 15000 })
     } else {
       await page.waitForTimeout(5000)
     }
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
-    expect(refinedCount).toBeGreaterThanOrEqual(2)
+    expect(refinedCount).toBeGreaterThan(initialCount)
 
     // Verify second turn produced a visible change in the conversation
     const writerMessages = page.getByTestId('writer-conversation').locator('.justify-start')
