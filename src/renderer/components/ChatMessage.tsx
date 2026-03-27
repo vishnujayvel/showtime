@@ -164,10 +164,15 @@ const markdownComponents: Components = {
 
 function AssistantBubble({ message }: { message: Message }) {
   const setLineup = useShowStore((s) => s.setLineup)
+  const acts = useShowStore((s) => s.acts)
   const handleLineupEdit = (updated: ShowLineup) => setLineup(updated)
 
   // Split lineup JSON out BEFORE rendering — no raw JSON in chat
-  const { textBefore, lineup, textAfter } = splitLineupFromContent(message.content)
+  const { textBefore, lineup: parsedLineup, textAfter } = splitLineupFromContent(message.content)
+
+  // Use LIVE store data for the card (so edits persist), not the frozen parsed version
+  const hasLineupInMessage = !!parsedLineup
+  const liveLineup = acts.length > 0 ? { acts, beatThreshold: parsedLineup?.beatThreshold ?? 3, openingNote: parsedLineup?.openingNote ?? '' } : parsedLineup
 
   return (
     <motion.div
@@ -183,8 +188,8 @@ function AssistantBubble({ message }: { message: Message }) {
           </ReactMarkdown>
         )}
 
-        {lineup && (
-          <LineupCard lineup={lineup} onEdit={handleLineupEdit} />
+        {hasLineupInMessage && liveLineup && (
+          <LineupCard lineup={liveLineup} onEdit={handleLineupEdit} />
         )}
 
         {textAfter && (
@@ -192,8 +197,6 @@ function AssistantBubble({ message }: { message: Message }) {
             {textAfter}
           </ReactMarkdown>
         )}
-
-        {/* If no lineup found, content was already rendered in textBefore */}
       </div>
     </motion.div>
   )
