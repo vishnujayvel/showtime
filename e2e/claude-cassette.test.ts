@@ -233,12 +233,12 @@ infraTest.describe('Cassette Infrastructure', () => {
     await screenshot(page, 'cassette-dark-studio')
   })
 
-  infraTest('writers room energy step renders in playback mode', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+  infraTest('writers room chat renders in playback mode', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    const highButton = page.getByText('High Energy')
-    await expect(highButton).toBeVisible({ timeout: 5000 })
-    await screenshot(page, 'cassette-writers-room-energy')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await screenshot(page, 'cassette-writers-room-chat')
   })
 
   infraTest('lists available cassettes', () => {
@@ -264,22 +264,26 @@ test.describe('Cassette Replay', () => {
     const cassetteName = 'happy-path-lineup'
     test.skip(!cassetteExists(cassetteName), `Cassette "${cassetteName}.ndjson" not recorded yet`)
 
-    // Start at the plan step (energy already selected)
-    await seedFixture(page, FIXTURES.writersRoom_plan)
+    // Start at the chat-first Writer's Room
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Deep work on API for 2 hours, exercise 30 min, email catch-up 30 min')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Deep work on API for 2 hours, exercise 30 min, email catch-up 30 min')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    // Send chat message then build lineup
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
     // In playback mode, the cassette provides Claude's response almost instantly
     // (100x speed means ~30s of real time becomes ~300ms)
-    const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 })
+    const chatMessages = page.getByTestId('chat-messages')
+    await expect(chatMessages).toBeVisible({ timeout: 10000 })
 
     // Wait for act cards to appear from the cassette replay
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
@@ -302,21 +306,25 @@ test.describe('Cassette Replay', () => {
     const cassetteName = 'multi-turn-refinement'
     test.skip(!cassetteExists(cassetteName), `Cassette "${cassetteName}.ndjson" not recorded yet`)
 
-    // Start at the plan step
-    await seedFixture(page, FIXTURES.writersRoom_plan)
+    // Start at the chat-first Writer's Room
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Deep work 2h, exercise 30m')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Deep work 2h, exercise 30m')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    // Send chat message then build lineup
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
     // Wait for initial lineup from cassette
-    const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 })
+    const chatMessages = page.getByTestId('chat-messages')
+    await expect(chatMessages).toBeVisible({ timeout: 10000 })
 
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
     await actCardSelector.waitFor({ state: 'visible', timeout: 15000 })
@@ -327,11 +335,11 @@ test.describe('Cassette Replay', () => {
 
     await screenshot(page, 'cassette-multi-turn-01-initial')
 
-    // Actually send a refinement — this is the second turn
-    const chatInput = page.getByTestId('lineup-chat-input')
-    await expect(chatInput).toBeVisible({ timeout: 5000 })
-    await chatInput.fill('Make deep work 90 minutes instead')
-    await page.getByTestId('lineup-chat-send').click()
+    // Actually send a refinement — this is the second turn via chat
+    const refineChatInput = page.getByTestId('chat-input')
+    await expect(refineChatInput).toBeVisible({ timeout: 5000 })
+    await refineChatInput.fill('Make deep work 90 minutes instead')
+    await page.getByTestId('chat-send').click()
 
     // Wait for the refinement to complete (cassette replays quickly at 100x)
     const revisingIndicator = page.getByText('The writers are revising')
@@ -346,8 +354,8 @@ test.describe('Cassette Replay', () => {
     expect(refinedCount).toBeGreaterThan(initialCount)
 
     // Verify second turn produced a visible change in the conversation
-    const writerMessages = page.getByTestId('writer-conversation').locator('.justify-start')
-    expect(await writerMessages.count()).toBeGreaterThanOrEqual(2) // initial + refinement response
+    const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+    expect(await assistantMessages.count()).toBeGreaterThanOrEqual(2) // initial + refinement response
 
     await screenshot(page, 'cassette-multi-turn-02-refined')
   })
@@ -356,18 +364,22 @@ test.describe('Cassette Replay', () => {
     const cassetteName = 'low-energy-plan'
     test.skip(!cassetteExists(cassetteName), `Cassette "${cassetteName}.ndjson" not recorded yet`)
 
-    // Start at energy step and select low energy
+    // Start at chat-first Writer's Room with low energy
     await seedFixture(page, {
-      ...FIXTURES.writersRoom_plan,
+      ...FIXTURES.writersRoom_chat,
       energy: 'low',
     })
 
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Just some light admin and a walk')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Just some light admin and a walk')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    // Send chat message then build lineup
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
@@ -392,32 +404,36 @@ test.describe('Cassette Replay', () => {
     // The app should show an error state in the conversation thread and
     // allow the user to retry.
 
-    await seedFixture(page, FIXTURES.writersRoom_plan)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Deep work 2h')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Deep work 2h')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    // Send chat message then build lineup
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
     // The cassette replays an error response — the UI must show recovery state
-    const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 })
+    const chatMessages = page.getByTestId('chat-messages')
+    await expect(chatMessages).toBeVisible({ timeout: 10000 })
 
     // Wait for a concrete recovery UI element, not just a delay
     const retryBtn = page.locator('button').filter({ hasText: /Retry/i }).first()
     const coffeeMsg = page.getByText(/coffee break/i)
     const steppedOut = page.getByText(/stepped out/i)
-    const writerResponse = writerConvo.locator('.justify-start').first()
+    const assistantResponse = chatMessages.locator('[data-testid="assistant-message"]').first()
 
     const recoveryResult = await Promise.race([
       retryBtn.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'retry' as const),
       coffeeMsg.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'timeout' as const),
       steppedOut.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'error' as const),
-      writerResponse.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'response' as const),
+      assistantResponse.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'response' as const),
     ]).catch(() => 'none' as const)
 
     // The cassette must produce a visible UI state — not just silence

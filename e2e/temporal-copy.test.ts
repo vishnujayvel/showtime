@@ -44,7 +44,7 @@ test.describe('Temporal Copy — Clock-Mocked DOM Assertions', () => {
   // ─── Writer's Room ───
 
   test('morning (9 AM): WritersRoom plan says "today\'s lineup"', async ({ mainPage: page }) => {
-    await seedWithMockHour(page, FIXTURES.writersRoom_plan, 9)
+    await seedWithMockHour(page, FIXTURES.writersRoom_chat, 9)
 
     const bodyText = await page.textContent('body')
     expect(bodyText).toContain("today's")
@@ -54,7 +54,7 @@ test.describe('Temporal Copy — Clock-Mocked DOM Assertions', () => {
   })
 
   test('afternoon (14:00): WritersRoom plan says "your next lineup"', async ({ mainPage: page }) => {
-    await seedWithMockHour(page, FIXTURES.writersRoom_plan, 14)
+    await seedWithMockHour(page, FIXTURES.writersRoom_chat, 14)
 
     const bodyText = await page.textContent('body')
     expect(bodyText).toContain('your next')
@@ -64,7 +64,7 @@ test.describe('Temporal Copy — Clock-Mocked DOM Assertions', () => {
   })
 
   test('evening (20:00): WritersRoom plan says "tomorrow\'s lineup"', async ({ mainPage: page }) => {
-    await seedWithMockHour(page, FIXTURES.writersRoom_plan, 20)
+    await seedWithMockHour(page, FIXTURES.writersRoom_chat, 20)
 
     const bodyText = await page.textContent('body')
     expect(bodyText).toContain("tomorrow's")
@@ -76,7 +76,7 @@ test.describe('Temporal Copy — Clock-Mocked DOM Assertions', () => {
   // ─── Lineup Header ───
 
   test('morning (9 AM): Lineup header says "TODAY\'S LINEUP"', async ({ mainPage: page }) => {
-    await seedWithMockHour(page, FIXTURES.writersRoom_lineup, 9)
+    await seedWithMockHour(page, FIXTURES.writersRoom_withLineup, 9)
 
     const bodyText = (await page.textContent('body'))?.toUpperCase() || ''
     expect(bodyText).toContain("TODAY'S LINEUP")
@@ -86,7 +86,7 @@ test.describe('Temporal Copy — Clock-Mocked DOM Assertions', () => {
   })
 
   test('evening (20:00): Lineup header says "TOMORROW\'S LINEUP"', async ({ mainPage: page }) => {
-    await seedWithMockHour(page, FIXTURES.writersRoom_lineup, 20)
+    await seedWithMockHour(page, FIXTURES.writersRoom_withLineup, 20)
 
     const bodyText = (await page.textContent('body'))?.toUpperCase() || ''
     expect(bodyText).toContain("TOMORROW'S LINEUP")
@@ -100,7 +100,7 @@ test.describe('Temporal Copy — Clock-Mocked DOM Assertions', () => {
   test('no view ever shows hardcoded "tonight"', async ({ mainPage: page }) => {
     // Test across multiple phases
     for (const hour of [9, 14, 20]) {
-      for (const fixture of [FIXTURES.darkStudio, FIXTURES.writersRoom_plan, FIXTURES.writersRoom_lineup]) {
+      for (const fixture of [FIXTURES.darkStudio, FIXTURES.writersRoom_chat, FIXTURES.writersRoom_withLineup]) {
         await seedWithMockHour(page, fixture, hour)
         const bodyText = (await page.textContent('body'))?.toLowerCase() || ''
         expect(bodyText).not.toContain("tonight's lineup")

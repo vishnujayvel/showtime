@@ -25,8 +25,6 @@ ${currentLineupJSON}
 The user wants to modify the lineup: "${message}"
 
 IMPORTANT:
-- Do NOT use any MCP tools (no Google Calendar, no web search, no file operations)
-- Do NOT call any tools at all — just respond with the updated lineup
 - Respond with the COMPLETE updated lineup as a \`\`\`showtime-lineup JSON block
 - Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
 - Keep the same format. Only modify what the user asked for.
