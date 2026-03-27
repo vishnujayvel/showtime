@@ -2,7 +2,7 @@ import { test, expect, screenshot, seedFixture, FIXTURES } from './fixtures'
 
 test.describe('Temporal Copy (#29)', () => {
   test('Writer\'s Room plan text uses temporal label, not hardcoded "tonight"', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_plan)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
     // The paragraph should NOT contain "tonight"
     const bodyText = await page.textContent('body')
@@ -21,7 +21,7 @@ test.describe('Temporal Copy (#29)', () => {
   })
 
   test('Lineup panel header uses temporal label', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_lineup)
+    await seedFixture(page, FIXTURES.writersRoom_withLineup)
 
     const bodyText = await page.textContent('body')
     const content = bodyText || ''

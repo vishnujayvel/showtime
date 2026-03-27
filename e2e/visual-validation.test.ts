@@ -4,7 +4,7 @@ test.describe('Visual Validation', () => {
   test('no inline styles on migrated components (#5, #8)', async ({ mainPage: page }) => {
     await setShowState(page, {
       phase: 'writers_room',
-      writersRoomStep: 'energy',
+      energy: 'medium',
       viewTier: 'expanded',
     })
 
@@ -67,7 +67,7 @@ test.describe('Visual Validation', () => {
   test('view containers have correct widths', async ({ mainPage: page }) => {
     await setShowState(page, {
       phase: 'writers_room',
-      writersRoomStep: 'energy',
+      energy: 'medium',
       viewTier: 'expanded',
       goingLiveActive: false,
       beatCheckPending: false,
@@ -85,7 +85,7 @@ test.describe('Visual Validation', () => {
 
   test('spotlight-warm gradient is CSS class not inline (#8)', async ({ mainPage: page }) => {
     // spotlight-warm is used in WritersRoomView, so seed that state
-    await seedFixture(page, FIXTURES.writersRoom_plan)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
     const spotlightElements = await page.locator('.spotlight-warm').count()
     expect(spotlightElements).toBeGreaterThan(0)
   })
@@ -112,8 +112,7 @@ test.describe('Issue-Specific UI Verification', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'plan'
-        parsed.state.energy = 'high'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
@@ -123,12 +122,12 @@ test.describe('Issue-Specific UI Verification', () => {
     })
     await navigateAndWait(page)
 
-    const textarea = page.locator('textarea').first()
-    if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await textarea.fill('Deep Work on Showtime for 2 hours\nExercise for 45 minutes')
+    const chatInput = page.getByTestId('chat-input')
+    if (await chatInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await chatInput.fill('Deep Work on Showtime for 2 hours\nExercise for 45 minutes')
       await page.waitForTimeout(300)
 
-      const buildBtn = page.getByText('Build my lineup')
+      const buildBtn = page.getByTestId('build-lineup-btn')
       if (await buildBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await buildBtn.click()
         await page.waitForTimeout(2000)
@@ -218,7 +217,7 @@ test.describe('Issue-Specific UI Verification', () => {
   test('#10 View dimensions: app container width is between 300-600px', async ({ mainPage: page }) => {
     await setShowState(page, {
       phase: 'writers_room',
-      writersRoomStep: 'energy',
+      energy: 'medium',
       viewTier: 'expanded',
       goingLiveActive: false,
     })
@@ -235,14 +234,14 @@ test.describe('Issue-Specific UI Verification', () => {
   })
 
   test('#14 Loading indicator: "The writers are working" text', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_plan)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    const textarea = page.locator('textarea').first()
-    if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await textarea.fill('Deep Work on Showtime for 2 hours')
+    const chatInput = page.getByTestId('chat-input')
+    if (await chatInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await chatInput.fill('Deep Work on Showtime for 2 hours')
       await page.waitForTimeout(300)
 
-      const buildBtn = page.getByText('Build my lineup')
+      const buildBtn = page.getByTestId('build-lineup-btn')
       if (await buildBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await buildBtn.click()
         await page.waitForTimeout(1000)

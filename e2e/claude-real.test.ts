@@ -48,33 +48,30 @@ test.describe('Real Claude Integration', () => {
     }
   })
 
-  test('happy path: energy -> plan -> lineup', async ({ mainPage: page, app }) => {
+  test('happy path: chat -> lineup', async ({ mainPage: page, app }) => {
     expectedLogEvents = ['claude.lineup_parsed']
-    // 1. Seed Writer's Room at the energy step
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+    // 1. Seed Writer's Room (chat-first UI — energy defaults to medium)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    // 2. Select energy level — click "High Energy" button text
-    const highEnergy = page.getByText('High Energy')
-    await expect(highEnergy).toBeVisible({ timeout: 10000 })
-    await highEnergy.click()
-    await page.waitForTimeout(500)
-    await screenshot(page, 'claude-real-01-energy')
-
-    // 3. Plan step: fill the textarea with a realistic plan
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('I want to do deep work on the project for 2 hours, then take a 30 min exercise break, then do some email')
+    // 2. Type plan in chat input
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 10000 })
+    await chatInput.fill('I want to do deep work on the project for 2 hours, then take a 30 min exercise break, then do some email')
     await page.waitForTimeout(300)
-    await screenshot(page, 'claude-real-02-plan-filled')
+    await screenshot(page, 'claude-real-01-plan-filled')
 
-    // 4. Click "Build my lineup" to submit to Claude
-    const buildBtn = page.getByText('Build my lineup')
+    // 3. Send chat message
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    // 4. Click "BUILD MY LINEUP" to submit to Claude
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
-    // 5. Conversation step appears — writers are working
-    const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 }).catch(() => {})
+    // 5. Chat messages appear — writers are working
+    const chatMessages = page.getByTestId('chat-messages')
+    await expect(chatMessages).toBeVisible({ timeout: 10000 }).catch(() => {})
     await screenshot(page, 'claude-real-03-waiting')
 
     // 6. Wait for act cards to appear — REAL Claude, this takes 10-60s
@@ -88,7 +85,7 @@ test.describe('Real Claude Integration', () => {
     } catch {
       // Capture diagnostic state before failing
       await screenshot(page, 'claude-real-04-FAILED')
-      const conversationText = await page.getByTestId('writer-conversation').textContent().catch(() => 'no conversation')
+      const conversationText = await page.getByTestId('chat-messages').textContent().catch(() => 'no conversation')
       const sessionState = await page.evaluate(() => {
         const store = (window as Record<string, unknown>).__sessionStore as Record<string, unknown> | undefined
         if (!store) return 'no store'
@@ -117,12 +114,12 @@ test.describe('Real Claude Integration', () => {
     const duration = await durationText.textContent()
     expect(duration).toMatch(/\d+m/)
 
-    // Verify conversation thread has writer response
-    const writerMessages = writerConvo.locator('.justify-start')
-    expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
+    // Verify chat has assistant response
+    const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+    expect(await assistantMessages.count()).toBeGreaterThanOrEqual(1)
 
     // Verify "WE'RE LIVE!" button appeared (lineup exists)
-    const goLiveBtn = page.locator('button').filter({ hasText: /LIVE/i }).first()
+    const goLiveBtn = page.getByTestId('go-live-btn')
     await expect(goLiveBtn).toBeVisible({ timeout: 5000 })
 
     console.log(`Claude path: lineup generated with ${cardCount} acts`)
@@ -131,22 +128,19 @@ test.describe('Real Claude Integration', () => {
 
   test('refinement updates lineup', async ({ mainPage: page, app }) => {
     expectedLogEvents = ['claude.lineup_parsed', 'claude.refinement_parsed']
-    // Setup: seed Writer's Room at energy step
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+    // Setup: seed Writer's Room (chat-first UI)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    // Select energy
-    const highEnergy = page.getByText('High Energy')
-    await expect(highEnergy).toBeVisible({ timeout: 10000 })
-    await highEnergy.click()
-    await page.waitForTimeout(500)
-
-    // Fill plan and submit
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Plan: 1 hour deep work, 30 min exercise, 30 min admin')
+    // Type plan in chat input and send
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 10000 })
+    await chatInput.fill('Plan: 1 hour deep work, 30 min exercise, 30 min admin')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await buildBtn.click()
 
     // Wait for initial lineup — must succeed, no fallback
@@ -158,21 +152,20 @@ test.describe('Real Claude Integration', () => {
     console.log(`Refinement test: initial lineup has ${initialCount} acts`)
     await screenshot(page, 'claude-real-refine-01-initial')
 
-    // Send refinement via the LineupChatInput
-    const chatInput = page.getByTestId('lineup-chat-input')
-    await expect(chatInput).toBeVisible({ timeout: 5000 })
-    await chatInput.fill('Add a coffee break between the first and second acts')
+    // Send refinement via the chat input
+    const refineChatInput = page.getByTestId('chat-input')
+    await expect(refineChatInput).toBeVisible({ timeout: 5000 })
+    await refineChatInput.fill('Add a coffee break between the first and second acts')
 
-    // Sample writer message count BEFORE triggering refinement to avoid race
-    // where refinement completes before waitForRefinementComplete can sample it
-    const writerConvo = page.getByTestId('writer-conversation')
-    const writerMsgCountBeforeRefine = await writerConvo.locator('.justify-start').count()
+    // Sample assistant message count BEFORE triggering refinement to avoid race
+    const chatMessages = page.getByTestId('chat-messages')
+    const assistantMsgCountBeforeRefine = await chatMessages.locator('[data-testid="assistant-message"]').count()
 
-    await page.getByTestId('lineup-chat-send').click()
+    await page.getByTestId('chat-send').click()
 
     await screenshot(page, 'claude-real-refine-02-sent')
 
-    await waitForRefinementComplete(page, writerMsgCountBeforeRefine)
+    await waitForRefinementComplete(page, assistantMsgCountBeforeRefine)
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
@@ -185,34 +178,31 @@ test.describe('Real Claude Integration', () => {
 
   test('Claude error produces visible error state', async ({ mainPage: page }) => {
     // This test verifies the app handles Claude failures gracefully.
-    // The conversation flow shows writer messages for errors and offers a Retry button.
+    // The chat shows assistant messages for errors and offers a Retry button.
 
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    // Select energy
-    const highEnergy = page.getByText('High Energy')
-    await expect(highEnergy).toBeVisible({ timeout: 10000 })
-    await highEnergy.click()
-    await page.waitForTimeout(500)
-
-    // Fill and submit a minimal plan
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('test')
+    // Type and send a minimal plan via chat
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 10000 })
+    await chatInput.fill('test')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await buildBtn.click()
 
-    // Conversation step appears
-    const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 }).catch(() => {})
+    // Chat messages area appears
+    const chatMessages = page.getByTestId('chat-messages')
+    await expect(chatMessages).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     await screenshot(page, 'claude-real-error-01-submitted')
 
     // Wait for either:
     // 1. Lineup acts (success) — act cards appear
-    // 2. Error state — Retry button or writer error message
+    // 2. Error state — Retry button or error message
     // 3. Timeout — the 30s conversation timeout fires and shows "coffee break" message
     const actCard = page.locator('.bg-surface-hover\\/50').first()
     const retryBtn = page.locator('button').filter({ hasText: /Retry/i }).first()
@@ -232,31 +222,29 @@ test.describe('Real Claude Integration', () => {
     // App must produce a visible response — hard timeout means nothing rendered
     expect(['lineup', 'retry', 'timeout-msg', 'error-msg']).toContain(result)
 
-    // If an error state appeared, verify conversation thread has content
+    // If an error state appeared, verify chat has assistant content
     if (result === 'retry' || result === 'timeout-msg' || result === 'error-msg') {
-      const writerMessages = writerConvo.locator('.justify-start')
-      const msgCount = await writerMessages.count()
+      const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+      const msgCount = await assistantMessages.count()
       expect(msgCount).toBeGreaterThanOrEqual(1)
     }
 
     await screenshot(page, 'claude-real-error-02-result')
   })
 
-  test('full flow: energy -> plan -> lineup -> go live', async ({ mainPage: page, app }) => {
+  test('full flow: chat -> lineup -> go live', async ({ mainPage: page, app }) => {
     expectedLogEvents = ['claude.lineup_parsed']
     // End-to-end: complete the Writer's Room and transition to live show
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    // Select energy
-    await page.getByText('High Energy').click()
-    await page.waitForTimeout(500)
-
-    // Fill plan
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Deep work for 1 hour, exercise for 30 minutes')
+    // Type plan in chat and send
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Deep work for 1 hour, exercise for 30 minutes')
     await page.waitForTimeout(300)
-    await page.getByText('Build my lineup').click()
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+    await page.getByTestId('build-lineup-btn').click()
 
     // Wait for lineup — must succeed, no fallback
     const actCard = page.locator('.bg-surface-hover\\/50').first()
@@ -301,16 +289,16 @@ test.describe('Real Claude Integration', () => {
   test('session continuity: refinement references initial lineup context', async ({ mainPage: page, app }) => {
     expectedLogEvents = ['claude.lineup_parsed', 'claude.refinement_parsed']
 
-    // Build initial lineup
-    await seedFixture(page, FIXTURES.writersRoom_energy)
-    await page.getByText('High Energy').click()
-    await page.waitForTimeout(500)
+    // Build initial lineup via chat-first UI
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Morning: 90 min deep work on the API refactor. Then 30 min yoga. Then 45 min code review.')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Morning: 90 min deep work on the API refactor. Then 30 min yoga. Then 45 min code review.')
     await page.waitForTimeout(300)
-    await page.getByText('Build my lineup').click()
+    await page.getByTestId('chat-send').click()
+    await page.waitForTimeout(300)
+    await page.getByTestId('build-lineup-btn').click()
 
     // Wait for lineup
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
@@ -325,19 +313,19 @@ test.describe('Real Claude Integration', () => {
     console.log(`Session continuity: initial lineup has ${initialCount} acts, first act: "${firstActName}"`)
 
     // Send a refinement that references the initial lineup — proves Claude remembers turn 1
-    const chatInput = page.getByTestId('lineup-chat-input')
-    await expect(chatInput).toBeVisible({ timeout: 5000 })
-    await chatInput.fill('Make the first act shorter — 45 minutes instead — and add a 15 min coffee break right after it')
+    const refineChatInput = page.getByTestId('chat-input')
+    await expect(refineChatInput).toBeVisible({ timeout: 5000 })
+    await refineChatInput.fill('Make the first act shorter — 45 minutes instead — and add a 15 min coffee break right after it')
 
-    // Sample writer message count BEFORE triggering refinement to avoid race
-    const writerConvo = page.getByTestId('writer-conversation')
-    const writerMsgCountBeforeRefine = await writerConvo.locator('.justify-start').count()
+    // Sample assistant message count BEFORE triggering refinement to avoid race
+    const chatMessages = page.getByTestId('chat-messages')
+    const assistantMsgCountBeforeRefine = await chatMessages.locator('[data-testid="assistant-message"]').count()
 
-    await page.getByTestId('lineup-chat-send').click()
+    await page.getByTestId('chat-send').click()
 
     await screenshot(page, 'claude-real-continuity-02-refinement-sent')
 
-    await waitForRefinementComplete(page, writerMsgCountBeforeRefine)
+    await waitForRefinementComplete(page, assistantMsgCountBeforeRefine)
 
     const refinedCards = page.locator('.bg-surface-hover\\/50')
     const refinedCount = await refinedCards.count()
@@ -357,10 +345,8 @@ test.describe('Real Claude Integration', () => {
     expect(firstActStillPresent).toBe(true)
     console.log(`Context survived: "${firstActName}" still found in refined lineup`)
 
-    // The conversation thread should show both the user refinement and a writer response
-    const userMessages = writerConvo.locator('.justify-end')
-    const writerMessages = writerConvo.locator('.justify-start')
-    expect(await userMessages.count()).toBeGreaterThanOrEqual(1)
-    expect(await writerMessages.count()).toBeGreaterThanOrEqual(2) // initial + refinement response
+    // The chat should show both user messages and assistant responses
+    const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+    expect(await assistantMessages.count()).toBeGreaterThanOrEqual(2) // initial + refinement response
   })
 })
