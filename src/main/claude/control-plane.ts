@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { homedir } from 'os'
 import { RunManager } from './run-manager'
 import { PtyRunManager } from './pty-run-manager'
 import { PermissionServer, maskSensitiveFields } from '../hooks/permission-server'
@@ -497,7 +498,7 @@ export class ControlPlane extends EventEmitter {
 
     this.submitPrompt(tabId, requestId, {
       prompt: 'hi',
-      projectPath: process.cwd(),
+      projectPath: homedir(),
       maxTurns: 1,
       model: 'claude-sonnet-4-6',
     }).catch((err) => {
