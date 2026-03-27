@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Chat → Lineup Flow Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+    --cat-deep: #8b5cf6;
+    --cat-exercise: #22c55e;
+    --cat-admin: #60a5fa;
+    --cat-creative: #f59e0b;
+    --cat-social: #ec4899;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    color: var(--txt-primary);
+    display: flex;
+    gap: 40px;
+    padding: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  h1 {
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--txt-secondary);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--txt-muted);
+    margin-bottom: 30px;
+  }
+
+  .phase-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .phase-desc {
+    font-size: 12px;
+    color: var(--txt-muted);
+    text-align: center;
+    margin-bottom: 16px;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ─── Window frame ─── */
+  .window {
+    width: 400px;
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .window-tall { height: 680px; }
+  .window-medium { height: 600px; }
+
+  /* ─── Title bar ─── */
+  .titlebar {
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--surface-hover);
+  }
+
+  .titlebar-left {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .titlebar-brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--txt-secondary);
+  }
+
+  .titlebar-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--txt-muted);
+  }
+
+  .titlebar-close {
+    color: var(--txt-muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  /* ─── Chat area ─── */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ─── Messages ─── */
+  .msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .msg-user {
+    align-self: flex-end;
+    background: var(--surface-hover);
+    border-bottom-right-radius: 4px;
+    color: var(--txt-primary);
+  }
+
+  .msg-assistant {
+    align-self: flex-start;
+    background: rgba(154, 152, 144, 0.08);
+    border: 1px solid rgba(154, 152, 144, 0.12);
+    border-bottom-left-radius: 4px;
+    color: var(--txt-secondary);
+  }
+
+  .msg-system {
+    align-self: center;
+    font-size: 11px;
+    color: var(--txt-muted);
+    font-style: italic;
+  }
+
+  /* ─── Tool use indicator ─── */
+  .tool-use {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--cat-deep);
+  }
+
+  .tool-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--cat-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: white;
+    font-weight: 700;
+  }
+
+  .tool-calendar { background: var(--cat-admin); }
+  .tool-check { color: #22c55e; }
+
+  /* ─── Lineup card (inline) ─── */
+  .lineup-card {
+    align-self: stretch;
+    background: var(--studio-bg);
+    border: 1px solid var(--surface-hover);
+    border-radius: 14px;
+    padding: 16px;
+    margin: 4px 0;
+  }
+
+  .lineup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .lineup-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+  }
+
+  .lineup-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  .badge-draft { background: rgba(217, 119, 87, 0.15); color: var(--accent); }
+  .badge-ready { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+
+  .lineup-acts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .act-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border-radius: 8px;
+  }
+
+  .act-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--txt-muted);
+    width: 20px;
+  }
+
+  .act-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+
+  .cat-deep { color: var(--cat-deep); border-color: var(--cat-deep); }
+  .cat-exercise { color: var(--cat-exercise); border-color: var(--cat-exercise); }
+  .cat-admin { color: var(--cat-admin); border-color: var(--cat-admin); }
+  .cat-social { color: var(--cat-social); border-color: var(--cat-social); }
+  .cat-creative { color: var(--cat-creative); border-color: var(--cat-creative); }
+
+  .act-name {
+    flex: 1;
+    font-size: 12px;
+    color: var(--txt-primary);
+  }
+
+  .act-source {
+    font-size: 9px;
+    color: var(--txt-muted);
+    font-style: italic;
+  }
+
+  .act-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--txt-secondary);
+  }
+
+  .lineup-note {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--txt-muted);
+    font-style: italic;
+    padding: 0 4px;
+  }
+
+  /* ─── Footer ─── */
+  .footer {
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--surface-hover);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .input-field {
+    flex: 1;
+    background: var(--studio-bg);
+    border: 1px solid var(--surface-hover);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--txt-muted);
+    outline: none;
+  }
+
+  .btn-send {
+    padding: 10px 16px;
+    background: var(--surface-hover);
+    border: none;
+    border-radius: 10px;
+    color: var(--txt-muted);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn-live {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+
+  .btn-live:hover { filter: brightness(1.1); }
+
+  .btn-finalize {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: transparent;
+    border: 1px dashed var(--accent);
+    border-radius: 12px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  .btn-finalize:hover { background: rgba(217, 119, 87, 0.1); }
+
+  /* ─── Typing indicator ─── */
+  .typing {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--txt-muted);
+    padding: 4px 0;
+  }
+
+  .dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* ─── Arrow between phases ─── */
+  .arrow {
+    display: flex;
+    align-items: center;
+    color: var(--txt-muted);
+    font-size: 30px;
+    align-self: center;
+    margin-top: 200px;
+  }
+
+  /* ─── Energy chip ─── */
+  .energy-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(217, 119, 87, 0.15);
+    color: var(--accent);
+    align-self: center;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Section divider ─── */
+  .section-break {
+    width: 100%;
+    border: none;
+    border-top: 1px solid var(--surface-hover);
+    margin: 20px 0;
+  }
+
+  .flow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--txt-muted);
+    text-align: center;
+    margin: 8px 0;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<h1>SHOWTIME — Chat → Lineup Flow</h1>
+<h2>Three states: Free Chat → Lineup Drafted → Ready to Go Live</h2>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- STATE 1: Free-form Chat (no lineup yet)        -->
+<!-- ═══════════════════════════════════════════════ -->
+
+<div>
+  <div class="phase-label">State 1: Writer's Room — Free Chat</div>
+  <div class="phase-desc">User talks to Claude about their day. Claude can use calendar, ask questions, suggest things. No constraints.</div>
+
+  <div class="window window-tall">
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <span class="titlebar-brand">SHOWTIME</span>
+        <span class="titlebar-date">FRI, MAR 27</span>
+      </div>
+      <span class="titlebar-close">✕</span>
+    </div>
+
+    <div class="chat-area">
+      <div class="energy-chip">⚡ Medium energy</div>
+
+      <div class="msg msg-user">Hey, help me plan my day. I have a bunch of meetings and I need to squeeze in some deep work.</div>
+
+      <div class="msg msg-assistant">Sure! Let me check what's on your calendar first.</div>
+
+      <div class="tool-use">
+        <div class="tool-icon tool-calendar">📅</div>
+        <span>Checking Google Calendar...</span>
+        <span class="tool-check">✓</span>
+      </div>
+
+      <div class="msg msg-assistant">
+        I found 4 events today:<br><br>
+        • <strong>9:00 – 10:00</strong> — Interview Hold<br>
+        • <strong>12:00 – 13:00</strong> — Lunch with Clayton<br>
+        • <strong>16:15 – 17:45</strong> — Personal training<br>
+        • <strong>19:00 – 23:00</strong> — Game night<br><br>
+        You've got solid blocks free: <strong>10–12</strong> and <strong>13–16</strong>. That's 5 hours for deep work. What's the most important thing to work on?
+      </div>
+
+      <div class="msg msg-user">API refactor. I need at least 2 hours on it. Also should do 30 min of email.</div>
+
+      <div class="msg msg-assistant">Got it. I'd suggest:<br><br>
+        • <strong>10:00–12:00</strong> — API Refactor (deep work, your best focus window)<br>
+        • <strong>13:00–13:30</strong> — Email triage<br>
+        • <strong>13:30–16:00</strong> — API Refactor continued<br><br>
+        Want me to build this into your lineup? Or any changes first?
+      </div>
+
+      <div class="msg msg-user">Yeah that looks good. Maybe add a coffee break after lunch emails.</div>
+    </div>
+
+    <div class="footer">
+      <div class="input-row">
+        <div class="input-field">Reply to the writer...</div>
+        <div class="btn-send">Send</div>
+      </div>
+      <button class="btn-finalize">✨ BUILD MY LINEUP</button>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">→</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- STATE 2: Lineup Drafted (inline card)          -->
+<!-- ═══════════════════════════════════════════════ -->
+
+<div>
+  <div class="phase-label">State 2: Lineup Drafted</div>
+  <div class="phase-desc">User clicked "Build My Lineup" or Claude generated one. Lineup appears as a card in the chat. User can still refine.</div>
+
+  <div class="window window-tall">
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <span class="titlebar-brand">SHOWTIME</span>
+        <span class="titlebar-date">FRI, MAR 27</span>
+      </div>
+      <span class="titlebar-close">✕</span>
+    </div>
+
+    <div class="chat-area">
+      <div class="msg msg-user">Yeah that looks good. Maybe add a coffee break after lunch emails.</div>
+
+      <div class="msg msg-assistant">Perfect — here's your show lineup with the coffee break added:</div>
+
+      <!-- ─── Inline Lineup Card ─── -->
+      <div class="lineup-card">
+        <div class="lineup-header">
+          <span class="lineup-title">Today's Lineup</span>
+          <span class="lineup-badge badge-draft">DRAFT</span>
+        </div>
+        <div class="lineup-acts">
+          <div class="act-row">
+            <span class="act-number">01</span>
+            <span class="act-category cat-admin">ADMIN</span>
+            <span class="act-name">Interview Hold <span class="act-source">📅</span></span>
+            <span class="act-duration">60m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">02</span>
+            <span class="act-category cat-deep">DEEP</span>
+            <span class="act-name">API Refactor</span>
+            <span class="act-duration">120m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">03</span>
+            <span class="act-category cat-admin">ADMIN</span>
+            <span class="act-name">Lunch with Clayton <span class="act-source">📅</span></span>
+            <span class="act-duration">60m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">04</span>
+            <span class="act-category cat-admin">ADMIN</span>
+            <span class="act-name">Email Triage</span>
+            <span class="act-duration">30m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">05</span>
+            <span class="act-category cat-creative">REST</span>
+            <span class="act-name">Coffee Break ☕</span>
+            <span class="act-duration">15m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">06</span>
+            <span class="act-category cat-deep">DEEP</span>
+            <span class="act-name">API Refactor (cont.)</span>
+            <span class="act-duration">135m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">07</span>
+            <span class="act-category cat-exercise">EXERCISE</span>
+            <span class="act-name">Personal Training <span class="act-source">📅</span></span>
+            <span class="act-duration">90m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">08</span>
+            <span class="act-category cat-social">SOCIAL</span>
+            <span class="act-name">Game Night <span class="act-source">📅</span></span>
+            <span class="act-duration">240m</span>
+          </div>
+        </div>
+        <div class="lineup-note">"Solid day — deep work sandwiches the admin. You've got this." 🎬</div>
+      </div>
+
+      <div class="msg msg-assistant">How does that look? I can swap acts, adjust times, or add anything else.</div>
+
+      <div class="msg msg-user">Move the coffee break before email, I'll need it more then</div>
+
+      <div class="typing">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <span>Revising the lineup...</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="input-row">
+        <div class="input-field">Anything else to change?</div>
+        <div class="btn-send">Send</div>
+      </div>
+      <button class="btn-live" style="opacity: 0.5; cursor: not-allowed;">WE'RE LIVE!</button>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">→</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- STATE 3: Ready to Go Live                      -->
+<!-- ═══════════════════════════════════════════════ -->
+
+<div>
+  <div class="phase-label">State 3: Ready to Go Live</div>
+  <div class="phase-desc">User is happy with the lineup. Button is active. One click to start the show.</div>
+
+  <div class="window window-tall">
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <span class="titlebar-brand">SHOWTIME</span>
+        <span class="titlebar-date">FRI, MAR 27</span>
+      </div>
+      <span class="titlebar-close">✕</span>
+    </div>
+
+    <div class="chat-area">
+      <!-- ─── Final Lineup Card ─── -->
+      <div class="lineup-card">
+        <div class="lineup-header">
+          <span class="lineup-title">Today's Lineup</span>
+          <span class="lineup-badge badge-ready">✓ READY</span>
+        </div>
+        <div class="lineup-acts">
+          <div class="act-row">
+            <span class="act-number">01</span>
+            <span class="act-category cat-admin">ADMIN</span>
+            <span class="act-name">Interview Hold <span class="act-source">📅</span></span>
+            <span class="act-duration">60m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">02</span>
+            <span class="act-category cat-deep">DEEP</span>
+            <span class="act-name">API Refactor</span>
+            <span class="act-duration">120m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">03</span>
+            <span class="act-category cat-admin">ADMIN</span>
+            <span class="act-name">Lunch with Clayton <span class="act-source">📅</span></span>
+            <span class="act-duration">60m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">04</span>
+            <span class="act-category cat-creative">REST</span>
+            <span class="act-name">Coffee Break ☕</span>
+            <span class="act-duration">15m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">05</span>
+            <span class="act-category cat-admin">ADMIN</span>
+            <span class="act-name">Email Triage</span>
+            <span class="act-duration">30m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">06</span>
+            <span class="act-category cat-deep">DEEP</span>
+            <span class="act-name">API Refactor (cont.)</span>
+            <span class="act-duration">135m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">07</span>
+            <span class="act-category cat-exercise">EXERCISE</span>
+            <span class="act-name">Personal Training <span class="act-source">📅</span></span>
+            <span class="act-duration">90m</span>
+          </div>
+          <div class="act-row">
+            <span class="act-number">08</span>
+            <span class="act-category cat-social">SOCIAL</span>
+            <span class="act-name">Game Night <span class="act-source">📅</span></span>
+            <span class="act-duration">240m</span>
+          </div>
+        </div>
+        <div class="lineup-note">"Deep work sandwiches the admin. Coffee first, then emails. You've got this." 🎬</div>
+      </div>
+
+      <div class="msg msg-assistant">Lineup locked in. 8 acts, 12.5 hours. Hit "We're Live" when you're ready to start the show. 🎬</div>
+    </div>
+
+    <div class="footer">
+      <div class="input-row">
+        <div class="input-field">Last-minute changes...</div>
+        <div class="btn-send">Send</div>
+      </div>
+      <button class="btn-live">WE'RE LIVE!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- Flow summary below                             -->
+<!-- ═══════════════════════════════════════════════ -->
+
+<hr class="section-break" style="width: 100%;">
+
+<div style="width: 100%; max-width: 900px; margin: 0 auto;">
+  <div class="flow-label" style="margin-bottom: 20px;">How it works</div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+    <div style="background: var(--surface); padding: 20px; border-radius: 12px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 2px; margin-bottom: 8px;">1. CHAT FREELY</div>
+      <div style="font-size: 13px; color: var(--txt-secondary); line-height: 1.6;">
+        User talks to Claude naturally. Claude can fetch calendar, search the web, ask questions. <strong>No structured prompts.</strong> No MCP restrictions. This is just a conversation.
+      </div>
+    </div>
+    <div style="background: var(--surface); padding: 20px; border-radius: 12px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 2px; margin-bottom: 8px;">2. BUILD LINEUP</div>
+      <div style="font-size: 13px; color: var(--txt-secondary); line-height: 1.6;">
+        User clicks "Build My Lineup" or says "make my lineup." Claude generates the <code>showtime-lineup</code> JSON. We parse it and render the <strong>Lineup Card</strong> inline. User can keep chatting to refine.
+      </div>
+    </div>
+    <div style="background: var(--surface); padding: 20px; border-radius: 12px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 2px; margin-bottom: 8px;">3. GO LIVE</div>
+      <div style="font-size: 13px; color: var(--txt-secondary); line-height: 1.6;">
+        When happy, user clicks "We're Live!" Button only activates after a lineup exists. Transitions to the <strong>ON AIR</strong> experience with timers, beats, and the rundown bar.
+      </div>
+    </div>
+  </div>
+
+  <div style="background: var(--studio-bg); padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid var(--surface-hover);">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--beat); letter-spacing: 2px; margin-bottom: 8px;">KEY INSIGHT</div>
+    <div style="font-size: 13px; color: var(--txt-secondary); line-height: 1.6;">
+      The conversation IS the planning tool. We stop fighting Claude's behavior and let it use tools freely. The <strong>only structured moment</strong> is the lineup extraction — one prompt, clear format spec, all the context already in the conversation history. This eliminates the entire class of "JSON blob" bugs.
+    </div>
+  </div>
+
+  <div style="background: var(--studio-bg); padding: 20px; border-radius: 12px; margin-top: 12px; border: 1px solid var(--surface-hover);">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--cat-deep); letter-spacing: 2px; margin-bottom: 8px;">📅 CALENDAR INTEGRATION</div>
+    <div style="font-size: 13px; color: var(--txt-secondary); line-height: 1.6;">
+      Calendar events from MCP show up <strong>naturally in the conversation</strong> — Claude fetches them, presents them nicely, and the user decides what to include. No pre-injection, no prompt hacks. Calendar items in the lineup card get a 📅 marker so the user knows what came from their calendar.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

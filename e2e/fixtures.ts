@@ -96,7 +96,7 @@ export const FIXTURES = {
     goingLiveActive: false, coldOpenActive: false, beatCheckPending: false, celebrationActive: false,
   },
 
-  // Writer's Room steps
+  // Writer's Room (chat-first UI — no separate steps)
   writersRoom_energy: {
     phase: 'writers_room', writersRoomStep: 'energy', energy: null, viewTier: 'expanded',
     acts: [], goingLiveActive: false, beatCheckPending: false, celebrationActive: false,
@@ -104,6 +104,14 @@ export const FIXTURES = {
   writersRoom_plan: {
     phase: 'writers_room', writersRoomStep: 'plan', energy: 'high', viewTier: 'expanded',
     goingLiveActive: false, beatCheckPending: false, celebrationActive: false,
+  },
+  writersRoom_chat: {
+    phase: 'writers_room', energy: 'medium', viewTier: 'expanded',
+    acts: [], goingLiveActive: false, beatCheckPending: false, celebrationActive: false,
+  },
+  writersRoom_withLineup: {
+    phase: 'writers_room', energy: 'high', viewTier: 'expanded',
+    acts: STANDARD_ACTS, goingLiveActive: false, beatCheckPending: false, celebrationActive: false,
   },
   writersRoom_lineup: {
     phase: 'writers_room', writersRoomStep: 'lineup', energy: 'high', viewTier: 'expanded',
@@ -365,22 +373,22 @@ export async function waitForRefinementComplete(page: Page, writerMessageCountBe
   }
 
   // No indicator found — wait for a concrete signal that refinement completed.
-  // Look for a new writer message in the conversation thread (the refinement response).
-  const writerConvo = page.getByTestId('writer-conversation')
-  const convoVisible = await writerConvo.isVisible()
-  if (!convoVisible) {
-    throw new Error('waitForRefinementComplete: [data-testid="writer-conversation"] not found or not visible — check that the Writer\'s Room conversation panel is rendered')
+  // Look for a new assistant message in the chat (the refinement response).
+  const chatMessages = page.getByTestId('chat-messages')
+  const chatVisible = await chatMessages.isVisible()
+  if (!chatVisible) {
+    throw new Error('waitForRefinementComplete: [data-testid="chat-messages"] not found or not visible — check that the Writer\'s Room chat is rendered')
   }
-  const writerMessages = writerConvo.locator('.justify-start')
-  const initialCount = writerMessageCountBeforeRefinement ?? await writerMessages.count()
+  const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+  const initialCount = writerMessageCountBeforeRefinement ?? await assistantMessages.count()
 
-  // Wait for a new writer message to appear (refinement response)
+  // Wait for a new assistant message to appear (refinement response)
   await page.waitForFunction(
     ({ selector, prevCount }) => {
-      const messages = document.querySelectorAll(`[data-testid="writer-conversation"] ${selector}`)
+      const messages = document.querySelectorAll(`[data-testid="chat-messages"] ${selector}`)
       return messages.length > prevCount
     },
-    { selector: '.justify-start', prevCount: initialCount },
+    { selector: '[data-testid="assistant-message"]', prevCount: initialCount },
     { timeout: timeoutMs }
   )
 }

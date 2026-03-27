@@ -79,8 +79,9 @@ test.describe('Onboarding (#15)', () => {
     await enterBtn.click()
     await page.waitForTimeout(1000)
 
-    const highEnergy = page.getByText('High Energy')
-    await expect(highEnergy).toBeVisible({ timeout: 5000 })
+    // Chat-first UI: chat input should be visible after entering Writer's Room
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
 
     const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
     expect(flag).toBe('true')

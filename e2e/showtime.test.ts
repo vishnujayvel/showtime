@@ -83,9 +83,9 @@ test.describe('7.2 — Dark Studio → Writer\'s Room', () => {
     await cta.click()
     await page.waitForTimeout(500)
 
-    // Writer's Room should show energy selector
-    const highEnergy = page.getByText('High Energy')
-    await expect(highEnergy).toBeVisible({ timeout: 5000 })
+    // Writer's Room should show chat input (chat-first UI)
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
     await screenshot('02-writers-room')
   })
 })
@@ -93,39 +93,29 @@ test.describe('7.2 — Dark Studio → Writer\'s Room', () => {
 // ─── openspec-7.3: Energy → Plan → Lineup → "We're Live!" ───
 
 test.describe('7.3 — Writer\'s Room Flow', () => {
-  test('can select energy level', async () => {
-    const highButton = page.getByText('High Energy')
-    await highButton.click()
-    await page.waitForTimeout(500)
-    await screenshot('03-energy-selected')
-  })
+  test('can type plan in chat input', async () => {
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
 
-  test('shows plan dump textarea after energy selection', async () => {
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-
-    await textarea.fill('Deep Work on Showtime for 2 hours\nExercise for 45 minutes\nAdmin catch-up for 30 minutes')
+    await chatInput.fill('Deep Work on Showtime for 2 hours\nExercise for 45 minutes\nAdmin catch-up for 30 minutes')
     await page.waitForTimeout(300)
-    await screenshot('04-plan-filled')
+    await screenshot('03-plan-filled')
   })
 
   test('can submit plan and see lineup preview', async () => {
-    // Find and click the submit button
-    const nextButton = page.getByText('Build my lineup')
-    if (await nextButton.isVisible().catch(() => false)) {
-      await nextButton.click()
-      // Wait for Claude to respond or timeout — loading overlay should appear
-      const loadingText = page.getByText('The writers are working...')
-      await expect(loadingText).toBeVisible({ timeout: 5000 }).catch(() => {})
-      // Wait for lineup to appear (Claude response) or timeout
+    // Send the chat message first
+    const sendBtn = page.getByTestId('chat-send')
+    if (await sendBtn.isVisible().catch(() => false)) {
+      await sendBtn.click()
+      await page.waitForTimeout(500)
+    }
+
+    // Click BUILD MY LINEUP
+    const buildBtn = page.getByTestId('build-lineup-btn')
+    if (await buildBtn.isVisible().catch(() => false)) {
+      await buildBtn.click()
+      // Wait for Claude to respond or timeout
       await page.waitForTimeout(5000)
-    } else {
-      // Fallback: try alternative button text patterns
-      const altButton = page.locator('button').filter({ hasText: /lineup|next|continue/i }).first()
-      if (await altButton.isVisible().catch(() => false)) {
-        await altButton.click()
-        await page.waitForTimeout(5000)
-      }
     }
     await screenshot('05-lineup-preview')
   })
@@ -221,13 +211,13 @@ test.describe('7.5 — Strike the Stage', () => {
 
 test.describe('Visual Validation', () => {
   test('no inline styles on migrated components (#5, #8)', async () => {
-    // Reset to writers_room to check WritersRoomView
+    // Reset to writers_room to check WritersRoomView (chat-first UI)
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'energy'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
@@ -303,13 +293,13 @@ test.describe('Visual Validation', () => {
   })
 
   test('view containers have correct widths', async () => {
-    // Check Writer's Room (560px)
+    // Check Writer's Room (560px) — chat-first UI
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'energy'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
@@ -336,13 +326,13 @@ test.describe('Visual Validation', () => {
   })
 
   test('no data-clui-ui attributes in the DOM', async () => {
-    // Reset to writers_room to check for legacy CLUI attributes
+    // Reset to writers_room to check for legacy CLUI attributes (chat-first UI)
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'energy'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
@@ -466,14 +456,13 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
 
 test.describe('Issue-Specific UI Verification', () => {
   test('#1 Claude integration: Build my lineup triggers loading or lineup', async () => {
-    // Clear ALL modal/overlay state before testing WritersRoom
+    // Clear ALL modal/overlay state before testing WritersRoom (chat-first UI)
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'plan'
-        parsed.state.energy = 'high'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
@@ -483,12 +472,12 @@ test.describe('Issue-Specific UI Verification', () => {
     })
     await navigateAndWait()
 
-    const textarea = page.locator('textarea').first()
-    if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await textarea.fill('Deep Work on Showtime for 2 hours\nExercise for 45 minutes')
+    const chatInput = page.getByTestId('chat-input')
+    if (await chatInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await chatInput.fill('Deep Work on Showtime for 2 hours\nExercise for 45 minutes')
       await page.waitForTimeout(300)
 
-      const buildBtn = page.getByText('Build my lineup')
+      const buildBtn = page.getByTestId('build-lineup-btn')
       if (await buildBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await buildBtn.click()
         await page.waitForTimeout(2000)
@@ -594,7 +583,7 @@ test.describe('Issue-Specific UI Verification', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'energy'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
@@ -619,20 +608,19 @@ test.describe('Issue-Specific UI Verification', () => {
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'plan'
-        parsed.state.energy = 'high'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
       }
     })
     await navigateAndWait()
 
-    const textarea = page.locator('textarea').first()
-    if (await textarea.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await textarea.fill('Deep Work on Showtime for 2 hours')
+    const chatInput = page.getByTestId('chat-input')
+    if (await chatInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await chatInput.fill('Deep Work on Showtime for 2 hours')
       await page.waitForTimeout(300)
 
-      const buildBtn = page.getByText('Build my lineup')
+      const buildBtn = page.getByTestId('build-lineup-btn')
       if (await buildBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await buildBtn.click()
         await page.waitForTimeout(1000)
@@ -702,14 +690,13 @@ test.describe('Race Condition Guards (#11)', () => {
 
 test.describe('Claude E2E Verification (#6, #13)', () => {
   test('Writer\'s Room generates real lineup via Claude (conditional)', async () => {
-    // Navigate to Writer's Room plan step
+    // Navigate to Writer's Room (chat-first UI)
     await page.evaluate(() => {
       const raw = localStorage.getItem('showtime-show-state')
       if (raw) {
         const parsed = JSON.parse(raw)
         parsed.state.phase = 'writers_room'
-        parsed.state.writersRoomStep = 'plan'
-        parsed.state.energy = 'high'
+        parsed.state.energy = 'medium'
         parsed.state.viewTier = 'expanded'
         parsed.state.goingLiveActive = false
         parsed.state.beatCheckPending = false
@@ -719,18 +706,18 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
     })
     await navigateAndWait()
 
-    const textarea = page.locator('textarea').first()
-    await expect(textarea).toBeVisible({ timeout: 5000 })
-    await textarea.fill('Today I need to do deep work on the API, exercise at lunch, then admin tasks')
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Today I need to do deep work on the API, exercise at lunch, then admin tasks')
     await page.waitForTimeout(300)
 
-    const buildBtn = page.getByText('Build my lineup')
+    const buildBtn = page.getByTestId('build-lineup-btn')
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
-    // Conversation step appears immediately with typing indicator
-    const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 5000 }).catch(() => {})
+    // Chat messages appear with typing indicator
+    const chatMessages = page.getByTestId('chat-messages')
+    await expect(chatMessages).toBeVisible({ timeout: 5000 }).catch(() => {})
 
     // Wait for either: Act cards in lineup OR conversation error message (30s timeout)
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
@@ -768,14 +755,14 @@ test.describe('Claude E2E Verification (#6, #13)', () => {
       const badge = actCards.first().locator('.font-mono')
       await expect(badge).toBeVisible()
 
-      // Conversation thread should show writer response
-      const writerMessages = writerConvo.locator('.justify-start')
-      expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
+      // Chat should show assistant response
+      const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+      expect(await assistantMessages.count()).toBeGreaterThanOrEqual(1)
     } else {
-      // Claude unavailable — errors shown as writer messages in conversation
-      console.log('Claude path: unavailable, conversation shows error')
-      const writerMessages = writerConvo.locator('.justify-start')
-      expect(await writerMessages.count()).toBeGreaterThanOrEqual(1)
+      // Claude unavailable — errors shown as assistant messages in chat
+      console.log('Claude path: unavailable, chat shows error')
+      const assistantMessages = chatMessages.locator('[data-testid="assistant-message"]')
+      expect(await assistantMessages.count()).toBeGreaterThanOrEqual(1)
     }
 
     await screenshot('claude-e2e-verification')
@@ -849,9 +836,9 @@ test.describe('Onboarding (#15)', () => {
     await enterBtn.click()
     await page.waitForTimeout(1000)
 
-    // Should be in Writer's Room with energy selector
-    const highEnergy = page.getByText('High Energy')
-    await expect(highEnergy).toBeVisible({ timeout: 5000 })
+    // Should be in Writer's Room with chat input (chat-first UI)
+    const chatInput = page.getByTestId('chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
 
     // localStorage flag should be set
     const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))

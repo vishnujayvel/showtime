@@ -30,10 +30,10 @@ describe('buildRefinementPrompt', () => {
     expect(prompt).toContain('"Social"')
   })
 
-  it('explicitly prohibits MCP tools', () => {
+  it('instructs Claude to respond with complete updated lineup', () => {
     const prompt = buildRefinementPrompt('Add dinner date with Silas', 'medium', SAMPLE_ACTS)
-    expect(prompt).toContain('Do NOT use any MCP tools')
-    expect(prompt).toContain('Do NOT call any tools at all')
+    expect(prompt).toContain('Respond with the COMPLETE updated lineup')
+    expect(prompt).toContain('showtime-lineup')
   })
 
   it('includes the user refinement message', () => {

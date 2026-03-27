@@ -10,17 +10,17 @@ test.describe('Visual Regression Screenshots', () => {
     })
   })
 
-  test('WritersRoom energy step visual', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_energy)
-    await expect(page).toHaveScreenshot('writers-room-energy.png', {
+  test('WritersRoom chat visual', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.writersRoom_chat)
+    await expect(page).toHaveScreenshot('writers-room-chat.png', {
       maxDiffPixelRatio: 0.05,
       timeout: 10000,
     })
   })
 
-  test('WritersRoom plan step visual', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_plan)
-    await expect(page).toHaveScreenshot('writers-room-plan.png', {
+  test('WritersRoom with lineup visual', async ({ mainPage: page }) => {
+    await seedFixture(page, FIXTURES.writersRoom_withLineup)
+    await expect(page).toHaveScreenshot('writers-room-with-lineup.png', {
       maxDiffPixelRatio: 0.05,
       timeout: 10000,
     })

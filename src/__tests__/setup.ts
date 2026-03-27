@@ -35,6 +35,13 @@ if (typeof window !== 'undefined') {
     // Window management
     setViewMode: vi.fn(),
     forceRepaint: vi.fn(),
+    // Logging
+    logEvent: vi.fn(),
+    recordMetricTiming: vi.fn(),
+    // App lifecycle
+    quit: vi.fn(),
+    // Show history
+    getShowHistory: vi.fn().mockResolvedValue([]),
   }
 
   Object.defineProperty(window, 'clui', {
