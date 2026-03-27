@@ -27,6 +27,8 @@ interface State {
   /** Single session tab (Showtime uses one Claude session) */
   tabs: TabState[]
   activeTabId: string
+  /** True once createTab() has resolved and the tab ID is valid in ControlPlane */
+  tabReady: boolean
   isExpanded: boolean
   staticInfo: StaticInfo | null
   preferredModel: string | null
@@ -101,6 +103,7 @@ const initialTab = makeLocalTab()
 export const useSessionStore = create<State>((set, get) => ({
   tabs: [initialTab],
   activeTabId: initialTab.id,
+  tabReady: false,
   isExpanded: false,
   staticInfo: null,
   preferredModel: null,
@@ -170,7 +173,11 @@ export const useSessionStore = create<State>((set, get) => ({
   },
 
   sendMessage: (prompt, projectPath) => {
-    const { activeTabId, tabs, staticInfo } = get()
+    const { activeTabId, tabs, staticInfo, tabReady } = get()
+    if (!tabReady) {
+      window.clui.logEvent('WARN', 'sendMessage.dropped', { reason: 'tab not ready yet', activeTabId })
+      return
+    }
     const tab = tabs.find((t) => t.id === activeTabId)
     const resolvedPath = projectPath || (tab?.hasChosenDirectory ? tab.workingDirectory : (staticInfo?.homePath || tab?.workingDirectory || '~'))
     if (!tab) {

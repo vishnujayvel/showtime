@@ -101,6 +101,7 @@ export default function App() {
           useSessionStore.setState((s) => ({
             tabs: s.tabs.map((t, i) => (i === 0 ? { ...t, id: tabId } : t)),
             activeTabId: tabId,
+            tabReady: true,
           }))
           // Warm up immediately after tab is created — don't wait for Writer's Room
           window.clui.initSession(tabId)
