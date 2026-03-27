@@ -48,6 +48,14 @@ export function WritersRoomView() {
   const responseOffsetRef = useRef<number | null>(null)
   const hasLineup = acts.length > 0
 
+  // Stale conversation guard: if we're on the conversation step but have no
+  // acts (e.g. app restarted after localStorage persisted a stale step), reset
+  useEffect(() => {
+    if (writersRoomStep === 'conversation' && acts.length === 0) {
+      setWritersRoomStep('energy')
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // 20-minute nudge timer
   useEffect(() => {
     if (!writersRoomEnteredAt) return
