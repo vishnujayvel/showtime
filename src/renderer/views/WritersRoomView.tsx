@@ -1,29 +1,32 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
 import { buildRefinementPrompt } from '../lib/refinement-prompt'
 import { tryParseCalendarEvents } from '../lib/calendar-parser'
-import { EnergySelector } from '../components/EnergySelector'
-import { CalendarBanner } from '../components/CalendarBanner'
+import { ChatMessage } from '../components/ChatMessage'
 import { CalendarToggle } from '../components/CalendarToggle'
-import { LineupChatInput } from '../components/LineupChatInput'
-import { LineupPanel } from '../panels/LineupPanel'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatDateLabel, getTemporalShowLabel } from '../lib/utils'
+import { formatDateLabel } from '../lib/utils'
+import { cn } from '../lib/utils'
+import type { EnergyLevel } from '../../shared/types'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
+const ENERGY_OPTIONS: { level: EnergyLevel; emoji: string; label: string }[] = [
+  { level: 'high', emoji: '⚡', label: 'High' },
+  { level: 'medium', emoji: '☀️', label: 'Medium' },
+  { level: 'low', emoji: '🌙', label: 'Low' },
+  { level: 'recovery', emoji: '🛋️', label: 'Recovery' },
+]
+
 export function WritersRoomView() {
   const energy = useShowStore((s) => s.energy)
-  const writersRoomStep = useShowStore((s) => s.writersRoomStep)
   const acts = useShowStore((s) => s.acts)
   const setEnergy = useShowStore((s) => s.setEnergy)
-  const setWritersRoomStep = useShowStore((s) => s.setWritersRoomStep)
   const setLineup = useShowStore((s) => s.setLineup)
   const triggerGoingLive = useShowStore((s) => s.triggerGoingLive)
-  const writersRoomEnteredAt = useShowStore((s) => s.writersRoomEnteredAt)
   const calendarAvailable = useShowStore((s) => s.calendarAvailable)
   const calendarEnabled = useShowStore((s) => s.calendarEnabled)
   const setCalendarEnabled = useShowStore((s) => s.setCalendarEnabled)
@@ -36,47 +39,42 @@ export function WritersRoomView() {
   const tabs = useSessionStore((s) => s.tabs)
   const activeTabId = useSessionStore((s) => s.activeTabId)
 
-  const [planText, setPlanText] = useState('')
-  const [showNudge, setShowNudge] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const lineupStartRef = useRef<number | null>(null)
+  const [chatInput, setChatInput] = useState('')
+  const [energyPickerOpen, setEnergyPickerOpen] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const calendarFetchMsgCountRef = useRef<number | null>(null)
+  const lineupStartRef = useRef<number | null>(null)
+  const lastLineupHashRef = useRef<string | null>(null)
 
-  // Unified conversation state (replaces separate refinementConversations + loading)
-  const [writerConversations, setWriterConversations] = useState<Array<{ role: 'user' | 'writer'; text: string }>>([])
-  const [isWaiting, setIsWaiting] = useState(false)
-  const responseOffsetRef = useRef<number | null>(null)
   const hasLineup = acts.length > 0
+  const tab = tabs.find((t) => t.id === activeTabId)
+  const messages = tab?.messages ?? []
+  const isRunning = tab?.status === 'running' || tab?.status === 'connecting'
+  const currentActivity = tab?.currentActivity ?? ''
 
-  // Stale conversation guard: if we're on the conversation step but have no
-  // acts (e.g. app restarted after localStorage persisted a stale step), reset
-  useEffect(() => {
-    if (writersRoomStep === 'conversation' && acts.length === 0) {
-      setWritersRoomStep('energy')
+  // Auto-scroll: scroll to bottom when near bottom (<60px threshold)
+  const scrollToBottom = useCallback(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
-  // 20-minute nudge timer
   useEffect(() => {
-    if (!writersRoomEnteredAt) return
+    scrollToBottom()
+  }, [messages.length, scrollToBottom])
 
-    const check = () => {
-      const elapsed = Date.now() - writersRoomEnteredAt
-      if (elapsed > 20 * 60 * 1000) {
-        setShowNudge(true)
-      }
-    }
-
-    check()
-    const interval = setInterval(check, 60_000)
-    return () => clearInterval(interval)
-  }, [writersRoomEnteredAt])
+  // Default energy to medium if not set
+  useEffect(() => {
+    if (!energy) setEnergy('medium')
+  }, [energy, setEnergy])
 
   // ─── Calendar Prefetch ───
   useEffect(() => {
     if (!calendarAvailable || calendarFetchStatus !== 'idle') return
-
-    const tab = tabs.find((t) => t.id === activeTabId)
     if (!tab) return
 
     calendarFetchMsgCountRef.current = tab.messages.length
@@ -88,14 +86,12 @@ If no calendar access or no events, return: []
 Return ONLY the JSON array, nothing else.`
 
     sendMessage(prompt)
-  }, [calendarAvailable, calendarFetchStatus, tabs, activeTabId, sendMessage, setCalendarFetchStatus])
+  }, [calendarAvailable, calendarFetchStatus, tab, sendMessage, setCalendarFetchStatus])
 
   // Watch for calendar prefetch response
   useEffect(() => {
     if (calendarFetchStatus !== 'fetching') return
     if (calendarFetchMsgCountRef.current === null) return
-
-    const tab = tabs.find((t) => t.id === activeTabId)
     if (!tab) return
 
     const newMessages = tab.messages.slice(calendarFetchMsgCountRef.current)
@@ -122,20 +118,69 @@ Return ONLY the JSON array, nothing else.`
       setCalendarFetchStatus('error')
       calendarFetchMsgCountRef.current = null
     }
-  }, [tabs, activeTabId, calendarFetchStatus, setCalendarEvents, setCalendarFetchStatus])
+  }, [tab, calendarFetchStatus, setCalendarEvents, setCalendarFetchStatus])
 
-  // ─── Build Lineup (first message in conversation) ───
+  // ─── Watch for lineup in assistant messages ───
+  useEffect(() => {
+    if (!tab) return
+    const assistantMessages = tab.messages.filter((m) => m.role === 'assistant' && !m.toolName)
+    if (assistantMessages.length === 0) return
 
-  const handleBuildLineup = (overrideCalendar?: boolean) => {
-    if (!planText.trim()) return
-    setError(null)
+    const lastAssistant = assistantMessages[assistantMessages.length - 1]
+    const lineup = tryParseLineup(lastAssistant.content)
+    if (!lineup) return
 
-    // Track message offset so the response watcher only sees new messages
-    const tab = tabs.find((t) => t.id === activeTabId)
-    responseOffsetRef.current = tab ? tab.messages.length : 0
+    // Dedupe: don't re-set the same lineup
+    const hash = JSON.stringify(lineup.acts.map((a) => `${a.name}|${a.sketch}|${a.durationMinutes}`))
+    if (hash === lastLineupHashRef.current) return
+    lastLineupHashRef.current = hash
 
-    const useCalendar = overrideCalendar ?? calendarEnabled
-    const calendarInstruction = useCalendar && calendarEvents.length > 0
+    const elapsed = lineupStartRef.current ? Date.now() - lineupStartRef.current : undefined
+    if (lineupStartRef.current) {
+      window.clui.recordMetricTiming('claude.lineup_generation', Date.now() - lineupStartRef.current)
+      lineupStartRef.current = null
+    }
+
+    const oldActCount = acts.length
+    if (oldActCount > 0) {
+      window.clui.logEvent('INFO', 'claude.refinement_parsed', {
+        oldActCount,
+        newActCount: lineup.acts.length,
+      })
+    } else {
+      window.clui.logEvent('INFO', 'claude.lineup_parsed', {
+        actCount: lineup.acts.length,
+        ...(elapsed !== undefined ? { durationMs: elapsed } : {}),
+      })
+    }
+
+    setLineup(lineup)
+  }, [tab, acts.length, setLineup])
+
+  // ─── Send chat message ───
+  const handleSend = () => {
+    const trimmed = chatInput.trim()
+    if (!trimmed || isRunning) return
+    setChatInput('')
+
+    // If we have a lineup, wrap in refinement prompt
+    if (hasLineup) {
+      lineupStartRef.current = Date.now()
+      const prompt = buildRefinementPrompt(trimmed, energy ?? 'medium', acts)
+      window.clui.logEvent('INFO', 'claude.refinement_sent', {
+        messageText: trimmed.slice(0, 100),
+      })
+      sendMessage(prompt)
+    } else {
+      sendMessage(trimmed)
+    }
+  }
+
+  // ─── Build my lineup prompt ───
+  const handleBuildLineup = () => {
+    lineupStartRef.current = Date.now()
+
+    const calendarInstruction = calendarEnabled && calendarEvents.length > 0
       ? `Here are today's calendar events (already fetched):
 ${JSON.stringify(calendarEvents, null, 2)}
 Incorporate these as acts in the lineup. Use event title as act name, event duration for planned duration.
@@ -146,10 +191,17 @@ Fill remaining time with tasks from the user's text input.
 `
       : ''
 
-    const prompt = `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy}" and wants to plan their day.
-${calendarInstruction}Based on their input below, create a show lineup.
+    // Gather recent user messages as context for the lineup
+    const recentUserMessages = messages
+      .filter((m) => m.role === 'user')
+      .slice(-5)
+      .map((m) => m.content)
+      .join('\n')
 
-Respond with a JSON block in this exact format:
+    const prompt = `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy ?? 'medium'}" and wants to plan their day.
+${calendarInstruction}Based on the conversation so far, create a show lineup.
+
+Respond with a \`\`\`showtime-lineup JSON block in this exact format:
 \`\`\`showtime-lineup
 {
   "acts": [
@@ -161,125 +213,23 @@ Respond with a JSON block in this exact format:
 \`\`\`
 
 Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
-Energy "${energy}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
+Energy "${energy ?? 'medium'}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
+${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : ''}`
 
-User's plan:
-${planText}`
-
-    // Add plan text as first user message and transition to conversation
-    setWriterConversations([{ role: 'user', text: planText }])
-    setIsWaiting(true)
-    lineupStartRef.current = Date.now()
-    setWritersRoomStep('conversation')
     sendMessage(prompt)
   }
 
-  // ─── Watch for Claude's response (both initial and refinement) ───
-
-  useEffect(() => {
-    if (!isWaiting) return
-    if (responseOffsetRef.current === null) return
-
-    const tab = tabs.find((t) => t.id === activeTabId)
-    if (!tab) return
-
-    // Only look at messages AFTER the prompt was sent (prevents stale re-detection on turn 2+)
-    const newMessages = tab.messages.slice(responseOffsetRef.current)
-    const lastAssistant = [...newMessages].reverse().find((m) => m.role === 'assistant' && !m.toolName)
-
-    if (lastAssistant) {
-      const lineup = tryParseLineup(lastAssistant.content)
-      if (lineup) {
-        const elapsed = lineupStartRef.current ? Date.now() - lineupStartRef.current : undefined
-        if (lineupStartRef.current) {
-          window.clui.recordMetricTiming('claude.lineup_generation', Date.now() - lineupStartRef.current)
-          lineupStartRef.current = null
-        }
-
-        // Log refinement_parsed if we already had acts, otherwise lineup_parsed
-        const oldActCount = acts.length
-        if (oldActCount > 0) {
-          window.clui.logEvent('INFO', 'claude.refinement_parsed', {
-            oldActCount,
-            newActCount: lineup.acts.length,
-          })
-        } else {
-          window.clui.logEvent('INFO', 'claude.lineup_parsed', {
-            actCount: lineup.acts.length,
-            ...(elapsed !== undefined ? { durationMs: elapsed } : {}),
-          })
-        }
-
-        setLineup(lineup)
-        setWriterConversations((prev) => [...prev, { role: 'writer', text: 'Done \u2014 lineup updated.' }])
-        setIsWaiting(false)
-        responseOffsetRef.current = null
-        setError(null)
-        return
-      }
-
-      // Claude responded but no lineup — show what Claude said
-      if (tab.status === 'completed' || tab.status === 'idle') {
-        window.clui.logEvent('INFO', 'claude.lineup_failed', {
-          responseSnippet: lastAssistant.content.slice(0, 200),
-        })
-        const writerText = lastAssistant.content.slice(0, 300)
-        setWriterConversations((prev) => [...prev, { role: 'writer', text: writerText }])
-        setIsWaiting(false)
-        responseOffsetRef.current = null
-        return
-      }
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
     }
-
-    if (tab.status === 'failed' || tab.status === 'dead') {
-      setWriterConversations((prev) => [...prev, { role: 'writer', text: 'The writer stepped out. Try again?' }])
-      setIsWaiting(false)
-      responseOffsetRef.current = null
-      setError('subprocess')
-    }
-  }, [tabs, activeTabId, isWaiting, setLineup])
-
-  // ─── Conversation timeout ───
-
-  useEffect(() => {
-    if (!isWaiting) return
-
-    const timeoutTimer = setTimeout(() => {
-      setIsWaiting(false)
-      setWriterConversations((prev) => [...prev, { role: 'writer', text: 'The writers need a coffee break. Try again?' }])
-      setError('timeout')
-    }, 90000)
-
-    return () => clearTimeout(timeoutTimer)
-  }, [isWaiting])
-
-  // ─── Refinement (subsequent messages in conversation) ───
-
-  const handleRefinement = (message: string) => {
-    // Track message offset so the response watcher only sees new messages
-    const tab = tabs.find((t) => t.id === activeTabId)
-    responseOffsetRef.current = tab ? tab.messages.length : 0
-
-    window.clui.logEvent('INFO', 'claude.refinement_sent', {
-      messageText: message.slice(0, 100),
-    })
-
-    setWriterConversations((prev) => [...prev, { role: 'user', text: message }])
-    setIsWaiting(true)
-
-    const prompt = buildRefinementPrompt(message, energy!, acts)
-
-    sendMessage(prompt)
   }
 
   return (
-    <div
-      className="w-full h-full bg-surface overflow-hidden flex flex-col"
-    >
+    <div className="w-full h-full bg-surface overflow-hidden flex flex-col">
       {/* Title bar */}
-      <div
-        className="bg-[#151517] px-5 py-3 flex items-center justify-between border-b border-[#242428] drag-region"
-      >
+      <div className="bg-titlebar px-5 py-3 flex items-center justify-between border-b border-surface-hover drag-region shrink-0">
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs tracking-widest uppercase text-txt-muted">
             SHOWTIME
@@ -288,225 +238,181 @@ ${planText}`
             {formatDateLabel()}
           </span>
         </div>
-        <button
-          onClick={() => window.clui.quit()}
-          className="text-txt-muted hover:text-onair transition-colors text-sm no-drag"
-          title="Quit Showtime"
-        >
-          &#10005;
-        </button>
-      </div>
 
-      {/* Content */}
-      <div className="px-8 py-8 flex-1 flex flex-col relative overflow-y-auto">
-        {/* Spotlight gradient overlay */}
-        <div className="absolute inset-0 pointer-events-none spotlight-warm" />
-
-        <AnimatePresence mode="wait">
-          {/* Step 1: Energy */}
-          {writersRoomStep === 'energy' && (
-            <motion.div
-              key="energy"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={springTransition}
+        <div className="flex items-center gap-3 no-drag">
+          {/* Energy chip */}
+          <div className="relative">
+            <button
+              onClick={() => setEnergyPickerOpen(!energyPickerOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-hover/60 border border-card-border text-xs text-txt-secondary hover:text-txt-primary transition-colors"
+              data-testid="energy-chip"
             >
-              <h2 className="font-body text-xl font-semibold text-txt-primary mb-6">
-                How&apos;s your energy?
-              </h2>
-              <EnergySelector
-                onSelect={(level) => {
-                  setEnergy(level)
-                  setWritersRoomStep('plan')
-                }}
-              />
-            </motion.div>
-          )}
-
-          {/* Step 2: Plan Dump */}
-          {writersRoomStep === 'plan' && (
-            <motion.div
-              key="plan"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={springTransition}
-            >
-              <h2 className="font-body text-xl font-semibold text-txt-primary mb-2">
-                What&apos;s on the schedule?
-              </h2>
-              <p className="text-sm text-txt-muted mb-6">
-                Dump everything. Claude will organize it into {getTemporalShowLabel()} lineup.
-              </p>
-
-              {!calendarAvailable && <CalendarBanner />}
-              {calendarAvailable && (
-                <CalendarToggle
-                  checked={calendarEnabled}
-                  onChange={setCalendarEnabled}
-                  fetchStatus={calendarFetchStatus}
-                  eventCount={calendarEvents.length}
-                />
-              )}
-
-              <div className="bg-notepad-bg border border-notepad-border rounded-lg p-4">
-                <textarea
-                  value={planText}
-                  onChange={(e) => setPlanText(e.target.value)}
-                  placeholder="meetings, tasks, errands, whatever..."
-                  className="w-full h-[200px] resize-none bg-transparent font-body text-sm text-notepad-text placeholder:text-txt-muted focus:outline-none"
-                  autoFocus
-                />
-              </div>
-
-              <Button
-                variant="accent"
-                className="mt-4"
-                disabled={!planText.trim()}
-                onClick={() => handleBuildLineup()}
-              >
-                Build my lineup
-              </Button>
-
-              {showNudge && (
-                <p className="text-xs text-txt-muted mt-4 animate-breathe">
-                  Still writing? No rush — the show starts when you&apos;re ready.
-                </p>
-              )}
-            </motion.div>
-          )}
-
-          {/* Step 3: Conversation (replaces old loading + lineup steps) */}
-          {writersRoomStep === 'conversation' && (
-            <motion.div
-              key="conversation"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={springTransition}
-              className="flex flex-col flex-1"
-            >
-              {/* Compact header with energy badge */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="font-body text-xl font-semibold text-txt-primary">
-                    {hasLineup
-                      ? `${getTemporalShowLabel().replace(/^./, (c: string) => c.toUpperCase())} Lineup`
-                      : 'Building your lineup...'}
-                  </h2>
-                  {energy && (
-                    <span className="text-xs text-txt-muted font-mono uppercase tracking-wider">
-                      Energy: {energy}
-                      {calendarEnabled && calendarEvents.length > 0 && (
-                        <> &middot; {calendarEvents.length} calendar event{calendarEvents.length !== 1 ? 's' : ''}</>
-                      )}
-                    </span>
-                  )}
-                </div>
-                {hasLineup && (
-                  <span className="font-mono text-xs text-txt-muted">
-                    {acts.length} ACT{acts.length !== 1 ? 'S' : ''}
-                  </span>
-                )}
-              </div>
-
-              {/* Lineup preview (appears when lineup exists) */}
-              {hasLineup && (
+              <span>{ENERGY_OPTIONS.find((o) => o.level === energy)?.emoji ?? '☀️'}</span>
+              <span className="font-mono uppercase tracking-wider text-[10px]">
+                {energy ?? 'medium'}
+              </span>
+            </button>
+            <AnimatePresence>
+              {energyPickerOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   transition={springTransition}
-                  className={isWaiting ? 'opacity-50' : ''}
+                  className="absolute z-20 top-full right-0 mt-1 bg-surface border border-card-border rounded-lg shadow-lg py-1 min-w-[120px]"
                 >
-                  <LineupPanel variant="full" />
+                  {ENERGY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.level}
+                      onClick={() => {
+                        setEnergy(opt.level)
+                        setEnergyPickerOpen(false)
+                      }}
+                      className={cn(
+                        'w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-surface-hover transition-colors',
+                        energy === opt.level && 'bg-surface-hover',
+                      )}
+                    >
+                      <span>{opt.emoji}</span>
+                      <span className="text-txt-primary">{opt.label}</span>
+                    </button>
+                  ))}
                 </motion.div>
               )}
+            </AnimatePresence>
+          </div>
 
-              {/* Conversation thread */}
-              <div className="mt-4 border-t border-surface-hover pt-4 space-y-3" data-testid="writer-conversation">
-                <AnimatePresence initial={false}>
-                  {writerConversations.map((msg, i) => (
-                    <motion.div
-                      key={`conv-${i}-${msg.role}`}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`px-4 py-2.5 max-w-[85%] text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-accent/10 border border-accent/20 rounded-xl rounded-br-sm text-txt-primary'
-                            : 'bg-txt-secondary/[0.08] border border-txt-secondary/[0.12] rounded-xl rounded-bl-sm text-txt-secondary'
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {/* Writers typing indicator */}
-                {isWaiting && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={springTransition}
-                    className="flex justify-start"
-                  >
-                    <div className="bg-txt-secondary/[0.08] border border-txt-secondary/[0.12] rounded-xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
-                      <span className="text-xs text-txt-secondary mr-1">The writers are revising</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-1" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-2" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-3" />
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-            </motion.div>
+          {/* Calendar toggle (compact) */}
+          {calendarAvailable && (
+            <CalendarToggle
+              checked={calendarEnabled}
+              onChange={setCalendarEnabled}
+              fetchStatus={calendarFetchStatus}
+              eventCount={calendarEvents.length}
+            />
           )}
-        </AnimatePresence>
+
+          {/* Close button */}
+          <button
+            onClick={() => window.clui.quit()}
+            className="text-txt-muted hover:text-onair transition-colors text-sm"
+            title="Quit Showtime"
+          >
+            &#10005;
+          </button>
+        </div>
       </div>
 
-      {/* Sticky footer — chat input + go-live button, always visible without scrolling */}
-      {writersRoomStep === 'conversation' && (
-        <div className="px-8 py-4 border-t border-surface-hover">
-          <LineupChatInput
-            onSend={handleRefinement}
-            disabled={isWaiting}
-            conversations={writerConversations}
-            hasLineup={hasLineup}
-          />
+      {/* Chat messages */}
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-3"
+        data-testid="chat-messages"
+      >
+        {/* Empty state */}
+        {messages.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={springTransition}
+            className="flex flex-col items-center justify-center h-full text-center"
+          >
+            <div className="spotlight-warm absolute inset-0 pointer-events-none" />
+            <p className="text-txt-secondary text-sm mb-1">
+              What&apos;s on the schedule?
+            </p>
+            <p className="text-txt-muted text-xs">
+              Tell me about your day and I&apos;ll build your lineup.
+            </p>
+          </motion.div>
+        )}
 
+        {/* Messages */}
+        {messages.map((msg) => (
+          <ChatMessage key={msg.id} message={msg} />
+        ))}
+
+        {/* Activity indicator */}
+        {isRunning && currentActivity && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={springTransition}
+            className="flex justify-start"
+          >
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-hover/50 border border-card-border/50">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-1" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-3" />
+              <span className="text-xs text-txt-muted ml-1">{currentActivity}</span>
+            </div>
+          </motion.div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Footer: input + action buttons */}
+      <div className="px-6 py-4 border-t border-surface-hover shrink-0">
+        {/* Chat input */}
+        <div className="flex items-end gap-2">
+          <textarea
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isRunning}
+            placeholder={
+              hasLineup
+                ? 'Tell the writers to change something...'
+                : 'What do you want to accomplish today?'
+            }
+            rows={1}
+            className="flex-1 resize-none rounded-lg bg-titlebar border border-surface-hover px-3 py-2.5 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50 disabled:opacity-50"
+            data-testid="chat-input"
+          />
+          <button
+            onClick={handleSend}
+            disabled={isRunning || !chatInput.trim()}
+            className={cn(
+              'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors shrink-0',
+              chatInput.trim() && !isRunning
+                ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
+                : 'bg-surface-hover text-txt-muted border border-surface-hover',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            data-testid="chat-send"
+          >
+            Send
+          </button>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-3 mt-3">
+          {/* BUILD MY LINEUP — visible when no lineup */}
+          {!hasLineup && (
+            <button
+              onClick={handleBuildLineup}
+              disabled={isRunning}
+              className="flex-1 py-2.5 rounded-lg border-2 border-dashed border-accent/30 text-sm text-accent font-medium hover:border-accent/50 hover:bg-accent/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="build-lineup-btn"
+            >
+              BUILD MY LINEUP
+            </button>
+          )}
+
+          {/* WE'RE LIVE! — visible when lineup exists */}
           {hasLineup && (
             <Button
               variant="primary"
-              className="mt-4"
+              className="flex-1"
               onClick={() => triggerGoingLive()}
+              data-testid="go-live-btn"
             >
               WE&apos;RE LIVE!
             </Button>
           )}
-
-          {error === 'subprocess' && (
-            <div className="flex items-center gap-2 mt-2">
-              <button
-                onClick={() => {
-                  setError(null)
-                  setIsWaiting(true)
-                  lineupStartRef.current = Date.now()
-                  sendMessage(planText)
-                }}
-                className="text-xs text-accent hover:text-accent-dark underline"
-              >
-                Retry
-              </button>
-            </div>
-          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
