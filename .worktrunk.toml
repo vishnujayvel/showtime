@@ -1,0 +1,4 @@
+[hooks]
+post-start = ["npm install"]
+pre-merge = ["npm run build", "npm run test"]
+post-merge = ["openspec archive $(git branch --show-current)"]
