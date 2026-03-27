@@ -50,18 +50,18 @@ import fs from 'fs'
 
 // ─── Cassette Fixture: launches app with SHOWTIME_PLAYBACK=1 ───
 
-const test = base.extend<{}, { app: ElectronApplication; mainPage: Page }>({
+// Infrastructure tests share one Electron instance per worker (fast)
+const infraTest = base.extend<{}, { app: ElectronApplication; mainPage: Page }>({
   app: [async ({}, use, testInfo) => {
-    const userDataDir = path.join(os.tmpdir(), `showtime-cassette-${testInfo.workerIndex}`)
+    const userDataDir = path.join(os.tmpdir(), `showtime-cassette-infra-${testInfo.workerIndex}`)
     const app = await electron.launch({
       args: [path.join(__dirname, '..', 'dist', 'main', 'index.js')],
       env: {
         ...process.env,
         NODE_ENV: 'test',
         SHOWTIME_USER_DATA: userDataDir,
-        SHOWTIME_PLAYBACK: '1',           // Enable cassette playback mode
-        SHOWTIME_PLAYBACK_SPEED: '100',   // 100x speed — fast replay for CI
-        // Position off primary display so window doesn't cover dev work
+        SHOWTIME_PLAYBACK: '1',
+        SHOWTIME_PLAYBACK_SPEED: '100',
         SHOWTIME_TEST_X: '2000',
         SHOWTIME_TEST_Y: '200',
       },
@@ -69,13 +69,11 @@ const test = base.extend<{}, { app: ElectronApplication; mainPage: Page }>({
     })
 
     const page = await app.firstWindow()
-    // Move window off primary display
     const bw = await app.browserWindow(page)
     await bw.evaluate((win) => win.setPosition(2000, 200))
     await page.waitForSelector('div', { timeout: 15000 }).catch(() => {})
     await page.waitForTimeout(3000)
 
-    // Start from a clean slate
     await page.evaluate(() => {
       localStorage.removeItem('showtime-show-state')
       localStorage.setItem('showtime-onboarding-complete', 'true')
@@ -100,6 +98,56 @@ const test = base.extend<{}, { app: ElectronApplication; mainPage: Page }>({
     const page = await app.firstWindow()
     await use(page)
   }, { scope: 'worker' }],
+})
+
+// Replay tests launch a fresh Electron per test to prevent state leakage
+const test = base.extend<{ app: ElectronApplication; mainPage: Page }>({
+  app: [async ({}, use, testInfo) => {
+    const userDataDir = path.join(os.tmpdir(), `showtime-cassette-${testInfo.testId}`)
+    const app = await electron.launch({
+      args: [path.join(__dirname, '..', 'dist', 'main', 'index.js')],
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        SHOWTIME_USER_DATA: userDataDir,
+        SHOWTIME_PLAYBACK: '1',
+        SHOWTIME_PLAYBACK_SPEED: '100',
+        SHOWTIME_TEST_X: '2000',
+        SHOWTIME_TEST_Y: '200',
+      },
+      timeout: 30000,
+    })
+
+    const page = await app.firstWindow()
+    const bw = await app.browserWindow(page)
+    await bw.evaluate((win) => win.setPosition(2000, 200))
+    await page.waitForSelector('div', { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(3000)
+
+    await page.evaluate(() => {
+      localStorage.removeItem('showtime-show-state')
+      localStorage.setItem('showtime-onboarding-complete', 'true')
+    })
+    const url = page.url()
+    await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
+    await page.waitForTimeout(3000)
+
+    await use(app)
+
+    const pid = app.process().pid
+    await app.close().catch(() => {})
+    if (pid) {
+      try { process.kill(pid, 'SIGKILL') } catch {}
+    }
+    try {
+      fs.rmSync(userDataDir, { recursive: true, force: true })
+    } catch {}
+  }, { scope: 'test' }],
+
+  mainPage: [async ({ app }, use) => {
+    const page = await app.firstWindow()
+    await use(page)
+  }, { scope: 'test' }],
 })
 
 // ─── Helpers ───
@@ -163,12 +211,12 @@ async function seedFixture(page: Page, fixture: Readonly<Record<string, unknown>
 
 // ─── Infrastructure Tests ───
 
-test.describe('Cassette Infrastructure', () => {
-  test('cassette directory exists', () => {
+infraTest.describe('Cassette Infrastructure', () => {
+  infraTest('cassette directory exists', () => {
     expect(fs.existsSync(CASSETTE_DIR)).toBe(true)
   })
 
-  test('app launches in playback mode', async ({ mainPage: page }) => {
+  infraTest('app launches in playback mode', async ({ mainPage: page }) => {
     // The app should boot normally even with SHOWTIME_PLAYBACK=1 and no cassettes.
     // Playback mode only activates when a Claude run is triggered.
     const title = await page.title()
@@ -176,7 +224,7 @@ test.describe('Cassette Infrastructure', () => {
     await screenshot(page, 'cassette-playback-boot')
   })
 
-  test('dark studio renders in playback mode', async ({ mainPage: page }) => {
+  infraTest('dark studio renders in playback mode', async ({ mainPage: page }) => {
     // Seed Dark Studio state and verify basic rendering
     await seedFixture(page, FIXTURES.darkStudio)
 
@@ -185,7 +233,7 @@ test.describe('Cassette Infrastructure', () => {
     await screenshot(page, 'cassette-dark-studio')
   })
 
-  test('writers room energy step renders in playback mode', async ({ mainPage: page }) => {
+  infraTest('writers room energy step renders in playback mode', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.writersRoom_energy)
 
     const highButton = page.getByText('High Energy')
@@ -193,7 +241,7 @@ test.describe('Cassette Infrastructure', () => {
     await screenshot(page, 'cassette-writers-room-energy')
   })
 
-  test('lists available cassettes', () => {
+  infraTest('lists available cassettes', () => {
     // This test documents which cassettes are committed to git.
     // When no cassettes exist yet, the list is empty — that is expected.
     const cassettes = listCassettes()
@@ -231,7 +279,7 @@ test.describe('Cassette Replay', () => {
     // In playback mode, the cassette provides Claude's response almost instantly
     // (100x speed means ~30s of real time becomes ~300ms)
     const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 }).catch(() => {})
+    await expect(writerConvo).toBeVisible({ timeout: 10000 })
 
     // Wait for act cards to appear from the cassette replay
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
@@ -268,20 +316,40 @@ test.describe('Cassette Replay', () => {
 
     // Wait for initial lineup from cassette
     const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 }).catch(() => {})
+    await expect(writerConvo).toBeVisible({ timeout: 10000 })
 
     const actCardSelector = page.locator('.bg-surface-hover\\/50').first()
     await actCardSelector.waitFor({ state: 'visible', timeout: 15000 })
 
-    // The cassette should contain a multi-turn conversation where the user
-    // refines the lineup (e.g., "make deep work 90 minutes instead")
-    // Verify that the final lineup reflects the refinement
+    const initialCards = page.locator('.bg-surface-hover\\/50')
+    const initialCount = await initialCards.count()
+    expect(initialCount).toBeGreaterThanOrEqual(2)
 
-    const actCards = page.locator('.bg-surface-hover\\/50')
-    const cardCount = await actCards.count()
-    expect(cardCount).toBeGreaterThanOrEqual(2)
+    await screenshot(page, 'cassette-multi-turn-01-initial')
 
-    await screenshot(page, 'cassette-multi-turn-refinement')
+    // Actually send a refinement — this is the second turn
+    const chatInput = page.getByTestId('lineup-chat-input')
+    await expect(chatInput).toBeVisible({ timeout: 5000 })
+    await chatInput.fill('Make deep work 90 minutes instead')
+    await page.getByTestId('lineup-chat-send').click()
+
+    // Wait for the refinement to complete (cassette replays quickly at 100x)
+    const revisingIndicator = page.getByText('The writers are revising')
+    if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await revisingIndicator.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {})
+    } else {
+      await page.waitForTimeout(5000)
+    }
+
+    const refinedCards = page.locator('.bg-surface-hover\\/50')
+    const refinedCount = await refinedCards.count()
+    expect(refinedCount).toBeGreaterThanOrEqual(2)
+
+    // Verify second turn produced a visible change in the conversation
+    const writerMessages = page.getByTestId('writer-conversation').locator('.justify-start')
+    expect(await writerMessages.count()).toBeGreaterThanOrEqual(2) // initial + refinement response
+
+    await screenshot(page, 'cassette-multi-turn-02-refined')
   })
 
   test('replay: low energy plan', async ({ mainPage: page }) => {
@@ -335,12 +403,25 @@ test.describe('Cassette Replay', () => {
     await expect(buildBtn).toBeVisible({ timeout: 3000 })
     await buildBtn.click()
 
-    // The cassette replays an error response — the UI should handle it
+    // The cassette replays an error response — the UI must show recovery state
     const writerConvo = page.getByTestId('writer-conversation')
-    await expect(writerConvo).toBeVisible({ timeout: 10000 }).catch(() => {})
+    await expect(writerConvo).toBeVisible({ timeout: 10000 })
 
-    // Wait for the error to surface (either as a writer message or retry link)
-    await page.waitForTimeout(5000)
+    // Wait for a concrete recovery UI element, not just a delay
+    const retryBtn = page.locator('button').filter({ hasText: /Retry/i }).first()
+    const coffeeMsg = page.getByText(/coffee break/i)
+    const steppedOut = page.getByText(/stepped out/i)
+    const writerResponse = writerConvo.locator('.justify-start').first()
+
+    const recoveryResult = await Promise.race([
+      retryBtn.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'retry' as const),
+      coffeeMsg.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'timeout' as const),
+      steppedOut.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'error' as const),
+      writerResponse.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'response' as const),
+    ]).catch(() => 'none' as const)
+
+    // The cassette must produce a visible UI state — not just silence
+    expect(recoveryResult).not.toBe('none')
 
     await screenshot(page, 'cassette-error-recovery')
   })
