@@ -746,6 +746,11 @@ export const useShowStore = create<ShowStore>()(
           if (rehydratedState.showDate !== today()) {
             Object.assign(rehydratedState, { ...initialState, showDate: today(), viewTier: 'expanded' as ViewTier })
           }
+          // Stale conversation guard: if writersRoomStep is 'conversation' but
+          // no acts exist (e.g. app restarted mid-flow), reset to 'energy'
+          if (rehydratedState.writersRoomStep === 'conversation' && rehydratedState.acts.length === 0) {
+            rehydratedState.writersRoomStep = 'energy'
+          }
         }
       },
     }
