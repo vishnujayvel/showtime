@@ -478,7 +478,6 @@ ${planText}`
                 <Button
                   variant="primary"
                   className="mt-6"
-                  disabled={isWaiting}
                   onClick={() => triggerGoingLive()}
                 >
                   WE&apos;RE LIVE!
