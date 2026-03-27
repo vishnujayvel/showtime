@@ -72,8 +72,11 @@ export function WritersRoomView() {
     if (!energy) setEnergy('medium')
   }, [energy, setEnergy])
 
+  const tabReady = useSessionStore((s) => s.tabReady)
+
   // ─── Calendar Prefetch ───
   useEffect(() => {
+    if (!tabReady) return
     if (!calendarAvailable || calendarFetchStatus !== 'idle') return
     if (!tab) return
 
@@ -86,7 +89,7 @@ If no calendar access or no events, return: []
 Return ONLY the JSON array, nothing else.`
 
     sendMessage(prompt)
-  }, [calendarAvailable, calendarFetchStatus, tab, sendMessage, setCalendarFetchStatus])
+  }, [tabReady, calendarAvailable, calendarFetchStatus, tab, sendMessage, setCalendarFetchStatus])
 
   // Watch for calendar prefetch response
   useEffect(() => {
