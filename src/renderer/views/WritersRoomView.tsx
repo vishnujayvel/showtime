@@ -360,7 +360,6 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isRunning}
             placeholder={
               hasLineup
                 ? 'Tell the writers to change something...'
@@ -372,10 +371,10 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
           />
           <button
             onClick={handleSend}
-            disabled={isRunning || !chatInput.trim()}
+            disabled={!chatInput.trim()}
             className={cn(
               'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors shrink-0',
-              chatInput.trim() && !isRunning
+              chatInput.trim()
                 ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
                 : 'bg-surface-hover text-txt-muted border border-surface-hover',
               'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -392,7 +391,7 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
           {!hasLineup && (
             <button
               onClick={handleBuildLineup}
-              disabled={isRunning}
+              disabled={false}
               className="flex-1 py-2.5 rounded-lg border-2 border-dashed border-accent/30 text-sm text-accent font-medium hover:border-accent/50 hover:bg-accent/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="build-lineup-btn"
             >
