@@ -18,18 +18,29 @@ test.describe('Real Claude Integration', () => {
 
   // Track which log events each test expects (set by tests, verified by afterEach)
   let expectedLogEvents: string[] = []
+  // Track log offset so each test only validates its own log events, not cumulative
+  let logOffsetBeforeTest = 0
 
-  test.beforeEach(async ({ mainPage: page }) => {
+  test.beforeEach(async ({ mainPage: page, app }) => {
     expectedLogEvents = []
+    // Record current log count so afterEach only checks new entries
+    try {
+      const logs = await readClaudeLogEvents(app)
+      logOffsetBeforeTest = logs.length
+    } catch {
+      logOffsetBeforeTest = 0
+    }
     await freshStart(page)
   })
 
   test.afterEach(async ({ app }) => {
     if (expectedLogEvents.length === 0) return
     try {
-      const logs = await readClaudeLogEvents(app)
+      const allLogs = await readClaudeLogEvents(app)
+      // Only check logs emitted during THIS test
+      const testLogs = allLogs.slice(logOffsetBeforeTest)
       for (const event of expectedLogEvents) {
-        assertLogContains(logs, event)
+        assertLogContains(testLogs, event)
       }
     } catch (e) {
       // Log verification is supplementary — don't mask the primary test failure
@@ -162,8 +173,8 @@ test.describe('Real Claude Integration', () => {
     console.log(`Refinement test: refined lineup has ${refinedCount} acts`)
     await screenshot(page, 'claude-real-refine-03-refined')
 
-    // The refined lineup should have at least as many acts (we asked to add one)
-    expect(refinedCount).toBeGreaterThanOrEqual(initialCount)
+    // We asked to add a coffee break — the refined lineup must have MORE acts
+    expect(refinedCount).toBeGreaterThan(initialCount)
   })
 
   test('Claude error produces visible error state', async ({ mainPage: page }) => {
@@ -212,9 +223,8 @@ test.describe('Real Claude Integration', () => {
 
     console.log(`Error test result: ${result}`)
 
-    // Any outcome is acceptable — the test verifies the app does not crash
-    // and produces a visible state the user can act on
-    expect(['lineup', 'retry', 'timeout-msg', 'error-msg', 'hard-timeout']).toContain(result)
+    // App must produce a visible response — hard timeout means nothing rendered
+    expect(['lineup', 'retry', 'timeout-msg', 'error-msg']).toContain(result)
 
     // If an error state appeared, verify conversation thread has content
     if (result === 'retry' || result === 'timeout-msg' || result === 'error-msg') {
@@ -265,14 +275,19 @@ test.describe('Real Claude Integration', () => {
 
     await screenshot(page, 'claude-real-full-flow-03-live')
 
-    // Verify we transitioned to the live phase
-    const body = await page.textContent('body')
-    expect(body!.length).toBeGreaterThan(0)
+    // Verify we actually transitioned to live phase — check for ON AIR indicator
+    // or timer display, not just that the app is mounted
+    const onAirIndicator = page.getByText('ON AIR')
+    const timerDisplay = page.locator('[data-testid="timer-display"]')
+    const pillTimer = page.locator('.font-mono').filter({ hasText: /\d{1,2}:\d{2}/ }).first()
 
-    // The app should be in live phase now — check for live-specific UI elements
-    // (ON AIR indicator, timer, or lineup sidebar)
-    const hasLiveUI = await page.locator('[data-testid="showtime-app"]').isVisible()
-    expect(hasLiveUI).toBe(true)
+    const hasLiveUI = await Promise.race([
+      onAirIndicator.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'on-air'),
+      timerDisplay.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'timer'),
+      pillTimer.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'pill-timer'),
+    ]).catch(() => 'none')
+
+    expect(hasLiveUI).not.toBe('none')
 
     await screenshot(page, 'claude-real-full-flow-04-complete')
   })
@@ -320,6 +335,17 @@ test.describe('Real Claude Integration', () => {
 
     // Session continuity proof: refined lineup should have MORE acts (we asked to add one)
     expect(refinedCount).toBeGreaterThan(initialCount)
+
+    // Context survival proof: the first act should still be present (possibly shorter)
+    // This proves Claude retained turn-1 context when processing the refinement
+    if (firstActName) {
+      const refinedActNames = await refinedCards.locator('.font-medium').allTextContents()
+      const firstActStillPresent = refinedActNames.some(name =>
+        name.toLowerCase().includes(firstActName!.toLowerCase().split(' ')[0])
+      )
+      expect(firstActStillPresent).toBe(true)
+      console.log(`Context survived: "${firstActName}" still found in refined lineup`)
+    }
 
     // The conversation thread should show both the user refinement and a writer response
     const writerConvo = page.getByTestId('writer-conversation')
