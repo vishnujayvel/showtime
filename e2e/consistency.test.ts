@@ -92,8 +92,8 @@ test.describe('Cross-Component Data Consistency', () => {
     await seedFixture(page, FIXTURES.live_expanded)
     const expandedDate = await page.locator('[data-testid="date-label"]').textContent().catch(() => '')
 
-    // Switch to WritersRoom
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+    // Switch to WritersRoom (chat-first UI)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
     // WritersRoom also has a date label in the title bar
     const writersRoomDate = await page.locator('[data-testid="date-label"]').textContent().catch(() => '')
 

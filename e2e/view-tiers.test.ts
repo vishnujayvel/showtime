@@ -208,7 +208,7 @@ test.describe('View Tier Verification', () => {
   })
 
   test('WritersRoom: window matches full dimensions', async ({ app, mainPage: page }) => {
-    await seedFixture(page, FIXTURES.writersRoom_energy)
+    await seedFixture(page, FIXTURES.writersRoom_chat)
 
     const bounds = await waitForBounds(app, VIEW_DIMENSIONS.full.width, VIEW_DIMENSIONS.full.height)
     expect(bounds?.width).toBe(VIEW_DIMENSIONS.full.width)
