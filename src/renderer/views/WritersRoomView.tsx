@@ -74,54 +74,8 @@ export function WritersRoomView() {
 
   const tabReady = useSessionStore((s) => s.tabReady)
 
-  // ─── Calendar Prefetch ───
-  useEffect(() => {
-    if (!tabReady) return
-    if (!calendarAvailable || calendarFetchStatus !== 'idle') return
-    if (!tab) return
-
-    calendarFetchMsgCountRef.current = tab.messages.length
-    setCalendarFetchStatus('fetching')
-
-    const prompt = `List all of today's Google Calendar events as a JSON array.
-Each event: {"title": "...", "start": "HH:MM", "end": "HH:MM", "allDay": false}.
-If no calendar access or no events, return: []
-Return ONLY the JSON array, nothing else.`
-
-    sendMessage(prompt, undefined, '📅 Checking your calendar...')
-  }, [tabReady, calendarAvailable, calendarFetchStatus, tab, sendMessage, setCalendarFetchStatus])
-
-  // Watch for calendar prefetch response
-  useEffect(() => {
-    if (calendarFetchStatus !== 'fetching') return
-    if (calendarFetchMsgCountRef.current === null) return
-    if (!tab) return
-
-    const newMessages = tab.messages.slice(calendarFetchMsgCountRef.current)
-    const assistantMsg = newMessages.find((m) => m.role === 'assistant' && !m.toolName)
-
-    if (assistantMsg) {
-      const events = tryParseCalendarEvents(assistantMsg.content)
-      if (events !== null) {
-        setCalendarEvents(events)
-        calendarFetchMsgCountRef.current = null
-        return
-      }
-    }
-
-    if (tab.status === 'completed' || tab.status === 'idle') {
-      const hasNewAssistant = newMessages.some((m) => m.role === 'assistant' && !m.toolName)
-      if (hasNewAssistant) {
-        setCalendarFetchStatus('unavailable')
-        calendarFetchMsgCountRef.current = null
-      }
-    }
-
-    if (tab.status === 'failed' || tab.status === 'dead') {
-      setCalendarFetchStatus('error')
-      calendarFetchMsgCountRef.current = null
-    }
-  }, [tab, calendarFetchStatus, setCalendarEvents, setCalendarFetchStatus])
+  // Calendar prefetch DISABLED in chat-first mode.
+  // Claude fetches calendar directly via MCP tools when the user asks.
 
   // ─── Watch for lineup in assistant messages ───
   useEffect(() => {
