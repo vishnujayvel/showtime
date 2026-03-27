@@ -358,7 +358,6 @@ test.describe('Real Claude Integration', () => {
     console.log(`Context survived: "${firstActName}" still found in refined lineup`)
 
     // The conversation thread should show both the user refinement and a writer response
-    const writerConvo = page.getByTestId('writer-conversation')
     const userMessages = writerConvo.locator('.justify-end')
     const writerMessages = writerConvo.locator('.justify-start')
     expect(await userMessages.count()).toBeGreaterThanOrEqual(1)

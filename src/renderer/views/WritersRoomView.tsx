@@ -465,45 +465,48 @@ ${planText}`
                 )}
               </div>
 
-              {/* Chat input for refinement / follow-up */}
-              <LineupChatInput
-                onSend={handleRefinement}
-                disabled={isWaiting}
-                conversations={writerConversations}
-                hasLineup={hasLineup}
-              />
-
-              {/* "We're live!" button (only when lineup exists) */}
-              {hasLineup && (
-                <Button
-                  variant="primary"
-                  className="mt-6"
-                  onClick={() => triggerGoingLive()}
-                >
-                  WE&apos;RE LIVE!
-                </Button>
-              )}
-
-              {/* Subprocess error — retry option */}
-              {error === 'subprocess' && (
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    onClick={() => {
-                      setError(null)
-                      setIsWaiting(true)
-                      lineupStartRef.current = Date.now()
-                      sendMessage(planText)
-                    }}
-                    className="text-xs text-accent hover:text-accent-dark underline"
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Sticky footer — chat input + go-live button, always visible without scrolling */}
+      {writersRoomStep === 'conversation' && (
+        <div className="px-8 py-4 border-t border-surface-hover">
+          <LineupChatInput
+            onSend={handleRefinement}
+            disabled={isWaiting}
+            conversations={writerConversations}
+            hasLineup={hasLineup}
+          />
+
+          {hasLineup && (
+            <Button
+              variant="primary"
+              className="mt-4"
+              onClick={() => triggerGoingLive()}
+            >
+              WE&apos;RE LIVE!
+            </Button>
+          )}
+
+          {error === 'subprocess' && (
+            <div className="flex items-center gap-2 mt-2">
+              <button
+                onClick={() => {
+                  setError(null)
+                  setIsWaiting(true)
+                  lineupStartRef.current = Date.now()
+                  sendMessage(planText)
+                }}
+                className="text-xs text-accent hover:text-accent-dark underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
