@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useShowStore } from '../stores/showStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
+import { buildRefinementPrompt } from '../lib/refinement-prompt'
 import { tryParseCalendarEvents } from '../lib/calendar-parser'
 import { EnergySelector } from '../components/EnergySelector'
 import { CalendarBanner } from '../components/CalendarBanner'
@@ -258,10 +259,7 @@ ${planText}`
     setWriterConversations((prev) => [...prev, { role: 'user', text: message }])
     setIsWaiting(true)
 
-    const prompt = `The user wants to change the lineup: "${message}"
-
-Respond with the complete updated lineup as a showtime-lineup JSON block.
-Keep the same format as before. Only modify what the user asked for.`
+    const prompt = buildRefinementPrompt(message, energy!, acts)
 
     sendMessage(prompt)
   }
