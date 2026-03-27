@@ -186,6 +186,35 @@
   background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);
 }
 
+/* ─── Light Mode Overrides ─── */
+
+:root.light {
+  --color-studio-bg: #f5f4f0;
+  --color-surface: #ffffff;
+  --color-surface-hover: #eae9e5;
+  --color-titlebar: #edecea;
+  --color-notepad-bg: #faf9f5;
+  --color-notepad-header: #f0efea;
+  --color-notepad-border: #d8d7d2;
+  --color-intermission-warm: #f2f0ec;
+
+  --color-txt-primary: #1a1a1e;
+  --color-txt-secondary: #5a5855;
+  --color-txt-muted: #9a9890;
+  --color-notepad-text: #3a3a35;
+
+  --color-accent: #c4613e;
+  --color-accent-dark: #a84e30;
+  --color-onair: #dc2626;
+  --color-beat: #d97706;
+  --color-beat-light: #f59e0b;
+
+  --color-off: #d4d4d8;
+  --color-border-default: #d8d7d2;
+  --color-divider: #eae9e5;
+  --color-card-border: #d8d7d2;
+}
+
 /* ─── shadcn/ui CSS Variable Overrides ─── */
 
 :root {
