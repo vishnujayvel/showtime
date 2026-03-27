@@ -163,11 +163,6 @@ Respond with a JSON block in this exact format:
 Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
 Energy "${energy}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
 
-IMPORTANT:
-- Do NOT use any MCP tools (no Google Calendar, no web search, no file operations)
-- Do NOT call any tools at all — just respond with the lineup
-- Only use the calendar events provided above (if any). Do NOT fetch new ones.
-
 User's plan:
 ${planText}`
 
