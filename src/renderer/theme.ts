@@ -29,12 +29,12 @@ function loadSettings(): { themeMode: ThemeMode; soundEnabled: boolean } {
     if (raw) {
       const parsed = JSON.parse(raw)
       return {
-        themeMode: ['light', 'dark'].includes(parsed.themeMode) ? parsed.themeMode : 'dark',
+        themeMode: ['system', 'light', 'dark'].includes(parsed.themeMode) ? parsed.themeMode : 'system',
         soundEnabled: typeof parsed.soundEnabled === 'boolean' ? parsed.soundEnabled : true,
       }
     }
   } catch {}
-  return { themeMode: 'dark', soundEnabled: true }
+  return { themeMode: 'system', soundEnabled: true }
 }
 
 function saveSettings(s: { themeMode: ThemeMode; soundEnabled: boolean }): void {
@@ -47,9 +47,13 @@ function applyTheme(isDark: boolean): void {
 }
 
 const saved = loadSettings()
+const initialIsDark = saved.themeMode === 'light' ? false : true
+
+// Apply theme class immediately on module load — before first React render
+applyTheme(initialIsDark)
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
-  isDark: saved.themeMode === 'dark' ? true : saved.themeMode === 'light' ? false : true,
+  isDark: initialIsDark,
   themeMode: saved.themeMode,
   soundEnabled: saved.soundEnabled,
   _systemIsDark: true,

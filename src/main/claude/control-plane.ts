@@ -499,6 +499,7 @@ export class ControlPlane extends EventEmitter {
       prompt: 'hi',
       projectPath: process.cwd(),
       maxTurns: 1,
+      model: 'claude-sonnet-4-6',
     }).catch((err) => {
       this.initRequestIds.delete(requestId)
       log(`Init session failed for tab ${tabId}: ${(err as Error).message}`)

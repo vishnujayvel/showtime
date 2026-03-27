@@ -343,23 +343,46 @@ export async function clearMockHour(page: Page) {
 /**
  * Wait for a Claude refinement to complete. Checks for known progress indicators
  * ("Rewriting the lineup...", "The writers are revising") and waits for them to disappear.
- * Falls back to a fixed wait if no indicator is visible.
+ * Falls back to polling for a new writer message if no indicator is visible.
+ *
+ * @param page - Playwright page
+ * @param writerMessageCountBeforeRefinement - The count of writer messages BEFORE triggering
+ *   refinement. Must be sampled by the caller before clicking "send" to avoid a race where
+ *   refinement completes before this function can sample the initial count.
+ * @param timeoutMs - Maximum time to wait for refinement to complete
  */
-export async function waitForRefinementComplete(page: Page, timeoutMs = 60000): Promise<void> {
+export async function waitForRefinementComplete(page: Page, writerMessageCountBeforeRefinement?: number, timeoutMs = 60000): Promise<void> {
   const rewritingIndicator = page.getByText('Rewriting the lineup...')
   if (await rewritingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await rewritingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {})
+    await rewritingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs })
     return
   }
 
   const revisingIndicator = page.getByText('The writers are revising')
   if (await revisingIndicator.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await revisingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {})
+    await revisingIndicator.waitFor({ state: 'hidden', timeout: timeoutMs })
     return
   }
 
-  // No indicator found — wait a reasonable time for Claude to respond
-  await page.waitForTimeout(30000)
+  // No indicator found — wait for a concrete signal that refinement completed.
+  // Look for a new writer message in the conversation thread (the refinement response).
+  const writerConvo = page.getByTestId('writer-conversation')
+  const convoVisible = await writerConvo.isVisible()
+  if (!convoVisible) {
+    throw new Error('waitForRefinementComplete: [data-testid="writer-conversation"] not found or not visible — check that the Writer\'s Room conversation panel is rendered')
+  }
+  const writerMessages = writerConvo.locator('.justify-start')
+  const initialCount = writerMessageCountBeforeRefinement ?? await writerMessages.count()
+
+  // Wait for a new writer message to appear (refinement response)
+  await page.waitForFunction(
+    ({ selector, prevCount }) => {
+      const messages = document.querySelectorAll(`[data-testid="writer-conversation"] ${selector}`)
+      return messages.length > prevCount
+    },
+    { selector: '.justify-start', prevCount: initialCount },
+    { timeout: timeoutMs }
+  )
 }
 
 // ─── Log Verification (Layer 4 of Testing Pyramid) ───
