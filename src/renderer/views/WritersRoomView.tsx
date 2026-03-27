@@ -285,15 +285,7 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             </AnimatePresence>
           </div>
 
-          {/* Calendar toggle (compact) */}
-          {calendarAvailable && (
-            <CalendarToggle
-              checked={calendarEnabled}
-              onChange={setCalendarEnabled}
-              fetchStatus={calendarFetchStatus}
-              eventCount={calendarEvents.length}
-            />
-          )}
+          {/* Calendar toggle hidden in chat-first mode — Claude handles calendar via MCP */}
 
           {/* Close button */}
           <button
