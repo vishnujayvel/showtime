@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
-import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode } from '../shared/types'
+import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode, TrayShowState } from '../shared/types'
 import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry, MetricsSummary } from '../main/data/types'
 
 export interface CluiAPI {
@@ -62,6 +62,9 @@ export interface CluiAPI {
   getShowDetail(showId: string): Promise<ShowDetailEntry | null>
   recordMetricTiming(name: string, durationMs: number, metadata?: Record<string, string>): void
   getMetricsSummary(name: string, days?: number): Promise<MetricsSummary>
+
+  // ─── Showtime tray state ───
+  updateTrayState(state: TrayShowState): void
 
   // ─── Data reset ───
   resetAllData(): Promise<{ ok: boolean; error?: string }>
@@ -136,6 +139,9 @@ const api: CluiAPI = {
   notifyBeatCheck: (actName: string) => ipcRenderer.send(IPC.NOTIFY_BEAT_CHECK, actName),
   notifyVerdict: (verdict: string, message: string) => ipcRenderer.send(IPC.NOTIFY_VERDICT, verdict, message),
 
+  // ─── Showtime tray state ───
+  updateTrayState: (state: TrayShowState) => ipcRenderer.send(IPC.TRAY_STATE_UPDATE, state),
+
   // ─── Showtime window management ───
   setViewMode: (mode) => ipcRenderer.send(IPC.SET_VIEW_MODE, mode),
   forceRepaint: () => ipcRenderer.send(IPC.FORCE_REPAINT),
@@ -178,6 +184,9 @@ const api: CluiAPI = {
   getShowDetail: (showId: string) => ipcRenderer.invoke(IPC.SHOW_DETAIL, showId),
   recordMetricTiming: (name: string, durationMs: number, metadata?: Record<string, string>) => ipcRenderer.send(IPC.METRICS_RECORD, name, durationMs, metadata),
   getMetricsSummary: (name: string, days?: number) => ipcRenderer.invoke(IPC.METRICS_SUMMARY, name, days),
+
+  // ─── Showtime tray state ───
+  updateTrayState: (state: TrayShowState) => ipcRenderer.send(IPC.TRAY_STATE_UPDATE, state),
 
   // ─── Data reset ───
   resetAllData: () => ipcRenderer.invoke(IPC.RESET_ALL_DATA),

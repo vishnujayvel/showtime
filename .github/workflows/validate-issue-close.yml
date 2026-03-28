@@ -1,0 +1,57 @@
+name: Validate Issue Closure
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  validate-closure:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check required labels for issue closure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+
+            const hasRootCause = labels.includes('root-cause');
+            const hasTestEvidence = labels.includes('has-test-evidence');
+
+            if (!hasRootCause && !hasTestEvidence) {
+              // Reopen the issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'open'
+              });
+
+              // Post explanation comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: [
+                  '## Issue Reopened — Missing Required Labels',
+                  '',
+                  'This issue was closed without the required labels for structured closure.',
+                  '',
+                  'Before closing, the issue must have **at least one** of these labels:',
+                  '- `root-cause` — confirms the root cause was identified and documented',
+                  '- `has-test-evidence` — confirms test evidence (screenshots, logs, test output) was provided',
+                  '',
+                  'This enforcement prevents issues from being closed without proper verification.',
+                  'Please add the appropriate label(s) and close again.',
+                  '',
+                  '---',
+                  '*Automated by validate-issue-close workflow*'
+                ].join('\n')
+              });
+
+              core.setFailed(`Issue #${issue.number} reopened: missing required labels (root-cause or has-test-evidence)`);
+            } else {
+              console.log(`Issue #${issue.number} has valid closure labels: ${labels.join(', ')}`);
+            }
