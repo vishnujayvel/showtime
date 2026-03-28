@@ -348,19 +348,18 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             </button>
           )}
 
-          {/* WE'RE LIVE! — visible when lineup exists */}
+          {/* Finalize Lineup — visible when lineup exists */}
           {hasLineup && (
             <Button
               variant="primary"
               className="flex-1"
               onClick={() => {
-                console.log('[SHOWTIME] Go Live clicked — triggering goingLiveActive')
                 window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
                 triggerGoingLive()
               }}
               data-testid="go-live-btn"
             >
-              WE&apos;RE LIVE!
+              Finalize Lineup
             </Button>
           )}
         </div>
