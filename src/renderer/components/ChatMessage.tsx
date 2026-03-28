@@ -109,7 +109,9 @@ function splitLineupFromContent(content: string): {
         textAfter: content.slice(end).trim(),
       }
     }
-    return { textBefore: '', lineup: parsed, textAfter: content }
+    // actIdx === -1 means JSON was parsed but not located in original content
+    // Show only the lineup card, no duplicate raw text
+    return { textBefore: '', lineup: parsed, textAfter: '' }
   }
 
   return { textBefore: content, lineup: null, textAfter: '' }

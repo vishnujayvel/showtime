@@ -18,7 +18,7 @@
 
 **Files:** `src/renderer/views/DarkStudioView.tsx`, `src/renderer/views/ColdOpenTransition.tsx`
 
-## Issue #84: Limit parallel Electron instances to max 4
+## Issue #84: Limit parallel Electron instances to max 2
 
 **Problem:** Playwright tests and repeated `npm run dev` leave zombie Electron processes. 80+ instances making laptop slow.
 

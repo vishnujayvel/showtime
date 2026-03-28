@@ -2,7 +2,7 @@
 
 ## Summary
 
-Audit of the dynamic tray implementation (#88) against the mockup at `docs/mockups/tray-menu-bar.html`.
+Audit of the dynamic tray implementation (#88) against the mockup at `docs/mockups/tray-menu-bar.html`. Produced by code-reviewer agent on 2026-03-28.
 
 ## Design Audit: Mockup vs Implementation
 
