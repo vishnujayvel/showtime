@@ -65,6 +65,7 @@ export interface CluiAPI {
 
   // ─── Showtime tray state ───
   updateTrayState(state: TrayShowState): void
+  updateTrayTimer(seconds: number): void
 
   // ─── Data reset ───
   resetAllData(): Promise<{ ok: boolean; error?: string }>
@@ -141,6 +142,7 @@ const api: CluiAPI = {
 
   // ─── Showtime tray state ───
   updateTrayState: (state: TrayShowState) => ipcRenderer.send(IPC.TRAY_STATE_UPDATE, state),
+  updateTrayTimer: (seconds: number) => ipcRenderer.send(IPC.TRAY_TIMER_UPDATE, seconds),
 
   // ─── Showtime window management ───
   setViewMode: (mode) => ipcRenderer.send(IPC.SET_VIEW_MODE, mode),
