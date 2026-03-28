@@ -43,13 +43,15 @@ test.describe('Electron Main Process (#3, #4, #9, #10)', () => {
     expect(bounds.height).toBe(740)
   })
 
-  test('#3 tray menu labels include Quit Showtime and Reset Show', async ({ app }) => {
+  test('#3 tray menu labels match idle state', async ({ app }) => {
     const labels = await app.evaluate(async () => {
       return (global as any).__trayMenuLabels || []
     })
+    expect(labels).toContain('SHOWTIME')
+    expect(labels).toContain('No show running')
+    expect(labels).toContain("Enter Writer's Room")
+    expect(labels).toContain('Past Shows')
     expect(labels).toContain('Quit Showtime')
-    expect(labels).toContain('Show Showtime')
-    expect(labels).toContain('Reset Show')
   })
 })
 

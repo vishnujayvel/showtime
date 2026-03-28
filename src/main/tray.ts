@@ -18,10 +18,12 @@ function loadIcons(): void {
   iconDefault.setTemplateImage(true)
 
   iconLive = nativeImage.createFromPath(join(base, 'trayTemplate-live.png'))
-  iconLive.setTemplateImage(true)
+  // Not template — colored dot must remain red, not recolored by macOS
+  iconLive.setTemplateImage(false)
 
   iconAmber = nativeImage.createFromPath(join(base, 'trayTemplate-amber.png'))
-  iconAmber.setTemplateImage(true)
+  // Not template — colored dot must remain amber
+  iconAmber.setTemplateImage(false)
 }
 
 function setTrayIcon(tray: Tray, state: 'default' | 'live' | 'amber'): void {
@@ -148,7 +150,7 @@ export function createTray(
   ;(global as any).__trayMenuLabels = menuLabels(idleMenu)
 
   // Listen for show state updates from renderer
-  ipcMain.on(IPC.TRAY_STATE_UPDATE, (_event, state: TrayShowState) => {
+  const trayStateHandler = (_event: Electron.IpcMainEvent, state: TrayShowState) => {
     if (!tray || tray.isDestroyed()) return
 
     let menu: Electron.MenuItemConstructorOptions[]
@@ -200,6 +202,13 @@ export function createTray(
 
     tray.setContextMenu(Menu.buildFromTemplate(menu))
     ;(global as any).__trayMenuLabels = menuLabels(menu)
+  }
+
+  ipcMain.on(IPC.TRAY_STATE_UPDATE, trayStateHandler)
+
+  // Clean up IPC listener when tray is destroyed (app quit)
+  app.on('before-quit', () => {
+    ipcMain.removeListener(IPC.TRAY_STATE_UPDATE, trayStateHandler)
   })
 
   return tray
