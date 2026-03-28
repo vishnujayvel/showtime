@@ -17,7 +17,7 @@ export function ColdOpenTransition({ onComplete }: ColdOpenTransitionProps) {
 
   return (
     <div className="fixed inset-0 bg-studio-bg flex flex-col items-center justify-center z-50">
-      <div className="absolute inset-0 spotlight-stage" />
+      <div className="absolute inset-0 spotlight-stage pointer-events-none" />
 
       <motion.h1
         className="font-mono text-3xl font-bold text-txt-primary tracking-tight relative z-10"

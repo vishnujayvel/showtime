@@ -92,6 +92,9 @@ function applyViewModeImmediate(mode: ViewMode): void {
   const dims = VIEW_DIMENSIONS[mode]
   if (!dims) return
 
+  // Enforce minimum size to prevent pill from collapsing on zoom
+  mainWindow.setMinimumSize(dims.width, dims.height)
+
   if (isDragging) {
     deferredViewMode = mode
     return

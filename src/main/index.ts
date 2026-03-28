@@ -39,6 +39,13 @@ if (process.env.SHOWTIME_USER_DATA) {
 
 // ─── App Lifecycle ───
 
+// Prevent multiple instances — only one Showtime app at a time
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  console.log('[Showtime] Another instance is already running. Quitting.')
+  app.quit()
+}
+
 const appStartTime = Date.now()
 
 app.whenReady().then(async () => {
