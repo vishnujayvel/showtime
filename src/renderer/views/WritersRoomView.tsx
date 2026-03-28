@@ -353,7 +353,11 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             <Button
               variant="primary"
               className="flex-1"
-              onClick={() => triggerGoingLive()}
+              onClick={() => {
+                console.log('[SHOWTIME] Go Live clicked — triggering goingLiveActive')
+                window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
+                triggerGoingLive()
+              }}
               data-testid="go-live-btn"
             >
               WE&apos;RE LIVE!

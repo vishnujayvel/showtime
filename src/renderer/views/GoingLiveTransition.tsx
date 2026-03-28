@@ -26,7 +26,7 @@ export function GoingLiveTransition({ onComplete }: GoingLiveTransitionProps) {
 
   return (
     <div className="fixed inset-0 bg-studio-bg flex flex-col items-center justify-center z-50">
-      <div className="absolute inset-0 spotlight-stage" />
+      <div className="absolute inset-0 spotlight-stage pointer-events-none" />
 
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
