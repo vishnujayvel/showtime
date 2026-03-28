@@ -124,13 +124,17 @@ Each Showtime view has a specific window size. The main process resizes the Elec
 | View | Size | Notes |
 |------|------|-------|
 | Dark Studio | Full window | Empty stage with spotlight effect. Shown when no show is planned. |
-| Writer's Room | 560 x 680px | Energy selection, plan dump, lineup preview, "WE'RE LIVE!" button. |
-| Pill | 320 x 48px | Floating, always-on-top, rounded-full. Shows timer + current Act. |
+| Writer's Room | 560 x 680px | Chat-first day planning with Claude. Energy chip + chat + lineup card. |
+| Pill | 320 x variable | Floating, always-on-top, rounded-full. ~40px base height + optional MiniRundownStrip below. |
+| Compact | 320 x variable | One step up from Pill — timer + progress + beat count. |
+| Dashboard | 560 x variable | Control room — lineup sidebar + current act detail. |
 | Expanded | 560 x 620px | Timer hero + lineup sidebar + ON AIR status bar. |
 | Beat Check | 380px card | Centered modal with spotlight overlay. |
 | Intermission | 560 x 500px | "WE'LL BE RIGHT BACK" card. Rest costs zero. |
 | Director Mode | 420px card | Four compassionate options for when things go sideways. |
 | Strike | 560 x variable | Stats, verdict, and Act recap. Height varies with content. |
+
+See [View System](/contributing/view-system) for the full view routing and tier state machine.
 
 ### Key UI Components
 
@@ -139,3 +143,7 @@ Each Showtime view has a specific window size. The main process resizes the Elec
 - **Clapperboard badge** — Monospaced uppercase label like `DEEP WORK | ACT 3`, with a category-colored left border.
 - **Studio clock** — 64px monospaced countdown. Shifts to amber when under 5 minutes remain.
 - **Beat stars** — Gold filled star when locked, gray outline when empty. Plays the `beatIgnite` animation on lock.
+- **MiniRundownStrip** — Horizontal timeline bar below the Pill view. Each act is a colored segment proportional to its duration. A red NOW marker tracks real-time position. Only visible during `live` and `intermission`.
+- **LineupCard** — Interactive lineup editor rendered inside chat messages. Supports inline editing of act name, duration, and category. See [Components](/contributing/components).
+
+See [Key Components](/contributing/components) for the full component reference.
