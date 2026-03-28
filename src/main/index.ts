@@ -134,7 +134,6 @@ app.whenReady().then(async () => {
         bounds: mainWindow?.getBounds(),
       }
     })
-    ;(global as any).__trayMenuLabels = ['Show Showtime', 'separator', 'Preferences…', 'Reset Show', 'separator', 'Quit Showtime']
     ipcMain.handle('test:get-tray-menu', () => (global as any).__trayMenuLabels)
   }
 
