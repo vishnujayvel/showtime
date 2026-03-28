@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
+import { useTraySync } from './hooks/useTraySync'
 import { useSessionStore } from './stores/sessionStore'
 import { useShowStore, selectIsExpanded } from './stores/showStore'
 import { useThemeStore } from './theme'
@@ -39,6 +40,7 @@ function tierToViewMode(tier: ViewTier, phase: ShowPhase): ViewMode {
 export default function App() {
   useClaudeEvents()
   useHealthReconciliation()
+  useTraySync()
 
   const phase = useShowStore((s) => s.phase)
   const viewTier = useShowStore((s) => s.viewTier)
@@ -83,35 +85,6 @@ export default function App() {
     })
     return unsub
   }, [setSystemTheme])
-
-  // ─── Tray state sync — push show state to main process for menu bar display ───
-  useEffect(() => {
-    const unsub = useShowStore.subscribe((state) => {
-      if (!window.clui?.updateTrayState) return
-      const currentAct = state.acts[state.currentActIndex]
-      const timerSeconds = state.timerEndAt
-        ? Math.max(0, Math.round((state.timerEndAt - Date.now()) / 1000))
-        : state.timerPausedRemaining
-          ? Math.round(state.timerPausedRemaining / 1000)
-          : null
-      window.clui.updateTrayState({
-        phase: state.phase,
-        currentActName: currentAct?.name || null,
-        currentActCategory: currentAct?.sketch || null,
-        timerSeconds,
-        beatsLocked: state.beatsLocked,
-        beatThreshold: state.beatThreshold,
-        actIndex: state.currentActIndex,
-        totalActs: state.acts.length,
-        nextActs: state.acts.slice(state.currentActIndex + 1, state.currentActIndex + 3).map(a => ({
-          name: a.name,
-          sketch: a.sketch,
-          durationMinutes: a.durationMinutes,
-        })),
-      })
-    })
-    return unsub
-  }, [])
 
   // ─── Session initialization + immediate warmup ───
   // CLUI CC's secret sauce: create tab then IMMEDIATELY warm up the Claude

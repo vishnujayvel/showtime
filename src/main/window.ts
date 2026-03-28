@@ -221,7 +221,8 @@ export function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show()
-    if (process.env.ELECTRON_RENDERER_URL) {
+    // Only open DevTools if explicitly requested via SHOWTIME_DEVTOOLS=1
+    if (process.env.SHOWTIME_DEVTOOLS === '1') {
       mainWindow?.webContents.openDevTools({ mode: 'detach' })
     }
   })

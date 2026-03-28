@@ -185,9 +185,6 @@ const api: CluiAPI = {
   recordMetricTiming: (name: string, durationMs: number, metadata?: Record<string, string>) => ipcRenderer.send(IPC.METRICS_RECORD, name, durationMs, metadata),
   getMetricsSummary: (name: string, days?: number) => ipcRenderer.invoke(IPC.METRICS_SUMMARY, name, days),
 
-  // ─── Showtime tray state ───
-  updateTrayState: (state: TrayShowState) => ipcRenderer.send(IPC.TRAY_STATE_UPDATE, state),
-
   // ─── Data reset ───
   resetAllData: () => ipcRenderer.invoke(IPC.RESET_ALL_DATA),
 
