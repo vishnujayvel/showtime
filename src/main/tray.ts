@@ -15,13 +15,16 @@ function loadIcons(): void {
   const base = join(__dirname, '../../resources')
 
   iconDefault = nativeImage.createFromPath(join(base, 'trayTemplate.png'))
+  if (iconDefault.isEmpty()) { console.warn('[Showtime] trayTemplate.png not found or corrupt') }
   iconDefault.setTemplateImage(true)
 
   iconLive = nativeImage.createFromPath(join(base, 'trayTemplate-live.png'))
+  if (iconLive.isEmpty()) { console.warn('[Showtime] trayTemplate-live.png not found or corrupt') }
   // Not template — colored dot must remain red, not recolored by macOS
   iconLive.setTemplateImage(false)
 
   iconAmber = nativeImage.createFromPath(join(base, 'trayTemplate-amber.png'))
+  if (iconAmber.isEmpty()) { console.warn('[Showtime] trayTemplate-amber.png not found or corrupt') }
   // Not template — colored dot must remain amber
   iconAmber.setTemplateImage(false)
 }
@@ -75,7 +78,7 @@ function buildLiveMenu(state: TrayShowState, showWindow: (s?: string) => void): 
   const beatStars = '★'.repeat(state.beatsLocked) + '☆'.repeat(Math.max(0, state.beatThreshold - state.beatsLocked))
 
   const items: Electron.MenuItemConstructorOptions[] = [
-    { label: `ON AIR • ${state.currentActName || 'Act'}`, enabled: false },
+    { label: `ON AIR${state.currentActCategory ? ` • ${state.currentActCategory.toUpperCase()}` : ''} • ${state.currentActName || 'Act'}`, enabled: false },
     { type: 'separator' },
     { label: `⏱ ${timerLabel} remaining`, enabled: false },
     { label: `${beatStars}  ${state.beatsLocked}/${state.beatThreshold} beats`, enabled: false },
@@ -167,6 +170,17 @@ export function createTray(
         }
         break
       }
+      case 'director': {
+        const isDirAmber = state.timerSeconds !== null && state.timerSeconds < 300
+        menu = buildLiveMenu(state, showWindow)
+        setTrayIcon(tray, isDirAmber ? 'amber' : 'live')
+        if (state.timerSeconds !== null) {
+          tray.setTitle(isDirAmber ? `⚡ ${formatTimer(state.timerSeconds)}` : formatTimer(state.timerSeconds))
+        } else {
+          tray.setTitle('')
+        }
+        break
+      }
       case 'intermission':
         menu = buildIntermissionMenu(state, showWindow)
         setTrayIcon(tray, 'default')
@@ -206,9 +220,20 @@ export function createTray(
 
   ipcMain.on(IPC.TRAY_STATE_UPDATE, trayStateHandler)
 
-  // Clean up IPC listener when tray is destroyed (app quit)
+  // Timer-only updates — no menu rebuild, just title + icon state
+  const trayTimerHandler = (_event: Electron.IpcMainEvent, seconds: number) => {
+    if (!tray || tray.isDestroyed()) return
+    const isAmber = seconds < 300
+    setTrayIcon(tray, isAmber ? 'amber' : 'live')
+    tray.setTitle(isAmber ? `⚡ ${formatTimer(seconds)}` : formatTimer(seconds))
+  }
+
+  ipcMain.on(IPC.TRAY_TIMER_UPDATE, trayTimerHandler)
+
+  // Clean up IPC listeners when tray is destroyed (app quit)
   app.on('before-quit', () => {
     ipcMain.removeListener(IPC.TRAY_STATE_UPDATE, trayStateHandler)
+    ipcMain.removeListener(IPC.TRAY_TIMER_UPDATE, trayTimerHandler)
   })
 
   return tray

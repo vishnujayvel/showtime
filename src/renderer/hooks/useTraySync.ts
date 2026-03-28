@@ -4,7 +4,9 @@ import type { TrayShowState } from '../../shared/types'
 
 /**
  * Subscribes to showStore changes and sends tray state to the main process.
- * Runs a 1-second interval during live phase to keep the timer current.
+ * Timer-only updates (every 1s during live/director phase) use a lightweight
+ * IPC channel that only sets tray title + icon — no menu rebuild.
+ * Full state updates (with menu rebuild) are sent only on phase/act/beat changes.
  */
 export function useTraySync(): void {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -41,6 +43,28 @@ export function useTraySync(): void {
       window.clui.updateTrayState(state)
     }
 
+    /** Lightweight timer-only update — no menu rebuild */
+    function sendTimerOnly(): void {
+      const s = useShowStore.getState()
+      if (s.timerEndAt) {
+        const seconds = Math.max(0, Math.ceil((s.timerEndAt - Date.now()) / 1000))
+        window.clui.updateTrayTimer(seconds)
+      }
+    }
+
+    function startTimerInterval(): void {
+      if (!intervalRef.current) {
+        intervalRef.current = setInterval(sendTimerOnly, 1000)
+      }
+    }
+
+    function stopTimerInterval(): void {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+
     // Send immediately on mount
     sendTrayState()
 
@@ -55,31 +79,23 @@ export function useTraySync(): void {
         sendTrayState()
 
         // Start/stop the timer interval based on phase
-        if (curr.phase === 'live' && curr.timerEndAt) {
-          if (!intervalRef.current) {
-            intervalRef.current = setInterval(sendTrayState, 1000)
-          }
+        if ((curr.phase === 'live' || curr.phase === 'director') && curr.timerEndAt) {
+          startTimerInterval()
         } else {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
-          }
+          stopTimerInterval()
         }
       }
     })
 
-    // Also start interval if we mount during a live phase
+    // Also start interval if we mount during a live/director phase
     const initial = useShowStore.getState()
-    if (initial.phase === 'live' && initial.timerEndAt) {
-      intervalRef.current = setInterval(sendTrayState, 1000)
+    if ((initial.phase === 'live' || initial.phase === 'director') && initial.timerEndAt) {
+      startTimerInterval()
     }
 
     return () => {
       unsub()
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      stopTimerInterval()
     }
   }, [])
 }

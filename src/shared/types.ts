@@ -451,6 +451,7 @@ export const IPC = {
 
   // Showtime tray state (renderer → main)
   TRAY_STATE_UPDATE: 'showtime:tray-state-update',
+  TRAY_TIMER_UPDATE: 'showtime:tray-timer-update',
 
   // Showtime day boundary detection (main → renderer)
   DAY_BOUNDARY: 'showtime:day-boundary',
