@@ -166,6 +166,20 @@ export function createWindow(): void {
 
   setMainWindow(mainWindow)
 
+  // Lock zoom level — prevents pill collapse from trackpad pinch or Cmd+/-
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.setZoomLevel(0)
+  })
+  mainWindow.webContents.on('zoom-changed', () => {
+    mainWindow.webContents.setZoomLevel(0)
+  })
+  // Block Cmd+/- and Cmd+0 zoom shortcuts
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if ((input.meta || input.control) && ['+', '-', '=', '0'].includes(input.key)) {
+      event.preventDefault()
+    }
+  })
+
   // Initialize anchor from initial bounds
   anchorPoint = computeAnchorFromBounds({ x, y, width: initialDims.width, height: initialDims.height })
 

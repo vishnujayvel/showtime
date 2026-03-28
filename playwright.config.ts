@@ -1,10 +1,11 @@
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
+  globalTeardown: './e2e/global-teardown.ts',
   testDir: './e2e',
   timeout: 60000,
   retries: 0,
-  workers: 4,
+  workers: 2,
   fullyParallel: true,
   use: {
     trace: 'on-first-retry',
