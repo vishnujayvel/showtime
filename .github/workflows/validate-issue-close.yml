@@ -14,8 +14,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const issue = context.payload.issue;
-            const labels = issue.labels.map(l => l.name);
+            const issueNumber = context.payload.issue.number;
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            const labels = (issue.labels ?? []).map(l => typeof l === 'string' ? l : l.name);
 
             const hasRootCause = labels.includes('root-cause');
             const hasTestEvidence = labels.includes('has-test-evidence');

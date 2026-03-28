@@ -6,10 +6,11 @@ import { execSync } from 'child_process'
  */
 export default async function globalTeardown() {
   try {
-    // Kill Electron processes spawned from this project directory
+    // Kill only Electron processes launched from this specific project directory
     const projectDir = process.cwd()
+    const escapedDir = projectDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const result = execSync(
-      `pgrep -f "electron.*showtime" 2>/dev/null || true`,
+      `ps -axo pid=,command= | awk '/[Ee]lectron/ && /${escapedDir}/ { print $1 }' 2>/dev/null || true`,
       { encoding: 'utf-8' }
     ).trim()
 

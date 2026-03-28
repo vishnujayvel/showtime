@@ -70,11 +70,14 @@ export function useTraySync(): void {
 
     // Subscribe to store changes for non-timer updates (phase, acts, beats)
     const unsub = useShowStore.subscribe((curr, prev) => {
+      const timerChanged = curr.timerEndAt !== prev.timerEndAt
       if (
         curr.phase !== prev.phase ||
         curr.currentActId !== prev.currentActId ||
         curr.beatsLocked !== prev.beatsLocked ||
-        curr.acts !== prev.acts
+        curr.beatThreshold !== prev.beatThreshold ||
+        curr.acts !== prev.acts ||
+        timerChanged
       ) {
         sendTrayState()
 
