@@ -170,9 +170,43 @@ function AssistantBubble({ message }: { message: Message }) {
   // Split lineup JSON out BEFORE rendering — no raw JSON in chat
   const { textBefore, lineup: parsedLineup, textAfter } = splitLineupFromContent(message.content)
 
+  // Detect PARTIAL lineup JSON still streaming (opening ``` with "acts" but no closing ```)
+  const hasPartialLineup = !parsedLineup && (
+    /```(?:showtime-lineup|json)\s*\n[\s\S]*"acts"/s.test(message.content) ||
+    /\{\s*"acts"\s*:\s*\[/.test(message.content)
+  )
+
   // Use LIVE store data for the card (so edits persist), not the frozen parsed version
   const hasLineupInMessage = !!parsedLineup
   const liveLineup = acts.length > 0 ? { acts, beatThreshold: parsedLineup?.beatThreshold ?? 3, openingNote: parsedLineup?.openingNote ?? '' } : parsedLineup
+
+  // If partial lineup is streaming, show placeholder instead of raw JSON
+  if (hasPartialLineup) {
+    // Extract text before the JSON block starts
+    const jsonStart = message.content.search(/```(?:showtime-lineup|json)|\{\s*"acts"/)
+    const cleanTextBefore = jsonStart > 0 ? message.content.slice(0, jsonStart).trim() : ''
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={springTransition}
+        className="flex justify-start"
+      >
+        <div className="max-w-[90%] text-sm text-txt-primary" data-testid="assistant-message">
+          {cleanTextBefore && (
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {cleanTextBefore}
+            </ReactMarkdown>
+          )}
+          <div className="flex items-center gap-2 py-3 px-4 my-2 rounded-xl bg-surface border border-card-border text-txt-muted text-xs">
+            <span className="w-3 h-3 border-2 border-accent/40 border-t-accent rounded-full animate-spin" />
+            Building your lineup...
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
