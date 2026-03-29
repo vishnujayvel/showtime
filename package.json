@@ -24,7 +24,8 @@
     "preview": "electron-vite preview",
     "dist": "electron-vite build --mode production && electron-builder --mac --dir",
     "doctor": "bash scripts/doctor.sh",
-    "postinstall": "electron-builder install-app-deps && bash scripts/patch-dev-icon.sh"
+    "postinstall": "electron-builder install-app-deps && bash scripts/patch-dev-icon.sh",
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -82,6 +83,7 @@
     "electron-builder": "^26.8.1",
     "electron-vite": "^3.0.0",
     "fast-check": "^4.6.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.0.1",
     "postcss": "^8.4.0",
     "react": "^19.0.0",

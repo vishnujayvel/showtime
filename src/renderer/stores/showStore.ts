@@ -698,8 +698,19 @@ export const useShowStore = create<ShowStore>()(
           const payload = await window.clui.dataHydrate()
           if (!payload) return
           // Reconstruct store state from SQLite snapshot
-          const activeAct = payload.acts?.find((a: any) => a.status === 'active')
-          const actsRehydrated: Act[] = (payload.acts || []).map((a: any) => ({
+          interface ActSnapshot {
+            id: string
+            name: string
+            sketch: string
+            status: string
+            plannedDurationMs: number
+            beatLocked: number | boolean
+            sortOrder: number
+            actualStartAt?: number | null
+            actualEndAt?: number | null
+          }
+          const activeAct = (payload.acts as ActSnapshot[] | undefined)?.find((a) => a.status === 'active')
+          const actsRehydrated: Act[] = ((payload.acts || []) as ActSnapshot[]).map((a) => ({
             id: a.id,
             name: a.name,
             sketch: a.sketch,

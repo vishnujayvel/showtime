@@ -12,7 +12,7 @@ This file is the source of truth for ALL agents working in this codebase.
 
 ## Product Context
 
-Read `docs/plans/product-context.md` for the full product vision. Key points:
+Read `docs-internal/product-context.md` for the full product vision. Key points:
 
 - The user IS the performer on a live variety show — not an employee filing task reports
 - Every app state maps to a live TV production moment (Dark Studio → Going Live → ON AIR → Intermission → Strike)
@@ -32,7 +32,7 @@ Showtime (Electron App, macOS only)
 ├── Preload (contextBridge)
 │   └── window.clui API      ← KEEP: typed IPC bridge, strict process isolation
 ├── Renderer (React 19)
-│   ├── views/               ← PillView, WritersRoomView, ExpandedView, StrikeView, DarkStudioView
+│   ├── views/               ← 12 views: DarkStudioView, WritersRoomView, PillView, CompactView, DashboardView, ExpandedView, StrikeView, SettingsView, HistoryView, OnboardingView, GoingLiveTransition, ColdOpenTransition
 │   ├── panels/              ← TimerPanel, LineupPanel, ChatPanel
 │   ├── components/          ← ActCard, BeatCheckModal, BeatCounter, DirectorMode, etc.
 │   ├── stores/              ← showStore (Zustand), sessionStore (simplified)
