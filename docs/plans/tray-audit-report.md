@@ -4,17 +4,19 @@
 > Mockup: `docs/mockups/tray-menu-bar.html`
 > Implementation: `src/main/tray.ts`, `src/renderer/App.tsx` (tray sync), `src/shared/types.ts`, `src/preload/index.ts`
 
+> **Note:** Findings #1, #3, and #4 were resolved in PR #90. This report preserves the original audit for reference.
+
 ## Summary of Findings
 
-| # | Severity | File | Description | Suggested Fix |
-|---|----------|------|-------------|---------------|
-| 1 | **Critical** | `src/renderer/App.tsx:91` | `state.currentActIndex` does not exist on `ShowStoreState` — always `undefined`. Tray never shows act name, category, act position, or coming-up acts during live state. | Use `state.acts.findIndex(a => a.id === state.currentActId)` to derive the index from `currentActId`. |
-| 2 | **Critical** | `e2e/app-launch.test.ts:51-53` | Test asserts `Show Showtime` and `Reset Show` labels exist in tray menu at app launch. `Show Showtime` only appears in `writers_room` phase (not idle). `Reset Show` does not exist in any tray menu. | Update test to assert against actual idle menu labels: `Enter Writer's Room`, `Past Shows`, `Preferences…`, `Quit Showtime`. |
-| 3 | **Major** | `src/renderer/App.tsx:89-113` | No throttling on Zustand subscription. Every state change (timer tick, any UI interaction) triggers IPC send + full native menu rebuild. During live state with 1s timer, this means 60+ menu rebuilds per minute. | Add a throttle (e.g., 1-2s) or only fire when tray-relevant fields change (phase, currentActId, timerSeconds, beatsLocked). |
-| 4 | **Major** | `src/main/tray.ts:201` | `tray.setContextMenu(Menu.buildFromTemplate(menu))` rebuilds the entire native menu from scratch on every update. No label-diffing to skip no-op rebuilds. | Compare `menuLabels(menu)` against previous labels before rebuilding. Skip if identical. |
-| 5 | **Major** | `src/main/tray.ts:14-25` | `loadIcons()` does not validate that images loaded. If a PNG is missing or corrupt, `nativeImage.createFromPath()` returns an empty image silently. | Check `icon.isEmpty()` after each load; log a warning or fall back to a default if empty. |
-| 6 | **Major** | `src/preload/index.ts:143,189` | `updateTrayState` is defined twice in the API object. The second definition (line 189) silently overwrites the first (line 143). Harmless but indicates copy-paste drift. | Remove the duplicate at line 189. |
-| 7 | **Major** | `src/main/tray.ts:50-68` | Idle menu is missing keyboard accelerators. Mockup shows `⌘,` for Preferences and `⌘Q` for Quit. | Add `accelerator: 'Command+,'` on Preferences and `accelerator: 'Command+Q'` on Quit. |
+| # | Severity | Status | File | Description | Suggested Fix |
+|---|----------|--------|------|-------------|---------------|
+| 1 | **Critical** | **Fixed** | `useTraySync.ts` | Tray index derived from `currentActId` via `findIndex`. | Resolved in PR #90 — `useTraySync` hook handles this correctly. |
+| 2 | **Critical** | Open | `e2e/app-launch.test.ts:51-53` | Test asserts `Show Showtime` and `Reset Show` labels exist in tray menu at app launch. `Show Showtime` only appears in `writers_room` phase (not idle). `Reset Show` does not exist in any tray menu. | Update test to assert against actual idle menu labels: `Enter Writer's Room`, `Past Shows`, `Preferences…`, `Quit Showtime`. |
+| 3 | **Major** | **Fixed** | `useTraySync.ts` | Timer ticks now use lightweight `updateTrayTimer` IPC (title + icon only) — no menu rebuild per tick. Full menu rebuild only on phase/act/beat changes. | Resolved in PR #90. |
+| 4 | **Major** | **Fixed** | `src/main/tray.ts` | Timer-only handler (`trayTimerHandler`) updates title/icon without rebuilding the native menu. | Resolved in PR #90. |
+| 5 | **Major** | Open | `src/main/tray.ts:14-25` | `loadIcons()` does not validate that images loaded. If a PNG is missing or corrupt, `nativeImage.createFromPath()` returns an empty image silently. | Check `icon.isEmpty()` after each load; log a warning or fall back to a default if empty. |
+| 6 | **Major** | Open | `src/preload/index.ts:143,189` | `updateTrayState` is defined twice in the API object. The second definition (line 189) silently overwrites the first (line 143). Harmless but indicates copy-paste drift. | Remove the duplicate at line 189. |
+| 7 | **Major** | Open | `src/main/tray.ts:50-68` | Idle menu is missing keyboard accelerators. Mockup shows `⌘,` for Preferences and `⌘Q` for Quit. | Add `accelerator: 'Command+,'` on Preferences and `accelerator: 'Command+Q'` on Quit. |
 | 8 | **Minor** | `src/main/tray.ts:151` | IPC listener `ipcMain.on(IPC.TRAY_STATE_UPDATE, ...)` is never cleaned up. While the tray lives for the app lifetime, best practice is to remove it in a cleanup path (e.g., `app.on('before-quit')`). | Store the handler ref and call `ipcMain.removeListener()` on tray destruction. |
 | 9 | **Minor** | `src/main/tray.ts:174-182` | Writer's Room menu is minimal: only "Planning your show..." + "Show Showtime" + "Quit". No energy level, no step indicator. Mockup does not define this state, but it could be richer. | Low priority — revisit if Writer's Room tray state is designed in a future mockup. |
 | 10 | **Minor** | `src/main/tray.ts:186-193` | Strike menu is minimal: "Show Complete" + "View Results" + "Quit". No verdict, no stats. | Same as above — design in a future mockup pass. |
