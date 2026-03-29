@@ -17,7 +17,6 @@ test.describe('Settings View', () => {
     await bw.evaluate((win) => {
       win.webContents.send('showtime:open-settings')
     })
-    await page.waitForTimeout(500)
 
     // The settings view should render with the PREFERENCES title bar
     const preferencesLabel = page.locator('text=PREFERENCES')
@@ -86,11 +85,9 @@ test.describe('Settings View', () => {
     const backBtn = page.locator('button', { hasText: 'Back' })
     await expect(backBtn).toBeVisible({ timeout: 3000 })
     await backBtn.click()
-    await page.waitForTimeout(500)
 
     // Settings should be gone — verify PREFERENCES label is no longer visible
-    const preferencesGone = await page.locator('text=PREFERENCES').isVisible().catch(() => false)
-    expect(preferencesGone).toBe(false)
+    await expect(page.locator('text=PREFERENCES')).toBeHidden({ timeout: 3000 })
 
     // Dark Studio should be back — the "Enter the Writer's Room" button is visible
     const enterBtn = page.getByTestId('enter-writers-room')
@@ -134,7 +131,6 @@ test.describe('Settings View', () => {
     // Click the "light" theme button
     const lightButton = page.locator('button', { hasText: 'light' })
     await lightButton.click()
-    await page.waitForTimeout(300)
 
     // The light button should now have the active accent styling (bg-accent)
     // Verify it is still visible (click didn't break anything)
@@ -144,7 +140,6 @@ test.describe('Settings View', () => {
     // Switch back to dark
     const darkButton = page.locator('button', { hasText: 'dark' })
     await darkButton.click()
-    await page.waitForTimeout(300)
     await expect(darkButton).toBeVisible()
     await screenshot(page, 'settings-08-theme-dark')
   })

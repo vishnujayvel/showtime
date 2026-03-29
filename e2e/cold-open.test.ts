@@ -19,7 +19,6 @@ test.describe('Cold Open Transition', () => {
 
     // Click to trigger the Cold Open transition
     await enterBtn.click()
-    await page.waitForTimeout(300)
 
     // The Cold Open transition should render with its signature text
     const transitionHeading = page.locator('text=/Live from your desk/i')
@@ -34,7 +33,6 @@ test.describe('Cold Open Transition', () => {
     const enterBtn = page.getByTestId('enter-writers-room')
     await expect(enterBtn).toBeVisible({ timeout: 10000 })
     await enterBtn.click()
-    await page.waitForTimeout(300)
 
     // The transition renders "it's <DayName>!" — verify the day text is present
     const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' })
@@ -71,7 +69,6 @@ test.describe('Cold Open Transition', () => {
     const enterBtn = page.getByTestId('enter-writers-room')
     await expect(enterBtn).toBeVisible({ timeout: 10000 })
     await enterBtn.click()
-    await page.waitForTimeout(200)
 
     // Verify the animation container is rendered (the fixed overlay)
     const overlay = page.locator('.fixed.inset-0')
