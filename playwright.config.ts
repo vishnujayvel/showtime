@@ -7,6 +7,11 @@ export default defineConfig({
   retries: 0,
   workers: 2,
   fullyParallel: true,
+  reporter: [
+    ['./reporters/progress-reporter.ts'],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['html', { open: 'never' }],
+  ],
   use: {
     trace: 'on-first-retry',
     video: 'retain-on-failure',
