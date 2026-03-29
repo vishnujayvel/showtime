@@ -18,15 +18,15 @@ When you're ready, click **Enter the Writer's Room**. There's no rush. The spotl
 
 **Duration:** Up to 20 minutes. Not an Act.
 
-The Writer's Room is where you plan your day, and it's designed to take three minutes, not thirty. You are the Head Writer here, drafting tonight's lineup.
+The Writer's Room is where you plan your day through a conversation with Claude. You are the Head Writer here, drafting tonight's lineup.
 
-Three steps:
+The interface is a chat. You talk to Claude about your day, and Claude builds a lineup from what you share.
 
-1. **Energy Check** -- How are you feeling? High, Medium, Low, or Recovery. Be honest. Recovery days are valid days. Your energy level shapes everything downstream: how many Acts you'll run, how long they'll be, how many Beats count as a win.
+1. **Set your energy** -- A chip in the title bar shows your energy level: High, Medium, Low, or Recovery. Tap to change it. Be honest. Recovery days are valid days. Your energy level shapes everything downstream: how many Acts you'll run, how long they'll be, how many Beats count as a win.
 
-2. **Plan Dump** -- Get everything out of your head in plain text. Don't organize it, don't prioritize it. "Finish the API thing, email Alex, maybe gym, groceries." That's plenty. Claude takes the brain dump and structures it into a lineup of Acts with categories, durations, and order.
+2. **Tell Claude about your day** -- Type what's on your plate into the chat. Don't organize it, don't prioritize it. "Finish the API thing, email Alex, maybe gym, groceries." That's plenty. Hit **BUILD MY LINEUP** and Claude structures it into a lineup of Acts with categories, durations, and order.
 
-3. **Lineup Preview** -- Review the structured lineup. Drag to reorder if you want. When it looks right, approve it.
+3. **Review and refine** -- The lineup appears as an interactive card in the chat. Each Act's name, duration, and category are editable inline. You can also type follow-up messages to refine: "make exercise longer" or "add a creative block." Claude regenerates the lineup each time.
 
 The Writer's Room has a clock because planning can become its own form of procrastination. Twenty minutes is the ceiling. Improv is allowed, but the Writer's Room must end.
 
