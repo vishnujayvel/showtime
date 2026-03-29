@@ -37,7 +37,7 @@ export function PillView() {
     <motion.div
       data-pill-content
       className={cn(
-        'w-80 rounded-full flex flex-col',
+        'w-80 min-h-14 rounded-full flex flex-col',
         'bg-surface/85 backdrop-blur-[20px]',
         'border border-white/[0.06]',
         'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
