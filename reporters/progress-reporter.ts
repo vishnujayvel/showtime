@@ -25,19 +25,23 @@ export default class ProgressReporter implements Reporter {
   }
 
   onTestEnd(test: TestCase, result: TestResult): void {
+    // Only count the final attempt (skip intermediate retries)
+    if (result.retry < test.retries) return
+
     this.completed++
     const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1)
     const pct = ((this.completed / this.total) * 100).toFixed(0)
     const ms = result.duration
     const slow = ms > SLOW_THRESHOLD_MS ? ' SLOW' : ''
+    const isFailure = result.status === 'failed' || result.status === 'timedOut' || result.status === 'interrupted'
     const status = result.status === 'passed' ? '\x1b[32m✓\x1b[0m'
-      : result.status === 'failed' ? '\x1b[31m✗\x1b[0m'
+      : isFailure ? '\x1b[31m✗\x1b[0m'
       : '\x1b[33m-\x1b[0m'
     const project = test.parent.project()?.name || ''
 
     if (result.status === 'passed') this.passed++
-    else if (result.status === 'failed') this.failed++
-    else this.skipped++
+    else if (result.status === 'skipped') this.skipped++
+    else this.failed++
 
     if (ms > SLOW_THRESHOLD_MS) {
       this.slowTests.push({ title: test.title, duration: ms, project })

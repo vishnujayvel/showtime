@@ -54,7 +54,7 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 
 ## 3. Test Pyramid
 
-```
+```text
                     E2E (18 files, 242 tests)
                       Playwright + Electron
                     /                       \
@@ -81,7 +81,7 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 |---------|-----------|----------|------|
 | `npm test` | Vitest (22 files) | ~2s | Local dev, CI |
 | `npm run test:e2e` | Playwright (18 files, 6 projects) | ~5-10 min | Local only |
-| CI (.github/workflows/ci.yml) | Vitest + TSC only | ~1 min | PR + push to main |
+| CI (GitHub Actions, `.github/workflows/ci.yml`) | Vitest + TSC only | ~1 min | PR + push to main |
 
 ## 4. Critical Gaps & Recommendations
 
