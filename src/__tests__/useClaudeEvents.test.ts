@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { useSessionStore } from '../renderer/stores/sessionStore'
 import type { NormalizedEvent, EnrichedError } from '../shared/types'
 
@@ -51,6 +51,12 @@ function flushRAF() {
   pending.forEach(({ cb }) => cb(performance.now()))
 }
 
+// ─── Mock store actions injected before the hook subscribes ───
+
+const mockHandleNormalizedEvent = vi.fn()
+const mockHandleStatusChange = vi.fn()
+const mockHandleError = vi.fn()
+
 describe('useClaudeEvents', () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -62,6 +68,9 @@ describe('useClaudeEvents', () => {
     unsubStatus.mockClear()
     unsubError.mockClear()
     unsubSkill.mockClear()
+    mockHandleNormalizedEvent.mockClear()
+    mockHandleStatusChange.mockClear()
+    mockHandleError.mockClear()
     rafCallbacks = []
     nextRafId = 1
 
@@ -73,6 +82,14 @@ describe('useClaudeEvents', () => {
     })
     vi.stubGlobal('cancelAnimationFrame', (id: number) => {
       rafCallbacks = rafCallbacks.filter((r) => r.id !== id)
+    })
+
+    // Inject mock actions into the store BEFORE the hook subscribes
+    // so useSessionStore((s) => s.handleNormalizedEvent) picks up our mocks
+    useSessionStore.setState({
+      handleNormalizedEvent: mockHandleNormalizedEvent as any,
+      handleStatusChange: mockHandleStatusChange as any,
+      handleError: mockHandleError as any,
     })
 
     installMocks()
@@ -106,7 +123,6 @@ describe('useClaudeEvents', () => {
   })
 
   it('routes non-text-chunk events to handleNormalizedEvent immediately', async () => {
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleNormalizedEvent')
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
 
@@ -117,45 +133,43 @@ describe('useClaudeEvents', () => {
       index: 0,
     }
 
-    capturedOnEvent!('tab-1', toolCallEvent)
+    act(() => {
+      capturedOnEvent!('tab-1', toolCallEvent)
+    })
 
-    expect(spy).toHaveBeenCalledWith('tab-1', toolCallEvent)
-    spy.mockRestore()
+    expect(mockHandleNormalizedEvent).toHaveBeenCalledWith('tab-1', toolCallEvent)
   })
 
   it('batches text_chunk events and flushes on RAF', async () => {
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
 
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleNormalizedEvent')
-
     // Send multiple text chunks for the same tab
     capturedOnEvent!('tab-1', { type: 'text_chunk', text: 'Hello ' } as NormalizedEvent)
     capturedOnEvent!('tab-1', { type: 'text_chunk', text: 'world' } as NormalizedEvent)
 
     // Should NOT have been called yet (batched)
-    expect(spy).not.toHaveBeenCalled()
+    expect(mockHandleNormalizedEvent).not.toHaveBeenCalled()
 
     // Flush RAF
-    flushRAF()
+    act(() => {
+      flushRAF()
+    })
 
     // Should flush concatenated text
-    expect(spy).toHaveBeenCalledOnce()
-    expect(spy).toHaveBeenCalledWith('tab-1', { type: 'text_chunk', text: 'Hello world' })
-    spy.mockRestore()
+    expect(mockHandleNormalizedEvent).toHaveBeenCalledOnce()
+    expect(mockHandleNormalizedEvent).toHaveBeenCalledWith('tab-1', { type: 'text_chunk', text: 'Hello world' })
   })
 
   it('flushes text chunks synchronously before task_complete', async () => {
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
 
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleNormalizedEvent')
-
     // Buffer a text chunk
     capturedOnEvent!('tab-1', { type: 'text_chunk', text: 'buffered text' } as NormalizedEvent)
-    expect(spy).not.toHaveBeenCalled()
+    expect(mockHandleNormalizedEvent).not.toHaveBeenCalled()
 
-    // Now send task_complete — should synchronously flush the buffer first
+    // Now send task_complete -- should synchronously flush the buffer first
     const taskCompleteEvent: NormalizedEvent = {
       type: 'task_complete',
       result: 'done',
@@ -165,20 +179,20 @@ describe('useClaudeEvents', () => {
       usage: {},
       sessionId: 'sess-1',
     }
-    capturedOnEvent!('tab-1', taskCompleteEvent)
+
+    act(() => {
+      capturedOnEvent!('tab-1', taskCompleteEvent)
+    })
 
     // First call: flushed text chunk, second call: task_complete
-    expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy.mock.calls[0]).toEqual(['tab-1', { type: 'text_chunk', text: 'buffered text' }])
-    expect(spy.mock.calls[1]).toEqual(['tab-1', taskCompleteEvent])
-    spy.mockRestore()
+    expect(mockHandleNormalizedEvent).toHaveBeenCalledTimes(2)
+    expect(mockHandleNormalizedEvent.mock.calls[0]).toEqual(['tab-1', { type: 'text_chunk', text: 'buffered text' }])
+    expect(mockHandleNormalizedEvent.mock.calls[1]).toEqual(['tab-1', taskCompleteEvent])
   })
 
   it('flushes text chunks synchronously before task_update', async () => {
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
-
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleNormalizedEvent')
 
     capturedOnEvent!('tab-1', { type: 'text_chunk', text: 'pending' } as NormalizedEvent)
 
@@ -193,29 +207,31 @@ describe('useClaudeEvents', () => {
         usage: {},
       },
     }
-    capturedOnEvent!('tab-1', taskUpdateEvent)
 
-    expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy.mock.calls[0]).toEqual(['tab-1', { type: 'text_chunk', text: 'pending' }])
-    expect(spy.mock.calls[1]).toEqual(['tab-1', taskUpdateEvent])
-    spy.mockRestore()
+    act(() => {
+      capturedOnEvent!('tab-1', taskUpdateEvent)
+    })
+
+    expect(mockHandleNormalizedEvent).toHaveBeenCalledTimes(2)
+    expect(mockHandleNormalizedEvent.mock.calls[0]).toEqual(['tab-1', { type: 'text_chunk', text: 'pending' }])
+    expect(mockHandleNormalizedEvent.mock.calls[1]).toEqual(['tab-1', taskUpdateEvent])
   })
 
   it('routes status change events to handleStatusChange', async () => {
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleStatusChange')
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
 
-    capturedOnStatus!('tab-1', 'running', 'idle')
+    act(() => {
+      capturedOnStatus!('tab-1', 'running', 'idle')
+    })
 
-    expect(spy).toHaveBeenCalledWith('tab-1', 'running', 'idle')
-    spy.mockRestore()
+    expect(mockHandleStatusChange).toHaveBeenCalledWith('tab-1', 'running', 'idle')
   })
 
   it('routes error events to handleError', async () => {
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleError')
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
+
     const error: EnrichedError = {
       message: 'Connection failed',
       stderrTail: ['error line'],
@@ -224,10 +240,11 @@ describe('useClaudeEvents', () => {
       toolCallCount: 0,
     }
 
-    capturedOnError!('tab-1', error)
+    act(() => {
+      capturedOnError!('tab-1', error)
+    })
 
-    expect(spy).toHaveBeenCalledWith('tab-1', error)
-    spy.mockRestore()
+    expect(mockHandleError).toHaveBeenCalledWith('tab-1', error)
   })
 
   it('logs a warning when skill install fails', async () => {
@@ -274,17 +291,16 @@ describe('useClaudeEvents', () => {
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
 
-    const spy = vi.spyOn(useSessionStore.getState(), 'handleNormalizedEvent')
-
     capturedOnEvent!('tab-1', { type: 'text_chunk', text: 'AAA' } as NormalizedEvent)
     capturedOnEvent!('tab-2', { type: 'text_chunk', text: 'BBB' } as NormalizedEvent)
 
-    flushRAF()
+    act(() => {
+      flushRAF()
+    })
 
-    expect(spy).toHaveBeenCalledTimes(2)
+    expect(mockHandleNormalizedEvent).toHaveBeenCalledTimes(2)
     // Order: Map iteration order = insertion order
-    expect(spy.mock.calls[0]).toEqual(['tab-1', { type: 'text_chunk', text: 'AAA' }])
-    expect(spy.mock.calls[1]).toEqual(['tab-2', { type: 'text_chunk', text: 'BBB' }])
-    spy.mockRestore()
+    expect(mockHandleNormalizedEvent.mock.calls[0]).toEqual(['tab-1', { type: 'text_chunk', text: 'AAA' }])
+    expect(mockHandleNormalizedEvent.mock.calls[1]).toEqual(['tab-2', { type: 'text_chunk', text: 'BBB' }])
   })
 })
