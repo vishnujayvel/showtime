@@ -11,6 +11,7 @@ export default defineConfig({
     ['./reporters/progress-reporter.ts'],
     ['json', { outputFile: 'test-results/results.json' }],
     ['html', { open: 'never' }],
+    ['allure-playwright'],
   ],
   use: {
     trace: 'on-first-retry',

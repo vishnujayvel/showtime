@@ -43,6 +43,9 @@ docs/.vitepress/dist/
 
 # Test artifacts
 test-results/
+allure-results/
+allure-report/
+playwright-report/
 
 # Loki autonomy framework runtime state
 .loki/
