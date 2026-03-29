@@ -382,6 +382,18 @@ export interface ShowState {
   breathingPauseEndAt: number | null
 }
 
+export interface TrayShowState {
+  phase: ShowPhase
+  currentActName: string | null
+  currentActCategory: string | null
+  timerSeconds: number | null
+  beatsLocked: number
+  beatThreshold: number
+  actIndex: number
+  totalActs: number
+  nextActs: Array<{ name: string; sketch: string; durationMinutes: number }>
+}
+
 // ─── IPC Channel Names ───
 
 export const IPC = {
@@ -436,6 +448,10 @@ export const IPC = {
   FORCE_REPAINT: 'showtime:force-repaint',
   RESET_SHOW: 'showtime:reset-show',
   OPEN_SETTINGS: 'showtime:open-settings',
+
+  // Showtime tray state (renderer → main)
+  TRAY_STATE_UPDATE: 'showtime:tray-state-update',
+  TRAY_TIMER_UPDATE: 'showtime:tray-timer-update',
 
   // Showtime day boundary detection (main → renderer)
   DAY_BOUNDARY: 'showtime:day-boundary',

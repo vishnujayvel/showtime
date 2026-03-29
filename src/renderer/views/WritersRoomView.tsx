@@ -72,53 +72,10 @@ export function WritersRoomView() {
     if (!energy) setEnergy('medium')
   }, [energy, setEnergy])
 
-  // ─── Calendar Prefetch ───
-  useEffect(() => {
-    if (!calendarAvailable || calendarFetchStatus !== 'idle') return
-    if (!tab) return
+  const tabReady = useSessionStore((s) => s.tabReady)
 
-    calendarFetchMsgCountRef.current = tab.messages.length
-    setCalendarFetchStatus('fetching')
-
-    const prompt = `List all of today's Google Calendar events as a JSON array.
-Each event: {"title": "...", "start": "HH:MM", "end": "HH:MM", "allDay": false}.
-If no calendar access or no events, return: []
-Return ONLY the JSON array, nothing else.`
-
-    sendMessage(prompt)
-  }, [calendarAvailable, calendarFetchStatus, tab, sendMessage, setCalendarFetchStatus])
-
-  // Watch for calendar prefetch response
-  useEffect(() => {
-    if (calendarFetchStatus !== 'fetching') return
-    if (calendarFetchMsgCountRef.current === null) return
-    if (!tab) return
-
-    const newMessages = tab.messages.slice(calendarFetchMsgCountRef.current)
-    const assistantMsg = newMessages.find((m) => m.role === 'assistant' && !m.toolName)
-
-    if (assistantMsg) {
-      const events = tryParseCalendarEvents(assistantMsg.content)
-      if (events !== null) {
-        setCalendarEvents(events)
-        calendarFetchMsgCountRef.current = null
-        return
-      }
-    }
-
-    if (tab.status === 'completed' || tab.status === 'idle') {
-      const hasNewAssistant = newMessages.some((m) => m.role === 'assistant' && !m.toolName)
-      if (hasNewAssistant) {
-        setCalendarFetchStatus('unavailable')
-        calendarFetchMsgCountRef.current = null
-      }
-    }
-
-    if (tab.status === 'failed' || tab.status === 'dead') {
-      setCalendarFetchStatus('error')
-      calendarFetchMsgCountRef.current = null
-    }
-  }, [tab, calendarFetchStatus, setCalendarEvents, setCalendarFetchStatus])
+  // Calendar prefetch DISABLED in chat-first mode.
+  // Claude fetches calendar directly via MCP tools when the user asks.
 
   // ─── Watch for lineup in assistant messages ───
   useEffect(() => {
@@ -163,14 +120,14 @@ Return ONLY the JSON array, nothing else.`
     if (!trimmed || isRunning) return
     setChatInput('')
 
-    // If we have a lineup, wrap in refinement prompt
+    // If we have a lineup, wrap in refinement prompt but show only user's text
     if (hasLineup) {
       lineupStartRef.current = Date.now()
       const prompt = buildRefinementPrompt(trimmed, energy ?? 'medium', acts)
       window.clui.logEvent('INFO', 'claude.refinement_sent', {
         messageText: trimmed.slice(0, 100),
       })
-      sendMessage(prompt)
+      sendMessage(prompt, undefined, trimmed)
     } else {
       sendMessage(trimmed)
     }
@@ -216,7 +173,7 @@ Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social
 Energy "${energy ?? 'medium'}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
 ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : ''}`
 
-    sendMessage(prompt)
+    sendMessage(prompt, undefined, '✨ Build my lineup')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -282,15 +239,7 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             </AnimatePresence>
           </div>
 
-          {/* Calendar toggle (compact) */}
-          {calendarAvailable && (
-            <CalendarToggle
-              checked={calendarEnabled}
-              onChange={setCalendarEnabled}
-              fetchStatus={calendarFetchStatus}
-              eventCount={calendarEvents.length}
-            />
-          )}
+          {/* Calendar toggle hidden in chat-first mode — Claude handles calendar via MCP */}
 
           {/* Close button */}
           <button
@@ -360,7 +309,6 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isRunning}
             placeholder={
               hasLineup
                 ? 'Tell the writers to change something...'
@@ -372,10 +320,10 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
           />
           <button
             onClick={handleSend}
-            disabled={isRunning || !chatInput.trim()}
+            disabled={!chatInput.trim()}
             className={cn(
               'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors shrink-0',
-              chatInput.trim() && !isRunning
+              chatInput.trim()
                 ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
                 : 'bg-surface-hover text-txt-muted border border-surface-hover',
               'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -392,7 +340,7 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
           {!hasLineup && (
             <button
               onClick={handleBuildLineup}
-              disabled={isRunning}
+              disabled={false}
               className="flex-1 py-2.5 rounded-lg border-2 border-dashed border-accent/30 text-sm text-accent font-medium hover:border-accent/50 hover:bg-accent/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="build-lineup-btn"
             >
@@ -400,15 +348,18 @@ ${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : '
             </button>
           )}
 
-          {/* WE'RE LIVE! — visible when lineup exists */}
+          {/* Finalize Lineup — visible when lineup exists */}
           {hasLineup && (
             <Button
               variant="primary"
               className="flex-1"
-              onClick={() => triggerGoingLive()}
+              onClick={() => {
+                window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
+                triggerGoingLive()
+              }}
               data-testid="go-live-btn"
             >
-              WE&apos;RE LIVE!
+              Finalize Lineup
             </Button>
           )}
         </div>

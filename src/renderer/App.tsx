@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
+import { useTraySync } from './hooks/useTraySync'
 import { useSessionStore } from './stores/sessionStore'
 import { useShowStore, selectIsExpanded } from './stores/showStore'
 import { useThemeStore } from './theme'
@@ -39,6 +40,7 @@ function tierToViewMode(tier: ViewTier, phase: ShowPhase): ViewMode {
 export default function App() {
   useClaudeEvents()
   useHealthReconciliation()
+  useTraySync()
 
   const phase = useShowStore((s) => s.phase)
   const viewTier = useShowStore((s) => s.viewTier)
@@ -101,6 +103,7 @@ export default function App() {
           useSessionStore.setState((s) => ({
             tabs: s.tabs.map((t, i) => (i === 0 ? { ...t, id: tabId } : t)),
             activeTabId: tabId,
+            tabReady: true,
           }))
           // Warm up immediately after tab is created — don't wait for Writer's Room
           window.clui.initSession(tabId)

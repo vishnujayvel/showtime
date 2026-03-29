@@ -59,7 +59,7 @@ export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 1.2 }}
         >
-          <Button variant="accent" onClick={triggerColdOpen}>
+          <Button variant="accent" onClick={triggerColdOpen} data-testid="enter-writers-room">
             Enter the Writer&apos;s Room
           </Button>
           {onShowHistory && (
