@@ -32,17 +32,17 @@ Click **Enter the Writer's Room** when you're ready. No rush.
 
 ### 2. Writer's Room
 
-This is where you plan your day, and it takes about three minutes, not thirty. Three steps:
+This is where you plan your day — through a conversation with Claude. The whole thing takes about three minutes.
 
-**Energy Check** -- The app asks how you're feeling today. Pick one: High, Medium, Low, or Recovery. Be honest. There's no wrong answer. Recovery days are valid days. See [Energy Levels](./energy-levels) for what each level means.
+**Set your energy.** A chip in the title bar shows your energy level. Tap it to pick one: High, Medium, Low, or Recovery. Be honest. Recovery days are valid days. See [Energy Levels](./energy-levels) for what each level means.
 
-**Plan Dump** -- Type out everything on your plate in plain text. Don't organize it, don't prioritize it, just get it out of your head. "finish the API thing, need to email alex, maybe gym if I feel like it, groceries." That's plenty.
+**Tell Claude about your day.** Type into the chat what's on your plate. Don't organize it, don't prioritize it. "finish the API thing, need to email alex, maybe gym if I feel like it, groceries." That's plenty. Hit **BUILD MY LINEUP** and Claude structures your brain dump into a lineup of Acts (timed blocks of work).
 
-**Lineup Preview** -- Claude takes your brain dump and structures it into a lineup of Acts (timed blocks of work). You'll see each Act with its category, duration, and order. Drag to reorder if you want. Approve when it looks right.
+**Review and refine.** The lineup appears as an interactive card right in the chat. Each Act shows its category, name, and duration — all editable inline. Click a name to rename it. Click a duration to change it. Click the category badge to switch sketches. Add or remove Acts with the buttons. Or just type a follow-up message: "make the exercise block longer" or "swap acts 2 and 3" and Claude will regenerate the lineup.
 
 ### 3. "We're Live!"
 
-You hit the button and the ON AIR light ignites. "Live from your desk, it's [today's date]!" This isn't decoration. It's a threshold. Before this moment, you were a person sitting at a desk. Now you're a Performer on stage.
+Once the lineup looks right, hit **WE'RE LIVE!** and the ON AIR light ignites. "Live from your desk, it's [today's date]!" This isn't decoration. It's a threshold. Before this moment, you were a person sitting at a desk. Now you're a Performer on stage.
 
 The show has started.
 
