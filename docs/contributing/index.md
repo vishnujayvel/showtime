@@ -51,16 +51,18 @@ Playwright E2E tests launch the full Electron app. Run `npm run build` before `n
 ```
 Showtime (Electron App)
 ├── Main Process (Node.js)
+│   ├── claude/           RunManager, ControlPlane, StreamParser
 │   ├── window management (NSPanel, always-on-top)
 │   └── IPC handlers
 ├── Preload (contextBridge)
 │   └── window.clui API (typed IPC bridge)
 └── Renderer (React 19)
-    ├── views/        PillView, WritersRoomView, ExpandedView,
-    │                 StrikeView, DarkStudioView
-    ├── panels/       TimerPanel, LineupPanel, ChatPanel
-    ├── components/   ActCard, BeatCheckModal, BeatCounter, etc.
-    ├── stores/       showStore (Zustand)
+    ├── views/        12 views — see View System docs
+    ├── panels/       TimerPanel, LineupPanel
+    ├── components/   LineupCard, ChatMessage, ActCard,
+    │                 BeatCheckModal, MiniRundownStrip, etc.
+    ├── stores/       showStore, sessionStore (Zustand)
+    ├── hooks/        useTimer, useClaudeEvents, etc.
     └── ui/           shadcn/ui components (Button, Dialog, Card)
 ```
 
@@ -100,3 +102,7 @@ SQLite (better-sqlite3) in the main process. Renderer accesses data through IPC,
 
 - [Design System](/contributing/design-system) — Colors, typography, animations, and view dimensions
 - [Coding Standards](/contributing/coding-standards) — Rules for styling, state management, testing, and more
+- [View System](/contributing/view-system) — View tiers, transitions, and routing logic
+- [Key Components](/contributing/components) — LineupCard, ChatMessage, TallyLight, and more
+- [Chat-First Writer's Room](/contributing/chat-first-writers-room) — How the chat-based planning flow works
+- [E2E Testing & Cassettes](/contributing/e2e-testing-cassettes) — Three-tier testing strategy with VCR cassettes

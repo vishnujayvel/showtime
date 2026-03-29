@@ -275,7 +275,10 @@ Fix CodeRabbit comments before merging. If a comment is a false positive, reply 
 - [electron] setIgnoreMouseEvents prevents drag — use content-tight sizing instead
 - [electron] better-sqlite3 requires electron-rebuild for native ABI compatibility
 - [electron] Vitest runs under system Node, not Electron Node — test config needs node environment for native modules
+- [ui] Spotlight overlays must have `pointer-events-none` — otherwise they block interactive elements beneath them (e.g., "Go Live" button)
+- [ui] Pill view requires explicit min-width constraint (`w-80`) to prevent collapse below intended size
 - [loki] Queue pending.json is permanently stale — trust git log for progress
 - [workflow] Update CLAUDE.md BEFORE Loki runs, not as a task for Loki
 - [workflow] Do NOT use titleBarStyle with frame:false
 - [testing] Playwright E2E tests require full Electron app build before running
+- [testing] Cassette replay tests (SHOWTIME_PLAYBACK=1) are primary tier — use before real Claude tests

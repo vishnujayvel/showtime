@@ -4,13 +4,15 @@ Showtime doesn't have one fixed window. It has four sizes, and you switch betwee
 
 ## Pill View
 
-**320 x 48px** | Always on top | Rounded floating capsule
+**320px wide** | Always on top | Rounded floating capsule
 
-The smallest Showtime gets. A little pill floating above your other windows with just three things:
+The smallest Showtime gets. A little pill floating above your other windows with:
 
+- **Tally light** -- a draggable red dot on the left pulsing to confirm the show is live
 - **Act name** -- what you're performing right now
 - **Timer** -- the studio clock counting down in monospaced numerals
-- **Tally light** -- a small red dot pulsing to confirm the show is live
+- **Beat count** -- your golden stars so far
+- **Mini Rundown Strip** -- a thin colored timeline below showing all acts with a red NOW marker tracking your position through the day
 
 Use this when you're in the zone. You're deep in your editor and all you need is a quiet reminder that the clock is running. Takes up almost no screen space.
 
