@@ -8,6 +8,7 @@ import { ActRepository } from './ActRepository'
 import { TimelineRepository } from './TimelineRepository'
 import { ClaudeContextRepository } from './ClaudeContextRepository'
 import { MetricsRepository } from './MetricsRepository'
+import { CalendarCacheRepository } from './CalendarCacheRepository'
 
 let instance: DataService | null = null
 
@@ -19,6 +20,7 @@ export class DataService {
   readonly timeline: TimelineRepository
   readonly claudeCtx: ClaudeContextRepository
   readonly metrics: MetricsRepository
+  readonly calendarCache: CalendarCacheRepository
 
   private constructor(dbPath: string) {
     this.raw = new Database(dbPath)
@@ -30,6 +32,7 @@ export class DataService {
     this.timeline = new TimelineRepository(this.db)
     this.claudeCtx = new ClaudeContextRepository(this.db)
     this.metrics = new MetricsRepository(this.db)
+    this.calendarCache = new CalendarCacheRepository(this.db)
   }
 
   static init(): DataService {
@@ -60,6 +63,7 @@ export class DataService {
     this.raw.exec('DELETE FROM timeline_events')
     this.raw.exec('DELETE FROM acts')
     this.raw.exec('DELETE FROM shows')
+    this.raw.exec('DELETE FROM calendar_cache')
   }
 
   close(): void {
