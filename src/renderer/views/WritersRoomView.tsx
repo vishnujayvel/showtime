@@ -6,6 +6,7 @@ import { buildRefinementPrompt } from '../lib/refinement-prompt'
 import { tryParseCalendarEvents } from '../lib/calendar-parser'
 import { ChatMessage } from '../components/ChatMessage'
 import { CalendarToggle } from '../components/CalendarToggle'
+import { ProgressiveLoader } from '../components/ProgressiveLoader'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatDateLabel } from '../lib/utils'
@@ -289,22 +290,8 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
           <ChatMessage key={msg.id} message={msg} />
         ))}
 
-        {/* Activity indicator */}
-        {isRunning && currentActivity && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={springTransition}
-            className="flex justify-start"
-          >
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-hover/50 border border-card-border/50">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-1" />
-              <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-2" />
-              <span className="w-1.5 h-1.5 rounded-full bg-accent writers-dot-3" />
-              <span className="text-xs text-txt-muted ml-1">{currentActivity}</span>
-            </div>
-          </motion.div>
-        )}
+        {/* Progressive loading indicator — timed messages while Claude works */}
+        <ProgressiveLoader active={isRunning && !hasLineup} />
 
         <div ref={messagesEndRef} />
       </div>

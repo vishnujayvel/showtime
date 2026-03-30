@@ -527,6 +527,15 @@ export class ControlPlane extends EventEmitter {
     this.permissionMode = mode
   }
 
+  /**
+   * Pre-warm a Claude subprocess for faster Writer's Room startup.
+   * Should be called when entering Dark Studio phase.
+   * Uses default allowed tools (no per-run hook settings needed for warm pool).
+   */
+  preWarmSubprocess(projectPath?: string): void {
+    this.runManager.preWarm({ projectPath })
+  }
+
   closeTab(tabId: string): void {
     const tab = this.tabs.get(tabId)
     if (!tab) return

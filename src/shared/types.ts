@@ -382,6 +382,16 @@ export interface ShowState {
   breathingPauseEndAt: number | null
 }
 
+export interface CachedCalendarEvent {
+  id: string
+  title: string
+  startTime: number
+  endTime: number
+  isFixed: boolean
+  category: string | null
+  lastSynced: number
+}
+
 export interface TrayShowState {
   phase: ShowPhase
   currentActName: string | null
@@ -476,6 +486,13 @@ export const IPC = {
   SHOW_DETAIL: 'showtime:show-detail',
   METRICS_SUMMARY: 'showtime:metrics-summary',
   METRICS_RECORD: 'showtime:metrics-record',
+
+  // Calendar cache
+  CALENDAR_CACHE_GET: 'showtime:calendar-cache-get',
+  CALENDAR_CACHE_SET: 'showtime:calendar-cache-set',
+
+  // Subprocess pre-warm
+  PREWARM_SUBPROCESS: 'showtime:prewarm-subprocess',
 
   // App lifecycle
   APP_QUIT: 'app:quit',

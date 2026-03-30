@@ -61,7 +61,7 @@ export function PillView() {
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
     >
       <div className="flex items-center gap-3 py-2.5 px-4">
-        {/* Left: drag handle with tally + label */}
+        {/* Left: drag handle with SHOWTIME label */}
         <div className="shrink-0 flex items-center gap-1.5 drag-region cursor-grab">
           {phase === 'live' ? (
             <TallyLight isLive={true} size="lg" />
