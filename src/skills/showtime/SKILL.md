@@ -56,7 +56,7 @@ A markdown code fence tagged `showtime-lineup` containing a JSON object:
 }
 ```
 
-Valid sketch categories: `"Deep Work"`, `"Exercise"`, `"Admin"`, `"Creative"`, `"Social"`
+Valid sketch categories: `"Deep Work"`, `"Exercise"`, `"Admin"`, `"Creative"`, `"Social"`, `"Personal"`
 
 ---
 
@@ -67,7 +67,7 @@ Valid sketch categories: `"Deep Work"`, `"Exercise"`, `"Admin"`, `"Creative"`, `
 | **Show** | The user's entire day | Full day |
 | **Act** | A block of focused execution | 45–90 min |
 | **Beat** | A moment of presence/immersion during an Act | Seconds to minutes |
-| **Sketch** | A category of activity (Deep Work, Exercise, Admin, Creative, Social, Errands) | N/A |
+| **Sketch** | A category of activity (Deep Work, Exercise, Admin, Creative, Social, Personal) | N/A |
 | **Writer's Room** | Morning planning session | Max 20 min |
 | **Cold Open** | Morning presence ritual | 5–10 min |
 | **Intermission** | Active recovery — costs ZERO capacity | Variable |

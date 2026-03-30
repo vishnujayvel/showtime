@@ -2,7 +2,7 @@
 // Maps sketch categories to Tailwind token classes.
 // Single source of truth — replaces duplicated SKETCH_COLORS objects.
 
-export type SketchCategory = 'Deep Work' | 'Exercise' | 'Admin' | 'Creative' | 'Social'
+export type SketchCategory = 'Deep Work' | 'Exercise' | 'Admin' | 'Creative' | 'Social' | 'Personal'
 
 interface CategoryClasses {
   /** Solid text color, e.g. `text-cat-deep` */
@@ -91,6 +91,17 @@ const CATEGORY_MAP: Record<SketchCategory, CategoryConfig> = {
       borderTint: 'border-cat-social/25',
     },
   },
+  'Personal': {
+    token: 'cat-personal',
+    hex: '#14b8a6',
+    classes: {
+      text: 'text-cat-personal',
+      bg: 'bg-cat-personal',
+      border: 'border-cat-personal',
+      bgTint: 'bg-cat-personal/5',
+      borderTint: 'border-cat-personal/25',
+    },
+  },
 }
 
 // ─── Public API ───
@@ -107,4 +118,5 @@ export const SKETCH_CATEGORIES: SketchCategory[] = [
   'Admin',
   'Creative',
   'Social',
+  'Personal',
 ]

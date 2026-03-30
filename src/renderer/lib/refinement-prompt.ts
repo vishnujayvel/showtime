@@ -26,7 +26,7 @@ The user wants to modify the lineup: "${message}"
 
 IMPORTANT:
 - Respond with the COMPLETE updated lineup as a \`\`\`showtime-lineup JSON block
-- Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
+- Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social", "Personal"
 - Keep the same format. Only modify what the user asked for.
 - Preserve all existing acts unless the user specifically asks to remove them`
 }
