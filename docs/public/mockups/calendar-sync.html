@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Calendar Sync Flow</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* === ANIMATIONS === */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 8px 2px rgba(217,119,87,0.3); }
+    50% { box-shadow: 0 0 20px 4px rgba(217,119,87,0.5); }
+  }
+  @keyframes conflictPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  .spinner { animation: spin 1s linear infinite; }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+  .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+  .conflict-pulse { animation: conflictPulse 2s ease-in-out infinite; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Calendar event badge */
+  .cal-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Toggle switch */
+  .toggle-track {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: #d97757; }
+  .toggle-track.off { background: #3a3a3e; }
+  .toggle-knob {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 2px;
+    transition: left 0.2s;
+  }
+  .toggle-track.on .toggle-knob { left: 18px; }
+  .toggle-track.off .toggle-knob { left: 2px; }
+
+  /* Conflict stripe */
+  .conflict-stripe {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 4px,
+      rgba(239,68,68,0.08) 4px,
+      rgba(239,68,68,0.08) 8px
+    );
+  }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Feature Flow</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Calendar Sync</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    Import calendar events into tonight's show. Your schedule becomes part of the lineup &mdash;
+    fixed acts that the rest of the show flows around.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- 1. NO MCP ACCESS                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">No MCP Access</h2>
+    <span class="text-xs text-txt-muted font-mono">Disconnected</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Calendar integration is not connected. The user sees a prompt to enable it.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+      <div class="traffic-lights">
+        <div class="traffic-light" style="background:#ff5f57;"></div>
+        <div class="traffic-light" style="background:#febc2e;"></div>
+        <div class="traffic-light" style="background:#28c840;"></div>
+      </div>
+      <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Writer's Room</span>
+    </div>
+    <div class="px-8 py-10">
+      <!-- Section heading -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label">Calendar</span>
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono" style="background:rgba(90,88,85,0.15); color:#5a5855;">
+          <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#5a5855;"></span>
+          DISCONNECTED
+        </span>
+      </div>
+
+      <!-- Empty state card -->
+      <div class="rounded-xl p-8 text-center" style="background:#0d0d0f; border:1px dashed #3a3a3e;">
+        <!-- Calendar icon -->
+        <div class="mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center" style="background:rgba(217,119,87,0.08); border:1px solid rgba(217,119,87,0.15);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <rect x="8" y="14" width="3" height="3" rx="0.5" fill="rgba(217,119,87,0.3)"></rect>
+          </svg>
+        </div>
+
+        <p class="text-base font-semibold text-txt-primary mb-2">Bring your calendar backstage</p>
+        <p class="text-sm text-txt-secondary mb-6 max-w-xs mx-auto">
+          Connect Google Calendar to auto-import today's events into your show lineup. Meetings become fixed Acts.
+        </p>
+
+        <button class="px-6 py-3 rounded-lg font-medium text-sm transition-all" style="background: rgba(217,119,87,0.15); border: 1px solid rgba(217,119,87,0.4); color: #d97757;">
+          <span class="inline-flex items-center gap-2">
+            <!-- Google Calendar icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Connect Google Calendar
+          </span>
+        </button>
+
+        <p class="text-xs text-txt-muted mt-4">Uses MCP &mdash; your data stays local</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 2. CONNECTING                                                  -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">Connecting</h2>
+    <span class="text-xs text-txt-muted font-mono">Loading</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">MCP handshake in progress. Brief loading state while we reach your calendar.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+      <div class="traffic-lights">
+        <div class="traffic-light" style="background:#ff5f57;"></div>
+        <div class="traffic-light" style="background:#febc2e;"></div>
+        <div class="traffic-light" style="background:#28c840;"></div>
+      </div>
+      <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Writer's Room</span>
+    </div>
+    <div class="px-8 py-10">
+      <!-- Section heading -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="section-label">Calendar</span>
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono" style="background:rgba(217,119,87,0.1); color:#d97757;">
+          <!-- Spinner -->
+          <svg class="spinner" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="3" stroke-linecap="round">
+            <path d="M12 2 A10 10 0 0 1 22 12"></path>
+          </svg>
+          CONNECTING
+        </span>
+      </div>
+
+      <!-- Loading card -->
+      <div class="rounded-xl p-8 text-center" style="background:#0d0d0f; border:1px solid rgba(217,119,87,0.15);">
+        <!-- Spinner -->
+        <div class="mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center pulse-glow" style="background:rgba(217,119,87,0.08); border:1px solid rgba(217,119,87,0.2);">
+          <svg class="spinner" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2 A10 10 0 0 1 22 12"></path>
+          </svg>
+        </div>
+
+        <p class="text-base font-semibold text-txt-primary mb-2">Reaching your calendar&hellip;</p>
+        <p class="text-sm text-txt-muted">Fetching today's events via MCP</p>
+
+        <!-- Progress dots -->
+        <div class="flex items-center justify-center gap-2 mt-6">
+          <span class="inline-block w-2 h-2 rounded-full" style="background:#d97757; opacity:1;"></span>
+          <span class="inline-block w-2 h-2 rounded-full" style="background:#d97757; opacity:0.5;"></span>
+          <span class="inline-block w-2 h-2 rounded-full" style="background:#d97757; opacity:0.25;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 3. IMPORT EVENTS                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Import Events</h2>
+    <span class="text-xs text-txt-muted font-mono">560 x ~680px</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">Today's calendar events shown as toggleable items. The user picks which ones join the show.</p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+      <div class="traffic-lights">
+        <div class="traffic-light" style="background:#ff5f57;"></div>
+        <div class="traffic-light" style="background:#febc2e;"></div>
+        <div class="traffic-light" style="background:#28c840;"></div>
+      </div>
+      <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Writer's Room</span>
+    </div>
+    <div class="px-8 py-8">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <p class="text-xl font-semibold text-txt-primary">Today's Calendar</p>
+          <p class="text-sm text-txt-secondary mt-1">Toggle events to add them to your lineup.</p>
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono" style="background:rgba(34,197,94,0.1); color:#22c55e;">
+          <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#22c55e;"></span>
+          SYNCED
+        </span>
+      </div>
+
+      <p class="text-xs text-txt-muted font-mono mb-6">TUESDAY, MARCH 25 &middot; 5 EVENTS FOUND</p>
+
+      <div class="space-y-2.5 mb-8">
+        <!-- Event 1 — ON, meeting -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0s;">
+          <div class="toggle-track on">
+            <div class="toggle-knob"></div>
+          </div>
+          <div class="w-1 h-12 rounded-full" style="background:#ec4899;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="cal-badge" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.3); color:#ec4899;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                MEETING
+              </span>
+              <span class="font-mono text-xs text-txt-muted">9:00 &ndash; 9:30 AM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Standup with Design Team</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary flex-shrink-0">30m</span>
+        </div>
+
+        <!-- Event 2 — ON, focus block -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.08s;">
+          <div class="toggle-track on">
+            <div class="toggle-knob"></div>
+          </div>
+          <div class="w-1 h-12 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="cal-badge" style="background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); color:#8b5cf6;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                FOCUS BLOCK
+              </span>
+              <span class="font-mono text-xs text-txt-muted">10:00 &ndash; 12:00 PM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Deep Work &mdash; Project Atlas</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary flex-shrink-0">2h</span>
+        </div>
+
+        <!-- Event 3 — OFF, lunch -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; opacity:0.5; animation-delay:0.16s;">
+          <div class="toggle-track off">
+            <div class="toggle-knob"></div>
+          </div>
+          <div class="w-1 h-12 rounded-full" style="background:#3a3a3e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="cal-badge" style="background:rgba(90,88,85,0.1); border:1px solid rgba(90,88,85,0.3); color:#5a5855;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                PERSONAL
+              </span>
+              <span class="font-mono text-xs text-txt-muted">12:30 &ndash; 1:30 PM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-muted truncate">Lunch Break</p>
+          </div>
+          <span class="font-mono text-sm text-txt-muted flex-shrink-0">1h</span>
+        </div>
+
+        <!-- Event 4 — ON, 1:1 -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.24s;">
+          <div class="toggle-track on">
+            <div class="toggle-knob"></div>
+          </div>
+          <div class="w-1 h-12 rounded-full" style="background:#ec4899;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="cal-badge" style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.3); color:#ec4899;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                1:1
+              </span>
+              <span class="font-mono text-xs text-txt-muted">2:00 &ndash; 2:30 PM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">1:1 with Sarah &mdash; Design Review</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary flex-shrink-0">30m</span>
+        </div>
+
+        <!-- Event 5 — ON, exercise -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.32s;">
+          <div class="toggle-track on">
+            <div class="toggle-knob"></div>
+          </div>
+          <div class="w-1 h-12 rounded-full" style="background:#22c55e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="cal-badge" style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); color:#22c55e;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                EXERCISE
+              </span>
+              <span class="font-mono text-xs text-txt-muted">5:30 &ndash; 6:30 PM</span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Evening Run</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary flex-shrink-0">1h</span>
+        </div>
+      </div>
+
+      <!-- Summary + CTA -->
+      <div class="pt-5" style="border-top:1px solid #2a2a2e;">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-mono text-xs text-txt-muted">4 OF 5 EVENTS SELECTED &middot; ~4h 0m</span>
+          <button class="text-xs text-txt-muted hover:text-txt-secondary font-mono">SELECT ALL</button>
+        </div>
+        <button class="w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 20px rgba(217,119,87,0.2), 0 4px 16px rgba(0,0,0,0.4);">
+          Add to Lineup &rarr;
+        </button>
+        <p class="text-center text-xs text-txt-muted mt-3">Calendar events become fixed Acts in your show.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. EVENTS IN LINEUP                                            -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">Events in Lineup</h2>
+    <span class="text-xs text-txt-muted font-mono">Writer's Room &mdash; Lineup</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">
+    Imported calendar events appear in the lineup as fixed-time Acts, visually distinct from manually added ones.
+    They show a clock pin icon and their scheduled time.
+  </p>
+
+  <div class="macos-chrome" style="background:#1a1a1e; width:560px;">
+    <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+      <div class="traffic-lights">
+        <div class="traffic-light" style="background:#ff5f57;"></div>
+        <div class="traffic-light" style="background:#febc2e;"></div>
+        <div class="traffic-light" style="background:#28c840;"></div>
+      </div>
+      <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Writer's Room</span>
+    </div>
+    <div class="px-8 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xl font-semibold text-txt-primary">Tonight's Lineup</p>
+          <p class="text-sm text-txt-secondary mt-1">Drag to reorder. Calendar acts are time-pinned.</p>
+        </div>
+        <span class="font-mono text-xs text-txt-muted">7 ACTS &middot; ~5h 30m</span>
+      </div>
+
+      <div class="space-y-2.5 mb-8">
+        <!-- Act 1 — Calendar event (pinned) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up relative" style="background:#242428; border-left:3px solid #ec4899; animation-delay:0s;">
+          <!-- Pin icon for time-locked -->
+          <div class="flex flex-col items-center gap-0.5 flex-shrink-0" style="min-width:44px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9a9890" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span class="font-mono text-xs text-txt-muted" style="font-size:10px;">9:00</span>
+          </div>
+          <div class="w-1 h-10 rounded-full" style="background:#ec4899;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(236,72,153,0.4); color:#ec4899; font-size:10px;">
+                SOCIAL <span class="divider">|</span> ACT 1
+              </span>
+              <span class="cal-badge" style="background:rgba(217,119,87,0.1); border:1px solid rgba(217,119,87,0.2); color:#d97757; font-size:9px; padding:1px 6px;">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                CAL
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Standup with Design Team</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 2 — Manual act (draggable) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.06s;">
+          <span class="text-txt-muted cursor-grab text-sm" style="min-width:44px; text-align:center;">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#60a5fa;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(96,165,250,0.4); color:#60a5fa; font-size:10px;">
+                ADMIN <span class="divider">|</span> ACT 2
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Email Triage &amp; Slack Catchup</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">20:00</span>
+          <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+            <button class="hover:text-txt-primary">&uarr;</button>
+            <button class="hover:text-txt-primary">&darr;</button>
+          </div>
+        </div>
+
+        <!-- Act 3 — Calendar event (pinned) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up relative" style="background:#242428; border-left:3px solid #8b5cf6; animation-delay:0.12s;">
+          <div class="flex flex-col items-center gap-0.5 flex-shrink-0" style="min-width:44px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9a9890" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span class="font-mono text-xs text-txt-muted" style="font-size:10px;">10:00</span>
+          </div>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6; font-size:10px;">
+                DEEP WORK <span class="divider">|</span> ACT 3
+              </span>
+              <span class="cal-badge" style="background:rgba(217,119,87,0.1); border:1px solid rgba(217,119,87,0.2); color:#d97757; font-size:9px; padding:1px 6px;">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                CAL
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Deep Work &mdash; Project Atlas</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">2:00:00</span>
+        </div>
+
+        <!-- Act 4 — Manual act -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.18s;">
+          <span class="text-txt-muted cursor-grab text-sm" style="min-width:44px; text-align:center;">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#f59e0b;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(245,158,11,0.4); color:#f59e0b; font-size:10px;">
+                CREATIVE <span class="divider">|</span> ACT 4
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Newsletter Brainstorm</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+          <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+            <button class="hover:text-txt-primary">&uarr;</button>
+            <button class="hover:text-txt-primary">&darr;</button>
+          </div>
+        </div>
+
+        <!-- Act 5 — Calendar event (pinned) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up relative" style="background:#242428; border-left:3px solid #ec4899; animation-delay:0.24s;">
+          <div class="flex flex-col items-center gap-0.5 flex-shrink-0" style="min-width:44px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9a9890" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span class="font-mono text-xs text-txt-muted" style="font-size:10px;">2:00</span>
+          </div>
+          <div class="w-1 h-10 rounded-full" style="background:#ec4899;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(236,72,153,0.4); color:#ec4899; font-size:10px;">
+                SOCIAL <span class="divider">|</span> ACT 5
+              </span>
+              <span class="cal-badge" style="background:rgba(217,119,87,0.1); border:1px solid rgba(217,119,87,0.2); color:#d97757; font-size:9px; padding:1px 6px;">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                CAL
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">1:1 with Sarah &mdash; Design Review</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">30:00</span>
+        </div>
+
+        <!-- Act 6 — Manual act -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up" style="background:#242428; animation-delay:0.30s;">
+          <span class="text-txt-muted cursor-grab text-sm" style="min-width:44px; text-align:center;">&#8942;&#8942;</span>
+          <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(139,92,246,0.4); color:#8b5cf6; font-size:10px;">
+                DEEP WORK <span class="divider">|</span> ACT 6
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">API Integration &mdash; Client Dashboard</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">45:00</span>
+          <div class="flex flex-col gap-0.5 text-txt-muted text-xs">
+            <button class="hover:text-txt-primary">&uarr;</button>
+            <button class="hover:text-txt-primary">&darr;</button>
+          </div>
+        </div>
+
+        <!-- Act 7 — Calendar event (pinned) -->
+        <div class="flex items-center gap-3 p-3.5 rounded-lg slide-up relative" style="background:#242428; border-left:3px solid #22c55e; animation-delay:0.36s;">
+          <div class="flex flex-col items-center gap-0.5 flex-shrink-0" style="min-width:44px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9a9890" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span class="font-mono text-xs text-txt-muted" style="font-size:10px;">5:30</span>
+          </div>
+          <div class="w-1 h-10 rounded-full" style="background:#22c55e;"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e; font-size:10px;">
+                EXERCISE <span class="divider">|</span> ACT 7
+              </span>
+              <span class="cal-badge" style="background:rgba(217,119,87,0.1); border:1px solid rgba(217,119,87,0.2); color:#d97757; font-size:9px; padding:1px 6px;">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                CAL
+              </span>
+            </div>
+            <p class="font-medium text-sm text-txt-primary truncate">Evening Run</p>
+          </div>
+          <span class="font-mono text-sm text-txt-secondary">1:00:00</span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="flex items-center gap-5 px-1 mb-6">
+        <div class="flex items-center gap-2 text-xs text-txt-muted">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9a9890" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Time-pinned (calendar)</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-txt-muted">
+          <span>&#8942;&#8942;</span>
+          <span>Draggable (manual)</span>
+        </div>
+      </div>
+
+      <!-- WE'RE LIVE button -->
+      <div class="pt-4" style="border-top:1px solid #2a2a2e;">
+        <button class="w-full py-4 rounded-xl font-bold text-base tracking-wide relative overflow-hidden transition-all" style="background: linear-gradient(135deg, #d97757, #c4613e); color: #fff; box-shadow: 0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4);">
+          <span style="position:absolute; inset:0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events:none;"></span>
+          WE'RE LIVE!
+        </button>
+        <p class="text-center text-xs text-txt-muted mt-3">Calendar acts lock to their time slots automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 5. SYNC CONFLICT                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">State 5</span>
+    <h2 class="text-xl font-bold text-txt-primary">Sync Conflict</h2>
+    <span class="text-xs text-txt-muted font-mono">~400px modal</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">
+    A calendar event overlaps with an existing act. The user chooses how to handle it &mdash; compassionately, no guilt.
+  </p>
+
+  <!-- Dimmed background context -->
+  <div class="relative" style="width:560px;">
+    <!-- Background lineup (dimmed) -->
+    <div class="macos-chrome" style="background:#1a1a1e; opacity:0.25; filter:blur(1px);">
+      <div class="px-5 pt-4 pb-1 flex items-center gap-2" style="background:#151517;">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted ml-3">Showtime &mdash; Writer's Room</span>
+      </div>
+      <div class="px-8 py-8">
+        <p class="text-xl font-semibold text-txt-primary mb-6">Tonight's Lineup</p>
+        <div class="space-y-2.5">
+          <div class="h-14 rounded-lg" style="background:#242428;"></div>
+          <div class="h-14 rounded-lg" style="background:#242428;"></div>
+          <div class="h-14 rounded-lg" style="background:#242428;"></div>
+          <div class="h-14 rounded-lg" style="background:#242428;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conflict modal overlay -->
+    <div class="absolute inset-0 flex items-center justify-center" style="background:rgba(13,13,15,0.6); border-radius:12px;">
+      <div class="rounded-2xl p-6 w-[400px]" style="background:#1a1a1e; border:1px solid rgba(239,68,68,0.2); box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 30px rgba(239,68,68,0.06);">
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center conflict-pulse" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div>
+            <p class="font-semibold text-txt-primary">Schedule Overlap</p>
+            <p class="text-xs text-txt-muted mt-0.5">Two acts want the same time slot</p>
+          </div>
+        </div>
+
+        <!-- Conflict visualization -->
+        <div class="rounded-xl p-4 mb-5 conflict-stripe" style="background:#0d0d0f; border:1px solid rgba(239,68,68,0.15);">
+          <!-- Existing act -->
+          <div class="flex items-center gap-3 mb-3 pb-3" style="border-bottom:1px solid #242428;">
+            <div class="w-1 h-10 rounded-full" style="background:#8b5cf6;"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-txt-muted font-mono mb-0.5">EXISTING ACT &middot; 10:00 &ndash; 11:30 AM</p>
+              <p class="font-medium text-sm text-txt-primary">Deep Work &mdash; API Integration</p>
+            </div>
+            <span class="clap-badge" style="border-color:rgba(139,92,246,0.3); color:#8b5cf6; font-size:9px; padding:2px 6px;">
+              DEEP WORK
+            </span>
+          </div>
+
+          <!-- Overlap indicator -->
+          <div class="flex items-center justify-center gap-2 mb-3">
+            <div class="h-px flex-1" style="background:rgba(239,68,68,0.3);"></div>
+            <span class="font-mono text-xs px-2 py-0.5 rounded" style="background:rgba(239,68,68,0.1); color:#ef4444; font-size:10px;">OVERLAPS 30 MIN</span>
+            <div class="h-px flex-1" style="background:rgba(239,68,68,0.3);"></div>
+          </div>
+
+          <!-- Calendar event -->
+          <div class="flex items-center gap-3">
+            <div class="w-1 h-10 rounded-full" style="background:#ec4899;"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-txt-muted font-mono mb-0.5">CALENDAR EVENT &middot; 11:00 &ndash; 11:30 AM</p>
+              <p class="font-medium text-sm text-txt-primary">Sync with Marketing Team</p>
+            </div>
+            <span class="cal-badge" style="background:rgba(217,119,87,0.1); border:1px solid rgba(217,119,87,0.2); color:#d97757; font-size:9px; padding:2px 6px;">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              CAL
+            </span>
+          </div>
+        </div>
+
+        <!-- Resolution options -->
+        <p class="section-label mb-3">How do you want to handle this?</p>
+        <div class="space-y-2">
+          <!-- Option 1: Shorten existing -->
+          <button class="w-full text-left p-3 rounded-lg border transition-all flex items-center gap-3" style="background:rgba(139,92,246,0.05); border-color:rgba(139,92,246,0.2);">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><line x1="2" y1="22" x2="10" y2="14"></line></svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium" style="color:#8b5cf6;">Shorten the Act</p>
+              <p class="text-xs text-txt-muted">End "Deep Work" at 11:00 &mdash; trim 30 min</p>
+            </div>
+          </button>
+
+          <!-- Option 2: Keep calendar, move act -->
+          <button class="w-full text-left p-3 rounded-lg border transition-all flex items-center gap-3" style="background:rgba(217,119,87,0.05); border-color:rgba(217,119,87,0.2);">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(217,119,87,0.1);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium" style="color:#d97757;">Shuffle Around It</p>
+              <p class="text-xs text-txt-muted">Move "Deep Work" to the next open slot</p>
+            </div>
+          </button>
+
+          <!-- Option 3: Skip calendar event -->
+          <button class="w-full text-left p-3 rounded-lg border transition-all flex items-center gap-3" style="background:rgba(90,88,85,0.05); border-color:rgba(90,88,85,0.2);">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(90,88,85,0.1);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5a5855" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-txt-secondary">Skip the Calendar Event</p>
+              <p class="text-xs text-txt-muted">That meeting got cut from tonight's show</p>
+            </div>
+          </button>
+        </div>
+
+        <p class="text-xs text-txt-muted text-center mt-4">No wrong choices. The show adapts to you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

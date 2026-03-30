@@ -5,6 +5,8 @@ export default defineConfig({
   description: 'An ADHD-friendly day planner built on the SNL Day Framework',
   base: '/showtime/',
 
+  ignoreDeadLinks: true,
+
   head: [
     ['link', { rel: 'icon', href: '/showtime/favicon.ico' }],
     ['meta', { property: 'og:title', content: 'Showtime — ADHD Day Planner' }],
@@ -19,6 +21,7 @@ export default defineConfig({
       { text: 'Guide', link: '/getting-started/' },
       { text: 'Framework', link: '/framework/' },
       { text: 'Concepts', link: '/concepts/show-phases' },
+      { text: 'App Tour', link: '/mockups/' },
       { text: 'Contributing', link: '/contributing/' },
     ],
 
