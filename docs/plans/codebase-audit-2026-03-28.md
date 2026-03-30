@@ -23,8 +23,8 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 
 | Issue | Severity | Location | Fix |
 |-------|----------|----------|-----|
-| 2 `any` types in SQLite hydration | Medium | showStore.ts:701-702 | Create ActSnapshot interface |
-| CompactView/DashboardView undocumented | Low | CLAUDE.md | Add to view inventory |
+| ~~2 `any` types in SQLite hydration~~ | ~~Medium~~ | ~~showStore.ts~~ | ✅ Fixed — `ActSnapshot` interface added (PR #106) |
+| ~~CompactView/DashboardView undocumented~~ | ~~Low~~ | ~~CLAUDE.md~~ | ✅ Fixed — both views now listed (PR #106) |
 
 **Codebase Stats:**
 - Renderer: 4,656 LOC across 12 views, 20 components, 2 stores, 5 hooks
@@ -39,18 +39,18 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 | Directory | Files | Status |
 |-----------|-------|--------|
 | docs/ (public VitePress) | 49 | CORRECT — user-facing + contributor guides |
-| docs/plans/ | 12 | 2 QUESTIONABLE — product-context.md and skill-vs-current-architecture.md are internal |
+| docs/plans/ | 10 | ✅ Cleaned — product-context.md and skill-vs-current-architecture.md moved to docs-internal/ (PR #106) |
 | docs/mockups/ | 15 HTML | CORRECT — all referenced by code, zero orphans |
 | docs-internal/ | 16 | CORRECT — properly gitignored |
 | openspec/specs/ | 4 | CORRECT — public specs tracked |
 | openspec/changes/ | 29 active | CORRECT — gitignored |
 
-**Recommended Moves:**
+**Completed Moves (PR #106):**
 
-| File | From | To | Reason |
+| File | From | To | Status |
 |------|------|----|--------|
-| product-context.md | docs/plans/ | docs-internal/ | Internal roadmap, not contributor-facing |
-| skill-vs-current-architecture.md | docs/plans/ | docs-internal/audits/ | Completed decision audit, not ongoing reference |
+| product-context.md | docs/plans/ | docs-internal/ | ✅ Moved |
+| skill-vs-current-architecture.md | docs/plans/ | docs-internal/ | ✅ Moved |
 
 ## 3. Test Pyramid
 
@@ -71,8 +71,8 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 | Component | Unit | E2E | Gap? |
 |-----------|------|-----|------|
 | Stores (2) | 100% | - | No |
-| Views (12) | - | 83% (10/12) | ColdOpenTransition, SettingsView missing |
-| Hooks (5) | 40% (2/5) | - | useClaudeEvents, useHealthReconciliation, useTraySync missing |
+| Views (12) | - | 100% (12/12) | ✅ ColdOpenTransition + SettingsView added (PR #106) |
+| Hooks (5) | 100% (5/5) | - | ✅ useClaudeEvents, useHealthReconciliation, useTraySync added (PR #106) |
 | Components (20) | Partial | Covered via E2E | Acceptable |
 
 **Execution Model:**
@@ -90,17 +90,17 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 | # | Issue | Impact | Effort |
 |---|-------|--------|--------|
 | 1 | **E2E tests not in CI** — Playwright skipped on GitHub Actions (no display) | Regressions only caught locally | Medium — needs xvfb or headless setup |
-| 2 | **No test duration tracking** — no per-test timing, no slow test detection | Can't identify degrading tests | Low — add custom Playwright reporter |
-| 3 | **3 hooks untested** — useClaudeEvents, useHealthReconciliation, useTraySync | Event handling bugs slip through | Medium — mock IPC + event streams |
+| 2 | ~~**No test duration tracking**~~ | ~~Can't identify degrading tests~~ | ✅ Fixed — progress-reporter.ts with slow test detection (PR #106) |
+| 3 | ~~**3 hooks untested**~~ | ~~Event handling bugs slip through~~ | ✅ Fixed — 26 new hook tests added (PR #106) |
 
 ### Priority 2: Should Do
 
 | # | Issue | Impact | Effort |
 |---|-------|--------|--------|
-| 4 | **No pre-commit hooks** — no husky, no lint-staged | Broken code can be committed | Low — add husky + npm test |
-| 5 | **2 `any` types** in showStore.ts SQLite hydration | TypeScript strictness gap | Low — create ActSnapshot interface |
-| 6 | **Move 2 docs to docs-internal/** | Public docs cleanliness | Trivial |
-| 7 | **Document CompactView/DashboardView** in CLAUDE.md | Spec accuracy | Trivial |
+| 4 | ~~**No pre-commit hooks**~~ | ~~Broken code can be committed~~ | ✅ Fixed — husky pre-commit runs `npm test` (PR #106) |
+| 5 | ~~**2 `any` types** in showStore.ts~~ | ~~TypeScript strictness gap~~ | ✅ Fixed — `ActSnapshot` interface (PR #106) |
+| 6 | ~~**Move 2 docs to docs-internal/**~~ | ~~Public docs cleanliness~~ | ✅ Done (PR #106) |
+| 7 | ~~**Document CompactView/DashboardView**~~ | ~~Spec accuracy~~ | ✅ Done (PR #106) |
 
 ### Priority 3: Nice to Have
 

@@ -41,6 +41,28 @@ Interactive lineup editor that renders inside chat messages. Displays acts in a 
 
 ## Show Components
 
+### ClapperboardBadge
+
+**File:** `ClapperboardBadge.tsx`
+
+Category-colored label in monospaced uppercase: `DEEP WORK | ACT 3`. Resolves category colors from the sketch name and falls back to accent color for unknown categories.
+
+**Props:**
+- `sketch: string` — Category name (e.g., "Deep Work", "Exercise")
+- `actNumber: number` — Act number displayed after the pipe
+- `duration?: string` — Optional duration badge
+- `status?: 'active' | 'complete'` — Visual state
+- `size?: 'sm' | 'md'` — Compact or standard sizing
+
+### EnergySelector
+
+**File:** `EnergySelector.tsx`
+
+Three-option energy picker shown at the start of the Writer's Room flow. The user selects High (⚡), Medium (☀️), or Low (🌙) energy, which feeds into Claude's lineup planning prompt.
+
+**Props:**
+- `onSelect: (level: EnergyLevel) => void` — Called when user picks an energy level
+
 ### TallyLight
 
 **File:** `TallyLight.tsx`
@@ -105,7 +127,53 @@ Modal with four compassionate options when the user is overwhelmed:
 
 None of these is presented as failure — they're production decisions.
 
+### IntermissionView
+
+**File:** `IntermissionView.tsx`
+
+"WE'LL BE RIGHT BACK" card shown between acts. Displays a random compassionate affirmation (e.g., "Rest is free. Always has been."), the current beat counter, and a button to resume. Plays an audio cue on mount.
+
+### RundownBar
+
+**File:** `RundownBar.tsx`
+
+Horizontal timeline showing all acts as category-colored segments proportional to their duration. A moving marker tracks real-time progress. Displays schedule drift ("2m behind schedule" / "on schedule"). Available in `full` and `compact` variants.
+
+**Props:**
+- `variant?: 'full' | 'compact'` — Full bar (ExpandedView) or compact strip
+
+### ShowVerdict
+
+**File:** `ShowVerdict.tsx`
+
+End-of-show verdict display on the Strike view. Maps four verdict types to themed headlines and messages:
+
+| Verdict | Headline | Color |
+|---------|----------|-------|
+| `DAY_WON` | DAY WON | Gold with glow animation |
+| `SOLID_SHOW` | SOLID SHOW | Accent orange |
+| `GOOD_EFFORT` | GOOD EFFORT | Blue |
+| `SHOW_CALLED_EARLY` | SHOW CALLED EARLY | Muted gray |
+
 ## Utility Components
+
+### LineupChatInput
+
+**File:** `LineupChatInput.tsx`
+
+Text input for the Writer's Room chat-first flow. Handles Enter-to-send, displays conversation history, and disables during Claude processing.
+
+**Props:**
+- `onSend: (message: string) => void` — Send handler
+- `disabled: boolean` — Disabled while Claude is responding
+- `conversations: Conversation[]` — Chat history
+- `hasLineup?: boolean` — Whether a lineup has been built
+
+### MuteToggle
+
+**File:** `MuteToggle.tsx`
+
+Speaker icon button to mute/unmute audio cues (transitions, intermission, beat locks). Toggles between speaker and speaker-with-X icons.
 
 ### CalendarToggle
 
