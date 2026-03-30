@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direction 3: Live From... — Cinematic Minimal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              '950': '#0a0a0b',
+              '900': '#111113',
+              '850': '#161618',
+              '800': '#1c1c1f',
+              '750': '#222225',
+              '700': '#2a2a2e',
+              '600': '#3a3a3f',
+              '500': '#52525a',
+            },
+            accent: {
+              DEFAULT: '#e8734a',
+              light: '#f09070',
+              dark: '#c55a32',
+              dim: 'rgba(232, 115, 74, 0.12)',
+              glow: 'rgba(232, 115, 74, 0.25)',
+            },
+            txt: {
+              primary: '#e8e6e1',
+              secondary: '#9a9890',
+              tertiary: '#5a5955',
+              muted: '#3a3935',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #060607;
+      color: #e8e6e1;
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* macOS window chrome */
+    .mac-window {
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.06),
+        0 24px 80px rgba(0,0,0,0.65),
+        0 8px 24px rgba(0,0,0,0.4);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+    }
+
+    .mac-pill {
+      border-radius: 9999px;
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.08),
+        0 8px 32px rgba(0,0,0,0.5),
+        0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Accent glow effect */
+    .accent-glow {
+      box-shadow: 0 0 40px rgba(232, 115, 74, 0.15), 0 0 80px rgba(232, 115, 74, 0.05);
+    }
+
+    /* Timer font variant */
+    .timer-display {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.04em;
+    }
+
+    /* Subtle pulse for live indicator */
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .live-pulse {
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    /* Breathing animation for intermission */
+    @keyframes breathe {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+    .breathe {
+      animation: breathe 4s ease-in-out infinite;
+    }
+
+    /* Subtle shimmer for verdict */
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .shimmer-text {
+      background: linear-gradient(90deg, #e8734a 0%, #f5c066 25%, #e8734a 50%, #f5c066 75%, #e8734a 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 4s linear infinite;
+    }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5a5955;
+    }
+
+    /* Progress rail */
+    .progress-rail {
+      height: 2px;
+      background: #222225;
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #e8734a;
+      border-radius: 1px;
+      transition: width 0.3s ease;
+    }
+
+    /* Energy option */
+    .energy-opt {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      font-weight: 500;
+      color: #5a5955;
+      background: transparent;
+    }
+    .energy-opt:hover {
+      color: #9a9890;
+      background: rgba(255,255,255,0.02);
+    }
+    .energy-opt.selected {
+      border-color: rgba(232, 115, 74, 0.3);
+      background: rgba(232, 115, 74, 0.06);
+      color: #e8734a;
+    }
+
+    /* Lineup act row */
+    .act-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .act-row:last-child { border-bottom: none; }
+    .act-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #3a3935;
+      width: 20px;
+      text-align: right;
+    }
+    .act-sketch-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Beat dot (pill view) */
+    .beat-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    /* Category colors */
+    .cat-deep    { background: #e8734a; }
+    .cat-comms   { background: #60a5fa; }
+    .cat-admin   { background: #a78bfa; }
+    .cat-build   { background: #34d399; }
+    .cat-rest    { background: #5a5955; }
+
+    /* Textarea */
+    .plan-input {
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: #e8e6e1;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .plan-input:focus {
+      border-color: rgba(232, 115, 74, 0.3);
+    }
+    .plan-input::placeholder {
+      color: #3a3935;
+    }
+
+    /* Button styles */
+    .btn-primary {
+      background: #e8734a;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 32px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      background: #d4633a;
+      box-shadow: 0 0 30px rgba(232, 115, 74, 0.2);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #5a5955;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-ghost:hover {
+      color: #9a9890;
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    /* Verdict stat */
+    .stat-block { text-align: center; }
+    .stat-number {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: #e8e6e1;
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #5a5955;
+      margin-top: 6px;
+    }
+
+    /* Yes/No buttons for beat check */
+    .beat-yes {
+      background: rgba(232, 115, 74, 0.1);
+      border: 1px solid rgba(232, 115, 74, 0.25);
+      color: #e8734a;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 16px 48px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .beat-yes:hover {
+      background: rgba(232, 115, 74, 0.18);
+      box-shadow: 0 0 40px rgba(232, 115, 74, 0.15);
+    }
+    .beat-no {
+      background: transparent;
+      border: none;
+      color: #3a3935;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 24px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .beat-no:hover {
+      color: #5a5955;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+
+  <!-- Title Bar -->
+  <header class="max-w-6xl mx-auto mb-12">
+    <h1 class="text-2xl font-bold text-txt-primary tracking-tight">Direction 3: Live From... <span class="text-txt-tertiary font-normal">&mdash; Cinematic Minimal</span></h1>
+    <p class="text-sm text-txt-secondary mt-3 max-w-2xl leading-relaxed">
+      Takes the SNL <em>energy</em> without literal production references. Apple TV+ title cards, cinematic dark mode, bold typography that commands attention, generous whitespace.
+      The user feels like they're starring in their own prestige show. One accent color (warm coral-amber) dominates a near-black canvas.
+      Information density is deliberately low &mdash; only what matters right now. Rest costs zero.
+    </p>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- GRID LAYOUT: 2x2 + extras below -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <main class="max-w-6xl mx-auto space-y-16">
+
+    <!-- ROW 1 -->
+    <div class="grid grid-cols-2 gap-12 items-start">
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- 1. PILL VIEW (collapsed) -->
+      <!-- ─────────────────────────────────────────── -->
+      <section>
+        <p class="section-label mb-6">1 &mdash; Pill View (collapsed &middot; 320 &times; 48)</p>
+
+        <div class="flex flex-col items-center gap-8">
+          <!-- The pill itself -->
+          <div class="mac-pill bg-surface-900 flex items-center justify-between px-5" style="width: 320px; height: 48px;">
+            <!-- Left: live dot + act name -->
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-accent live-pulse"></div>
+              <span class="text-sm font-semibold text-txt-primary tracking-tight">Sprint planning</span>
+            </div>
+            <!-- Center: timer -->
+            <span class="font-mono text-sm font-semibold text-accent timer-display">18:42</span>
+            <!-- Right: beat dots -->
+            <div class="flex items-center gap-1.5">
+              <div class="beat-dot bg-accent"></div>
+              <div class="beat-dot bg-accent"></div>
+              <div class="beat-dot" style="background: #2a2a2e;"></div>
+            </div>
+          </div>
+
+          <!-- Variant: intermission -->
+          <div class="mac-pill bg-surface-900 flex items-center justify-center gap-3 px-5" style="width: 320px; height: 48px;">
+            <span class="text-sm font-medium text-txt-tertiary tracking-wide breathe">Intermission</span>
+          </div>
+
+          <!-- Variant: writers room -->
+          <div class="mac-pill bg-surface-900 flex items-center justify-center gap-3 px-5" style="width: 320px; height: 48px;">
+            <span class="text-sm font-medium text-txt-tertiary">Showtime</span>
+            <span class="text-xs text-txt-muted">&mdash;</span>
+            <span class="text-xs font-medium text-txt-tertiary">tap to plan</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-txt-tertiary mt-6 max-w-sm mx-auto text-center leading-relaxed">
+          Luxury watch face energy. The pill is a status beacon &mdash; glanceable, non-intrusive.
+          Live dot pulses gently. Timer in accent mono. Beat dots show presence progress at a glance.
+        </p>
+      </section>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- 2. WRITER'S ROOM (morning planning) -->
+      <!-- ─────────────────────────────────────────── -->
+      <section>
+        <p class="section-label mb-6">2 &mdash; Writer's Room (morning planning)</p>
+
+        <div class="mac-window bg-surface-900" style="width: 420px;">
+          <!-- Window chrome dots -->
+          <div class="flex items-center gap-2 px-5 pt-4 pb-2">
+            <div class="w-3 h-3 rounded-full" style="background:#ff5f57;"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#febc2e;"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#28c840;"></div>
+          </div>
+
+          <div class="px-6 pb-6 pt-2 space-y-6">
+            <!-- Greeting -->
+            <div>
+              <h2 class="text-xl font-bold text-txt-primary tracking-tight">Good morning.</h2>
+              <p class="text-sm text-txt-tertiary mt-1">Friday, March 20</p>
+            </div>
+
+            <!-- Energy level -->
+            <div>
+              <p class="section-label mb-3">How are you showing up today?</p>
+              <div class="flex gap-2">
+                <div class="energy-opt">High</div>
+                <div class="energy-opt selected">Medium</div>
+                <div class="energy-opt">Low</div>
+                <div class="energy-opt">Recovery</div>
+              </div>
+            </div>
+
+            <!-- Free text plan -->
+            <div>
+              <p class="section-label mb-3">What's the show today?</p>
+              <textarea class="plan-input" rows="4" placeholder="sprint planning, fix auth bug, 1:1 with Jordan, respond to emails...">sprint planning with team
+fix the auth token bug
+1:1 with Jordan at 2pm
+inbox cleanup + respond to PRs</textarea>
+            </div>
+
+            <!-- Parsed lineup preview -->
+            <div>
+              <p class="section-label mb-3">Your lineup</p>
+              <div>
+                <div class="act-row">
+                  <span class="act-num">01</span>
+                  <div class="act-sketch-dot cat-deep"></div>
+                  <span class="text-sm text-txt-primary font-medium flex-1">Sprint planning</span>
+                  <span class="font-mono text-xs text-txt-tertiary">45m</span>
+                </div>
+                <div class="act-row">
+                  <span class="act-num">02</span>
+                  <div class="act-sketch-dot cat-build"></div>
+                  <span class="text-sm text-txt-primary font-medium flex-1">Fix auth token bug</span>
+                  <span class="font-mono text-xs text-txt-tertiary">50m</span>
+                </div>
+                <div class="act-row">
+                  <span class="act-num">03</span>
+                  <div class="act-sketch-dot cat-comms"></div>
+                  <span class="text-sm text-txt-primary font-medium flex-1">1:1 with Jordan</span>
+                  <span class="font-mono text-xs text-txt-tertiary">30m</span>
+                </div>
+                <div class="act-row">
+                  <span class="act-num">04</span>
+                  <div class="act-sketch-dot cat-admin"></div>
+                  <span class="text-sm text-txt-primary font-medium flex-1">Inbox + PRs</span>
+                  <span class="font-mono text-xs text-txt-tertiary">25m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Go live button -->
+            <div class="pt-2">
+              <button class="btn-primary w-full">We're live.</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="grid grid-cols-2 gap-12 items-start">
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- 3. EXPANDED VIEW (during a live show) -->
+      <!-- ─────────────────────────────────────────── -->
+      <section>
+        <p class="section-label mb-6">3 &mdash; Expanded View (live show)</p>
+
+        <div class="mac-window bg-surface-900" style="width: 420px;">
+          <!-- Window chrome -->
+          <div class="flex items-center gap-2 px-5 pt-4 pb-0">
+            <div class="w-3 h-3 rounded-full" style="background:#ff5f57;"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#febc2e;"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#28c840;"></div>
+          </div>
+
+          <div class="px-6 pb-6 pt-4 flex flex-col items-center text-center">
+            <!-- Live indicator -->
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-1.5 h-1.5 rounded-full bg-accent live-pulse"></div>
+              <span class="text-xs font-semibold text-accent tracking-widest uppercase">Live</span>
+            </div>
+
+            <!-- Act label -->
+            <p class="text-sm text-txt-tertiary mb-1">Act 2 of 4</p>
+            <h2 class="text-lg font-bold text-txt-primary tracking-tight mb-8">Fix auth token bug</h2>
+
+            <!-- HERO TIMER -->
+            <div class="mb-8">
+              <div class="timer-display text-accent" style="font-size: 96px; font-weight: 800; line-height: 1; letter-spacing: -0.05em;">
+                32:14
+              </div>
+              <p class="text-xs text-txt-tertiary mt-2 font-mono">of 50:00</p>
+            </div>
+
+            <!-- Progress rail -->
+            <div class="w-full max-w-xs mb-8">
+              <div class="progress-rail">
+                <div class="progress-fill" style="width: 36%;"></div>
+              </div>
+              <!-- Act dots below rail -->
+              <div class="flex justify-between mt-3 px-1">
+                <div class="flex flex-col items-center gap-1">
+                  <div class="w-2.5 h-2.5 rounded-full bg-accent" style="opacity:0.3;"></div>
+                  <span class="text-[9px] text-txt-muted">01</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <div class="w-2.5 h-2.5 rounded-full bg-accent"></div>
+                  <span class="text-[9px] text-accent" style="opacity:0.6;">02</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#2a2a2e;"></div>
+                  <span class="text-[9px] text-txt-muted">03</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <div class="w-2.5 h-2.5 rounded-full" style="background:#2a2a2e;"></div>
+                  <span class="text-[9px] text-txt-muted">04</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sketch tag + Beat stars -->
+            <div class="flex items-center justify-between w-full max-w-xs">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full cat-build"></div>
+                <span class="text-xs text-txt-tertiary">Build</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs text-txt-tertiary mr-1">Beats</span>
+                <!-- filled stars -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#e8734a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#e8734a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <!-- empty star -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3a3935" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+
+            <!-- Bottom actions -->
+            <div class="flex gap-3 mt-8 w-full max-w-xs">
+              <button class="btn-ghost flex-1">Pause</button>
+              <button class="btn-ghost flex-1">+5 min</button>
+              <button class="btn-ghost flex-1">Done</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- 4. STRIKE THE STAGE (end of day) -->
+      <!-- ─────────────────────────────────────────── -->
+      <section>
+        <p class="section-label mb-6">4 &mdash; Strike the Stage (end of day)</p>
+
+        <div class="mac-window bg-surface-900" style="width: 420px;">
+          <!-- Window chrome -->
+          <div class="flex items-center gap-2 px-5 pt-4 pb-0">
+            <div class="w-3 h-3 rounded-full" style="background:#ff5f57;"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#febc2e;"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#28c840;"></div>
+          </div>
+
+          <div class="px-6 pb-8 pt-6 flex flex-col items-center text-center">
+            <!-- Date -->
+            <p class="text-xs text-txt-tertiary mb-6">Friday, March 20</p>
+
+            <!-- Verdict -->
+            <h2 class="shimmer-text text-3xl font-black tracking-tight mb-2" style="line-height:1.1;">DAY WON.</h2>
+            <p class="text-sm text-txt-secondary mb-10 max-w-xs leading-relaxed">
+              Standing ovation. You showed up and stayed present. That's the whole game.
+            </p>
+
+            <!-- Stats row -->
+            <div class="flex justify-center gap-12 mb-10">
+              <div class="stat-block">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Acts</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-number" style="color:#e8734a;">3</div>
+                <div class="stat-label">Beats</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-number">2h</div>
+                <div class="stat-label">Focus</div>
+              </div>
+            </div>
+
+            <!-- Act recap — minimal -->
+            <div class="w-full max-w-xs text-left mb-8">
+              <div class="flex items-center gap-3 py-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-accent" style="opacity:0.5;"></div>
+                <span class="text-sm text-txt-secondary flex-1">Sprint planning</span>
+                <span class="text-xs text-txt-tertiary font-mono">42m</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8734a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="flex items-center gap-3 py-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-accent" style="opacity:0.5;"></div>
+                <span class="text-sm text-txt-secondary flex-1">Fix auth token bug</span>
+                <span class="text-xs text-txt-tertiary font-mono">48m</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8734a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="flex items-center gap-3 py-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-accent" style="opacity:0.5;"></div>
+                <span class="text-sm text-txt-secondary flex-1">1:1 with Jordan</span>
+                <span class="text-xs text-txt-tertiary font-mono">28m</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8734a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="flex items-center gap-3 py-2">
+                <div class="w-1.5 h-1.5 rounded-full" style="background:#3a3935;"></div>
+                <span class="text-sm text-txt-tertiary flex-1 line-through" style="text-decoration-color: #2a2a2e;">Inbox + PRs</span>
+                <span class="text-xs text-txt-muted font-mono">skip</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <button class="btn-ghost">See you tomorrow.</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ROW 3: Beat Check + Intermission -->
+    <div class="grid grid-cols-2 gap-12 items-start">
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- 5. BEAT CHECK MODAL -->
+      <!-- ─────────────────────────────────────────── -->
+      <section>
+        <p class="section-label mb-6">5 &mdash; Beat Check Modal</p>
+
+        <div class="mac-window bg-surface-900 accent-glow" style="width: 380px;">
+          <div class="px-6 py-10 flex flex-col items-center text-center">
+            <!-- Star icon -->
+            <svg class="mb-6" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e8734a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+
+            <!-- Question -->
+            <h3 class="text-lg font-bold text-txt-primary tracking-tight mb-2">
+              Did you have a moment<br>of presence?
+            </h3>
+            <p class="text-xs text-txt-tertiary mb-8 max-w-[240px] leading-relaxed">
+              Were you here &mdash; even briefly &mdash; focused on what mattered?
+            </p>
+
+            <!-- Yes (big) -->
+            <button class="beat-yes mb-4">Yes</button>
+
+            <!-- No (small, forgettable) -->
+            <button class="beat-no">not this time</button>
+          </div>
+        </div>
+
+        <p class="text-xs text-txt-tertiary mt-6 max-w-sm leading-relaxed">
+          Ultra-simple. The question is the entire screen. "Yes" is the obvious, easy action.
+          "No" is small and carries zero judgment &mdash; it just moves on.
+          The subtle accent glow makes the modal feel warm, not interrogative.
+        </p>
+      </section>
+
+      <!-- ─────────────────────────────────────────── -->
+      <!-- 6. INTERMISSION -->
+      <!-- ─────────────────────────────────────────── -->
+      <section>
+        <p class="section-label mb-6">6 &mdash; Intermission</p>
+
+        <div class="mac-window bg-surface-950" style="width: 420px; height: 320px;">
+          <div class="h-full flex flex-col items-center justify-center text-center px-8">
+            <!-- Near-empty. One line of text. Maximum calm. -->
+            <p class="text-base font-light text-txt-tertiary breathe tracking-wide" style="letter-spacing: 0.05em;">
+              You've earned this pause.
+            </p>
+
+            <!-- Tiny resume hint, barely visible -->
+            <button class="mt-16 text-xs text-txt-muted hover:text-txt-tertiary transition-colors cursor-pointer bg-transparent border-none">
+              tap to return
+            </button>
+          </div>
+        </div>
+
+        <p class="text-xs text-txt-tertiary mt-6 max-w-sm leading-relaxed">
+          Maximum calm. The screen is nearly empty &mdash; just one softly breathing line of text on the darkest surface.
+          No timer, no stats, no guilt. Rest costs zero. The "tap to return" is so subtle it almost disappears.
+        </p>
+      </section>
+    </div>
+
+    <!-- ─────────────────────────────────────────── -->
+    <!-- APPENDIX: Color and Typography System -->
+    <!-- ─────────────────────────────────────────── -->
+    <section class="pt-8 border-t border-surface-800">
+      <p class="section-label mb-6">Appendix &mdash; Design System</p>
+
+      <div class="grid grid-cols-3 gap-8">
+        <!-- Colors -->
+        <div>
+          <p class="text-xs font-semibold text-txt-secondary mb-3">Surface Scale</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#0a0a0b;border:1px solid #222;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">950 #0a0a0b</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#111113;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">900 #111113</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#1c1c1f;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">800 #1c1c1f</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#2a2a2e;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">700 #2a2a2e</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#3a3a3f;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">600 #3a3a3f</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accent -->
+        <div>
+          <p class="text-xs font-semibold text-txt-secondary mb-3">Accent (Warm Coral)</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#e8734a;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">primary #e8734a</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:#f09070;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">light   #f09070</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-5 rounded" style="background:rgba(232,115,74,0.12);border:1px solid #222;"></div>
+              <span class="text-xs text-txt-tertiary font-mono">dim     12% alpha</span>
+            </div>
+          </div>
+          <p class="text-xs font-semibold text-txt-secondary mt-5 mb-3">Sketch Categories</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full cat-deep"></div><span class="text-xs text-txt-tertiary">Deep Work</span></div>
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full cat-build"></div><span class="text-xs text-txt-tertiary">Build</span></div>
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full cat-comms"></div><span class="text-xs text-txt-tertiary">Comms</span></div>
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full cat-admin"></div><span class="text-xs text-txt-tertiary">Admin</span></div>
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full cat-rest"></div><span class="text-xs text-txt-tertiary">Rest</span></div>
+          </div>
+        </div>
+
+        <!-- Typography -->
+        <div>
+          <p class="text-xs font-semibold text-txt-secondary mb-3">Typography</p>
+          <div class="space-y-3">
+            <div>
+              <span class="text-3xl font-black text-txt-primary tracking-tight">DAY WON.</span>
+              <p class="text-[10px] text-txt-muted mt-0.5">Verdict &mdash; Inter 900, 30px</p>
+            </div>
+            <div>
+              <span class="text-lg font-bold text-txt-primary tracking-tight">Sprint planning</span>
+              <p class="text-[10px] text-txt-muted mt-0.5">Act title &mdash; Inter 700, 18px</p>
+            </div>
+            <div>
+              <span class="font-mono text-accent timer-display" style="font-size:40px;font-weight:800;">32:14</span>
+              <p class="text-[10px] text-txt-muted mt-0.5">Timer hero &mdash; Inter 800, 96px</p>
+            </div>
+            <div>
+              <span class="font-mono text-sm text-accent timer-display font-semibold">18:42</span>
+              <p class="text-[10px] text-txt-muted mt-0.5">Timer pill &mdash; JetBrains Mono 600, 14px</p>
+            </div>
+            <div>
+              <span class="text-xs text-txt-tertiary tracking-widest uppercase font-semibold">Live</span>
+              <p class="text-[10px] text-txt-muted mt-0.5">Status label &mdash; Inter 600, 12px, wide</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer spacing -->
+    <div class="h-8"></div>
+  </main>
+
+</body>
+</html>

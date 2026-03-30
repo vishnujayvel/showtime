@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direction 2: Backstage Pass — Theatrical &amp; Warm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            curtain: {
+              900: '#1a0a10',
+              800: '#2a1018',
+              700: '#3d1520',
+              600: '#5a1d2e',
+              500: '#7a2940',
+            },
+            stage: {
+              900: '#0f0b08',
+              800: '#1c1410',
+              700: '#2a1f18',
+              600: '#3a2c20',
+            },
+            gold: {
+              400: '#d4a547',
+              500: '#c4943a',
+              600: '#b8872f',
+              glow: 'rgba(212, 165, 71, 0.3)',
+            },
+            cream: {
+              50: '#faf6ee',
+              100: '#f0e8d8',
+              200: '#e0d4bc',
+              300: '#c8b898',
+              400: '#a89878',
+            },
+            wine: {
+              400: '#c45a6a',
+              500: '#a8304a',
+              600: '#8a2040',
+              700: '#6e1832',
+              800: '#4a1024',
+              900: '#2e0a18',
+            },
+            sketch: {
+              deep: '#9b7ad8',
+              exercise: '#5cb87a',
+              admin: '#5a9ed6',
+              creative: '#d4a547',
+              social: '#d670a0',
+              errands: '#d68850',
+            }
+          },
+          fontFamily: {
+            playfair: ['Playfair Display', 'Georgia', 'serif'],
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['DM Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0e0809;
+      color: #f0e8d8;
+    }
+
+    .font-playfair { font-family: 'Playfair Display', Georgia, serif; }
+    .font-mono { font-family: 'DM Mono', monospace; }
+
+    /* Velvet curtain texture */
+    .curtain-bg {
+      background: linear-gradient(
+        170deg,
+        #2a1018 0%,
+        #1a0a10 30%,
+        #0f0b08 60%,
+        #1c1410 100%
+      );
+    }
+
+    /* Spotlight glow from above */
+    .spotlight {
+      background: radial-gradient(
+        ellipse 120% 60% at 50% -10%,
+        rgba(212, 165, 71, 0.08) 0%,
+        transparent 70%
+      );
+    }
+
+    .spotlight-strong {
+      background: radial-gradient(
+        ellipse 100% 80% at 50% -20%,
+        rgba(212, 165, 71, 0.15) 0%,
+        rgba(212, 165, 71, 0.04) 40%,
+        transparent 70%
+      );
+    }
+
+    /* Gold text shimmer */
+    .gold-text {
+      background: linear-gradient(135deg, #d4a547, #e8c878, #d4a547);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Marquee glow effect */
+    .marquee-glow {
+      box-shadow:
+        0 0 20px rgba(212, 165, 71, 0.15),
+        0 0 40px rgba(168, 48, 74, 0.08),
+        inset 0 1px 0 rgba(212, 165, 71, 0.1);
+    }
+
+    /* Stage floor reflection */
+    .stage-floor {
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(28, 20, 16, 0.8) 30%,
+        #1c1410 100%
+      );
+    }
+
+    /* Warm card */
+    .warm-card {
+      background: linear-gradient(
+        180deg,
+        rgba(42, 16, 24, 0.6) 0%,
+        rgba(26, 10, 16, 0.8) 100%
+      );
+      border: 1px solid rgba(212, 165, 71, 0.12);
+      backdrop-filter: blur(20px);
+    }
+
+    /* Green room card */
+    .green-room {
+      background: linear-gradient(
+        180deg,
+        rgba(20, 35, 25, 0.7) 0%,
+        rgba(15, 25, 18, 0.9) 100%
+      );
+      border: 1px solid rgba(92, 184, 122, 0.15);
+    }
+
+    /* Playbill divider */
+    .playbill-divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(212, 165, 71, 0.3) 20%,
+        rgba(212, 165, 71, 0.5) 50%,
+        rgba(212, 165, 71, 0.3) 80%,
+        transparent 100%
+      );
+    }
+
+    /* Pulsing live indicator */
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+      50% { opacity: 0.6; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+    }
+    .live-dot {
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+
+    /* Beat star glow */
+    @keyframes starGlow {
+      0%, 100% { text-shadow: 0 0 6px rgba(212, 165, 71, 0.4); }
+      50% { text-shadow: 0 0 12px rgba(212, 165, 71, 0.8); }
+    }
+    .star-glow {
+      animation: starGlow 2s ease-in-out infinite;
+    }
+
+    /* Timer countdown font */
+    .timer-display {
+      font-family: 'DM Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(212, 165, 71, 0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(212, 165, 71, 0.35); }
+
+    /* Button hover glow */
+    .btn-gold {
+      background: linear-gradient(135deg, #c4943a, #d4a547);
+      color: #1a0a10;
+      transition: all 0.2s ease;
+    }
+    .btn-gold:hover {
+      box-shadow: 0 0 20px rgba(212, 165, 71, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-wine {
+      background: linear-gradient(135deg, #8a2040, #a8304a);
+      color: #f0e8d8;
+      transition: all 0.2s ease;
+    }
+    .btn-wine:hover {
+      box-shadow: 0 0 16px rgba(168, 48, 74, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: rgba(212, 165, 71, 0.08);
+      border: 1px solid rgba(212, 165, 71, 0.15);
+      color: #d4a547;
+      transition: all 0.2s ease;
+    }
+    .btn-ghost:hover {
+      background: rgba(212, 165, 71, 0.15);
+      border-color: rgba(212, 165, 71, 0.3);
+    }
+
+    /* macOS window chrome */
+    .macos-frame {
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* Section label styling */
+    .section-label {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(212, 165, 71, 0.5);
+    }
+
+    /* Confetti overlay for DAY WON */
+    .confetti-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(212, 165, 71, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(196, 90, 106, 0.1) 0%, transparent 35%),
+        radial-gradient(circle at 50% 70%, rgba(155, 122, 216, 0.08) 0%, transparent 40%);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="max-w-7xl mx-auto mb-12">
+    <h1 class="font-playfair text-4xl font-bold gold-text mb-3">
+      Direction 2: Backstage Pass
+    </h1>
+    <p class="font-playfair text-xl italic text-cream-300 mb-4">
+      Theatrical &amp; Warm
+    </p>
+    <div class="max-w-3xl text-cream-400 text-sm leading-relaxed space-y-2">
+      <p>
+        This direction draws on the energy of being backstage at a live show. The user is the star
+        getting ready to go on. Velvet curtain colors (deep burgundy, wine), gold marquee accents, playbill
+        typography, and spotlight gradients create a world that feels personal and warm rather than clinical.
+        Rest is the green room &mdash; a place of permission, not punishment. The show structure creates gentle
+        urgency without anxiety: you are performing your day, not being managed through it.
+      </p>
+      <p class="text-cream-300/60">
+        Palette: wine (#a8304a) &middot; gold (#d4a547) &middot; cream (#f0e8d8) &middot; stage dark (#1c1410) &middot; curtain (#2a1018)
+      </p>
+    </div>
+    <hr class="playbill-divider my-8" />
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MOCKUP GRID -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-2 gap-12">
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- 1. PILL VIEW (collapsed)                                           -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <section>
+      <div class="section-label mb-4">1 &mdash; Pill View (Collapsed &middot; Floating Dock Widget)</div>
+
+      <!-- Dark backdrop simulating desktop -->
+      <div class="relative rounded-2xl overflow-hidden" style="background: #181215; height: 200px;">
+        <!-- Fake desktop dots -->
+        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle, #f0e8d8 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+        <!-- Pill — centered at bottom -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
+          <div class="marquee-glow flex items-center gap-3 px-5 py-2.5 rounded-full"
+               style="background: linear-gradient(135deg, rgba(42, 16, 24, 0.92), rgba(26, 10, 16, 0.95)); border: 1px solid rgba(212, 165, 71, 0.2); backdrop-filter: blur(24px); min-width: 320px; height: 48px;">
+
+            <!-- Live dot -->
+            <div class="live-dot w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
+
+            <!-- Act name (marquee style) -->
+            <div class="flex-1 min-w-0">
+              <div class="text-cream-100 text-sm font-medium truncate">
+                Deep Work: API Integration
+              </div>
+            </div>
+
+            <!-- Timer -->
+            <div class="timer-display text-gold-400 text-base font-medium flex-shrink-0">
+              23:47
+            </div>
+
+            <!-- Beat stars -->
+            <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
+              <span class="text-gold-400 star-glow text-sm">&#9733;</span>
+              <span class="text-gold-400 star-glow text-sm">&#9733;</span>
+              <span class="text-cream-400/30 text-sm">&#9733;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional pill states -->
+      <div class="mt-4 space-y-3">
+        <div class="section-label mb-2" style="font-size: 9px; opacity: 0.4;">Alternate states</div>
+
+        <!-- Intermission pill -->
+        <div class="flex items-center gap-3 px-5 py-2.5 rounded-full mx-auto"
+             style="background: linear-gradient(135deg, rgba(20, 35, 25, 0.9), rgba(15, 25, 18, 0.95)); border: 1px solid rgba(92, 184, 122, 0.2); backdrop-filter: blur(24px); max-width: 320px; height: 48px; box-shadow: 0 0 16px rgba(92, 184, 122, 0.08);">
+          <span class="text-base">&#9749;</span>
+          <div class="flex-1 text-green-300/80 text-sm font-medium">Intermission</div>
+          <div class="text-green-400/60 text-xs font-mono">paused</div>
+          <div class="flex items-center gap-0.5">
+            <span class="text-gold-400 text-sm">&#9733;</span>
+            <span class="text-gold-400 text-sm">&#9733;</span>
+            <span class="text-cream-400/30 text-sm">&#9733;</span>
+          </div>
+        </div>
+
+        <!-- Planning pill -->
+        <div class="flex items-center gap-3 px-5 py-2.5 rounded-full mx-auto"
+             style="background: linear-gradient(135deg, rgba(42, 16, 24, 0.85), rgba(26, 10, 16, 0.9)); border: 1px solid rgba(212, 165, 71, 0.12); backdrop-filter: blur(24px); max-width: 320px; height: 48px;">
+          <span class="text-base">&#9997;&#65039;</span>
+          <div class="flex-1 text-cream-200/70 text-sm font-medium">Writer&rsquo;s Room</div>
+          <div class="text-cream-400/40 text-xs font-mono">planning</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- 2. WRITER'S ROOM (morning planning)                                -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <section>
+      <div class="section-label mb-4">2 &mdash; Writer&rsquo;s Room (Morning Planning)</div>
+
+      <div class="macos-frame curtain-bg" style="width: 420px;">
+        <!-- Window chrome -->
+        <div class="flex items-center gap-2 px-4 py-3" style="background: rgba(42, 16, 24, 0.5);">
+          <div class="w-3 h-3 rounded-full" style="background: #ff5f57;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #febc2e;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #28c840;"></div>
+          <span class="ml-3 text-cream-400/40 text-xs font-inter">Showtime</span>
+        </div>
+
+        <div class="spotlight-strong px-5 pb-6 pt-3">
+          <!-- Title -->
+          <div class="text-center mb-5">
+            <h2 class="font-playfair text-2xl font-bold gold-text">
+              Tonight&rsquo;s Show
+            </h2>
+            <p class="text-cream-400/50 text-xs mt-1 font-inter">Friday, March 20, 2026</p>
+          </div>
+
+          <!-- Energy Level Picker -->
+          <div class="mb-5">
+            <div class="text-cream-300/60 text-xs font-medium uppercase tracking-wider mb-2">
+              How&rsquo;s your energy?
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="py-2.5 px-2 rounded-lg text-center transition-all text-xs font-medium"
+                      style="background: rgba(212, 165, 71, 0.12); border: 1.5px solid rgba(212, 165, 71, 0.3); color: #d4a547;">
+                <div class="text-base mb-0.5">&#9889;</div>
+                High
+              </button>
+              <button class="py-2.5 px-2 rounded-lg text-center transition-all text-xs font-medium"
+                      style="background: rgba(212, 165, 71, 0.04); border: 1.5px solid rgba(212, 165, 71, 0.08); color: rgba(240, 232, 216, 0.5);">
+                <div class="text-base mb-0.5">&#9728;&#65039;</div>
+                Medium
+              </button>
+              <button class="py-2.5 px-2 rounded-lg text-center transition-all text-xs font-medium"
+                      style="background: rgba(212, 165, 71, 0.04); border: 1.5px solid rgba(212, 165, 71, 0.08); color: rgba(240, 232, 216, 0.5);">
+                <div class="text-base mb-0.5">&#127769;</div>
+                Low
+              </button>
+              <button class="py-2.5 px-2 rounded-lg text-center transition-all text-xs font-medium"
+                      style="background: rgba(212, 165, 71, 0.04); border: 1.5px solid rgba(212, 165, 71, 0.08); color: rgba(240, 232, 216, 0.5);">
+                <div class="text-base mb-0.5">&#128715;</div>
+                Recovery
+              </button>
+            </div>
+          </div>
+
+          <hr class="playbill-divider my-4" />
+
+          <!-- Freeform dump -->
+          <div class="mb-4">
+            <div class="text-cream-300/60 text-xs font-medium uppercase tracking-wider mb-2">
+              What&rsquo;s on the docket?
+            </div>
+            <div class="rounded-lg p-3 text-sm text-cream-200/70 leading-relaxed"
+                 style="background: rgba(15, 11, 8, 0.5); border: 1px solid rgba(212, 165, 71, 0.08); min-height: 72px;">
+              <span class="text-cream-400/40 italic">finish API integration, run 3 miles, emails, brainstorm logo ideas, call mom...</span>
+            </div>
+          </div>
+
+          <hr class="playbill-divider my-4" />
+
+          <!-- Show Lineup Preview -->
+          <div class="mb-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-cream-300/60 text-xs font-medium uppercase tracking-wider">
+                Show Lineup
+              </div>
+              <div class="text-cream-400/30 text-xs">5 acts &middot; ~4h 15m</div>
+            </div>
+
+            <div class="space-y-1.5">
+              <!-- Act 1 -->
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                   style="background: rgba(155, 122, 216, 0.06); border: 1px solid rgba(155, 122, 216, 0.12);">
+                <div class="w-1 h-8 rounded-full" style="background: #9b7ad8;"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">API Integration</div>
+                  <div class="flex gap-2 mt-0.5">
+                    <span class="text-xs font-medium" style="color: #9b7ad8;">Deep Work</span>
+                    <span class="text-cream-400/30 text-xs">90 min</span>
+                  </div>
+                </div>
+                <span class="text-cream-400/25 text-lg font-playfair">1</span>
+              </div>
+
+              <!-- Act 2 -->
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                   style="background: rgba(92, 184, 122, 0.04); border: 1px solid rgba(92, 184, 122, 0.08);">
+                <div class="w-1 h-8 rounded-full" style="background: #5cb87a;"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">Morning Run</div>
+                  <div class="flex gap-2 mt-0.5">
+                    <span class="text-xs font-medium" style="color: #5cb87a;">Exercise</span>
+                    <span class="text-cream-400/30 text-xs">45 min</span>
+                  </div>
+                </div>
+                <span class="text-cream-400/25 text-lg font-playfair">2</span>
+              </div>
+
+              <!-- Act 3 -->
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                   style="background: rgba(90, 158, 214, 0.04); border: 1px solid rgba(90, 158, 214, 0.08);">
+                <div class="w-1 h-8 rounded-full" style="background: #5a9ed6;"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">Email Triage</div>
+                  <div class="flex gap-2 mt-0.5">
+                    <span class="text-xs font-medium" style="color: #5a9ed6;">Admin</span>
+                    <span class="text-cream-400/30 text-xs">30 min</span>
+                  </div>
+                </div>
+                <span class="text-cream-400/25 text-lg font-playfair">3</span>
+              </div>
+
+              <!-- Act 4 -->
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                   style="background: rgba(212, 165, 71, 0.04); border: 1px solid rgba(212, 165, 71, 0.08);">
+                <div class="w-1 h-8 rounded-full" style="background: #d4a547;"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">Logo Brainstorm</div>
+                  <div class="flex gap-2 mt-0.5">
+                    <span class="text-xs font-medium" style="color: #d4a547;">Creative</span>
+                    <span class="text-cream-400/30 text-xs">45 min</span>
+                  </div>
+                </div>
+                <span class="text-cream-400/25 text-lg font-playfair">4</span>
+              </div>
+
+              <!-- Act 5 -->
+              <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg"
+                   style="background: rgba(214, 112, 160, 0.04); border: 1px solid rgba(214, 112, 160, 0.08);">
+                <div class="w-1 h-8 rounded-full" style="background: #d670a0;"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">Call Mom</div>
+                  <div class="flex gap-2 mt-0.5">
+                    <span class="text-xs font-medium" style="color: #d670a0;">Social</span>
+                    <span class="text-cream-400/30 text-xs">25 min</span>
+                  </div>
+                </div>
+                <span class="text-cream-400/25 text-lg font-playfair">5</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opening note -->
+          <div class="rounded-lg px-3 py-2.5 mb-5 text-sm italic text-cream-300/50"
+               style="background: rgba(212, 165, 71, 0.04); border-left: 2px solid rgba(212, 165, 71, 0.2);">
+            &ldquo;High energy day &mdash; front-loaded the deep work. You&rsquo;ve got this, star.&rdquo;
+          </div>
+
+          <!-- Start button -->
+          <button class="btn-gold w-full py-3.5 rounded-xl font-semibold text-base tracking-wide"
+                  style="font-family: 'Playfair Display', serif;">
+            &#127909; We&rsquo;re Live!
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- 3. EXPANDED VIEW (live show)                                       -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <section>
+      <div class="section-label mb-4">3 &mdash; Expanded View (Live Show)</div>
+
+      <div class="macos-frame curtain-bg" style="width: 460px;">
+        <!-- Window chrome -->
+        <div class="flex items-center gap-2 px-4 py-3" style="background: rgba(42, 16, 24, 0.5);">
+          <div class="w-3 h-3 rounded-full" style="background: #ff5f57;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #febc2e;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #28c840;"></div>
+          <div class="flex-1 flex items-center justify-center gap-2">
+            <div class="live-dot w-1.5 h-1.5 rounded-full bg-red-500"></div>
+            <span class="text-red-400/60 text-xs font-medium uppercase tracking-widest">Live</span>
+          </div>
+          <div class="w-12"></div> <!-- balance spacer -->
+        </div>
+
+        <div class="spotlight-strong">
+          <!-- Timer Panel -->
+          <div class="px-5 pt-4 pb-5">
+            <!-- Category badge + Act name -->
+            <div class="flex items-center gap-2 mb-3">
+              <div class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                   style="background: rgba(155, 122, 216, 0.15); color: #b494e8; border: 1px solid rgba(155, 122, 216, 0.2);">
+                Deep Work
+              </div>
+              <div class="text-cream-400/30 text-xs">Act 1 of 5</div>
+            </div>
+
+            <h2 class="font-playfair text-3xl font-bold text-cream-50 mb-4">
+              API Integration
+            </h2>
+
+            <!-- Big countdown -->
+            <div class="flex items-baseline gap-2 mb-5">
+              <span class="timer-display text-6xl font-medium gold-text" style="line-height: 1;">
+                23:47
+              </span>
+              <span class="text-cream-400/30 text-sm">remaining</span>
+            </div>
+
+            <!-- Control buttons -->
+            <div class="flex gap-2">
+              <button class="btn-ghost px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
+                <span>+15m</span>
+              </button>
+              <button class="btn-wine px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
+                <span>&#9632;</span> End Act
+              </button>
+              <button class="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all"
+                      style="background: rgba(92, 184, 122, 0.1); border: 1px solid rgba(92, 184, 122, 0.15); color: #5cb87a;">
+                <span>&#9749;</span> Rest
+              </button>
+              <div class="flex-1"></div>
+              <button class="px-3 py-2 rounded-lg text-xs font-medium text-cream-400/30 transition-all hover:text-cream-400/60"
+                      style="background: rgba(255,255,255,0.03);">
+                &#9881; Director
+              </button>
+            </div>
+          </div>
+
+          <hr class="playbill-divider" />
+
+          <!-- Beat Counter -->
+          <div class="px-5 py-3 flex items-center justify-between">
+            <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium">Beats Locked</div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-gold-400 text-xl star-glow">&#9733;</span>
+              <span class="text-gold-400 text-xl star-glow">&#9733;</span>
+              <span class="text-cream-400/20 text-xl">&#9733;</span>
+              <span class="text-cream-400/10 text-xs ml-1.5 font-mono">2/3</span>
+            </div>
+          </div>
+
+          <hr class="playbill-divider" />
+
+          <!-- Show Lineup sidebar -->
+          <div class="px-5 py-4 pb-5">
+            <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-3">Show Lineup</div>
+
+            <div class="space-y-1">
+              <!-- Act 1 — ACTIVE -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: rgba(155, 122, 216, 0.1); border: 1.5px solid rgba(155, 122, 216, 0.25);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(155, 122, 216, 0.2);">
+                  <div class="w-2 h-2 rounded-full" style="background: #9b7ad8;"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">API Integration</div>
+                </div>
+                <span class="text-xs font-mono" style="color: #9b7ad8;">23:47</span>
+              </div>
+
+              <!-- Act 2 — upcoming -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: transparent; border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(92, 184, 122, 0.08);">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: rgba(92, 184, 122, 0.4);"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/50 text-sm">Morning Run</div>
+                </div>
+                <span class="text-cream-400/20 text-xs font-mono">45m</span>
+              </div>
+
+              <!-- Act 3 — upcoming -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: transparent; border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(90, 158, 214, 0.08);">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: rgba(90, 158, 214, 0.4);"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/50 text-sm">Email Triage</div>
+                </div>
+                <span class="text-cream-400/20 text-xs font-mono">30m</span>
+              </div>
+
+              <!-- Act 4 — upcoming -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: transparent; border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(212, 165, 71, 0.08);">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: rgba(212, 165, 71, 0.4);"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/50 text-sm">Logo Brainstorm</div>
+                </div>
+                <span class="text-cream-400/20 text-xs font-mono">45m</span>
+              </div>
+
+              <!-- Act 5 — upcoming -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: transparent; border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(214, 112, 160, 0.08);">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: rgba(214, 112, 160, 0.4);"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/50 text-sm">Call Mom</div>
+                </div>
+                <span class="text-cream-400/20 text-xs font-mono">25m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- 4. STRIKE THE STAGE (end of day)                                    -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <section>
+      <div class="section-label mb-4">4 &mdash; Strike the Stage (End of Day)</div>
+
+      <div class="macos-frame curtain-bg" style="width: 420px;">
+        <!-- Window chrome -->
+        <div class="flex items-center gap-2 px-4 py-3" style="background: rgba(42, 16, 24, 0.5);">
+          <div class="w-3 h-3 rounded-full" style="background: #ff5f57;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #febc2e;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #28c840;"></div>
+          <span class="ml-3 text-cream-400/40 text-xs font-inter">Showtime</span>
+        </div>
+
+        <div class="relative spotlight-strong px-5 pt-6 pb-6">
+          <!-- Confetti overlay for DAY WON -->
+          <div class="confetti-overlay rounded-b-xl"></div>
+
+          <div class="relative z-10">
+            <!-- Stars -->
+            <div class="text-center mb-2">
+              <span class="text-3xl inline-block star-glow">&#9733;</span>
+              <span class="text-4xl inline-block star-glow mx-1">&#9733;</span>
+              <span class="text-3xl inline-block star-glow">&#9733;</span>
+            </div>
+
+            <!-- Verdict -->
+            <h2 class="font-playfair text-4xl font-extrabold text-center gold-text mb-2">
+              DAY WON
+            </h2>
+            <p class="text-center text-cream-300/50 text-sm mb-6 font-playfair italic">
+              Standing ovation. You crushed it today.
+            </p>
+
+            <hr class="playbill-divider my-5" />
+
+            <!-- Stats grid -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="text-center">
+                <div class="font-playfair text-2xl font-bold text-cream-100">4</div>
+                <div class="text-cream-400/40 text-xs uppercase tracking-wider mt-0.5">Completed</div>
+              </div>
+              <div class="text-center">
+                <div class="font-playfair text-2xl font-bold text-cream-400/40">1</div>
+                <div class="text-cream-400/40 text-xs uppercase tracking-wider mt-0.5">Cut</div>
+              </div>
+              <div class="text-center">
+                <div class="font-playfair text-2xl font-bold text-gold-400">3</div>
+                <div class="text-cream-400/40 text-xs uppercase tracking-wider mt-0.5">Beats</div>
+              </div>
+            </div>
+
+            <!-- Completed acts recap -->
+            <div class="space-y-1.5 mb-6">
+              <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background: rgba(155, 122, 216, 0.06);">
+                <span class="text-green-400 text-sm">&#10003;</span>
+                <span class="text-cream-200/70 text-sm flex-1">API Integration</span>
+                <span class="text-gold-400 text-xs">&#9733;</span>
+              </div>
+              <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background: rgba(92, 184, 122, 0.04);">
+                <span class="text-green-400 text-sm">&#10003;</span>
+                <span class="text-cream-200/70 text-sm flex-1">Morning Run</span>
+                <span class="text-gold-400 text-xs">&#9733;</span>
+              </div>
+              <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background: rgba(90, 158, 214, 0.04);">
+                <span class="text-green-400 text-sm">&#10003;</span>
+                <span class="text-cream-200/70 text-sm flex-1">Email Triage</span>
+                <span class="text-cream-400/20 text-xs">&#9734;</span>
+              </div>
+              <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background: rgba(212, 165, 71, 0.04);">
+                <span class="text-green-400 text-sm">&#10003;</span>
+                <span class="text-cream-200/70 text-sm flex-1">Logo Brainstorm</span>
+                <span class="text-gold-400 text-xs">&#9733;</span>
+              </div>
+              <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg opacity-40" style="background: rgba(214, 112, 160, 0.03);">
+                <span class="text-cream-400/40 text-sm">&#10141;</span>
+                <span class="text-cream-400/50 text-sm flex-1 line-through">Call Mom</span>
+                <span class="text-cream-400/20 text-xs">cut</span>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-3">
+              <button class="btn-gold flex-1 py-3 rounded-xl font-semibold text-sm">
+                &#127775; New Show
+              </button>
+              <button class="btn-ghost flex-1 py-3 rounded-xl font-medium text-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other verdict states (thumbnails) -->
+      <div class="mt-6 grid grid-cols-3 gap-3">
+        <div class="rounded-xl p-3 text-center" style="background: rgba(42, 16, 24, 0.6); border: 1px solid rgba(212, 165, 71, 0.08);">
+          <div class="font-playfair text-sm font-bold gold-text">SOLID SHOW</div>
+          <div class="text-cream-400/30 text-xs mt-1">&ldquo;Great performance.&rdquo;</div>
+        </div>
+        <div class="rounded-xl p-3 text-center" style="background: rgba(42, 16, 24, 0.6); border: 1px solid rgba(212, 165, 71, 0.08);">
+          <div class="font-playfair text-sm font-bold text-cream-300/60">GOOD EFFORT</div>
+          <div class="text-cream-400/30 text-xs mt-1">&ldquo;You showed up.&rdquo;</div>
+        </div>
+        <div class="rounded-xl p-3 text-center" style="background: rgba(42, 16, 24, 0.6); border: 1px solid rgba(212, 165, 71, 0.08);">
+          <div class="font-playfair text-sm font-bold text-cream-400/40">SHOW CALLED</div>
+          <div class="text-cream-400/30 text-xs mt-1">&ldquo;Rest is valid.&rdquo;</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- 5. BEAT CHECK MODAL                                                 -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <section>
+      <div class="section-label mb-4">5 &mdash; Beat Check Modal (Post-Act)</div>
+
+      <!-- Dark scrim backdrop -->
+      <div class="relative rounded-2xl overflow-hidden" style="background: rgba(14, 8, 9, 0.95); height: 320px;">
+        <!-- Blur overlay -->
+        <div class="absolute inset-0" style="background: rgba(26, 10, 16, 0.3); backdrop-filter: blur(8px);"></div>
+
+        <!-- Modal -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="warm-card rounded-2xl p-6 text-center" style="width: 300px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212, 165, 71, 0.06);">
+            <!-- Spotlight on the card -->
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-32 h-8" style="background: radial-gradient(ellipse, rgba(212, 165, 71, 0.15) 0%, transparent 70%);"></div>
+
+            <div class="relative z-10">
+              <!-- Completion celebration -->
+              <div class="text-3xl mb-2">&#127916;</div>
+              <div class="font-playfair text-lg font-semibold text-cream-100 mb-1">
+                Scene complete!
+              </div>
+              <div class="text-cream-200/70 text-sm mb-1 font-medium">
+                API Integration
+              </div>
+              <div class="text-cream-400/30 text-xs mb-5">
+                90 min &middot; Deep Work
+              </div>
+
+              <hr class="playbill-divider my-4" />
+
+              <div class="text-cream-300/60 text-sm mb-4 font-playfair italic">
+                Did you have a moment of presence?
+              </div>
+
+              <div class="flex gap-3">
+                <button class="btn-gold flex-1 py-2.5 rounded-xl font-semibold text-sm">
+                  &#9733; Yes, lock it in
+                </button>
+                <button class="btn-ghost flex-1 py-2.5 rounded-xl font-medium text-sm">
+                  Not this time
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <!-- 6. INTERMISSION VIEW (rest / green room)                           -->
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+    <section>
+      <div class="section-label mb-4">6 &mdash; Intermission (Green Room / Rest)</div>
+
+      <div class="macos-frame" style="width: 420px; background: linear-gradient(170deg, #0f1a12 0%, #0a140d 40%, #0d100e 100%);">
+        <!-- Window chrome -->
+        <div class="flex items-center gap-2 px-4 py-3" style="background: rgba(20, 35, 25, 0.5);">
+          <div class="w-3 h-3 rounded-full" style="background: #ff5f57;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #febc2e;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #28c840;"></div>
+          <span class="ml-3 text-green-400/30 text-xs font-inter">Showtime &middot; Green Room</span>
+        </div>
+
+        <div class="px-5 pt-8 pb-8">
+          <!-- Soft green spotlight -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-48 pointer-events-none"
+               style="background: radial-gradient(ellipse 100% 100% at 50% -30%, rgba(92, 184, 122, 0.06) 0%, transparent 70%);"></div>
+
+          <div class="relative z-10 text-center">
+            <!-- Cozy icon -->
+            <div class="text-5xl mb-4">&#9749;</div>
+
+            <h2 class="font-playfair text-2xl font-bold text-green-200/80 mb-2">
+              Intermission
+            </h2>
+
+            <p class="text-green-300/40 text-sm mb-8 max-w-xs mx-auto leading-relaxed font-playfair italic">
+              The stage will be here when you&rsquo;re ready.<br />
+              Rest costs zero. You&rsquo;ve earned this pause.
+            </p>
+
+            <!-- Paused context -->
+            <div class="green-room rounded-xl p-4 mb-6 text-left">
+              <div class="text-green-400/30 text-xs uppercase tracking-wider font-medium mb-2">Paused during</div>
+              <div class="flex items-center gap-3">
+                <div class="w-1 h-8 rounded-full" style="background: rgba(155, 122, 216, 0.4);"></div>
+                <div>
+                  <div class="text-cream-200/60 text-sm font-medium">API Integration</div>
+                  <div class="text-cream-400/25 text-xs font-mono mt-0.5">38:12 remaining</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Beat progress (subtle, not pressuring) -->
+            <div class="flex items-center justify-center gap-1.5 mb-6">
+              <span class="text-gold-400/50 text-lg">&#9733;</span>
+              <span class="text-gold-400/50 text-lg">&#9733;</span>
+              <span class="text-cream-400/10 text-lg">&#9733;</span>
+              <span class="text-cream-400/20 text-xs ml-2 font-mono">2 of 3</span>
+            </div>
+
+            <!-- Affirmations (rotating) -->
+            <div class="rounded-lg px-4 py-3 mb-6"
+                 style="background: rgba(92, 184, 122, 0.04); border: 1px solid rgba(92, 184, 122, 0.08);">
+              <p class="text-green-300/50 text-sm italic leading-relaxed">
+                &ldquo;Taking a break isn&rsquo;t quitting the show &mdash; even SNL has commercial breaks.&rdquo;
+              </p>
+            </div>
+
+            <!-- Return button -->
+            <button class="w-full py-3.5 rounded-xl font-semibold text-base transition-all"
+                    style="background: linear-gradient(135deg, rgba(92, 184, 122, 0.15), rgba(92, 184, 122, 0.2)); border: 1px solid rgba(92, 184, 122, 0.25); color: #7ad4a0; font-family: 'Playfair Display', serif;"
+                    onmouseover="this.style.boxShadow='0 0 20px rgba(92, 184, 122, 0.2)'"
+                    onmouseout="this.style.boxShadow='none'">
+              &#127916; Back to Stage
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- EXPANDED VIEW — mid-show with mixed act states                        -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="max-w-7xl mx-auto mt-12">
+    <hr class="playbill-divider my-8" />
+    <div class="section-label mb-4">Bonus &mdash; Expanded View (Mid-Show with History)</div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-12">
+      <div class="macos-frame curtain-bg" style="width: 460px;">
+        <!-- Window chrome -->
+        <div class="flex items-center gap-2 px-4 py-3" style="background: rgba(42, 16, 24, 0.5);">
+          <div class="w-3 h-3 rounded-full" style="background: #ff5f57;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #febc2e;"></div>
+          <div class="w-3 h-3 rounded-full" style="background: #28c840;"></div>
+          <div class="flex-1 flex items-center justify-center gap-2">
+            <div class="live-dot w-1.5 h-1.5 rounded-full bg-red-500"></div>
+            <span class="text-red-400/60 text-xs font-medium uppercase tracking-widest">Live</span>
+          </div>
+          <div class="w-12"></div>
+        </div>
+
+        <div class="spotlight-strong">
+          <!-- Timer Panel — Act 3 active -->
+          <div class="px-5 pt-4 pb-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                   style="background: rgba(90, 158, 214, 0.15); color: #7ab8e8; border: 1px solid rgba(90, 158, 214, 0.2);">
+                Admin
+              </div>
+              <div class="text-cream-400/30 text-xs">Act 3 of 5</div>
+            </div>
+
+            <h2 class="font-playfair text-3xl font-bold text-cream-50 mb-4">
+              Email Triage
+            </h2>
+
+            <div class="flex items-baseline gap-2 mb-5">
+              <span class="timer-display text-6xl font-medium gold-text" style="line-height: 1;">
+                12:03
+              </span>
+              <span class="text-cream-400/30 text-sm">remaining</span>
+            </div>
+
+            <div class="flex gap-2">
+              <button class="btn-ghost px-4 py-2 rounded-lg text-sm font-medium">+15m</button>
+              <button class="btn-wine px-5 py-2 rounded-lg text-sm font-medium">
+                <span>&#9632;</span> End Act
+              </button>
+              <button class="px-4 py-2 rounded-lg text-sm font-medium"
+                      style="background: rgba(92, 184, 122, 0.1); border: 1px solid rgba(92, 184, 122, 0.15); color: #5cb87a;">
+                &#9749; Rest
+              </button>
+            </div>
+          </div>
+
+          <hr class="playbill-divider" />
+
+          <!-- Beat Counter -->
+          <div class="px-5 py-3 flex items-center justify-between">
+            <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium">Beats Locked</div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-gold-400 text-xl star-glow">&#9733;</span>
+              <span class="text-cream-400/20 text-xl">&#9733;</span>
+              <span class="text-cream-400/20 text-xl">&#9733;</span>
+              <span class="text-cream-400/10 text-xs ml-1.5 font-mono">1/3</span>
+            </div>
+          </div>
+
+          <hr class="playbill-divider" />
+
+          <!-- Lineup with mixed states -->
+          <div class="px-5 py-4 pb-5">
+            <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-3">Show Lineup</div>
+
+            <div class="space-y-1">
+              <!-- Act 1 — COMPLETED with beat -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: rgba(155, 122, 216, 0.04); border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(34, 197, 94, 0.1);">
+                  <span class="text-green-400 text-xs">&#10003;</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/40 text-sm">API Integration</div>
+                </div>
+                <span class="text-gold-400 text-xs">&#9733;</span>
+              </div>
+
+              <!-- Act 2 — COMPLETED no beat -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: rgba(92, 184, 122, 0.03); border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(34, 197, 94, 0.1);">
+                  <span class="text-green-400 text-xs">&#10003;</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/40 text-sm">Morning Run</div>
+                </div>
+                <span class="text-cream-400/15 text-xs">&#9734;</span>
+              </div>
+
+              <!-- Act 3 — ACTIVE -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: rgba(90, 158, 214, 0.1); border: 1.5px solid rgba(90, 158, 214, 0.25);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(90, 158, 214, 0.2);">
+                  <div class="w-2 h-2 rounded-full" style="background: #5a9ed6;"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-100 text-sm font-medium">Email Triage</div>
+                </div>
+                <span class="text-xs font-mono" style="color: #5a9ed6;">12:03</span>
+              </div>
+
+              <!-- Act 4 — upcoming -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: transparent; border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(212, 165, 71, 0.08);">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: rgba(212, 165, 71, 0.4);"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/50 text-sm">Logo Brainstorm</div>
+                </div>
+                <span class="text-cream-400/20 text-xs font-mono">45m</span>
+              </div>
+
+              <!-- Act 5 — upcoming -->
+              <div class="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style="background: transparent; border: 1px solid rgba(212, 165, 71, 0.05);">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center" style="background: rgba(214, 112, 160, 0.08);">
+                  <div class="w-1.5 h-1.5 rounded-full" style="background: rgba(214, 112, 160, 0.4);"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-cream-300/50 text-sm">Call Mom</div>
+                </div>
+                <span class="text-cream-400/20 text-xs font-mono">25m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color palette reference -->
+      <div>
+        <div class="section-label mb-4">Color System</div>
+        <div class="space-y-3">
+          <!-- Category colors -->
+          <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-2">Sketch Categories</div>
+          <div class="flex flex-wrap gap-2">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(155, 122, 216, 0.1); border: 1px solid rgba(155, 122, 216, 0.2);">
+              <div class="w-2.5 h-2.5 rounded-full" style="background: #9b7ad8;"></div>
+              <span class="text-xs" style="color: #b494e8;">Deep Work</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(92, 184, 122, 0.1); border: 1px solid rgba(92, 184, 122, 0.2);">
+              <div class="w-2.5 h-2.5 rounded-full" style="background: #5cb87a;"></div>
+              <span class="text-xs" style="color: #7ad4a0;">Exercise</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(90, 158, 214, 0.1); border: 1px solid rgba(90, 158, 214, 0.2);">
+              <div class="w-2.5 h-2.5 rounded-full" style="background: #5a9ed6;"></div>
+              <span class="text-xs" style="color: #7ab8e8;">Admin</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(212, 165, 71, 0.1); border: 1px solid rgba(212, 165, 71, 0.2);">
+              <div class="w-2.5 h-2.5 rounded-full" style="background: #d4a547;"></div>
+              <span class="text-xs" style="color: #e8c878;">Creative</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(214, 112, 160, 0.1); border: 1px solid rgba(214, 112, 160, 0.2);">
+              <div class="w-2.5 h-2.5 rounded-full" style="background: #d670a0;"></div>
+              <span class="text-xs" style="color: #e898ba;">Social</span>
+            </div>
+          </div>
+
+          <div class="h-4"></div>
+
+          <!-- Core palette swatches -->
+          <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-2">Core Palette</div>
+          <div class="grid grid-cols-5 gap-2">
+            <div>
+              <div class="w-full aspect-square rounded-lg mb-1" style="background: #2a1018; border: 1px solid rgba(212, 165, 71, 0.08);"></div>
+              <div class="text-cream-400/30 text-xs text-center">Curtain</div>
+            </div>
+            <div>
+              <div class="w-full aspect-square rounded-lg mb-1" style="background: #a8304a; border: 1px solid rgba(212, 165, 71, 0.08);"></div>
+              <div class="text-cream-400/30 text-xs text-center">Wine</div>
+            </div>
+            <div>
+              <div class="w-full aspect-square rounded-lg mb-1" style="background: #d4a547; border: 1px solid rgba(212, 165, 71, 0.08);"></div>
+              <div class="text-cream-400/30 text-xs text-center">Gold</div>
+            </div>
+            <div>
+              <div class="w-full aspect-square rounded-lg mb-1" style="background: #f0e8d8; border: 1px solid rgba(212, 165, 71, 0.08);"></div>
+              <div class="text-cream-400/30 text-xs text-center">Cream</div>
+            </div>
+            <div>
+              <div class="w-full aspect-square rounded-lg mb-1" style="background: #1c1410; border: 1px solid rgba(212, 165, 71, 0.08);"></div>
+              <div class="text-cream-400/30 text-xs text-center">Stage</div>
+            </div>
+          </div>
+
+          <div class="h-4"></div>
+
+          <!-- Typography reference -->
+          <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-2">Typography</div>
+          <div class="space-y-2 rounded-xl p-4" style="background: rgba(42, 16, 24, 0.4); border: 1px solid rgba(212, 165, 71, 0.06);">
+            <div class="font-playfair text-2xl font-bold gold-text">Playfair Display &mdash; Headlines</div>
+            <div class="font-inter text-sm text-cream-200/70">Inter &mdash; Body text, labels, UI elements</div>
+            <div class="font-mono text-sm text-gold-400/80">DM Mono &mdash; Timers, durations, counters</div>
+          </div>
+
+          <div class="h-4"></div>
+
+          <!-- Energy level buttons reference -->
+          <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-2">Energy Levels</div>
+          <div class="grid grid-cols-4 gap-2">
+            <div class="py-2.5 px-2 rounded-lg text-center text-xs font-medium"
+                 style="background: rgba(212, 165, 71, 0.12); border: 1.5px solid rgba(212, 165, 71, 0.3); color: #d4a547;">
+              <div class="text-base mb-0.5">&#9889;</div>High
+            </div>
+            <div class="py-2.5 px-2 rounded-lg text-center text-xs font-medium"
+                 style="background: rgba(232, 200, 120, 0.1); border: 1.5px solid rgba(232, 200, 120, 0.2); color: #e8c878;">
+              <div class="text-base mb-0.5">&#9728;&#65039;</div>Medium
+            </div>
+            <div class="py-2.5 px-2 rounded-lg text-center text-xs font-medium"
+                 style="background: rgba(155, 122, 216, 0.08); border: 1.5px solid rgba(155, 122, 216, 0.15); color: #b494e8;">
+              <div class="text-base mb-0.5">&#127769;</div>Low
+            </div>
+            <div class="py-2.5 px-2 rounded-lg text-center text-xs font-medium"
+                 style="background: rgba(92, 184, 122, 0.08); border: 1.5px solid rgba(92, 184, 122, 0.15); color: #7ad4a0;">
+              <div class="text-base mb-0.5">&#128715;</div>Recovery
+            </div>
+          </div>
+
+          <div class="h-4"></div>
+
+          <!-- Button styles -->
+          <div class="text-cream-400/40 text-xs uppercase tracking-wider font-medium mb-2">Button Styles</div>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn-gold px-4 py-2 rounded-lg text-sm font-semibold">Primary Gold</button>
+            <button class="btn-wine px-4 py-2 rounded-lg text-sm font-medium">Wine Action</button>
+            <button class="btn-ghost px-4 py-2 rounded-lg text-sm font-medium">Ghost</button>
+            <button class="px-4 py-2 rounded-lg text-sm font-medium"
+                    style="background: rgba(92, 184, 122, 0.12); border: 1px solid rgba(92, 184, 122, 0.2); color: #7ad4a0;">
+              Green Room
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="max-w-7xl mx-auto mt-16 mb-8">
+    <hr class="playbill-divider my-6" />
+    <p class="text-center text-cream-400/20 text-xs font-playfair italic">
+      Showtime &mdash; Direction 2: Backstage Pass &middot; UX Mockup &middot; March 2026
+    </p>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Tray Menu Bar Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* === ANIMATIONS === */
+  @keyframes tallyPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px rgba(239,68,68,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 2px 1px rgba(239,68,68,0.2); }
+  }
+  @keyframes onairGlow {
+    0%, 100% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.5), inset 0 0 4px rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 16px 4px rgba(239,68,68,0.8), inset 0 0 8px rgba(239,68,68,0.3); }
+  }
+  @keyframes amberPulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(245,158,11,0.3); }
+    50% { text-shadow: 0 0 20px rgba(245,158,11,0.6); }
+  }
+
+  .tally-live { animation: tallyPulse 2s ease-in-out infinite; }
+  .onair-glow { animation: onairGlow 2s ease-in-out infinite; }
+  .amber-pulse { animation: amberPulse 2s ease-in-out infinite; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* ON AIR light box */
+  .onair-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #ef4444;
+    border: 1.5px solid #ef4444;
+    border-radius: 3px;
+    padding: 1px 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .onair-box.live { animation: onairGlow 2s ease-in-out infinite; }
+
+  /* macOS menu bar */
+  .macos-menubar {
+    height: 28px;
+    background: linear-gradient(180deg, #3a3a3c 0%, #2c2c2e 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #e8e6e0;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+  }
+  .macos-menubar .apple-logo {
+    font-size: 15px;
+    margin-right: 20px;
+    opacity: 0.9;
+  }
+  .macos-menubar .menu-items {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    flex: 1;
+  }
+  .macos-menubar .menu-items span {
+    opacity: 0.85;
+  }
+  .macos-menubar .menu-items span:first-child {
+    font-weight: 700;
+    opacity: 1;
+  }
+  .macos-menubar .system-tray {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+
+  /* Clapperboard icon in menu bar */
+  .clap-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .clap-icon:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  .clap-icon .tally-dot {
+    position: absolute;
+    top: 0px;
+    right: 2px;
+    width: 7px;
+    height: 7px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 1px solid #2c2c2e;
+  }
+
+  /* Dropdown panel */
+  .tray-dropdown {
+    width: 280px;
+    background: rgba(30, 30, 34, 0.98);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    box-shadow:
+      0 20px 60px rgba(0,0,0,0.5),
+      0 4px 16px rgba(0,0,0,0.3),
+      inset 0 0.5px 0 rgba(255,255,255,0.06);
+    overflow: hidden;
+    padding: 6px 0;
+  }
+
+  .tray-dropdown .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #e8e6e0;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .tray-dropdown .menu-item:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+  .tray-dropdown .menu-item.muted {
+    color: #9a9890;
+  }
+  .tray-dropdown .menu-item.accent-btn {
+    color: #d97757;
+    font-weight: 500;
+  }
+
+  .tray-dropdown .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 5px 0;
+  }
+
+  .tray-dropdown .section-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a5855;
+    padding: 8px 14px 4px;
+  }
+
+  .tray-dropdown .content-block {
+    padding: 8px 14px;
+  }
+
+  /* Shortcut key hints */
+  .shortcut {
+    margin-left: auto;
+    font-size: 11px;
+    color: #5a5855;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* Beat stars */
+  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .beat-dim { color: #5a5855; }
+
+  /* SVG clapperboard */
+  .clap-svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-6xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Feature Mockup</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2 text-txt-primary">Tray Menu Bar</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-2xl">
+    The clapperboard lives in the macOS menu bar. Always visible. Zero screen clutter.
+    A glance shows your status; a click gives you full control.
+  </p>
+</header>
+
+<!-- ============================================================ -->
+<!-- FOUR STATES SIDE BY SIDE                                       -->
+<!-- ============================================================ -->
+<section class="max-w-[1400px] mx-auto px-6 mb-24">
+  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-10">
+
+    <!-- ======================================================== -->
+    <!-- STATE 1: NO SHOW RUNNING                                   -->
+    <!-- ======================================================== -->
+    <div>
+      <div class="mb-4">
+        <span class="section-label">State 1</span>
+        <h2 class="text-lg font-bold text-txt-primary mt-1">No Show Running</h2>
+        <p class="text-xs text-txt-muted mt-1">App is open but idle. Waiting in the wings.</p>
+      </div>
+
+      <!-- Menu bar strip -->
+      <div class="macos-menubar" style="border-radius: 8px 8px 0 0;">
+        <span class="apple-logo"></span>
+        <div class="menu-items">
+          <span>Finder</span>
+          <span>File</span>
+          <span>Edit</span>
+          <span>View</span>
+        </div>
+        <div class="system-tray">
+          <span>Wi-Fi</span>
+          <div class="clap-icon" style="background: rgba(255,255,255,0.12);">
+            <!-- Clapperboard SVG -->
+            <svg class="clap-svg" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#9a9890" opacity="0.9"/>
+              <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#9a9890" opacity="0.6"/>
+              <line x1="4" y1="2.5" x2="6" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="8" y1="2.5" x2="10" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="12" y1="2.5" x2="14" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <span>3:42 PM</span>
+        </div>
+      </div>
+
+      <!-- Dropdown connector area -->
+      <div style="height: 4px; background: transparent; position: relative;">
+        <div style="position: absolute; right: 58px; top: 0; width: 12px; height: 6px; overflow: hidden;">
+          <div style="width: 12px; height: 12px; background: rgba(30,30,34,0.98); border: 1px solid rgba(255,255,255,0.08); transform: rotate(45deg); transform-origin: center; margin-top: 3px;"></div>
+        </div>
+      </div>
+
+      <!-- Dropdown -->
+      <div class="tray-dropdown" style="margin-left: auto; margin-right: 20px; max-width: 280px;">
+        <!-- Header -->
+        <div class="content-block" style="padding-bottom: 4px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #e8e6e0;">
+            SHOWTIME
+          </div>
+          <div style="font-size: 12px; color: #5a5855; margin-top: 2px;">No show running</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Actions -->
+        <div class="menu-item accent-btn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="10" rx="2" stroke="#d97757" stroke-width="1.5" fill="none"/>
+            <path d="M6 6.5l4 2.5-4 2.5V6.5z" fill="#d97757"/>
+          </svg>
+          Enter Writer's Room
+        </div>
+        <div class="menu-item muted">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="2" stroke="#9a9890" stroke-width="1.2" fill="none"/>
+            <line x1="2" y1="6" x2="14" y2="6" stroke="#9a9890" stroke-width="1"/>
+            <line x1="6" y1="6" x2="6" y2="14" stroke="#9a9890" stroke-width="1"/>
+          </svg>
+          Past Shows
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item muted">
+          Preferences...
+          <span class="shortcut">,</span>
+        </div>
+        <div class="menu-item muted">
+          Quit Showtime
+          <span class="shortcut">Q</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- STATE 2: LIVE — CURRENT ACT                                -->
+    <!-- ======================================================== -->
+    <div>
+      <div class="mb-4">
+        <span class="section-label">State 2</span>
+        <h2 class="text-lg font-bold text-txt-primary mt-1">Live -- Current Act</h2>
+        <p class="text-xs text-txt-muted mt-1">Deep in an act. Timer running. Beats collecting.</p>
+      </div>
+
+      <!-- Menu bar strip -->
+      <div class="macos-menubar">
+        <span class="apple-logo"></span>
+        <div class="menu-items">
+          <span>Code</span>
+          <span>File</span>
+          <span>Edit</span>
+          <span>View</span>
+        </div>
+        <div class="system-tray">
+          <span>Wi-Fi</span>
+          <div class="clap-icon" style="background: rgba(255,255,255,0.12);">
+            <svg class="clap-svg" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#e8e6e0" opacity="0.9"/>
+              <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#e8e6e0" opacity="0.6"/>
+              <line x1="4" y1="2.5" x2="6" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="8" y1="2.5" x2="10" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="12" y1="2.5" x2="14" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+            </svg>
+            <!-- Red tally dot -->
+            <div class="tally-dot tally-live"></div>
+          </div>
+          <span>3:42 PM</span>
+        </div>
+      </div>
+
+      <div style="height: 4px;"></div>
+
+      <!-- Dropdown -->
+      <div class="tray-dropdown" style="margin-left: auto; margin-right: 20px;">
+        <!-- ON AIR badge -->
+        <div class="content-block" style="padding-bottom: 2px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div class="onair-box live">
+              <span style="width: 5px; height: 5px; background: #ef4444; border-radius: 50%; display: inline-block;"></span>
+              ON AIR
+            </div>
+          </div>
+
+          <!-- Current act -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span class="clap-badge" style="border-color: #8b5cf6; color: #8b5cf6; font-size: 9px; padding: 1px 6px;">
+              DEEP WORK <span class="divider">|</span> ACT 3
+            </span>
+          </div>
+          <div style="font-size: 15px; font-weight: 600; color: #e8e6e0; margin-bottom: 8px;">
+            API Refactor
+          </div>
+
+          <!-- Timer -->
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #e8e6e0; letter-spacing: 0.02em; margin-bottom: 8px;">
+            01:23:45
+          </div>
+
+          <!-- Progress bar -->
+          <div class="progress-bar" style="margin-bottom: 8px;">
+            <div class="fill" style="width: 60%; background: linear-gradient(90deg, #d97757, #d97757);"></div>
+          </div>
+
+          <!-- Beat progress -->
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+            <span class="beat-lit">&#9733;</span>
+            <span class="beat-lit">&#9733;</span>
+            <span class="beat-dim">&#9734;</span>
+            <span style="color: #9a9890; font-size: 11px; margin-left: 4px;">2 of 3 beats</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Coming Up -->
+        <div class="section-header">Coming Up</div>
+        <div style="padding: 4px 14px 6px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 3px; height: 28px; background: #60a5fa; border-radius: 2px; flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 13px; color: #e8e6e0; font-weight: 500;">Email Triage</div>
+              <div style="font-size: 11px; color: #9a9890;">Admin &middot; 30m</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 3px; height: 28px; background: #22c55e; border-radius: 2px; flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 13px; color: #e8e6e0; font-weight: 500;">Personal Training</div>
+              <div style="font-size: 11px; color: #9a9890;">Exercise &middot; 90m</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="2" width="14" height="12" rx="2" stroke="#e8e6e0" stroke-width="1.2" fill="none"/>
+            <rect x="4" y="5" width="8" height="6" rx="1" fill="rgba(255,255,255,0.1)"/>
+          </svg>
+          Open Expanded View
+        </div>
+        <div class="menu-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="#e8e6e0" stroke-width="1.2" fill="none"/>
+            <path d="M8 4v4l3 2" stroke="#e8e6e0" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Director Mode...
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item muted">
+          Quit Showtime
+          <span class="shortcut">Q</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- STATE 3: LIVE — UNDER 5 MINUTES (AMBER)                    -->
+    <!-- ======================================================== -->
+    <div>
+      <div class="mb-4">
+        <span class="section-label">State 3</span>
+        <h2 class="text-lg font-bold text-txt-primary mt-1">Under 5 Minutes</h2>
+        <p class="text-xs text-txt-muted mt-1">Amber warning. Wrapping up. Almost done.</p>
+      </div>
+
+      <!-- Menu bar strip -->
+      <div class="macos-menubar">
+        <span class="apple-logo"></span>
+        <div class="menu-items">
+          <span>Code</span>
+          <span>File</span>
+          <span>Edit</span>
+          <span>View</span>
+        </div>
+        <div class="system-tray">
+          <span>Wi-Fi</span>
+          <div class="clap-icon" style="background: rgba(255,255,255,0.12);">
+            <svg class="clap-svg" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#e8e6e0" opacity="0.9"/>
+              <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#e8e6e0" opacity="0.6"/>
+              <line x1="4" y1="2.5" x2="6" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="8" y1="2.5" x2="10" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="12" y1="2.5" x2="14" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+            </svg>
+            <div class="tally-dot tally-live"></div>
+          </div>
+          <span>3:42 PM</span>
+        </div>
+      </div>
+
+      <div style="height: 4px;"></div>
+
+      <!-- Dropdown -->
+      <div class="tray-dropdown" style="margin-left: auto; margin-right: 20px;">
+        <!-- ON AIR badge -->
+        <div class="content-block" style="padding-bottom: 2px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div class="onair-box live">
+              <span style="width: 5px; height: 5px; background: #ef4444; border-radius: 50%; display: inline-block;"></span>
+              ON AIR
+            </div>
+          </div>
+
+          <!-- Current act -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span class="clap-badge" style="border-color: #8b5cf6; color: #8b5cf6; font-size: 9px; padding: 1px 6px;">
+              DEEP WORK <span class="divider">|</span> ACT 3
+            </span>
+          </div>
+          <div style="font-size: 15px; font-weight: 600; color: #e8e6e0; margin-bottom: 8px;">
+            API Refactor
+          </div>
+
+          <!-- Timer — AMBER -->
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #f59e0b; letter-spacing: 0.02em; margin-bottom: 4px;" class="amber-pulse">
+            04:32
+          </div>
+
+          <!-- Almost done warning -->
+          <div style="font-size: 12px; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 13px;">&#9889;</span> Almost done!
+          </div>
+
+          <!-- Progress bar — nearly full -->
+          <div class="progress-bar" style="margin-bottom: 8px;">
+            <div class="fill" style="width: 92%; background: linear-gradient(90deg, #d97757, #f59e0b);"></div>
+          </div>
+
+          <!-- Beat progress -->
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+            <span class="beat-lit">&#9733;</span>
+            <span class="beat-lit">&#9733;</span>
+            <span class="beat-dim">&#9734;</span>
+            <span style="color: #9a9890; font-size: 11px; margin-left: 4px;">2 of 3 beats</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Coming Up -->
+        <div class="section-header">Coming Up</div>
+        <div style="padding: 4px 14px 6px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 3px; height: 28px; background: #60a5fa; border-radius: 2px; flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 13px; color: #e8e6e0; font-weight: 500;">Email Triage</div>
+              <div style="font-size: 11px; color: #9a9890;">Admin &middot; 30m</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 3px; height: 28px; background: #22c55e; border-radius: 2px; flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 13px; color: #e8e6e0; font-weight: 500;">Personal Training</div>
+              <div style="font-size: 11px; color: #9a9890;">Exercise &middot; 90m</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="2" width="14" height="12" rx="2" stroke="#e8e6e0" stroke-width="1.2" fill="none"/>
+            <rect x="4" y="5" width="8" height="6" rx="1" fill="rgba(255,255,255,0.1)"/>
+          </svg>
+          Open Expanded View
+        </div>
+        <div class="menu-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="#e8e6e0" stroke-width="1.2" fill="none"/>
+            <path d="M8 4v4l3 2" stroke="#e8e6e0" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Director Mode...
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item muted">
+          Quit Showtime
+          <span class="shortcut">Q</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- STATE 4: INTERMISSION                                      -->
+    <!-- ======================================================== -->
+    <div>
+      <div class="mb-4">
+        <span class="section-label">State 4</span>
+        <h2 class="text-lg font-bold text-txt-primary mt-1">Intermission</h2>
+        <p class="text-xs text-txt-muted mt-1">Between acts. Breath. No pressure.</p>
+      </div>
+
+      <!-- Menu bar strip -->
+      <div class="macos-menubar">
+        <span class="apple-logo"></span>
+        <div class="menu-items">
+          <span>Finder</span>
+          <span>File</span>
+          <span>Edit</span>
+          <span>View</span>
+        </div>
+        <div class="system-tray">
+          <span>Wi-Fi</span>
+          <div class="clap-icon" style="background: rgba(255,255,255,0.12);">
+            <svg class="clap-svg" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#9a9890" opacity="0.7"/>
+              <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#9a9890" opacity="0.4"/>
+              <line x1="4" y1="2.5" x2="6" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="8" y1="2.5" x2="10" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+              <line x1="12" y1="2.5" x2="14" y2="6" stroke="#0d0d0f" stroke-width="1.2"/>
+            </svg>
+            <!-- No tally dot during intermission -->
+          </div>
+          <span>3:42 PM</span>
+        </div>
+      </div>
+
+      <div style="height: 4px;"></div>
+
+      <!-- Dropdown -->
+      <div class="tray-dropdown" style="margin-left: auto; margin-right: 20px;">
+        <!-- Intermission badge -->
+        <div class="content-block" style="padding-bottom: 2px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: #5a5855; border: 1.5px solid #3a3a3e; border-radius: 3px; padding: 1px 6px; display: inline-flex; align-items: center;">
+              INTERMISSION
+            </div>
+          </div>
+
+          <div style="font-size: 14px; color: #9a9890; margin-bottom: 6px;">Between acts</div>
+
+          <!-- Progress -->
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #e8e6e0;">
+            <span>3 of 8 acts complete</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 6px;">
+            <span class="beat-lit">&#9733;</span>
+            <span class="beat-lit">&#9733;</span>
+            <span class="beat-dim">&#9734;</span>
+            <span style="color: #9a9890; font-size: 11px; margin-left: 4px;">2 of 3 beats today</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Next up -->
+        <div style="padding: 6px 14px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 3px; height: 28px; background: #60a5fa; border-radius: 2px; flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 11px; color: #5a5855; font-weight: 500; margin-bottom: 1px;">Next up</div>
+              <div style="font-size: 13px; color: #e8e6e0; font-weight: 500;">Email Triage</div>
+              <div style="font-size: 11px; color: #9a9890;">Admin &middot; 30m</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item accent-btn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="10" rx="2" stroke="#d97757" stroke-width="1.5" fill="none"/>
+            <path d="M6 6.5l4 2.5-4 2.5V6.5z" fill="#d97757"/>
+          </svg>
+          Back to Show
+        </div>
+        <div class="menu-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="#e8e6e0" stroke-width="1.2" fill="none"/>
+            <path d="M8 4v4l3 2" stroke="#e8e6e0" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Director Mode...
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="menu-item muted">
+          Quit Showtime
+          <span class="shortcut">Q</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end grid -->
+</section>
+
+<!-- ============================================================ -->
+<!-- HOW IT WORKS                                                   -->
+<!-- ============================================================ -->
+<section class="max-w-5xl mx-auto px-6 mb-24">
+  <div class="mb-8">
+    <span class="section-label">How It Works</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Column 1 -->
+    <div style="background: rgba(26,26,30,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(217,119,87,0.12); display: flex; align-items: center; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <rect x="0" y="0" width="16" height="3" rx="1" fill="#d97757" opacity="0.8"/>
+            <rect x="0" y="5" width="16" height="11" rx="2" fill="#d97757" opacity="0.4"/>
+            <line x1="3" y1="0.5" x2="5" y2="3" stroke="#d97757" stroke-width="1"/>
+            <line x1="7" y1="0.5" x2="9" y2="3" stroke="#d97757" stroke-width="1"/>
+            <line x1="11" y1="0.5" x2="13" y2="3" stroke="#d97757" stroke-width="1"/>
+          </svg>
+        </div>
+        <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #e8e6e0;">
+          Menu Bar Always Visible
+        </h3>
+      </div>
+      <p style="font-size: 13px; color: #9a9890; line-height: 1.6;">
+        Even when the pill is hidden or you're in another fullscreen app, the clapperboard icon sits in the macOS menu bar. A red tally dot pulses when you're live. One glance tells you your show status.
+      </p>
+    </div>
+
+    <!-- Column 2 -->
+    <div style="background: rgba(26,26,30,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(217,119,87,0.12); display: flex; align-items: center; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="3" stroke="#d97757" stroke-width="1.5" fill="none"/>
+            <circle cx="8" cy="8" r="2" fill="#d97757"/>
+          </svg>
+        </div>
+        <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #e8e6e0;">
+          One-Click Actions
+        </h3>
+      </div>
+      <p style="font-size: 13px; color: #9a9890; line-height: 1.6;">
+        Jump to the expanded view, trigger Director Mode, or open the Writer's Room -- all from the dropdown. No need to find the pill or switch windows. The menu bar is your universal remote.
+      </p>
+    </div>
+
+    <!-- Column 3 -->
+    <div style="background: rgba(26,26,30,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(217,119,87,0.12); display: flex; align-items: center; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <path d="M3 4h10M3 8h6M3 12h8" stroke="#d97757" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #e8e6e0;">
+          Replaces Pill for Minimal Users
+        </h3>
+      </div>
+      <p style="font-size: 13px; color: #9a9890; line-height: 1.6;">
+        Users who want zero screen clutter can hide the floating pill entirely and use only the menu bar. Timer, acts, beats, and all controls live in the dropdown. The clapperboard is your always-on control room.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ICON DETAIL                                                    -->
+<!-- ============================================================ -->
+<section class="max-w-5xl mx-auto px-6 mb-24">
+  <div class="mb-6">
+    <span class="section-label">Icon States</span>
+    <h2 class="text-lg font-bold text-txt-primary mt-1">Clapperboard Tray Icon</h2>
+  </div>
+
+  <div style="display: flex; gap: 40px; align-items: flex-start;">
+    <!-- Idle -->
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; background: #2c2c2e; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#9a9890" opacity="0.9"/>
+          <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#9a9890" opacity="0.6"/>
+          <line x1="4" y1="2.5" x2="6" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="8" y1="2.5" x2="10" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="12" y1="2.5" x2="14" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div style="font-size: 11px; color: #9a9890;">Idle</div>
+      <div style="font-size: 10px; color: #5a5855;">No show</div>
+    </div>
+
+    <!-- Live -->
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; background: #2c2c2e; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; position: relative;">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#e8e6e0" opacity="0.9"/>
+          <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#e8e6e0" opacity="0.6"/>
+          <line x1="4" y1="2.5" x2="6" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="8" y1="2.5" x2="10" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="12" y1="2.5" x2="14" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+        </svg>
+        <div style="position: absolute; top: 6px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%;" class="tally-live"></div>
+      </div>
+      <div style="font-size: 11px; color: #e8e6e0;">Live</div>
+      <div style="font-size: 10px; color: #ef4444;">Tally pulse</div>
+    </div>
+
+    <!-- Amber -->
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; background: #2c2c2e; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; position: relative;">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#e8e6e0" opacity="0.9"/>
+          <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#e8e6e0" opacity="0.6"/>
+          <line x1="4" y1="2.5" x2="6" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="8" y1="2.5" x2="10" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="12" y1="2.5" x2="14" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+        </svg>
+        <div style="position: absolute; top: 6px; right: 8px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;" class="tally-live"></div>
+      </div>
+      <div style="font-size: 11px; color: #f59e0b;">Under 5m</div>
+      <div style="font-size: 10px; color: #5a5855;">Amber dot</div>
+    </div>
+
+    <!-- Intermission -->
+    <div style="text-align: center;">
+      <div style="width: 48px; height: 48px; background: #2c2c2e; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="6" width="14" height="9" rx="1.5" fill="#9a9890" opacity="0.7"/>
+          <path d="M1 6h14L12.5 2H3.5L1 6z" fill="#9a9890" opacity="0.4"/>
+          <line x1="4" y1="2.5" x2="6" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="8" y1="2.5" x2="10" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+          <line x1="12" y1="2.5" x2="14" y2="6" stroke="#2c2c2e" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div style="font-size: 11px; color: #9a9890;">Intermission</div>
+      <div style="font-size: 10px; color: #5a5855;">No dot</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- IMPLEMENTATION NOTES                                           -->
+<!-- ============================================================ -->
+<section class="max-w-5xl mx-auto px-6 mb-24">
+  <div class="mb-6">
+    <span class="section-label">Implementation Notes</span>
+  </div>
+
+  <div style="background: rgba(26,26,30,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 24px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div>
+        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #d97757; margin-bottom: 8px;">Electron API</h4>
+        <ul style="font-size: 13px; color: #9a9890; line-height: 1.8; list-style: none; padding: 0;">
+          <li><code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;">Tray</code> class for menu bar icon</li>
+          <li><code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;">nativeImage.createFromPath()</code> for icon states</li>
+          <li><code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;">Menu.buildFromTemplate()</code> for dropdown</li>
+          <li>Use <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;">tray.setImage()</code> to swap icon on state change</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #d97757; margin-bottom: 8px;">Design Decisions</h4>
+        <ul style="font-size: 13px; color: #9a9890; line-height: 1.8; list-style: none; padding: 0;">
+          <li>Native <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;">Menu</code> (not custom BrowserWindow) for reliability</li>
+          <li>Template images (@2x) for Retina + dark/light mode</li>
+          <li>Timer updates via <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 3px;">tray.setTitle()</code> next to icon</li>
+          <li>Rebuild menu on every showStore state change</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

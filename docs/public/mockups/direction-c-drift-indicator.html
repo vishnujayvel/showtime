@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Direction C: Drift Indicator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899' },
+        drift: { ahead: '#22c55e', slight: '#f59e0b', behind: '#ef4444' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  /* === EXISTING ANIMATIONS (from direction-4) === */
+  @keyframes tallyPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px rgba(239,68,68,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 2px 1px rgba(239,68,68,0.2); }
+  }
+  @keyframes onairGlow {
+    0%, 100% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.5), inset 0 0 4px rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 16px 4px rgba(239,68,68,0.8), inset 0 0 8px rgba(239,68,68,0.3); }
+  }
+  @keyframes goldenGlow {
+    0%, 100% { text-shadow: 0 0 30px rgba(245,158,11,0.3); }
+    50% { text-shadow: 0 0 60px rgba(245,158,11,0.6), 0 0 100px rgba(245,158,11,0.2); }
+  }
+  @keyframes warmPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+
+  /* === NEW: DRIFT ANIMATIONS === */
+  @keyframes driftPulse {
+    0%, 100% { opacity: 0.85; }
+    50% { opacity: 1; }
+  }
+  @keyframes driftWarn {
+    0%, 100% { opacity: 0.8; box-shadow: 0 0 4px 0px rgba(245,158,11,0.2); }
+    50% { opacity: 1; box-shadow: 0 0 8px 2px rgba(245,158,11,0.35); }
+  }
+  @keyframes driftAlert {
+    0%, 100% { opacity: 0.8; box-shadow: 0 0 4px 0px rgba(239,68,68,0.2); }
+    50% { opacity: 1; box-shadow: 0 0 10px 2px rgba(239,68,68,0.35); }
+  }
+  @keyframes driftSlideIn {
+    0% { opacity: 0; transform: translateX(-6px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes storyFadeIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes timeShift {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 1; }
+  }
+
+  .tally-live { animation: tallyPulse 2s ease-in-out infinite; }
+  .onair-glow { animation: onairGlow 2s ease-in-out infinite; }
+  .golden-glow { animation: goldenGlow 3s ease-in-out infinite; }
+  .warm-pulse { animation: warmPulse 2s ease-in-out infinite; }
+
+  .drift-pulse { animation: driftPulse 3s ease-in-out infinite; }
+  .drift-warn { animation: driftWarn 2.5s ease-in-out infinite; }
+  .drift-alert { animation: driftAlert 2s ease-in-out infinite; }
+  .drift-slide-in { animation: driftSlideIn 0.4s ease-out forwards; }
+  .story-fade-in { animation: storyFadeIn 0.6s ease-out forwards; }
+  .time-shift { animation: timeShift 1s ease-out forwards; }
+
+  .beat-lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .beat-dim { color: #5a5855; }
+
+  /* macOS window chrome */
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .traffic-lights { display: flex; gap: 8px; }
+  .traffic-light { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Clapperboard badge */
+  .clap-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clap-badge .divider { opacity: 0.4; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5a5855;
+  }
+
+  /* ON AIR light box */
+  .onair-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #ef4444;
+    border: 1.5px solid #ef4444;
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .onair-box.live { animation: onairGlow 2s ease-in-out infinite; }
+  .onair-box.off {
+    color: #3a3a3e;
+    border-color: #3a3a3e;
+    box-shadow: none;
+  }
+
+  /* === DRIFT CHIP COMPONENT === */
+  .drift-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .drift-chip-on-time {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+  .drift-chip-slight {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+  .drift-chip-behind {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+
+  /* Drift mini indicator for pill */
+  .drift-mini {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Drift arrow in lineup */
+  .drift-arrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #5a5855;
+  }
+  .drift-delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .drift-delta-over {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+  }
+  .drift-delta-under {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+  }
+
+  /* Schedule Story card */
+  .story-event {
+    position: relative;
+    padding-left: 20px;
+  }
+  .story-event::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #5a5855;
+  }
+  .story-event::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 18px;
+    width: 2px;
+    height: calc(100% - 10px);
+    background: #242428;
+  }
+  .story-event:last-child::after {
+    display: none;
+  }
+  .story-event-green::before { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.3); }
+  .story-event-amber::before { background: #f59e0b; box-shadow: 0 0 4px rgba(245,158,11,0.3); }
+  .story-event-red::before { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.3); }
+  .story-event-blue::before { background: #60a5fa; box-shadow: 0 0 4px rgba(96,165,250,0.3); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Projected time strikethrough */
+  .time-planned {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #5a5855;
+    text-decoration: line-through;
+    text-decoration-color: rgba(90,88,85,0.5);
+  }
+  .time-projected {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body class="min-h-screen pb-32">
+
+<!-- ============================================================ -->
+<!-- PAGE HEADER                                                    -->
+<!-- ============================================================ -->
+<header class="max-w-3xl mx-auto pt-16 pb-12 px-6">
+  <p class="section-label mb-3">Direction C</p>
+  <h1 class="text-4xl font-black tracking-tight mb-2" style="color:#e8e6e0;">Drift Indicator</h1>
+  <p class="text-lg text-txt-secondary leading-relaxed max-w-xl">
+    Minimal schedule drift awareness woven into existing views. No new screens — just gentle,
+    glanceable signals that tell the story of how your show is flowing through time.
+  </p>
+  <div class="mt-6 flex items-center gap-3">
+    <span class="drift-chip drift-chip-on-time drift-slide-in">on time</span>
+    <span class="drift-chip drift-chip-slight drift-slide-in" style="animation-delay: 0.1s;">+8 min</span>
+    <span class="drift-chip drift-chip-behind drift-slide-in" style="animation-delay: 0.2s;">+22 min</span>
+    <span class="text-xs text-txt-muted ml-2">Green / Amber / Red drift states</span>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- SCENARIO CONTEXT                                               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-16">
+  <div class="rounded-lg p-5" style="background:#151517; border:1px solid #242428;">
+    <p class="section-label text-[10px] mb-3">Sample Day Scenario</p>
+    <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+      <div>
+        <span class="text-txt-muted">Show started:</span>
+        <span class="text-txt-primary font-mono">9:00 AM</span>
+      </div>
+      <div>
+        <span class="text-txt-muted">Current time:</span>
+        <span class="text-txt-primary font-mono">11:37 AM</span>
+      </div>
+      <div>
+        <span class="text-txt-muted">Current act:</span>
+        <span class="text-txt-primary">Act 3 — Afternoon Run</span>
+      </div>
+      <div>
+        <span class="text-txt-muted">Schedule drift:</span>
+        <span class="font-mono font-semibold" style="color:#f59e0b;">+12 minutes behind</span>
+      </div>
+      <div class="col-span-2 mt-1 text-xs text-txt-muted">
+        Act 1 ran 5 min over (deep flow). Act 2 ran 10 min over (creative momentum).
+        Intermission was 2 min shorter. Net drift: +12 min.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- ENHANCEMENT 1: EXPANDED VIEW WITH DRIFT CHIP                   -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Enhancement 1</span>
+    <h2 class="text-xl font-bold text-txt-primary">Expanded View — Drift Chip</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x 620px</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">
+    A drift chip appears next to the countdown timer. It pulses gently when drift increases,
+    providing ambient awareness without breaking focus. The chip is always visible but never demanding.
+  </p>
+
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="text-xs px-2.5 py-1 rounded text-txt-secondary hover:text-txt-primary" style="background:#242428;">&#127916; Director</button>
+        <button class="text-xs text-txt-muted hover:text-txt-primary">&#9660;</button>
+      </div>
+    </div>
+
+    <div class="flex" style="min-height:540px;">
+      <!-- Main content area -->
+      <div class="flex-1 p-6" style="border-right:1px solid #242428;">
+        <!-- Timer Hero Section -->
+        <div class="text-center mb-6">
+          <!-- Clapperboard badge -->
+          <div class="flex justify-center mb-4">
+            <span class="clap-badge" style="border-color:rgba(34,197,94,0.4); color:#22c55e; font-size:10px;">
+              EXERCISE <span class="divider">|</span> ACT 3 <span class="divider">|</span> 30:00
+            </span>
+          </div>
+
+          <!-- Act name -->
+          <h2 class="text-lg font-bold text-txt-primary mb-5">Afternoon Run</h2>
+
+          <!-- HUGE countdown + DRIFT CHIP (the new addition) -->
+          <div class="flex items-center justify-center gap-3 mb-3">
+            <div class="font-mono font-bold text-txt-primary" style="font-size:64px; line-height:1; letter-spacing:-0.02em;">
+              18:42
+            </div>
+            <!-- === DRIFT CHIP === -->
+            <div class="flex flex-col items-start gap-1 drift-slide-in" style="padding-top: 8px;">
+              <span class="drift-chip drift-chip-slight drift-warn" style="font-size: 13px; padding: 4px 10px;">
+                +12m
+              </span>
+              <span class="font-mono text-txt-muted" style="font-size: 9px; letter-spacing: 0.05em; padding-left: 2px;">BEHIND</span>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="w-full h-1 rounded-full mb-6" style="background:#242428;">
+            <div class="h-full rounded-full" style="width:38%; background: linear-gradient(90deg, #22c55e, #4ade80);"></div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex justify-center gap-2">
+            <button class="px-4 py-2 rounded-lg text-sm font-medium font-mono" style="background:#242428; color:#9a9890; border:1px solid #333;">+15m</button>
+            <button class="px-5 py-2 rounded-lg text-sm font-medium" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">End Act</button>
+            <button class="px-4 py-2 rounded-lg text-sm font-medium" style="background:rgba(139,92,246,0.1); color:#8b5cf6; border:1px solid rgba(139,92,246,0.25);">Rest</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show Lineup sidebar (with drift-aware times) -->
+      <div class="flex-shrink-0" style="width:200px;">
+        <div class="px-3 py-3">
+          <p class="section-label text-[10px] mb-3">Show Lineup</p>
+
+          <div class="space-y-1.5">
+            <!-- Act 1 — completed, ran over -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.05);">
+              <span class="text-xs" title="Completed">&#9989;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-secondary truncate">API Integration</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#8b5cf6;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">50m</span>
+                  <span class="drift-delta drift-delta-over">+5m</span>
+                  <span class="beat-lit text-[10px]">&#9733;</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 2 — completed, ran over -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.05);">
+              <span class="text-xs" title="Completed">&#9989;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-secondary truncate">Design Mockups</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+                  <span class="font-mono text-[10px] text-txt-muted">40m</span>
+                  <span class="drift-delta drift-delta-over">+10m</span>
+                  <span class="beat-lit text-[10px]">&#9733;</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 3 — ACTIVE -->
+            <div class="flex items-center gap-2 p-2 rounded-md" style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
+              <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live" title="Live"></span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-txt-primary truncate">Afternoon Run</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#22c55e;"></div>
+                  <span class="font-mono text-[10px] text-txt-primary">18:42</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 4 — upcoming, projected time shifted -->
+            <div class="flex items-center gap-2 p-2 rounded-md opacity-60">
+              <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-muted truncate">Email Catchup</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#60a5fa;"></div>
+                  <span class="time-planned">12:00</span>
+                  <span class="drift-arrow">&rarr;</span>
+                  <span class="time-projected" style="color:#f59e0b;">12:12</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Act 5 — upcoming, projected time shifted -->
+            <div class="flex items-center gap-2 p-2 rounded-md opacity-60">
+              <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-txt-muted truncate">Newsletter Brainstorm</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+                  <span class="time-planned">12:30</span>
+                  <span class="drift-arrow">&rarr;</span>
+                  <span class="time-projected" style="color:#f59e0b;">12:42</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar with drift summary -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-top:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="onair-box live">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-onair tally-live"></span>
+          ON AIR
+        </div>
+        <span class="drift-chip drift-chip-slight" style="font-size:10px; padding:2px 6px;">+12m drift</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+        <span class="text-xs text-txt-muted font-mono">2/3 Beats</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Annotation: Drift chip states -->
+  <div class="mt-8 space-y-3">
+    <p class="section-label text-[10px] mb-2">Drift Chip States</p>
+    <div class="flex items-start gap-6">
+      <div class="flex items-center gap-2">
+        <span class="drift-chip drift-chip-on-time" style="font-size:11px;">on time</span>
+        <span class="text-xs text-txt-muted">&le; 2 min drift</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="drift-chip drift-chip-on-time" style="font-size:11px;">-5m</span>
+        <span class="text-xs text-txt-muted">Ahead of schedule</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="drift-chip drift-chip-slight drift-warn" style="font-size:11px;">+8m</span>
+        <span class="text-xs text-txt-muted">3-10 min behind</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="drift-chip drift-chip-behind drift-alert" style="font-size:11px;">+22m</span>
+        <span class="text-xs text-txt-muted">&gt; 10 min behind</span>
+      </div>
+    </div>
+    <p class="text-xs text-txt-muted mt-2">
+      The chip appears beside the timer at 64px size — never obscuring the countdown itself.
+      It pulses gently (amber) or more urgently (red) when drift is increasing,
+      then settles to static when drift stabilizes.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- ENHANCEMENT 2: PILL VIEW WITH MINI DRIFT                       -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Enhancement 2</span>
+    <h2 class="text-xl font-bold text-txt-primary">Pill View — Mini Drift</h2>
+    <span class="text-xs text-txt-muted font-mono">320 x 48px &middot; Floating</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">
+    A tiny drift indicator wedged between the timer and beat stars. Just enough to notice,
+    never enough to distract. A colored dot or compact text depending on available space.
+  </p>
+
+  <div class="space-y-6">
+    <!-- Pill: On time (green dot) -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">ON TIME — GREEN DOT</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">API Integration</span>
+        <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">23:41</span>
+        <span class="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.4);"></span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Pill: Slightly behind (amber text) -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">+12 MIN BEHIND — AMBER TEXT</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">Afternoon Run</span>
+        <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">18:42</span>
+        <span class="drift-mini flex-shrink-0 drift-pulse" style="color:#f59e0b;">+12m</span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Pill: Significantly behind (red text) -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">+22 MIN BEHIND — RED TEXT</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">Email Catchup</span>
+        <span class="font-mono text-sm font-semibold flex-shrink-0 warm-pulse" style="color:#f59e0b;">04:12</span>
+        <span class="drift-mini flex-shrink-0" style="color:#ef4444;">+22m</span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Pill: Ahead of schedule (green text) -->
+    <div>
+      <p class="text-xs text-txt-muted mb-2 font-mono">5 MIN AHEAD — GREEN TEXT</p>
+      <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-full" style="width:320px; height:48px; background:rgba(26,26,30,0.85); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-onair tally-live flex-shrink-0"></span>
+        <span class="text-sm font-medium text-txt-primary truncate flex-1">Design Mockups</span>
+        <span class="font-mono text-sm font-semibold text-txt-primary flex-shrink-0">14:30</span>
+        <span class="drift-mini flex-shrink-0" style="color:#22c55e;">-5m</span>
+        <span class="flex-shrink-0 text-sm tracking-wider">
+          <span class="beat-lit">&#9733;</span><span class="beat-dim">&#9734;</span><span class="beat-dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Annotation -->
+  <div class="mt-8 rounded-lg p-4" style="background:#151517; border:1px solid #242428;">
+    <p class="section-label text-[10px] mb-2">Design Notes</p>
+    <ul class="text-xs text-txt-muted space-y-1.5">
+      <li>The drift indicator sits between the timer and beat stars in the pill layout.</li>
+      <li>When on time (&le; 2 min), shows only a small green dot (3px) to avoid clutter.</li>
+      <li>When behind, compact text like "+12m" appears in amber or red at 10px mono.</li>
+      <li>When ahead, "-5m" appears in green — a small reward signal.</li>
+      <li>The pill width stays at 320px; drift text compresses the act name (which already truncates).</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- ENHANCEMENT 3: LINEUP PANEL WITH PROJECTED TIMES               -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Enhancement 3</span>
+    <h2 class="text-xl font-bold text-txt-primary">Lineup Panel — Time Projections</h2>
+    <span class="text-xs text-txt-muted font-mono">200px sidebar</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">
+    Each act in the sidebar shows both planned and actual/projected times. Completed acts show
+    how they actually ran vs plan. Upcoming acts show projected start times with drift applied.
+    The information is ambient — visible when you look, invisible when you don't.
+  </p>
+
+  <!-- Standalone lineup panel -->
+  <div class="macos-chrome" style="width:280px; background:#1a1a1e;">
+    <div class="px-4 py-3 flex items-center justify-between" style="background:#151517; border-bottom:1px solid #242428;">
+      <span class="section-label text-[10px]">Show Lineup</span>
+      <span class="drift-chip drift-chip-slight" style="font-size:9px; padding:2px 5px;">+12m drift</span>
+    </div>
+
+    <div class="px-3 py-3 space-y-1">
+      <!-- Act 1 — Completed, 5 min over -->
+      <div class="p-2.5 rounded-md" style="background:rgba(34,197,94,0.05);">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs" title="Completed">&#9989;</span>
+          <p class="text-xs font-medium text-txt-secondary truncate flex-1">API Integration</p>
+          <span class="beat-lit text-[10px]">&#9733;</span>
+        </div>
+        <div class="flex items-center gap-2 ml-5">
+          <div class="w-5 h-0.5 rounded-full" style="background:#8b5cf6;"></div>
+          <span class="font-mono text-[10px] text-txt-secondary">9:00</span>
+          <span class="font-mono text-[10px] text-txt-muted">&ndash;</span>
+          <span class="font-mono text-[10px] text-txt-secondary">9:50</span>
+          <span class="drift-delta drift-delta-over" style="font-size:8px;">+5m</span>
+        </div>
+        <div class="flex items-center gap-1 ml-5 mt-1">
+          <span class="font-mono text-[9px] text-txt-muted">planned 45m</span>
+          <span class="font-mono text-[9px] text-txt-muted">&rarr;</span>
+          <span class="font-mono text-[9px]" style="color:#f59e0b;">actual 50m</span>
+        </div>
+      </div>
+
+      <!-- Act 2 — Completed, 10 min over -->
+      <div class="p-2.5 rounded-md" style="background:rgba(34,197,94,0.05);">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs" title="Completed">&#9989;</span>
+          <p class="text-xs font-medium text-txt-secondary truncate flex-1">Design Mockups</p>
+          <span class="beat-lit text-[10px]">&#9733;</span>
+        </div>
+        <div class="flex items-center gap-2 ml-5">
+          <div class="w-5 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="font-mono text-[10px] text-txt-secondary">10:00</span>
+          <span class="font-mono text-[10px] text-txt-muted">&ndash;</span>
+          <span class="font-mono text-[10px] text-txt-secondary">10:50</span>
+          <span class="drift-delta drift-delta-over" style="font-size:8px;">+10m</span>
+        </div>
+        <div class="flex items-center gap-1 ml-5 mt-1">
+          <span class="font-mono text-[9px] text-txt-muted">planned 30m</span>
+          <span class="font-mono text-[9px] text-txt-muted">&rarr;</span>
+          <span class="font-mono text-[9px]" style="color:#f59e0b;">actual 40m</span>
+        </div>
+      </div>
+
+      <!-- Intermission — shorter than expected -->
+      <div class="p-2 rounded-md flex items-center gap-2" style="opacity:0.7;">
+        <span class="text-xs text-txt-muted">&#9749;</span>
+        <div class="flex-1">
+          <p class="text-xs text-txt-muted italic">Intermission</p>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="font-mono text-[9px] text-txt-muted">10m planned</span>
+            <span class="font-mono text-[9px] text-txt-muted">&rarr;</span>
+            <span class="font-mono text-[9px]" style="color:#22c55e;">8m actual</span>
+            <span class="drift-delta drift-delta-under" style="font-size:8px;">-2m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 3 — ACTIVE -->
+      <div class="p-2.5 rounded-md" style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="inline-block w-2 h-2 rounded-full bg-onair tally-live" title="Live"></span>
+          <p class="text-xs font-semibold text-txt-primary truncate flex-1">Afternoon Run</p>
+        </div>
+        <div class="flex items-center gap-2 ml-4">
+          <div class="w-5 h-0.5 rounded-full" style="background:#22c55e;"></div>
+          <span class="font-mono text-[10px] text-txt-primary">11:00</span>
+          <span class="font-mono text-[10px] text-txt-muted">&ndash;</span>
+          <span class="font-mono text-[10px] text-txt-primary">now</span>
+        </div>
+        <div class="flex items-center gap-1 ml-4 mt-1">
+          <span class="font-mono text-[9px] text-txt-muted">planned start 10:48</span>
+          <span class="font-mono text-[9px] text-txt-muted">&rarr;</span>
+          <span class="font-mono text-[9px]" style="color:#f59e0b;">actual 11:00</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="py-1">
+        <div class="h-px" style="background:#242428;"></div>
+        <p class="font-mono text-[8px] text-txt-muted uppercase tracking-widest text-center mt-1.5 mb-0.5">Projected</p>
+      </div>
+
+      <!-- Act 4 — upcoming, projected with drift -->
+      <div class="p-2.5 rounded-md opacity-55">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+          <p class="text-xs font-medium text-txt-muted truncate flex-1">Email Catchup</p>
+        </div>
+        <div class="flex items-center gap-2 ml-5">
+          <div class="w-5 h-0.5 rounded-full" style="background:#60a5fa;"></div>
+          <span class="time-planned">12:00</span>
+          <span class="drift-arrow">&rarr;</span>
+          <span class="time-projected" style="color:#f59e0b;">12:12</span>
+        </div>
+        <div class="flex items-center gap-1 ml-5 mt-1">
+          <span class="font-mono text-[9px] text-txt-muted">20m planned</span>
+        </div>
+      </div>
+
+      <!-- Act 5 — upcoming, projected with drift -->
+      <div class="p-2.5 rounded-md opacity-55">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs text-txt-muted" title="Upcoming">&#9203;</span>
+          <p class="text-xs font-medium text-txt-muted truncate flex-1">Newsletter Brainstorm</p>
+        </div>
+        <div class="flex items-center gap-2 ml-5">
+          <div class="w-5 h-0.5 rounded-full" style="background:#f59e0b;"></div>
+          <span class="time-planned">12:30</span>
+          <span class="drift-arrow">&rarr;</span>
+          <span class="time-projected" style="color:#f59e0b;">12:42</span>
+        </div>
+        <div class="flex items-center gap-1 ml-5 mt-1">
+          <span class="font-mono text-[9px] text-txt-muted">30m planned</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer with projected end -->
+    <div class="px-4 py-2.5 flex items-center justify-between" style="background:#151517; border-top:1px solid #242428;">
+      <span class="font-mono text-[9px] text-txt-muted">PROJECTED WRAP</span>
+      <div class="flex items-center gap-1.5">
+        <span class="time-planned" style="font-size:11px;">1:00 PM</span>
+        <span class="drift-arrow">&rarr;</span>
+        <span class="font-mono text-[11px] font-semibold" style="color:#f59e0b;">1:12 PM</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Annotation -->
+  <div class="mt-8 space-y-3">
+    <p class="section-label text-[10px] mb-2">Design Notes</p>
+    <div class="rounded-lg p-4" style="background:#151517; border:1px solid #242428;">
+      <ul class="text-xs text-txt-muted space-y-1.5">
+        <li><strong class="text-txt-secondary">Completed acts</strong> show actual time range and duration delta: "planned 45m &rarr; actual 50m (+5m)"</li>
+        <li><strong class="text-txt-secondary">Active act</strong> shows when it actually started vs when it was planned to start</li>
+        <li><strong class="text-txt-secondary">Upcoming acts</strong> show planned start with strikethrough, replaced by projected start in amber</li>
+        <li><strong class="text-txt-secondary">Projected wrap</strong> in footer gives the "will I finish on time?" answer at a glance</li>
+        <li>Intermission drift also tracked — recovering time during breaks is a positive signal</li>
+        <li>This is an expanded detail view of the sidebar; the compact sidebar retains its original layout</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- ENHANCEMENT 4: STRIKE VIEW WITH SCHEDULE STORY                 -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Enhancement 4</span>
+    <h2 class="text-xl font-bold text-txt-primary">Strike View — Schedule Story</h2>
+    <span class="text-xs text-txt-muted font-mono">~560 x variable</span>
+  </div>
+  <p class="text-sm text-txt-secondary mb-6">
+    The end-of-day summary gains a "Schedule Story" section — a compassionate narrative that
+    tells the story of how your show flowed through time. No guilt. Just the story of the day.
+  </p>
+
+  <div class="macos-chrome" style="width:560px; background:#1a1a1e;">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-5 py-3" style="background:#151517; border-bottom:1px solid #242428;">
+      <div class="flex items-center gap-3">
+        <div class="traffic-lights">
+          <div class="traffic-light" style="background:#ff5f57;"></div>
+          <div class="traffic-light" style="background:#febc2e;"></div>
+          <div class="traffic-light" style="background:#28c840;"></div>
+        </div>
+        <span class="text-xs font-mono tracking-widest uppercase text-txt-muted">Showtime</span>
+      </div>
+      <div class="onair-box off">
+        <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:#3a3a3e;"></span>
+        OFF
+      </div>
+    </div>
+
+    <div class="px-8 py-10" style="background: radial-gradient(ellipse 500px 300px at 50% 30%, rgba(245,158,11,0.06) 0%, transparent 70%);">
+      <!-- Stars -->
+      <div class="text-3xl mb-6 tracking-widest text-center golden-glow">
+        <span class="beat-lit">&#9733;</span>
+        <span class="beat-lit">&#9733;</span>
+        <span class="beat-dim">&#9734;</span>
+      </div>
+
+      <!-- Verdict -->
+      <h2 class="text-5xl font-black mb-3 text-center" style="color:#d97757; letter-spacing:0.02em;">SOLID SHOW.</h2>
+      <p class="text-base text-txt-secondary mb-10 text-center" style="max-width:340px; margin:0 auto; line-height:1.6;">
+        Not every sketch lands. The show was still great.
+      </p>
+
+      <!-- Stats row -->
+      <div class="flex justify-center gap-8 mb-10">
+        <div class="text-center">
+          <p class="font-mono text-3xl font-bold text-txt-primary">5</p>
+          <p class="text-xs text-txt-muted mt-1">Acts Completed</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-3xl font-bold text-txt-primary">0</p>
+          <p class="text-xs text-txt-muted mt-1">Acts Cut</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-3xl font-bold" style="color:#f59e0b;">2</p>
+          <p class="text-xs text-txt-muted mt-1">Beats Locked</p>
+        </div>
+        <div class="text-center">
+          <p class="font-mono text-3xl font-bold" style="color:#f59e0b;">+7m</p>
+          <p class="text-xs text-txt-muted mt-1">Final Drift</p>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- SCHEDULE STORY — THE NEW SECTION             -->
+      <!-- ============================================ -->
+      <div class="rounded-lg p-5 mb-6 story-fade-in" style="background:#151517; border:1px solid #242428;">
+        <div class="flex items-center justify-between mb-4">
+          <p class="section-label text-[10px]">Schedule Story</p>
+          <span class="drift-chip drift-chip-slight" style="font-size:9px; padding:2px 6px;">+7m final drift</span>
+        </div>
+
+        <!-- Timeline of drift events -->
+        <div class="space-y-4">
+          <!-- Event 1: Early start -->
+          <div class="story-event story-event-green story-fade-in" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#22c55e;">9:00 AM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Show started on time</span>
+            </div>
+            <p class="text-xs text-txt-muted">Right on the mark. The stage was set.</p>
+          </div>
+
+          <!-- Event 2: Act 1 ran over -->
+          <div class="story-event story-event-amber story-fade-in" style="animation-delay: 0.2s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#f59e0b;">9:50 AM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Act 1 ran 5 min over</span>
+              <span class="drift-delta drift-delta-over" style="font-size:8px;">+5m</span>
+            </div>
+            <p class="text-xs text-txt-muted">
+              Deep work on API Integration. You were in flow —
+              <span style="color:#8b5cf6;">the code was clicking</span>.
+            </p>
+          </div>
+
+          <!-- Event 3: Act 2 ran significantly over -->
+          <div class="story-event story-event-amber story-fade-in" style="animation-delay: 0.3s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#f59e0b;">10:50 AM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Act 2 ran 10 min over</span>
+              <span class="drift-delta drift-delta-over" style="font-size:8px;">+10m</span>
+            </div>
+            <p class="text-xs text-txt-muted">
+              Creative momentum on design mockups.
+              <span style="color:#f59e0b;">Peak drift: +15 minutes</span> at this point.
+            </p>
+          </div>
+
+          <!-- Event 4: Intermission recovery -->
+          <div class="story-event story-event-green story-fade-in" style="animation-delay: 0.4s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#22c55e;">10:58 AM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Quick intermission</span>
+              <span class="drift-delta drift-delta-under" style="font-size:8px;">-2m</span>
+            </div>
+            <p class="text-xs text-txt-muted">
+              Short break, back fast. Recovered 2 minutes naturally.
+            </p>
+          </div>
+
+          <!-- Event 5: Act 3 on track -->
+          <div class="story-event story-event-green story-fade-in" style="animation-delay: 0.5s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#22c55e;">11:28 AM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Act 3 finished exactly on time</span>
+            </div>
+            <p class="text-xs text-txt-muted">
+              Afternoon run — 30 minutes, no drift change.
+              <span style="color:#22c55e;">Body work is its own clock.</span>
+            </p>
+          </div>
+
+          <!-- Event 6: Act 4 finished early -->
+          <div class="story-event story-event-blue story-fade-in" style="animation-delay: 0.6s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#60a5fa;">11:58 AM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Act 4 finished 3 min early</span>
+              <span class="drift-delta drift-delta-under" style="font-size:8px;">-3m</span>
+            </div>
+            <p class="text-xs text-txt-muted">
+              Email catchup was quick today.
+              <span style="color:#60a5fa;">Recovered 3 more minutes.</span>
+            </p>
+          </div>
+
+          <!-- Event 7: Act 5 ran on time -->
+          <div class="story-event story-event-green story-fade-in" style="animation-delay: 0.7s;">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-mono text-[10px]" style="color:#22c55e;">12:28 PM</span>
+              <span class="text-xs text-txt-muted">&middot;</span>
+              <span class="text-xs text-txt-secondary">Act 5 finished on time</span>
+            </div>
+            <p class="text-xs text-txt-muted">
+              Newsletter brainstorm wrapped right on the dot.
+            </p>
+          </div>
+        </div>
+
+        <!-- Summary line -->
+        <div class="mt-5 pt-4" style="border-top: 1px solid #242428;">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 mt-0.5">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2);">
+                <span class="font-mono text-xs font-bold" style="color:#f59e0b;">+7</span>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm text-txt-primary leading-relaxed">
+                You started on time. Acts 1 and 2 ran long — creative flow, not procrastination.
+                You naturally recovered 5 minutes through a shorter break and faster admin.
+                <span class="font-medium" style="color:#d97757;">Final drift: +7 minutes. The show barely noticed.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show Recap (existing, enhanced with drift) -->
+      <div class="rounded-lg p-4 text-left mb-8" style="background:#151517; border:1px solid #242428;">
+        <p class="section-label text-[10px] mb-3">Show Recap</p>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-full" style="background:#8b5cf6;"></div>
+              <span class="text-sm text-txt-primary">API Integration</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-txt-muted">45m &rarr; 50m</span>
+              <span class="drift-delta drift-delta-over" style="font-size:8px;">+5</span>
+              <span class="beat-lit text-sm">&#9733;</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-full" style="background:#f59e0b;"></div>
+              <span class="text-sm text-txt-primary">Design Mockups</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-txt-muted">30m &rarr; 40m</span>
+              <span class="drift-delta drift-delta-over" style="font-size:8px;">+10</span>
+              <span class="beat-lit text-sm">&#9733;</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-full" style="background:#22c55e;"></div>
+              <span class="text-sm text-txt-primary">Afternoon Run</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-txt-muted">30m &rarr; 30m</span>
+              <span class="font-mono text-[8px] text-txt-muted" style="padding: 1px 4px;">&mdash;</span>
+              <span class="text-sm text-txt-muted">&mdash;</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5" style="border-bottom:1px solid #1e1e22;">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-full" style="background:#60a5fa;"></div>
+              <span class="text-sm text-txt-primary">Email Catchup</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-txt-muted">20m &rarr; 17m</span>
+              <span class="drift-delta drift-delta-under" style="font-size:8px;">-3</span>
+              <span class="text-sm text-txt-muted">&mdash;</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5">
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-4 rounded-full" style="background:#f59e0b;"></div>
+              <span class="text-sm text-txt-primary">Newsletter Brainstorm</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-txt-muted">30m &rarr; 30m</span>
+              <span class="font-mono text-[8px] text-txt-muted" style="padding: 1px 4px;">&mdash;</span>
+              <span class="text-sm text-txt-muted">&mdash;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drift summary bar -->
+      <div class="rounded-lg p-4 mb-8" style="background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.15);">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-label text-[10px]">Drift Summary</span>
+          <span class="font-mono text-xs font-semibold" style="color:#f59e0b;">+7 min net</span>
+        </div>
+        <!-- Drift timeline visualization -->
+        <div class="relative h-8 rounded-full overflow-hidden" style="background:#242428;">
+          <!-- Zero line -->
+          <div class="absolute top-0 bottom-0 w-px" style="left:30%; background:rgba(255,255,255,0.1);"></div>
+          <!-- Drift path -->
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 32" preserveAspectRatio="none">
+            <!-- Grid lines at drift values -->
+            <line x1="120" y1="0" x2="120" y2="32" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+            <!-- The drift curve -->
+            <polyline
+              points="0,16 60,16 100,13 160,6 185,7 240,7 300,10 360,10 400,10"
+              fill="none"
+              stroke="#f59e0b"
+              stroke-width="2"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              opacity="0.7"
+            />
+            <!-- Drift fill -->
+            <polyline
+              points="0,16 60,16 100,13 160,6 185,7 240,7 300,10 360,10 400,10 400,16 0,16"
+              fill="url(#driftGradient)"
+              opacity="0.3"
+            />
+            <defs>
+              <linearGradient id="driftGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </linearGradient>
+            </defs>
+            <!-- Peak drift marker -->
+            <circle cx="160" cy="6" r="3" fill="#f59e0b" opacity="0.8"/>
+          </svg>
+          <!-- Labels -->
+          <div class="absolute bottom-0 left-0 right-0 flex justify-between px-2 pb-0.5">
+            <span class="font-mono text-[7px] text-txt-muted">9:00</span>
+            <span class="font-mono text-[7px]" style="color:#f59e0b;">+15m peak</span>
+            <span class="font-mono text-[7px]" style="color:#f59e0b;">+7m end</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <span class="font-mono text-[8px] text-txt-muted">ON TIME</span>
+          <span class="font-mono text-[8px] text-txt-muted">BEHIND &rarr;</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-center gap-3">
+        <button class="px-6 py-2.5 rounded-lg font-medium text-sm" style="background:rgba(217,119,87,0.15); color:#d97757; border:1px solid rgba(217,119,87,0.3);">
+          New Show
+        </button>
+        <button class="px-6 py-2.5 rounded-lg font-medium text-sm" style="background:#242428; color:#9a9890; border:1px solid #333;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- DESIGN PHILOSOPHY                                              -->
+<!-- ============================================================ -->
+<section class="max-w-3xl mx-auto px-6 mb-24">
+  <div class="mb-4 flex items-baseline gap-3">
+    <span class="section-label">Philosophy</span>
+    <h2 class="text-xl font-bold text-txt-primary">Why This Works for ADHD</h2>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div class="rounded-lg p-5" style="background:#151517; border:1px solid #242428;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">Ambient, not anxious</p>
+      <p class="text-xs text-txt-muted leading-relaxed">
+        Drift information is always there when you look — but it never screams.
+        The pill shows a tiny "+12m" in amber. The expanded view puts a chip next to the timer.
+        You absorb it without stress because it's presented as information, not judgment.
+      </p>
+    </div>
+
+    <div class="rounded-lg p-5" style="background:#151517; border:1px solid #242428;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">Story, not score</p>
+      <p class="text-xs text-txt-muted leading-relaxed">
+        The Schedule Story at Strike doesn't say "you ran 15 minutes late." It says
+        "Act 2 ran 10 minutes over — creative momentum." Drift is reframed as the
+        natural rhythm of a live show. Some sketches run long. That's television.
+      </p>
+    </div>
+
+    <div class="rounded-lg p-5" style="background:#151517; border:1px solid #242428;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">Recovery is celebrated</p>
+      <p class="text-xs text-txt-muted leading-relaxed">
+        When you finish an act early or take a shorter break, the green delta chips feel like
+        small wins. "You recovered 3 minutes during Act 4" is a dopamine hit. Natural
+        self-correction is visible and rewarding.
+      </p>
+    </div>
+
+    <div class="rounded-lg p-5" style="background:#151517; border:1px solid #242428;">
+      <p class="text-sm font-semibold text-txt-primary mb-2">No new views required</p>
+      <p class="text-xs text-txt-muted leading-relaxed">
+        Every enhancement is additive to existing views. The pill, expanded view, lineup,
+        and strike all keep their current structure. Drift is layered in, not bolted on.
+        Removing it later is trivial — it's purely decorative information.
+      </p>
+    </div>
+  </div>
+
+  <!-- Color semantics -->
+  <div class="mt-8 rounded-lg p-5" style="background:#151517; border:1px solid #242428;">
+    <p class="section-label text-[10px] mb-3">Drift Color Semantics</p>
+    <div class="space-y-3">
+      <div class="flex items-center gap-4">
+        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.4);"></div>
+        <div>
+          <span class="text-sm text-txt-primary font-medium">On time or ahead</span>
+          <span class="text-xs text-txt-muted ml-2">&le; 2 min behind, or any amount ahead</span>
+        </div>
+        <span class="ml-auto drift-chip drift-chip-on-time" style="font-size:10px;">on time</span>
+        <span class="drift-chip drift-chip-on-time" style="font-size:10px;">-5m</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.4);"></div>
+        <div>
+          <span class="text-sm text-txt-primary font-medium">Slightly behind</span>
+          <span class="text-xs text-txt-muted ml-2">3-10 minutes behind schedule</span>
+        </div>
+        <span class="ml-auto drift-chip drift-chip-slight" style="font-size:10px;">+8m</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:#ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.4);"></div>
+        <div>
+          <span class="text-sm text-txt-primary font-medium">Significantly behind</span>
+          <span class="text-xs text-txt-muted ml-2">&gt; 10 minutes behind — consider adjusting</span>
+        </div>
+        <span class="ml-auto drift-chip drift-chip-behind" style="font-size:10px;">+22m</span>
+      </div>
+    </div>
+    <p class="text-xs text-txt-muted mt-4">
+      Note: Red drift does not trigger Director Mode automatically. It's information, not an alarm.
+      The user can choose to engage Director Mode if they want to reshape the rest of the show.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- FOOTER                                                         -->
+<!-- ============================================================ -->
+<footer class="max-w-3xl mx-auto px-6 py-16 text-center">
+  <p class="section-label mb-2">Direction C</p>
+  <p class="text-sm text-txt-muted">
+    Drift Indicator &mdash; Minimal schedule drift awareness for Showtime.
+    <br>Enhances existing views. No new screens. Information without judgment.
+  </p>
+</footer>
+
+</body>
+</html>
