@@ -60,6 +60,28 @@ These are non-negotiable (CodeRabbit enforces them):
 
 See [CLAUDE.md](CLAUDE.md) for the full rule set.
 
+## Closing issues
+
+Every issue must be closed with a structured comment containing three required sections. A Claude Code pre-tool-use hook enforces this automatically — `gh issue close` will be blocked if the comment is missing any section.
+
+**Required format:**
+
+```
+Root cause: <why the issue existed>
+Fix: <what was changed to resolve it>
+Test evidence: <proof the fix works — test output, screenshots, or Playwright evidence>
+```
+
+**Example:**
+
+```bash
+gh issue close 42 --comment "Root cause: Tray menu was not subscribing to timer-tick IPC events.
+Fix: Added ipcMain.on('timer-tick') handler in tray.ts that rebuilds the context menu with updated time.
+Test evidence: npm test 521/521 pass. Playwright screenshot confirms tray shows '12:34 remaining'."
+```
+
+This prevents drive-by closures and ensures every fix is traceable. The hook lives at `~/.claude/hooks/validate-issue-close.sh` and is configured globally in Claude Code settings.
+
 ## Reporting bugs
 
 Open an issue with:
