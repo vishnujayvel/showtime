@@ -38,6 +38,7 @@
   --color-cat-admin: #60a5fa;
   --color-cat-creative: #f59e0b;
   --color-cat-social: #ec4899;
+  --color-cat-personal: #14b8a6;
 
   /* Typography */
   --font-mono: 'JetBrains Mono', monospace;
@@ -337,3 +338,4 @@ textarea:focus {
 .confetti-3 { background-color: #22c55e; }
 .confetti-4 { background-color: #60a5fa; }
 .confetti-5 { background-color: #ec4899; }
+.confetti-6 { background-color: #14b8a6; }

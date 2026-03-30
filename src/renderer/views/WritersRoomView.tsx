@@ -141,7 +141,7 @@ export function WritersRoomView() {
       ? `Here are today's calendar events (already fetched):
 ${JSON.stringify(calendarEvents, null, 2)}
 Incorporate these as acts in the lineup. Use event title as act name, event duration for planned duration.
-Categorize: meetings/1:1s → "Admin", focus blocks → "Deep Work", gym → "Exercise", creative → "Creative", social → "Social".
+Categorize: meetings/1:1s → "Admin", focus blocks → "Deep Work", gym → "Exercise", creative → "Creative", social → "Social", therapy/doctor/self-care → "Personal".
 Add "(from calendar)" to the sketch field for calendar-sourced acts.
 Fill remaining time with tasks from the user's text input.
 
@@ -173,7 +173,7 @@ Respond with a \`\`\`showtime-lineup JSON block in this exact format:
 }
 \`\`\`
 
-Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
+Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social", "Personal"
 Energy "${energy ?? 'medium'}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
 
 Context from conversation:
