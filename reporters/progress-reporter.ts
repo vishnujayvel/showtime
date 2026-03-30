@@ -13,6 +13,10 @@ const SLOW_THRESHOLD_MS = 5000
 const LOG_DIR = join(process.cwd(), 'test-results')
 const LOG_FILE = join(LOG_DIR, 'e2e-progress.log')
 
+function pctOverBudget(duration: number, budget: number): string {
+  return (((duration - budget) / budget) * 100).toFixed(0)
+}
+
 function ts(): string {
   return new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
@@ -30,10 +34,20 @@ export default class ProgressReporter implements Reporter {
   private startTime = 0
   private slowTests: { title: string; duration: number; project: string }[] = []
   private failedTests: { title: string; project: string; error: string }[] = []
+  private budgetViolations: { title: string; duration: number; budget: number; project: string }[] = []
+  private projectBudgets: Map<string, number> = new Map()
 
   onBegin(_config: FullConfig, suite: Suite): void {
     this.total = suite.allTests().length
     this.startTime = Date.now()
+
+    // Read per-project duration budgets from metadata
+    for (const p of _config.projects) {
+      const budget = (p.metadata as Record<string, unknown>)?.durationBudgetMs
+      if (typeof budget === 'number') {
+        this.projectBudgets.set(p.name, budget)
+      }
+    }
 
     mkdirSync(LOG_DIR, { recursive: true })
 
@@ -75,20 +89,29 @@ export default class ProgressReporter implements Reporter {
       this.slowTests.push({ title: test.title, duration: ms, project })
     }
 
+    const budget = this.projectBudgets.get(project)
+    if (budget && ms > budget) {
+      this.budgetViolations.push({ title: test.title, duration: ms, budget, project })
+    }
+
     if (isFailure) {
       const errorMsg = result.errors?.[0]?.message?.split('\n')[0] || 'unknown error'
       this.failedTests.push({ title: test.title, project, error: errorMsg })
     }
 
+    const overBudget = budget && ms > budget
+      ? ` OVER BUDGET (${(ms / 1000).toFixed(1)}s / ${(budget / 1000).toFixed(1)}s)`
+      : ''
+
     // Console output (colored)
     console.log(
       `  ${colorStatus} [${this.completed}/${this.total}] (${pct}%) ${elapsed}s ` +
-      `| ${project} > ${test.title} (${ms}ms)${slow}`
+      `| ${project} > ${test.title} (${ms}ms)${slow}${overBudget ? `\x1b[33m${overBudget}\x1b[0m` : ''}`
     )
 
     // File output (plain text, timestamped)
     const logLine = `${ts()}  ${statusIcon} [${this.completed}/${this.total}] (${pct}%) ` +
-      `${project} > ${test.title} (${ms}ms)${slow}`
+      `${project} > ${test.title} (${ms}ms)${slow}${overBudget}`
     logToFile(logLine)
 
     if (isFailure) {
@@ -104,6 +127,13 @@ export default class ProgressReporter implements Reporter {
     console.log(`\n  ${'='.repeat(60)}`)
     console.log(`  ${result.status.toUpperCase()} in ${duration}s`)
     console.log(`  ${this.passed} passed | ${this.failed} failed | ${this.skipped} skipped`)
+
+    if (this.budgetViolations.length > 0) {
+      console.log(`\n  \x1b[33mBudget violations:\x1b[0m`)
+      for (const t of this.budgetViolations.sort((a, b) => (b.duration / b.budget) - (a.duration / a.budget))) {
+        console.log(`    ${t.project} > ${t.title} — ${t.duration}ms (budget: ${t.budget}ms, +${pctOverBudget(t.duration, t.budget)}%)`)
+      }
+    }
 
     if (this.slowTests.length > 0) {
       console.log(`\n  Slow tests (>${SLOW_THRESHOLD_MS}ms):`)
@@ -126,6 +156,13 @@ export default class ProgressReporter implements Reporter {
       for (const t of this.failedTests) {
         summary.push(`  ✗ ${t.project} > ${t.title}`)
         summary.push(`    ${t.error}`)
+      }
+    }
+
+    if (this.budgetViolations.length > 0) {
+      summary.push('', 'BUDGET VIOLATIONS:')
+      for (const t of this.budgetViolations.sort((a, b) => (b.duration / b.budget) - (a.duration / a.budget))) {
+        summary.push(`  ⚠ ${t.project} > ${t.title} — ${t.duration}ms (budget: ${t.budget}ms, +${pctOverBudget(t.duration, t.budget)}%)`)
       }
     }
 
