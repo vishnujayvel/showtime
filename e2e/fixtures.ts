@@ -32,8 +32,7 @@ export const test = base.extend<{}, ElectronFixtures>({
     // Move test window to secondary display so it doesn't pop up on primary screen
     const bw = await app.browserWindow(page)
     await bw.evaluate((win) => win.setPosition(2000, 200))
-    await page.waitForSelector('div', { timeout: 15000 }).catch(() => {})
-    await page.waitForTimeout(3000)
+    await page.waitForSelector('#root > *', { timeout: 15000 }).catch(() => {})
 
     // Clear persisted show state so tests start from no_show phase
     await page.evaluate(() => {
@@ -225,7 +224,8 @@ export async function navigateAndWait(page: Page) {
 async function navigateAndWaitPage(page: Page) {
   const url = page.url()
   await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
-  await page.waitForTimeout(3000)
+  // Wait for React root to render content instead of a fixed 3s sleep
+  await page.waitForSelector('#root > *', { timeout: 3000 }).catch(() => {})
 }
 
 /** Set show state via localStorage manipulation and reload */
