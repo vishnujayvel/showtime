@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
-import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode, TrayShowState } from '../shared/types'
+import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode, TrayShowState, CachedCalendarEvent } from '../shared/types'
 import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry, MetricsSummary } from '../main/data/types'
 
 export interface CluiAPI {
@@ -62,6 +62,13 @@ export interface CluiAPI {
   getShowDetail(showId: string): Promise<ShowDetailEntry | null>
   recordMetricTiming(name: string, durationMs: number, metadata?: Record<string, string>): void
   getMetricsSummary(name: string, days?: number): Promise<MetricsSummary>
+
+  // ─── Calendar cache ───
+  getCalendarCache(dayStartMs: number, dayEndMs: number): Promise<CachedCalendarEvent[]>
+  setCalendarCache(events: CachedCalendarEvent[]): void
+
+  // ─── Subprocess pre-warm ───
+  prewarmSubprocess(): void
 
   // ─── Showtime tray state ───
   updateTrayState(state: TrayShowState): void
@@ -139,6 +146,13 @@ const api: CluiAPI = {
   notifyActComplete: (actName: string, sketch: string) => ipcRenderer.send(IPC.NOTIFY_ACT_COMPLETE, actName, sketch),
   notifyBeatCheck: (actName: string) => ipcRenderer.send(IPC.NOTIFY_BEAT_CHECK, actName),
   notifyVerdict: (verdict: string, message: string) => ipcRenderer.send(IPC.NOTIFY_VERDICT, verdict, message),
+
+  // ─── Calendar cache ───
+  getCalendarCache: (dayStartMs: number, dayEndMs: number) => ipcRenderer.invoke(IPC.CALENDAR_CACHE_GET, dayStartMs, dayEndMs),
+  setCalendarCache: (events: CachedCalendarEvent[]) => ipcRenderer.send(IPC.CALENDAR_CACHE_SET, events),
+
+  // ─── Subprocess pre-warm ───
+  prewarmSubprocess: () => ipcRenderer.send(IPC.PREWARM_SUBPROCESS),
 
   // ─── Showtime tray state ───
   updateTrayState: (state: TrayShowState) => ipcRenderer.send(IPC.TRAY_STATE_UPDATE, state),

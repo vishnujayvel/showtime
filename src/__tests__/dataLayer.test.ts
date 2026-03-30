@@ -333,6 +333,76 @@ describe('MetricsRepository', () => {
   })
 })
 
+describe('CalendarCacheRepository', () => {
+  it('upserts and retrieves events for a day', () => {
+    const dayStart = new Date('2026-03-30T00:00:00Z').getTime()
+    const dayEnd = new Date('2026-03-30T23:59:59Z').getTime()
+
+    data.calendarCache.upsertEvents([
+      {
+        id: 'evt-1',
+        title: 'Standup',
+        startTime: dayStart + 9 * 3600000,
+        endTime: dayStart + 9.5 * 3600000,
+        isFixed: true,
+        category: 'Admin',
+        lastSynced: Date.now(),
+      },
+      {
+        id: 'evt-2',
+        title: 'Deep Work',
+        startTime: dayStart + 10 * 3600000,
+        endTime: dayStart + 12 * 3600000,
+        isFixed: false,
+        category: 'Deep Work',
+        lastSynced: Date.now(),
+      },
+    ])
+
+    const events = data.calendarCache.getEventsForDay(dayStart, dayEnd)
+    expect(events).toHaveLength(2)
+    expect(events[0].title).toBe('Standup')
+    expect(events[0].isFixed).toBe(true)
+    expect(events[1].title).toBe('Deep Work')
+    expect(events[1].isFixed).toBe(false)
+  })
+
+  it('upsert updates existing events', () => {
+    const dayStart = new Date('2026-03-30T00:00:00Z').getTime()
+    const dayEnd = new Date('2026-03-30T23:59:59Z').getTime()
+
+    data.calendarCache.upsertEvents([
+      { id: 'evt-1', title: 'Meeting', startTime: dayStart + 9 * 3600000, endTime: dayStart + 10 * 3600000, isFixed: true, category: 'Admin', lastSynced: Date.now() },
+    ])
+
+    data.calendarCache.upsertEvents([
+      { id: 'evt-1', title: 'Updated Meeting', startTime: dayStart + 9 * 3600000, endTime: dayStart + 10 * 3600000, isFixed: true, category: 'Admin', lastSynced: Date.now() },
+    ])
+
+    const events = data.calendarCache.getEventsForDay(dayStart, dayEnd)
+    expect(events).toHaveLength(1)
+    expect(events[0].title).toBe('Updated Meeting')
+  })
+
+  it('clear removes all cached events', () => {
+    const dayStart = new Date('2026-03-30T00:00:00Z').getTime()
+    const dayEnd = new Date('2026-03-30T23:59:59Z').getTime()
+
+    data.calendarCache.upsertEvents([
+      { id: 'evt-1', title: 'Test', startTime: dayStart + 9 * 3600000, endTime: dayStart + 10 * 3600000, isFixed: true, category: null, lastSynced: Date.now() },
+    ])
+
+    data.calendarCache.clear()
+    expect(data.calendarCache.getEventsForDay(dayStart, dayEnd)).toHaveLength(0)
+  })
+
+  it('returns empty array for day with no events', () => {
+    const dayStart = new Date('2099-01-01T00:00:00Z').getTime()
+    const dayEnd = new Date('2099-01-01T23:59:59Z').getTime()
+    expect(data.calendarCache.getEventsForDay(dayStart, dayEnd)).toHaveLength(0)
+  })
+})
+
 describe('resetAllData', () => {
   it('truncates all data tables', () => {
     // Seed data in every table

@@ -1,11 +1,12 @@
 import { app, ipcMain, Notification, nativeTheme } from 'electron'
-import { getMainWindow, getSyncEngine, log, broadcast } from '../state'
+import { getMainWindow, getSyncEngine, log, broadcast, controlPlane } from '../state'
 import { applyViewMode, forceRepaint, isValidViewMode } from '../window'
 import { DataService } from '../data/DataService'
 import { IPC } from '../../shared/types'
 import { appLog } from '../app-logger'
 import type { LogLevel } from '../app-logger'
 import type { ShowStateSnapshot, TimelineEventInput, ClaudeContextPayload } from '../data/types'
+import type { CachedCalendarEvent } from '../../shared/types'
 
 export function registerShowtimeIpc(): void {
   // ─── Window management ───
@@ -206,6 +207,37 @@ export function registerShowtimeIpc(): void {
     } catch (err: unknown) {
       log(`METRICS_SUMMARY error: ${err instanceof Error ? err.message : String(err)}`)
       return { avg: 0, p95: 0, min: 0, max: 0, count: 0 }
+    }
+  })
+
+  // ─── Subprocess pre-warm ───
+
+  ipcMain.on(IPC.PREWARM_SUBPROCESS, () => {
+    try {
+      controlPlane.preWarmSubprocess()
+    } catch (err: unknown) {
+      log(`PREWARM_SUBPROCESS error: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  })
+
+  // ─── Calendar cache ───
+
+  ipcMain.handle(IPC.CALENDAR_CACHE_GET, (_event, dayStartMs: number, dayEndMs: number) => {
+    try {
+      const data = DataService.getInstance()
+      return data.calendarCache.getEventsForDay(dayStartMs, dayEndMs)
+    } catch (err: unknown) {
+      log(`CALENDAR_CACHE_GET error: ${err instanceof Error ? err.message : String(err)}`)
+      return []
+    }
+  })
+
+  ipcMain.on(IPC.CALENDAR_CACHE_SET, (_event, events: CachedCalendarEvent[]) => {
+    try {
+      const data = DataService.getInstance()
+      data.calendarCache.upsertEvents(events)
+    } catch (err: unknown) {
+      log(`CALENDAR_CACHE_SET error: ${err instanceof Error ? err.message : String(err)}`)
     }
   })
 
