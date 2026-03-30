@@ -19,6 +19,11 @@ const VCR_RECORD = !!process.env.SHOWTIME_RECORD
 const VCR_PLAYBACK = !!process.env.SHOWTIME_PLAYBACK
 const VCR_PLAYBACK_SPEED = Number(process.env.SHOWTIME_PLAYBACK_SPEED) || 1
 const CASSETTE_DIR = process.env.SHOWTIME_CASSETTE_DIR || join(process.cwd(), 'e2e', 'cassettes')
+// Comma-separated queue of cassette names for playback (without .ndjson extension).
+// Each startRun in playback mode dequeues the next name from this list.
+const VCR_CASSETTE_QUEUE: string[] | null = process.env.SHOWTIME_CASSETTE_NAME
+  ? process.env.SHOWTIME_CASSETTE_NAME.split(',').map(s => s.trim()).filter(Boolean)
+  : null
 
 // Appended to Claude's default system prompt so it knows it's running inside CLUI.
 // Uses --append-system-prompt (additive) not --system-prompt (replacement).
@@ -102,6 +107,8 @@ export class RunManager extends EventEmitter {
   /** Holds recently-finished runs so diagnostics survive past process exit */
   private _finishedRuns = new Map<string, RunHandle>()
   private claudeBinary: string
+  /** Index into VCR_CASSETTE_QUEUE for round-robin cassette selection */
+  private _cassetteQueueIdx = 0
 
   constructor() {
     super()
@@ -432,11 +439,21 @@ export class RunManager extends EventEmitter {
    * through the same EventEmitter pipeline as a real run.
    */
   private _playbackFromCassette(requestId: string, options: RunOptions): RunHandle {
-    const cassetteName = options.cassetteName || requestId
-    const cassettePath = join(CASSETTE_DIR, `${cassetteName}.ndjson`)
+    let cassetteName = options.cassetteName || requestId
+    let cassettePath = join(CASSETTE_DIR, `${cassetteName}.ndjson`)
 
+    // Auto-select from env var queue when the specific cassette doesn't exist
+    if (!existsSync(cassettePath) && VCR_CASSETTE_QUEUE && this._cassetteQueueIdx < VCR_CASSETTE_QUEUE.length) {
+      cassetteName = VCR_CASSETTE_QUEUE[this._cassetteQueueIdx]
+      this._cassetteQueueIdx++
+      cassettePath = join(CASSETTE_DIR, `${cassetteName}.ndjson`)
+      log(`VCR PLAYBACK: auto-selected cassette "${cassetteName}" from queue (idx=${this._cassetteQueueIdx - 1})`)
+    }
+
+    // Synthesize a minimal no-op response when no cassette is available
     if (!existsSync(cassettePath)) {
-      throw new Error(`VCR PLAYBACK: cassette not found at ${cassettePath}`)
+      log(`VCR PLAYBACK: no cassette found, synthesizing empty response for ${requestId}`)
+      return this._synthesizeEmptyPlayback(requestId, options)
     }
 
     log(`VCR PLAYBACK: reading cassette from ${cassettePath} (speed=${VCR_PLAYBACK_SPEED}x)`)
@@ -530,6 +547,64 @@ export class RunManager extends EventEmitter {
       this.emit('exit', requestId, -1, 'SIGINT', handle.sessionId)
       return true
     }
+
+    return handle
+  }
+
+  /**
+   * Synthesize a minimal playback that immediately completes with success.
+   * Used when no cassette file is available (e.g., warmup init requests).
+   */
+  private _synthesizeEmptyPlayback(requestId: string, options: RunOptions): RunHandle {
+    const mockProcess = new EventEmitter() as any as ChildProcess
+    ;(mockProcess as any).kill = () => true
+    ;(mockProcess as any).pid = -1
+    ;(mockProcess as any).exitCode = null
+    ;(mockProcess as any).stdin = { write: () => true, end: () => {}, destroyed: false }
+
+    const handle: RunHandle = {
+      runId: requestId,
+      sessionId: options.sessionId || null,
+      process: mockProcess,
+      pid: -1,
+      startedAt: Date.now(),
+      stderrTail: [],
+      stdoutTail: [],
+      toolCallCount: 0,
+      sawPermissionRequest: false,
+      permissionDenials: [],
+    }
+
+    this.activeRuns.set(requestId, handle)
+
+    const sessionId = options.sessionId || `synth-${requestId.substring(0, 8)}`
+
+    // Emit init → result → exit in quick succession
+    setTimeout(() => {
+      this._processEvent(requestId, handle, {
+        type: 'system', subtype: 'init', cwd: '/tmp', session_id: sessionId,
+        tools: [], mcp_servers: [], model: 'claude-sonnet-4-6', permissionMode: 'default',
+        agents: [], skills: [], plugins: [], claude_code_version: '0.0.0',
+        fast_mode_state: 'off', uuid: `synth-init-${requestId.substring(0, 8)}`,
+      } as any)
+    }, 5)
+
+    setTimeout(() => {
+      this._processEvent(requestId, handle, {
+        type: 'result', subtype: 'success', is_error: false, duration_ms: 10,
+        num_turns: 1, result: '', total_cost_usd: 0, session_id: sessionId,
+        usage: { input_tokens: 0, output_tokens: 0 }, permission_denials: [],
+        uuid: `synth-result-${requestId.substring(0, 8)}`,
+      } as any)
+    }, 10)
+
+    setTimeout(() => {
+      ;(mockProcess as any).exitCode = 0
+      this._finishedRuns.set(requestId, handle)
+      this.activeRuns.delete(requestId)
+      this.emit('exit', requestId, 0, null, sessionId)
+      setTimeout(() => this._finishedRuns.delete(requestId), 5000)
+    }, 15)
 
     return handle
   }

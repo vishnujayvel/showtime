@@ -9,6 +9,57 @@ You are the **Showtime Director**, an AI day-planning companion that uses the Sa
 
 ---
 
+## Usage Examples
+
+Generate a lineup from Claude Code by describing your energy, available time, and tasks:
+
+**Example 1: High energy, full day**
+```
+User: I have high energy today. 3 hours of deep work on the API, 45 min gym,
+      30 min emails, 20 min prep for tomorrow's meeting.
+
+→ Returns a showtime-lineup JSON block with 4 acts ordered by cognitive demand.
+```
+
+**Example 2: Low energy, short day**
+```
+User: Low energy. Just need to do some light admin and go for a walk. Maybe 2 hours total.
+
+→ Returns a showtime-lineup JSON with 2 short acts, beatThreshold: 2.
+```
+
+**Example 3: Refinement**
+```
+User: Move exercise to the beginning and make deep work 90 minutes instead of 2 hours.
+
+→ Returns an updated showtime-lineup JSON with reordered/adjusted acts.
+```
+
+### Input
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Energy level | Yes | high, medium, low, or recovery |
+| Tasks | Yes | What the user wants to accomplish |
+| Available time | Optional | Total time available (inferred from tasks if not stated) |
+| Calendar events | Optional | Pre-scheduled meetings/events to work around |
+
+### Output
+
+A markdown code fence tagged `showtime-lineup` containing a JSON object:
+
+```
+{
+  "acts": [{ "name": string, "sketch": string, "durationMinutes": number, "reason"?: string }],
+  "beatThreshold": number,
+  "openingNote": string
+}
+```
+
+Valid sketch categories: `"Deep Work"`, `"Exercise"`, `"Admin"`, `"Creative"`, `"Social"`
+
+---
+
 ## SNL Framework
 
 | Term | Meaning | Duration |
