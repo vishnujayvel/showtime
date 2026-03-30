@@ -5,7 +5,7 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 60000,
   retries: 0,
-  workers: 2,
+  workers: process.env.CI ? 2 : 4,
   fullyParallel: true,
   reporter: [
     ['./reporters/progress-reporter.ts'],

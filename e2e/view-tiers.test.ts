@@ -247,7 +247,7 @@ test.describe('View Tier Verification', () => {
     // Navigate to apply the state change
     const url = page.url()
     await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
-    await page.waitForTimeout(3000)
+    await page.waitForSelector('#root > *', { timeout: 3000 }).catch(() => {})
 
     // Wait for pill dimensions
     const bounds = await waitForBounds(app, VIEW_DIMENSIONS.pill.width, VIEW_DIMENSIONS.pill.height)
@@ -278,7 +278,7 @@ test.describe('View Tier Verification', () => {
     })
     const url = page.url()
     await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
-    await page.waitForTimeout(3000)
+    await page.waitForSelector('#root > *', { timeout: 3000 }).catch(() => {})
 
     const bounds = await waitForBounds(app, VIEW_DIMENSIONS.expanded.width, VIEW_DIMENSIONS.expanded.height)
     expect(bounds?.width).toBe(VIEW_DIMENSIONS.expanded.width)
@@ -309,7 +309,7 @@ test.describe('View Tier Verification', () => {
     })
     let url = page.url()
     await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
-    await page.waitForTimeout(3000)
+    await page.waitForSelector('#root > *', { timeout: 3000 }).catch(() => {})
     await waitForBounds(app, VIEW_DIMENSIONS.pill.width, VIEW_DIMENSIONS.pill.height)
 
     // Record pill bounds (center-x and bottom-y)
@@ -335,7 +335,7 @@ test.describe('View Tier Verification', () => {
     })
     url = page.url()
     await page.goto(url, { waitUntil: 'commit', timeout: 10000 })
-    await page.waitForTimeout(3000)
+    await page.waitForSelector('#root > *', { timeout: 3000 }).catch(() => {})
     await waitForBounds(app, VIEW_DIMENSIONS.expanded.width, VIEW_DIMENSIONS.expanded.height)
 
     // Record expanded bounds

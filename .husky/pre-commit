@@ -6,5 +6,7 @@ npx tsc --noEmit 2>/dev/null && echo "✔ Type check passed" || {
   echo "⚠ Type check skipped (tsc not available or config missing)"
 }
 
-# Run tests
-npm test
+# Run only tests affected by changed files (fast feedback)
+# Rebuild better-sqlite3 for system Node (E2E tests compile it for Electron)
+npm rebuild better-sqlite3 --silent 2>/dev/null || true
+npx vitest run --changed
