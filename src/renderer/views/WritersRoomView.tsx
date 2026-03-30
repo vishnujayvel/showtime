@@ -155,7 +155,11 @@ Fill remaining time with tasks from the user's text input.
       .map((m) => m.content)
       .join('\n')
 
-    const prompt = `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy ?? 'medium'}" and wants to plan their day.
+    // If user hasn't told us what they want to do yet, ask first (don't generate a default lineup)
+    const hasUserContext = recentUserMessages.trim().length > 0
+
+    const prompt = hasUserContext
+      ? `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy ?? 'medium'}" and wants to plan their day.
 ${calendarInstruction}Based on the conversation so far, create a show lineup.
 
 Respond with a \`\`\`showtime-lineup JSON block in this exact format:
@@ -171,9 +175,13 @@ Respond with a \`\`\`showtime-lineup JSON block in this exact format:
 
 Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social"
 Energy "${energy ?? 'medium'}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
-${recentUserMessages ? `\nContext from conversation:\n${recentUserMessages}` : ''}`
 
-    sendMessage(prompt, undefined, '✨ Build my lineup')
+Context from conversation:
+${recentUserMessages}`
+      : `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy ?? 'medium'}" and wants to plan their day.
+${calendarInstruction}The user hasn't told you what they want to work on yet. Ask them what's on their plate today before creating a lineup. Be brief and encouraging — one or two sentences max. Do NOT generate a lineup yet.`
+
+    sendMessage(prompt, undefined, hasUserContext ? '✨ Build my lineup' : '✨ What should we work on?')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
