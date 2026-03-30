@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Writer's Room Loading States</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        studio: { bg: '#0d0d0f', surface: '#1a1a1e', hover: '#242428' },
+        accent: '#d97757',
+        onair: '#ef4444',
+        beat: '#f59e0b',
+        txt: { primary: '#e8e6e0', secondary: '#9a9890', muted: '#5a5855' },
+        cat: { deep: '#8b5cf6', exercise: '#22c55e', admin: '#60a5fa', creative: '#f59e0b', social: '#ec4899', personal: '#14b8a6' }
+      },
+      fontFamily: {
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0c; color: #e8e6e0; }
+
+  @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+  @keyframes typewriter { 0% { width: 0; } 100% { width: 100%; } }
+  @keyframes dotPulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+  @keyframes warmPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+  @keyframes slideUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+  @keyframes beatIgnite { 0% { color: #5a5855; } 50% { color: #fbbf24; text-shadow: 0 0 20px rgba(245,158,11,0.8); } 100% { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); } }
+  @keyframes skeletonPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
+
+  .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+  .shimmer-bg { background: linear-gradient(90deg, #1a1a1e 25%, #242428 50%, #1a1a1e 75%); background-size: 200% 100%; animation: shimmer 2s ease-in-out infinite; }
+  .skeleton-pulse { animation: skeletonPulse 2s ease-in-out infinite; }
+  .warm-pulse { animation: warmPulse 2s ease-in-out infinite; }
+  .slide-up { animation: slideUp 0.5s ease-out forwards; }
+
+  .dot-1 { animation: dotPulse 1.4s ease-in-out infinite; animation-delay: 0s; }
+  .dot-2 { animation: dotPulse 1.4s ease-in-out infinite; animation-delay: 0.2s; }
+  .dot-3 { animation: dotPulse 1.4s ease-in-out infinite; animation-delay: 0.4s; }
+
+  .macos-chrome { border-radius: 12px; overflow: hidden; }
+  .state-card { transition: all 0.3s ease; }
+  .state-card:hover { transform: translateY(-2px); }
+
+  .tab-active { border-bottom: 2px solid #d97757; color: #e8e6e0; }
+  .tab-inactive { border-bottom: 2px solid transparent; color: #5a5855; cursor: pointer; }
+  .tab-inactive:hover { color: #9a9890; }
+</style>
+</head>
+<body class="min-h-screen p-8">
+
+<!-- Header -->
+<div class="max-w-6xl mx-auto mb-8">
+  <h1 class="text-3xl font-bold mb-2">Writer's Room — Loading States</h1>
+  <p class="text-txt-secondary text-sm">State machine for the Writer's Room lifecycle. Click each tab to see the transition.</p>
+</div>
+
+<!-- State Machine Diagram -->
+<div class="max-w-6xl mx-auto mb-8 bg-studio-surface rounded-xl p-6 border border-white/[0.04]">
+  <h2 class="font-mono text-xs tracking-wider uppercase text-txt-muted mb-4">State Machine</h2>
+  <div class="flex items-center gap-2 flex-wrap text-xs font-mono">
+    <span class="px-3 py-1.5 rounded-lg bg-studio-bg text-txt-muted border border-white/[0.06]">DARK STUDIO</span>
+    <span class="text-txt-muted">→</span>
+    <span id="sm-1" class="px-3 py-1.5 rounded-lg bg-studio-bg text-txt-secondary border border-white/[0.06] cursor-pointer hover:border-accent/40" onclick="showState(1)">SKELETON</span>
+    <span class="text-txt-muted">→</span>
+    <span id="sm-2" class="px-3 py-1.5 rounded-lg bg-studio-bg text-txt-secondary border border-white/[0.06] cursor-pointer hover:border-accent/40" onclick="showState(2)">WRITERS WORKING</span>
+    <span class="text-txt-muted">→</span>
+    <span id="sm-3" class="px-3 py-1.5 rounded-lg bg-studio-bg text-txt-secondary border border-white/[0.06] cursor-pointer hover:border-accent/40" onclick="showState(3)">STREAMING</span>
+    <span class="text-txt-muted">→</span>
+    <span id="sm-4" class="px-3 py-1.5 rounded-lg bg-studio-bg text-txt-secondary border border-white/[0.06] cursor-pointer hover:border-accent/40" onclick="showState(4)">LINEUP READY</span>
+    <span class="text-txt-muted">→</span>
+    <span class="px-3 py-1.5 rounded-lg bg-studio-bg text-txt-muted border border-white/[0.06]">GOING LIVE</span>
+  </div>
+  <div class="mt-3 flex items-center gap-2 text-xs font-mono text-txt-muted">
+    <span class="text-accent">●</span> Click any state to preview
+    <span class="mx-2">|</span>
+    <span>Timing: skeleton &lt;50ms → writers 0-3s → streaming 3-8s → ready</span>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="max-w-6xl mx-auto mb-6 flex gap-6 border-b border-white/[0.06] pb-0">
+  <button id="tab-1" class="pb-3 text-sm font-medium tab-active" onclick="showState(1)">1. Skeleton Lineup</button>
+  <button id="tab-2" class="pb-3 text-sm font-medium tab-inactive" onclick="showState(2)">2. Writers Working</button>
+  <button id="tab-3" class="pb-3 text-sm font-medium tab-inactive" onclick="showState(3)">3. Claude Streaming</button>
+  <button id="tab-4" class="pb-3 text-sm font-medium tab-inactive" onclick="showState(4)">4. Lineup Ready</button>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STATE 1: SKELETON LINEUP                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="state-1" class="max-w-lg mx-auto">
+  <div class="macos-chrome bg-studio-bg shadow-2xl border border-white/[0.06]">
+    <!-- Title bar -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[10px] tracking-widest uppercase text-txt-muted">SHOWTIME</span>
+        <span class="text-txt-muted text-[10px]">MON, MAR 30</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm">☀️</span>
+        <span class="font-mono text-[10px] font-bold text-beat uppercase">MEDIUM</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="p-5">
+      <!-- Status message -->
+      <div class="text-center mb-5">
+        <p class="text-txt-secondary text-sm italic warm-pulse">Checking your calendar...</p>
+      </div>
+
+      <!-- Skeleton lineup card -->
+      <div class="bg-studio-surface rounded-xl border border-white/[0.04] p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-txt-muted text-xs">TODAY'S LINEUP</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-txt-muted/20 text-txt-muted skeleton-pulse">LOADING</span>
+          </div>
+        </div>
+
+        <!-- Skeleton act cards from cache -->
+        <div class="space-y-2.5">
+          <!-- Cached event 1 -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-white/[0.03] skeleton-pulse" style="animation-delay: 0s">
+            <span class="text-txt-muted text-xs font-mono w-4">1</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase shimmer-bg text-transparent border border-white/[0.06]">ADMIN</span>
+            <div class="flex-1">
+              <div class="h-3 w-40 shimmer-bg rounded"></div>
+            </div>
+            <span class="text-txt-muted text-xs font-mono">—</span>
+          </div>
+
+          <!-- Cached event 2 (fixed calendar) -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-white/[0.03] skeleton-pulse" style="animation-delay: 0.15s">
+            <span class="text-txt-muted text-xs font-mono w-4">2</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-personal/20 text-cat-personal border border-cat-personal/30">PERSONAL</span>
+            <div class="flex-1">
+              <span class="text-txt-secondary text-sm">Therapy with Eric</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 12:00pm)</span>
+            </div>
+            <span class="text-txt-muted text-xs font-mono">60m</span>
+          </div>
+
+          <!-- Cached event 3 (fixed calendar) -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-white/[0.03] skeleton-pulse" style="animation-delay: 0.3s">
+            <span class="text-txt-muted text-xs font-mono w-4">3</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <div class="flex-1">
+              <span class="text-txt-secondary text-sm">Google 1st Interview</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 2:00pm)</span>
+            </div>
+            <span class="text-txt-muted text-xs font-mono">60m</span>
+          </div>
+
+          <!-- Gap placeholder -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg border border-dashed border-white/[0.06]">
+            <span class="text-txt-muted text-xs font-mono w-4">+</span>
+            <div class="flex-1">
+              <span class="text-txt-muted text-xs italic">Claude will fill gaps between your events...</span>
+            </div>
+          </div>
+
+          <!-- Cached event 4 -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-white/[0.03] skeleton-pulse" style="animation-delay: 0.45s">
+            <span class="text-txt-muted text-xs font-mono w-4">4</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-social/20 text-cat-social border border-cat-social/30">SOCIAL</span>
+            <div class="flex-1">
+              <span class="text-txt-secondary text-sm">Bezos Academy CTO call</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 4:30pm)</span>
+            </div>
+            <span class="text-txt-muted text-xs font-mono">30m</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-txt-muted text-[10px] mt-3 font-mono">Cached events from last sync • updating now...</p>
+    </div>
+  </div>
+
+  <div class="mt-4 p-4 bg-studio-surface rounded-lg border border-white/[0.04]">
+    <p class="text-xs text-txt-secondary"><span class="text-accent font-bold">State 1 — Skeleton</span> • Renders in &lt;50ms from SQLite cache. Fixed calendar events shown with category colors. Gaps marked with dashed placeholder. Shimmer animation indicates loading. User sees their real schedule instantly.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STATE 2: WRITERS WORKING                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="state-2" class="max-w-lg mx-auto hidden">
+  <div class="macos-chrome bg-studio-bg shadow-2xl border border-white/[0.06]">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[10px] tracking-widest uppercase text-txt-muted">SHOWTIME</span>
+        <span class="text-txt-muted text-[10px]">MON, MAR 30</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm">☀️</span>
+        <span class="font-mono text-[10px] font-bold text-beat uppercase">MEDIUM</span>
+      </div>
+    </div>
+
+    <div class="p-5">
+      <!-- Progressive loading messages -->
+      <div class="text-center mb-6 space-y-4">
+        <div class="fade-in-up" style="animation-delay: 0s">
+          <p class="text-txt-muted text-xs line-through">Checking your calendar...</p>
+        </div>
+        <div class="fade-in-up" style="animation-delay: 0.8s">
+          <p class="text-txt-secondary text-sm italic warm-pulse">The writers are reading your schedule...</p>
+        </div>
+
+        <!-- Animated dots -->
+        <div class="flex justify-center gap-1.5 mt-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent dot-1"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent dot-2"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-accent dot-3"></span>
+        </div>
+      </div>
+
+      <!-- Skeleton lineup with events becoming colored -->
+      <div class="bg-studio-surface rounded-xl border border-white/[0.04] p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-txt-muted text-xs">TODAY'S LINEUP</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-accent/20 text-accent">WRITING</span>
+          </div>
+          <span class="text-txt-muted text-xs">4 events found</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- Event resolving with color -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-admin/20 fade-in-up" style="animation-delay: 0.3s">
+            <span class="text-txt-muted text-xs font-mono w-4">1</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-admin/20 text-cat-admin border border-cat-admin/30">ADMIN</span>
+            <span class="text-txt-primary text-sm flex-1">Morning brain warm-up</span>
+            <span class="text-txt-muted text-xs font-mono shimmer-bg text-transparent rounded w-8">20m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-personal/20">
+            <span class="text-txt-muted text-xs font-mono w-4">2</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-personal/20 text-cat-personal border border-cat-personal/30">PERSONAL</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Therapy with Eric</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 12:00pm)</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">60m</span>
+          </div>
+
+          <!-- Gap being filled -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg border border-dashed border-accent/30 shimmer-bg">
+            <span class="text-accent text-xs font-mono w-4">+</span>
+            <span class="text-accent text-xs italic">Finding the right act for this slot...</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-deep/20">
+            <span class="text-txt-muted text-xs font-mono w-4">3</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Google 1st Interview</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 2:00pm)</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">60m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-social/20">
+            <span class="text-txt-muted text-xs font-mono w-4">4</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-social/20 text-cat-social border border-cat-social/30">SOCIAL</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Bezos Academy CTO call</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 4:30pm)</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">30m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 p-4 bg-studio-surface rounded-lg border border-white/[0.04]">
+    <p class="text-xs text-txt-secondary"><span class="text-accent font-bold">State 2 — Writers Working</span> • Claude subprocess has booted. Fixed events already colored. Generated acts appearing one by one. Gap slots shimmer while Claude decides what to put there. Progressive messages stack with previous ones crossed out.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STATE 3: CLAUDE STREAMING                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="state-3" class="max-w-lg mx-auto hidden">
+  <div class="macos-chrome bg-studio-bg shadow-2xl border border-white/[0.06]">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[10px] tracking-widest uppercase text-txt-muted">SHOWTIME</span>
+        <span class="text-txt-muted text-[10px]">MON, MAR 30</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm">☀️</span>
+        <span class="font-mono text-[10px] font-bold text-beat uppercase">MEDIUM</span>
+      </div>
+    </div>
+
+    <div class="p-5">
+      <div class="text-center mb-4">
+        <p class="text-txt-secondary text-sm italic fade-in-up">Drafting tonight's lineup...</p>
+      </div>
+
+      <!-- Opening note streaming in -->
+      <div class="mb-4 px-4 py-3 bg-studio-surface/50 rounded-lg border-l-2 border-accent fade-in-up">
+        <p class="text-txt-secondary text-sm italic">Medium energy = steady wins. Two solid focus blocks, a movement break to reset, and space for something creative. You don't have to do everything — just keep the rhythm.</p>
+      </div>
+
+      <!-- Full lineup building -->
+      <div class="bg-studio-surface rounded-xl border border-white/[0.04] p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-txt-muted text-xs">TODAY'S LINEUP</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-beat/20 text-beat">DRAFT</span>
+          </div>
+          <span class="text-txt-muted text-xs">4h 40m · 7 acts</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-deep/20 slide-up" style="animation-delay: 0s">
+            <span class="text-txt-secondary text-xs font-mono w-4">1</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <span class="text-txt-primary text-sm flex-1">Final Google prep sprint — AI depth,...</span>
+            <span class="text-txt-secondary text-xs font-mono">45m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-creative/20 slide-up" style="animation-delay: 0.15s">
+            <span class="text-txt-secondary text-xs font-mono w-4">2</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-creative/20 text-cat-creative border border-cat-creative/30">CREATIVE</span>
+            <span class="text-txt-primary text-sm flex-1">Mindset reset — visualize the room, ...</span>
+            <span class="text-txt-secondary text-xs font-mono">20m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-personal/20 slide-up" style="animation-delay: 0.3s">
+            <span class="text-txt-secondary text-xs font-mono w-4">3</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-personal/20 text-cat-personal border border-cat-personal/30">PERSONAL</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Therapy with Eric</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 12:00pm)</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">60m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-deep/20 slide-up" style="animation-delay: 0.45s">
+            <span class="text-txt-secondary text-xs font-mono w-4">4</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Google 1st Interview — Staff SWE (F...</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">60m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-admin/20 slide-up" style="animation-delay: 0.6s">
+            <span class="text-txt-secondary text-xs font-mono w-4">5</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-admin/20 text-cat-admin border border-cat-admin/30">ADMIN</span>
+            <span class="text-txt-primary text-sm flex-1">Debrief — capture signal while it's fresh</span>
+            <span class="text-txt-secondary text-xs font-mono">20m</span>
+          </div>
+
+          <!-- Still streaming -->
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg border border-dashed border-white/[0.06] slide-up" style="animation-delay: 0.75s">
+            <span class="text-txt-muted text-xs font-mono w-4">6</span>
+            <div class="flex-1 flex items-center gap-2">
+              <div class="h-3 w-32 shimmer-bg rounded"></div>
+              <span class="text-txt-muted text-[10px]">building...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 p-4 bg-studio-surface rounded-lg border border-white/[0.04]">
+    <p class="text-xs text-txt-secondary"><span class="text-accent font-bold">State 3 — Streaming</span> • Claude is actively generating. Acts appear one by one with staggered slide-up animations. Fixed calendar events are already in place. Opening note visible. Last act slot still shimmer-loading. DRAFT badge indicates lineup is not final yet.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STATE 4: LINEUP READY                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="state-4" class="max-w-lg mx-auto hidden">
+  <div class="macos-chrome bg-studio-bg shadow-2xl border border-white/[0.06]">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[10px] tracking-widest uppercase text-txt-muted">SHOWTIME</span>
+        <span class="text-txt-muted text-[10px]">MON, MAR 30</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm">☀️</span>
+        <span class="font-mono text-[10px] font-bold text-beat uppercase">MEDIUM</span>
+      </div>
+    </div>
+
+    <div class="p-5">
+      <!-- Opening note -->
+      <div class="mb-4 px-4 py-3 bg-studio-surface/50 rounded-lg border-l-2 border-accent">
+        <p class="text-txt-secondary text-sm italic">Medium energy = steady wins. Two solid focus blocks, a movement break to reset, and space for something creative. You don't have to do everything — just keep the rhythm.</p>
+      </div>
+
+      <!-- Final lineup -->
+      <div class="bg-studio-surface rounded-xl border border-white/[0.04] p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-txt-muted text-xs">TODAY'S LINEUP</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-green-500/20 text-green-400">READY</span>
+          </div>
+          <span class="text-txt-secondary text-xs">4h 40m · 7 acts</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-deep/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">1</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <span class="text-txt-primary text-sm flex-1">Final Google prep sprint — AI depth,...</span>
+            <span class="text-txt-secondary text-xs font-mono">45m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-creative/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">2</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-creative/20 text-cat-creative border border-cat-creative/30">CREATIVE</span>
+            <span class="text-txt-primary text-sm flex-1">Mindset reset — visualize the room, ...</span>
+            <span class="text-txt-secondary text-xs font-mono">20m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-personal/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">3</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-personal/20 text-cat-personal border border-cat-personal/30">PERSONAL</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Therapy with Eric</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 12:00pm)</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">60m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-deep/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">4</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Google 1st Interview — Staff SWE (F...</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">60m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-admin/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">5</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-admin/20 text-cat-admin border border-cat-admin/30">ADMIN</span>
+            <span class="text-txt-primary text-sm flex-1">Debrief — capture signal while it's fresh</span>
+            <span class="text-txt-secondary text-xs font-mono">20m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-social/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">6</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-social/20 text-cat-social border border-cat-social/30">SOCIAL</span>
+            <div class="flex-1">
+              <span class="text-txt-primary text-sm">Bezos Academy CTO call w/ Pawan</span>
+              <span class="text-txt-muted text-[10px] ml-1">(FIXED @ 4:30pm)</span>
+            </div>
+            <span class="text-txt-secondary text-xs font-mono">30m</span>
+          </div>
+
+          <div class="flex items-center gap-3 py-2 px-3 rounded-lg bg-studio-bg/50 border border-cat-deep/20 hover:bg-studio-hover cursor-pointer transition-colors">
+            <span class="text-txt-secondary text-xs font-mono w-4">7</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-cat-deep/20 text-cat-deep border border-cat-deep/30">DEEP WORK</span>
+            <span class="text-txt-primary text-sm flex-1">Mock Interview — Google AI Techni...</span>
+            <span class="text-txt-secondary text-xs font-mono">45m</span>
+          </div>
+
+          <!-- Add act -->
+          <button class="w-full py-2 rounded-lg border border-dashed border-white/[0.08] text-txt-muted text-xs hover:border-accent/40 hover:text-accent transition-colors">
+            + Add an Act
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat input -->
+      <div class="mt-4 flex items-center gap-2 bg-studio-surface rounded-xl border border-white/[0.06] px-4 py-3">
+        <input type="text" placeholder="Adjust the lineup..." class="flex-1 bg-transparent text-sm text-txt-primary placeholder:text-txt-muted outline-none">
+        <button class="text-accent text-sm font-medium">Send</button>
+      </div>
+
+      <!-- Go Live button -->
+      <button class="w-full mt-3 py-3 rounded-xl bg-accent text-white font-bold text-sm hover:bg-accent/90 transition-colors">
+        Finalize Lineup
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-4 p-4 bg-studio-surface rounded-lg border border-white/[0.04]">
+    <p class="text-xs text-txt-secondary"><span class="text-accent font-bold">State 4 — Ready</span> • Full lineup with all acts. READY badge (green). Acts are hoverable/clickable for editing. "+ Add an Act" button at bottom. Chat input for refinement. "Finalize Lineup" CTA replaces "Build My Lineup". Calendar events marked (FIXED). Everything editable.</p>
+  </div>
+</div>
+
+<script>
+function showState(n) {
+  // Hide all states
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('state-' + i).classList.add('hidden');
+    document.getElementById('tab-' + i).classList.remove('tab-active');
+    document.getElementById('tab-' + i).classList.add('tab-inactive');
+    const sm = document.getElementById('sm-' + i);
+    if (sm) { sm.classList.remove('border-accent', 'text-accent'); sm.classList.add('border-white/[0.06]', 'text-txt-secondary'); }
+  }
+  // Show selected
+  document.getElementById('state-' + n).classList.remove('hidden');
+  document.getElementById('tab-' + n).classList.add('tab-active');
+  document.getElementById('tab-' + n).classList.remove('tab-inactive');
+  const sm = document.getElementById('sm-' + n);
+  if (sm) { sm.classList.add('border-accent', 'text-accent'); sm.classList.remove('border-white/[0.06]', 'text-txt-secondary'); }
+}
+// Init
+showState(1);
+</script>
+
+</body>
+</html>
