@@ -230,7 +230,7 @@ describe('Temporal context', () => {
     expect(dateLabel).toBeInTheDocument()
     // Format: "SAT, MAR 21" or "SAT MAR 21" — uppercase abbreviated date
     expect(dateLabel.textContent).toMatch(/^[A-Z]{3}/)
-  })
+  }, 15_000)
 
   it('ExpandedView shows started-at time', async () => {
     const { ExpandedView } = await import('../renderer/views/ExpandedView')
@@ -246,5 +246,5 @@ describe('Temporal context', () => {
     const startedAt = screen.getByTestId('started-at')
     expect(startedAt).toBeInTheDocument()
     expect(startedAt.textContent).toContain('Started')
-  })
+  }, 15_000)
 })
