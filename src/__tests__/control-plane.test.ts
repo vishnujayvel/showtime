@@ -73,9 +73,13 @@ vi.mock('../main/hooks/permission-server', () => ({
   maskSensitiveFields: (input: unknown) => input,
 }))
 
-// ─── Mock logger ───
+// ─── Mock logger + electron (Electron binary unavailable in Vitest) ───
 
 vi.mock('../main/logger', () => ({ log: () => {} }))
+
+vi.mock('electron', () => ({
+  app: { getPath: () => '/tmp/showtime-test', getVersion: () => '0.0.0-test' },
+}))
 
 // ─── Import after mocks ───
 

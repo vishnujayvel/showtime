@@ -17,6 +17,10 @@ vi.mock('../main/cli-env', () => ({
   getCliEnv: () => ({ ...process.env }),
 }))
 
+vi.mock('electron', () => ({
+  app: { getPath: () => '/tmp/showtime-test', getVersion: () => '0.0.0-test' },
+}))
+
 import { spawn } from 'child_process'
 import { RunManager } from '../main/claude/run-manager'
 import type { RunOptions, NormalizedEvent, ClaudeEvent } from '../shared/types'

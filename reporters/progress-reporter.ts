@@ -13,6 +13,10 @@ const SLOW_THRESHOLD_MS = 5000
 const LOG_DIR = join(process.cwd(), 'test-results')
 const LOG_FILE = join(LOG_DIR, 'e2e-progress.log')
 
+function pctOverBudget(duration: number, budget: number): string {
+  return (((duration - budget) / budget) * 100).toFixed(0)
+}
+
 function ts(): string {
   return new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
@@ -127,8 +131,7 @@ export default class ProgressReporter implements Reporter {
     if (this.budgetViolations.length > 0) {
       console.log(`\n  \x1b[33mBudget violations:\x1b[0m`)
       for (const t of this.budgetViolations.sort((a, b) => (b.duration / b.budget) - (a.duration / a.budget))) {
-        const pctOver = (((t.duration - t.budget) / t.budget) * 100).toFixed(0)
-        console.log(`    ${t.project} > ${t.title} — ${t.duration}ms (budget: ${t.budget}ms, +${pctOver}%)`)
+        console.log(`    ${t.project} > ${t.title} — ${t.duration}ms (budget: ${t.budget}ms, +${pctOverBudget(t.duration, t.budget)}%)`)
       }
     }
 
@@ -159,8 +162,7 @@ export default class ProgressReporter implements Reporter {
     if (this.budgetViolations.length > 0) {
       summary.push('', 'BUDGET VIOLATIONS:')
       for (const t of this.budgetViolations.sort((a, b) => (b.duration / b.budget) - (a.duration / a.budget))) {
-        const pctOver = (((t.duration - t.budget) / t.budget) * 100).toFixed(0)
-        summary.push(`  ⚠ ${t.project} > ${t.title} — ${t.duration}ms (budget: ${t.budget}ms, +${pctOver}%)`)
+        summary.push(`  ⚠ ${t.project} > ${t.title} — ${t.duration}ms (budget: ${t.budget}ms, +${pctOverBudget(t.duration, t.budget)}%)`)
       }
     }
 
