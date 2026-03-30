@@ -1,42 +1,75 @@
 # App Tour
 
-Walk through every screen in Showtime. Each link opens an interactive view with the full UI, animations, and dark theme.
+Your day is a live show. Here's every phase you'll walk through.
 
-## The Main Flow
+---
 
-Your day follows this path through the app:
+## 1. Dark Studio
 
-| Screen | What Happens |
-|--------|-------------|
-| [The Show (all views)](/app-tour/direction-4-the-show.html) | **Start here** — see every screen in sequence: Dark Studio, Writer's Room, Going Live, ON AIR, Intermission, Strike |
-| [Chat-First Flow](/app-tour/v3-chat-first-flow.html) | The v3 experience: tell Claude what's on your mind, get a lineup back |
-| [Chat to Lineup](/app-tour/chat-to-lineup-flow.html) | How a conversation becomes a structured lineup |
+The empty stage. Your show hasn't been written yet. This is where every day begins — a clean slate, no backlog, no guilt.
 
-## During Your Show
+<img src="/app-tour/screens/01-dark-studio.png" alt="Dark Studio — the empty stage" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
 
-| Screen | What Happens |
-|--------|-------------|
-| [Rundown Bar](/app-tour/direction-a-rundown-bar.html) | Live schedule bar showing where you are vs where you planned to be |
-| [Schedule View](/app-tour/direction-b-schedule-view.html) | Full timeline with time blocks for each Act |
-| [Drift Indicator](/app-tour/direction-c-drift-indicator.html) | When your show drifts from the plan, this tells you how far |
+---
 
-## Settings and History
+## 2. Writer's Room
 
-| Screen | What Happens |
-|--------|-------------|
-| [History](/app-tour/history-view.html) | Browse past shows with stats, verdicts, and act recaps |
-| [Settings](/app-tour/settings-view.html) | Theme toggle, preferences, configuration |
-| [Tray Menu](/app-tour/tray-menu-bar.html) | macOS menu bar — current act and timer at a glance |
+You're the Head Writer. Check in with your energy, tell Claude what's on your mind, and shape it into tonight's lineup. The clock is ticking — 20 minutes max, because planning can become its own form of procrastination.
 
-## Planning Features
+<img src="/app-tour/screens/02-writers-room.png" alt="Writer's Room — plan your show" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
 
-| Screen | What Happens |
-|--------|-------------|
-| [Multi-Turn Dialog](/app-tour/multi-turn-dialog.html) | Refine your lineup through back-and-forth with Claude |
-| [Calendar Sync](/app-tour/calendar-sync.html) | Import calendar events as Acts |
+Chat with Claude to build your lineup:
 
-## Architecture
+<img src="/app-tour/screens/04-chat-input-filled.png" alt="Chat input — tell Claude your plan" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
 
-| Screen | What Happens |
-|--------|-------------|
-| [Data Layer (C4)](/app-tour/architecture-c4-data-layer.html) | How data flows through the app |
+---
+
+## 3. Going Live
+
+The transition moment. The lineup is locked. 3... 2... 1... You're on air.
+
+<img src="/app-tour/screens/08-going-live.png" alt="Going Live — the countdown" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
+
+---
+
+## 4. ON AIR
+
+This is the main event. Your Acts run on timers. The ON AIR light pulses red. Beat Checks appear to ask: *are you present right now?*
+
+<img src="/app-tour/screens/07-expanded-view.png" alt="ON AIR — expanded view with timer" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
+
+Beat Check — lock a moment of presence:
+
+<img src="/app-tour/screens/08-beat-check.png" alt="Beat Check modal" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
+
+---
+
+## 5. Intermission
+
+Rest costs zero. Always has been. Take a break between Acts.
+
+<img src="/app-tour/screens/09-intermission.png" alt="Intermission — we'll be right back" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
+
+---
+
+## 6. Strike the Stage
+
+The show is over. The verdict is delivered. The credits roll. Tomorrow the stage is empty again.
+
+<img src="/app-tour/screens/10-strike-day-won.png" alt="Strike — DAY WON verdict" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
+
+---
+
+## Settings
+
+Toggle themes, configure preferences.
+
+<img src="/app-tour/screens/settings-02-opened.png" alt="Settings view" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
+
+---
+
+## History
+
+Browse past shows. See what worked, what got cut, how your Beats landed.
+
+<img src="/app-tour/screens/history-show-entry.png" alt="History — past show entry" style="max-width: 400px; border-radius: 12px; margin: 16px 0;" />
