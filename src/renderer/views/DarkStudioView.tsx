@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useShowStore } from '../stores/showStore'
 import { Button } from '../ui/button'
@@ -30,6 +30,11 @@ interface DarkStudioViewProps {
 export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
   const triggerColdOpen = useShowStore((s) => s.triggerColdOpen)
   const greeting = useMemo(getTemporalGreeting, [])
+
+  // Pre-warm Claude subprocess for faster Writer's Room startup
+  useEffect(() => {
+    window.clui.prewarmSubprocess()
+  }, [])
 
   return (
     <div

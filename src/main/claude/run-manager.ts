@@ -109,11 +109,130 @@ export class RunManager extends EventEmitter {
   private claudeBinary: string
   /** Index into VCR_CASSETTE_QUEUE for round-robin cassette selection */
   private _cassetteQueueIdx = 0
+  /** Pre-warmed subprocess waiting to be claimed */
+  private _warmProcess: ChildProcess | null = null
+  /** Timer that kills the warm process after 30s of idleness */
+  private _warmTimeout: ReturnType<typeof setTimeout> | null = null
 
   constructor() {
     super()
     this.claudeBinary = this._findClaudeBinary()
     log(`Claude binary: ${this.claudeBinary}`)
+  }
+
+  /**
+   * Pre-warm a Claude subprocess so it's ready when Writer's Room needs it.
+   * The process is spawned with stream-json I/O and standard flags but no prompt.
+   * It will be killed after 30s if not claimed via getWarmProcess().
+   */
+  preWarm(options?: { projectPath?: string; hookSettingsPath?: string; allowedTools?: string[] }): void {
+    // Don't pre-warm during VCR playback
+    if (VCR_PLAYBACK) return
+
+    // Already have a warm process
+    if (this._warmProcess && this._warmProcess.exitCode === null) {
+      log('Pre-warm: already have a warm process, skipping')
+      return
+    }
+
+    const cwd = options?.projectPath === '~' ? homedir() : (options?.projectPath || process.cwd())
+
+    const args: string[] = [
+      '-p',
+      '--input-format', 'stream-json',
+      '--output-format', 'stream-json',
+      '--verbose',
+      '--include-partial-messages',
+      '--permission-mode', 'default',
+    ]
+
+    if (options?.hookSettingsPath) {
+      args.push('--settings', options.hookSettingsPath)
+      const safeAllowed = [...SAFE_TOOLS, ...(options.allowedTools || [])]
+      args.push('--allowedTools', safeAllowed.join(','))
+    } else {
+      const allAllowed = [...DEFAULT_ALLOWED_TOOLS, ...(options?.allowedTools || [])]
+      args.push('--allowedTools', allAllowed.join(','))
+    }
+
+    args.push('--append-system-prompt', CLUI_SYSTEM_HINT)
+
+    log(`Pre-warm: spawning warm subprocess in ${cwd}`)
+
+    try {
+      const child = spawn(this.claudeBinary, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd,
+        env: this._getEnv(),
+      })
+
+      this._warmProcess = child
+      log(`Pre-warm: spawned PID ${child.pid}`)
+
+      // Kill after 30s if unclaimed
+      this._warmTimeout = setTimeout(() => {
+        this._killWarmProcess('timeout')
+      }, 30_000)
+
+      // Clean up if the process exits on its own
+      child.on('close', () => {
+        if (this._warmProcess === child) {
+          log('Pre-warm: process exited on its own')
+          this._warmProcess = null
+          if (this._warmTimeout) {
+            clearTimeout(this._warmTimeout)
+            this._warmTimeout = null
+          }
+        }
+      })
+
+      child.on('error', (err) => {
+        log(`Pre-warm: process error: ${err.message}`)
+        if (this._warmProcess === child) {
+          this._warmProcess = null
+          if (this._warmTimeout) {
+            clearTimeout(this._warmTimeout)
+            this._warmTimeout = null
+          }
+        }
+      })
+    } catch (err) {
+      log(`Pre-warm: failed to spawn: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  /**
+   * Claim the pre-warmed process. Returns the ChildProcess if one is ready,
+   * or null if no warm process is available.
+   */
+  getWarmProcess(): ChildProcess | null {
+    const proc = this._warmProcess
+    if (!proc || proc.exitCode !== null) {
+      this._warmProcess = null
+      return null
+    }
+
+    // Claim it
+    this._warmProcess = null
+    if (this._warmTimeout) {
+      clearTimeout(this._warmTimeout)
+      this._warmTimeout = null
+    }
+
+    log(`Pre-warm: claimed warm process PID ${proc.pid}`)
+    return proc
+  }
+
+  private _killWarmProcess(reason: string): void {
+    if (this._warmProcess && this._warmProcess.exitCode === null) {
+      log(`Pre-warm: killing warm process (${reason})`)
+      this._warmProcess.kill('SIGTERM')
+    }
+    this._warmProcess = null
+    if (this._warmTimeout) {
+      clearTimeout(this._warmTimeout)
+      this._warmTimeout = null
+    }
   }
 
   private _findClaudeBinary(): string {
@@ -219,13 +338,20 @@ export class RunManager extends EventEmitter {
       log(`Starting run ${requestId}`)
     }
 
-    const child = spawn(this.claudeBinary, args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      cwd,
-      env: this._getEnv(),
-    })
-
-    log(`Spawned PID: ${child.pid}`)
+    // Try to claim a pre-warmed process (only for fresh runs, not resumes)
+    let child: ChildProcess
+    const warmChild = !options.sessionId ? this.getWarmProcess() : null
+    if (warmChild) {
+      child = warmChild
+      log(`Reusing pre-warmed process PID: ${child.pid}`)
+    } else {
+      child = spawn(this.claudeBinary, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd,
+        env: this._getEnv(),
+      })
+      log(`Spawned PID: ${child.pid}`)
+    }
 
     const handle: RunHandle = {
       runId: requestId,

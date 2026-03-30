@@ -60,6 +60,16 @@ export const metrics = sqliteTable('metrics', {
   createdAt: integer('created_at').notNull(),
 })
 
+export const calendarCache = sqliteTable('calendar_cache', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  startTime: integer('start_time').notNull(),
+  endTime: integer('end_time').notNull(),
+  isFixed: integer('is_fixed').notNull().default(1),
+  category: text('category'),
+  lastSynced: integer('last_synced').notNull(),
+})
+
 export const migrations = sqliteTable('_migrations', {
   version: integer('version').primaryKey(),
   name: text('name').notNull(),

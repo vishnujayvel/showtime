@@ -44,11 +44,9 @@ export function CompactView() {
       {/* Header Row (32px) — drag region */}
       <div className="flex items-center gap-2 px-3 py-2 drag-region">
         <TallyLight isLive={phase === 'live'} size="sm" />
-        {phase === 'live' && (
-          <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-onair uppercase">
-            TALLY
-          </span>
-        )}
+        <span className="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">
+          SHOWTIME
+        </span>
         <div
           className="flex items-center gap-2 flex-1 cursor-pointer no-drag min-w-0"
           onClick={expandViewTier}
