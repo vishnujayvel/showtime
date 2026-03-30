@@ -287,6 +287,39 @@ describe('useClaudeEvents', () => {
     expect(rafCallbacks.length).toBe(0)
   })
 
+  it('flushChunks is a no-op when buffer is already empty', async () => {
+    const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
+    renderHook(() => useClaudeEvents())
+
+    // Buffer a text chunk, then trigger task_complete which flushes synchronously
+    capturedOnEvent!('tab-1', { type: 'text_chunk', text: 'sync-flushed' } as NormalizedEvent)
+
+    const taskCompleteEvent: NormalizedEvent = {
+      type: 'task_complete',
+      result: 'done',
+      costUsd: 0,
+      durationMs: 100,
+      numTurns: 1,
+      usage: {},
+      sessionId: 'sess-1',
+    }
+
+    act(() => {
+      capturedOnEvent!('tab-1', taskCompleteEvent)
+    })
+
+    // Buffer was synchronously flushed by task_complete. Now fire the RAF that
+    // was originally scheduled — flushChunks should see an empty buffer and
+    // return early (line 25).
+    mockHandleNormalizedEvent.mockClear()
+    act(() => {
+      flushRAF()
+    })
+
+    // No additional calls — the early return was hit
+    expect(mockHandleNormalizedEvent).not.toHaveBeenCalled()
+  })
+
   it('handles text chunks for multiple tabs independently', async () => {
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())

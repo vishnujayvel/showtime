@@ -1,6 +1,10 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { join } from 'path'
+
+vi.mock('electron', () => ({
+  app: { getPath: () => '/tmp/showtime-test', getVersion: () => '0.0.0-test' },
+}))
 import { mkdtempSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { DataService } from '../main/data/DataService'
