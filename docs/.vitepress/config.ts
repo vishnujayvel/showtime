@@ -21,7 +21,7 @@ export default defineConfig({
       { text: 'Guide', link: '/getting-started/' },
       { text: 'Framework', link: '/framework/' },
       { text: 'Concepts', link: '/concepts/show-phases' },
-      { text: 'App Tour', link: '/mockups/' },
+      { text: 'App Tour', link: '/app-tour/' },
       { text: 'Contributing', link: '/contributing/' },
     ],
 
