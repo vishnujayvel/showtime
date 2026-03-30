@@ -162,6 +162,7 @@ export class RunManager extends EventEmitter {
 
     const args: string[] = [
       '-p',
+      '--bare',
       '--input-format', 'stream-json',
       '--output-format', 'stream-json',
       '--verbose',
