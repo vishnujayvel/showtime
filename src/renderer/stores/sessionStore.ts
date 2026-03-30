@@ -204,13 +204,22 @@ export const useSessionStore = create<State>((set, get) => ({
           ? t
           : { ...t, hasChosenDirectory: true, workingDirectory: resolvedPath }
         if (isBusy) {
-          return { ...withBase, title, queuedPrompts: [...withBase.queuedPrompts, prompt] }
+          return {
+            ...withBase,
+            title,
+            queuedPrompts: [...withBase.queuedPrompts, prompt],
+            currentActivity: 'The writers are getting ready...',
+            messages: [
+              ...withBase.messages,
+              { id: nextMsgId(), role: 'user' as const, content: visibleText, timestamp: Date.now() },
+            ],
+          }
         }
         return {
           ...withBase,
           status: 'connecting' as TabStatus,
           activeRequestId: requestId,
-          currentActivity: 'Starting...',
+          currentActivity: 'The writers are getting ready...',
           title,
           messages: [
             ...withBase.messages,
@@ -273,13 +282,9 @@ export const useSessionStore = create<State>((set, get) => ({
             if (!event.isWarmup) {
               updated.status = 'running'
               updated.currentActivity = 'Thinking...'
+              // Clear queued prompts — user messages are already shown when queued
               if (updated.queuedPrompts.length > 0) {
-                const [nextPrompt, ...rest] = updated.queuedPrompts
-                updated.queuedPrompts = rest
-                updated.messages = [
-                  ...updated.messages,
-                  { id: nextMsgId(), role: 'user' as const, content: nextPrompt, timestamp: Date.now() },
-                ]
+                updated.queuedPrompts = []
               }
             }
             break
