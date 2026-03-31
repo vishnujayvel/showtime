@@ -216,7 +216,13 @@ export const useShowStore = create<ShowStore>()(
         sendAndSync({ type: 'SET_LINEUP', lineup })
       },
       startShow: () => {
-        ensureWritersRoom()
+        // Guard: only enter writers_room if we have acts but aren't there yet
+        const phase = currentPhase()
+        if (phase === 'no_show') {
+          const hasActs = showActor.getSnapshot().context.acts.length > 0
+          if (hasActs) ensureWritersRoom()
+          else return // No acts, no-op (preserves old behavior)
+        }
         sendAndSync({ type: 'START_SHOW' })
       },
 
@@ -290,6 +296,13 @@ export const useShowStore = create<ShowStore>()(
           celebrationTimeout = null
         }
         sendAndSync({ type: 'RESET' })
+        // Also clear calendar state (matches old behavior)
+        useUIStore.getState().clearCalendarCache()
+        set({
+          calendarEvents: [],
+          calendarFetchStatus: 'idle',
+          calendarFetchedAt: null,
+        })
       },
 
       // Calendar (delegate to uiStore + mirror in Zustand for backward compat)
@@ -351,6 +364,54 @@ export const useShowStore = create<ShowStore>()(
     }
   )
 )
+
+// ─── setState interceptor: sync phase-managed fields to XState actor ───
+// When tests (or any code) call useShowStore.setState() directly with
+// phase-managed fields, we must also update the XState actor context.
+
+const PHASE_MANAGED_KEYS = new Set([
+  'energy', 'acts', 'currentActId', 'beatsLocked', 'beatThreshold',
+  'timerEndAt', 'timerPausedRemaining', 'showDate', 'showStartedAt',
+  'verdict', 'viewTier', 'beatCheckPending', 'celebrationActive',
+  'writersRoomStep', 'writersRoomEnteredAt', 'breathingPauseEndAt',
+])
+
+const originalSetState = useShowStore.setState.bind(useShowStore)
+useShowStore.setState = (updater: any, replace?: boolean) => {
+  // Resolve the update value
+  const state = typeof updater === 'function' ? updater(useShowStore.getState()) : updater
+
+  if (state && typeof state === 'object') {
+    const targetPhase = (state as any).phase as ShowPhase | undefined
+    const currentActorPhase = getPhaseFromState(showActor.getSnapshot().value as Record<string, unknown>)
+
+    // If phase is being set and differs from actor state, jump the machine directly
+    if (targetPhase && targetPhase !== currentActorPhase) {
+      // Determine substate for nested states (e.g., live.beat_check)
+      let substate: string | undefined
+      if (targetPhase === 'live') {
+        if ((state as any).beatCheckPending) substate = 'beat_check'
+        else if ((state as any).celebrationActive) substate = 'celebrating'
+      }
+      showActor.send({ type: '_JUMP_PHASE', phase: targetPhase, substate })
+    }
+
+    // Patch any phase-managed context fields
+    const patch: Partial<ShowMachineContext> = {}
+    let hasPatch = false
+    for (const key of Object.keys(state)) {
+      if (PHASE_MANAGED_KEYS.has(key) && key !== 'phase') {
+        (patch as any)[key] = (state as any)[key]
+        hasPatch = true
+      }
+    }
+    if (hasPatch) {
+      showActor.send({ type: '_PATCH_CONTEXT', patch })
+    }
+  }
+
+  originalSetState(updater, replace as any)
+}
 
 // ─── Selectors ───
 

@@ -26,7 +26,7 @@ showActor.start()
 // Subscribe to actor state changes and sync to SQLite/notifications.
 // This replaces the inline syncToSQLite/flushToSQLite calls in the old showStore.
 
-function buildSnapshot(ctx: ShowMachineContext, phase: ShowPhase) {
+function buildSnapshot(ctx: ShowMachineContext, phase: string) {
   return {
     showId: ctx.showDate,
     phase,
@@ -57,7 +57,7 @@ function tryClui(fn: () => void): void {
   try { fn() } catch { /* ignore if clui not ready */ }
 }
 
-let previousPhase: ShowPhase = 'no_show'
+let previousPhase: string = 'no_show'
 let previousActId: string | null = null
 
 showActor.subscribe((snapshot) => {
