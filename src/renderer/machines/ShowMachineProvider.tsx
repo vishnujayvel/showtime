@@ -11,7 +11,7 @@
  * Backward-compatible bridge: components can migrate incrementally
  * from useShowStore selectors to these hooks.
  */
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useCallback } from 'react'
 import { useSelector } from '@xstate/react'
 import { showActor } from './showActor'
 import {
@@ -64,10 +64,10 @@ export function useShowSelector<T>(selector: (state: ReturnType<ShowMachineActor
   return useSelector(actor as any, selector as any) as T
 }
 
-/** Get the current send function */
+/** Get the current send function (stable reference) */
 export function useShowSend() {
   const actor = useShowActor()
-  return actor.send.bind(actor)
+  return useCallback((event: ShowMachineEvent) => actor.send(event), [actor])
 }
 
 // ─── Convenience Selectors ───
