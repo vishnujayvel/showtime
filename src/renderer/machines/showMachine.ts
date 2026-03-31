@@ -50,7 +50,6 @@ export type ShowMachineEvent =
   | { type: 'COMPLETE_COLD_OPEN' }
   | { type: 'TRIGGER_GOING_LIVE' }
   | { type: 'COMPLETE_GOING_LIVE' }
-  | { type: 'START_ACT'; actId: string }
   | { type: 'COMPLETE_ACT'; actId: string }
   | { type: 'SKIP_ACT'; actId: string }
   | { type: 'EXTEND_ACT'; minutes: number }
@@ -188,21 +187,6 @@ export const showMachine = setup({
         viewTier: 'micro' as ViewTier,
         acts: context.acts.map((a, i) =>
           i === 0 ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
-        ),
-      }
-    }),
-
-    startActContext: assign(({ context, event }) => {
-      if (event.type !== 'START_ACT') return {}
-      const act = context.acts.find((a) => a.id === event.actId)
-      if (!act) return {}
-      const now = Date.now()
-      return {
-        currentActId: event.actId,
-        timerEndAt: now + act.durationMinutes * 60 * 1000,
-        timerPausedRemaining: null,
-        acts: context.acts.map((a) =>
-          a.id === event.actId ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
         ),
       }
     }),
@@ -368,8 +352,15 @@ export const showMachine = setup({
 
     removeActContext: assign(({ context, event }) => {
       if (event.type !== 'REMOVE_ACT') return {}
+      const newActs = context.acts.filter((a) => a.id !== event.actId).map((a, i) => ({ ...a, order: i }))
+      const removingCurrentAct = context.currentActId === event.actId
       return {
-        acts: context.acts.filter((a) => a.id !== event.actId).map((a, i) => ({ ...a, order: i })),
+        acts: newActs,
+        ...(removingCurrentAct ? {
+          currentActId: null,
+          timerEndAt: null,
+          timerPausedRemaining: null,
+        } : {}),
       }
     }),
 

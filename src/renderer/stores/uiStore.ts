@@ -22,7 +22,7 @@ interface UIStoreActions {
   setCalendarEvents: (events: CalendarEvent[]) => void
   setCalendarFetchStatus: (status: CalendarFetchStatus) => void
   clearCalendarCache: () => void
-  setClaudeSessionId: (id: string) => void
+  setClaudeSessionId: (id: string | null) => void
 }
 
 export type UIStore = UIStoreState & UIStoreActions
