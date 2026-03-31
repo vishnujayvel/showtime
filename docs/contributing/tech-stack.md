@@ -12,7 +12,7 @@ Showtime is an **AI-native macOS desktop app** — built with Claude Code as a f
 | **Styling** | Tailwind CSS v4 (CSS-first) | ^4.2.1 |
 | **Components** | shadcn/ui + Radix UI | latest |
 | **Animation** | Framer Motion (spring physics) | ^12.35.1 |
-| **State** | Zustand | ^5.0.0 |
+| **State** | XState v5 + Zustand | ^5.4.0 / ^5.0.0 |
 | **Database** | SQLite via better-sqlite3 + Drizzle ORM | ^12.8.0 / ^0.45.1 |
 | **AI Runtime** | Claude Code subprocess (node-pty) | CLI v2.1+ |
 | **Unit Tests** | Vitest + Testing Library | ^4.1.0 |
@@ -157,14 +157,18 @@ Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightF
 
 ## State Management
 
-### Zustand (^5.0.0)
+### XState v5 + Zustand (^5.0.0)
 
-Two stores, no React Context for state:
+Show phase lifecycle is managed by an **XState v5 state machine** with a backward-compatible Zustand bridge. Non-phase UI state lives in standalone Zustand stores.
 
-| Store | Purpose |
-|-------|---------|
-| `showStore` | Show phase machine, acts, beats, energy, timer, verdict, lineup |
-| `sessionStore` | Claude Code tab sessions, streaming state, error tracking |
+| File | Technology | Purpose |
+|------|-----------|---------|
+| `machines/showMachine.ts` | XState v5 | 6-phase state machine (no_show → writers_room → going_live → live → intermission/director → strike) with nested substates, guards, and parallel animation region |
+| `machines/showActor.ts` | XState v5 | Singleton actor instance + side effects (SQLite persistence, timeline events, notifications) |
+| `machines/ShowMachineProvider.tsx` | React Context (@xstate/react) | Provider + hooks: `useShowSelector`, `useShowPhase`, `useShowSend`, `useShowContext` |
+| `stores/showStore.ts` | Zustand | Backward-compatible bridge — all phase actions delegate to XState via `sendAndSync()` |
+| `stores/uiStore.ts` | Zustand | Calendar state, Claude session ID (not phase-managed) |
+| `stores/sessionStore.ts` | Zustand | Claude subprocess session (simplified to single session) |
 
 ---
 
@@ -292,7 +296,7 @@ These are enforced by CLAUDE.md, CodeRabbit, and pre-commit hooks:
 
 1. **No inline styles** — 100% Tailwind utility classes
 2. **Spring physics only** — No linear CSS transitions or Framer Motion durations
-3. **Zustand only** — No React Context for state management
+3. **XState for phase machines, Zustand for UI state** — `ShowMachineProvider` is the one exception to "no React Context"
 4. **Typed IPC** — All channels via `IPC` enum, all payloads typed in `shared/types.ts`
 5. **E2E coverage** — Every feature must have Playwright tests
 6. **macOS native feel** — `frame: false`, no vibrancy, CSS backgrounds, content-tight sizing

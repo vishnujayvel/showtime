@@ -71,6 +71,7 @@ export default defineConfig({
             { text: 'Key Components', link: '/contributing/components' },
             { text: 'Chat-First Writer\'s Room', link: '/contributing/chat-first-writers-room' },
             { text: 'E2E Testing & Cassettes', link: '/contributing/e2e-testing-cassettes' },
+            { text: 'XState State Management', link: '/contributing/xstate-state-management' },
             { text: 'Tech Stack', link: '/contributing/tech-stack' },
           ],
         },
