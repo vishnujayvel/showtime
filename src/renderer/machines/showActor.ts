@@ -207,6 +207,11 @@ showActor.subscribe((snapshot) => {
 /** Reset the actor to initial state. Used by test setup. */
 export function resetShowActor(): void {
   showActor.send({ type: 'RESET' })
+  previousPhase = 'no_show'
+  previousActId = null
+  previousBeatCheckPending = false
+  previousCelebrationActive = false
+  clearCelebrationTimeout()
 }
 
 // ─── Convenience: re-export for consumers ───

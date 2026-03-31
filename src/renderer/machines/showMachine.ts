@@ -73,10 +73,6 @@ export type ShowMachineEvent =
   | { type: 'ADD_ACT'; name: string; sketch: string; durationMinutes: number }
   // View tier
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
-  // Test-only: patch context fields directly (used by setActorState() in tests)
-  | { type: '_PATCH_CONTEXT'; patch: Partial<ShowMachineContext> }
-  // Test-only: jump to a specific phase (used by setActorState() in tests)
-  | { type: '_JUMP_PHASE'; phase: string; substate?: string }
 
 // ─── Helpers ───
 
@@ -395,11 +391,6 @@ export const showMachine = setup({
       }
     }),
 
-    patchContext: assign(({ event }) => {
-      if (event.type !== '_PATCH_CONTEXT') return {}
-      return event.patch
-    }),
-
     skipCurrentActContext: assign(({ context }) => {
       const actId = context.currentActId
       if (!actId) return {}
@@ -426,20 +417,6 @@ export const showMachine = setup({
       // Handled at the phase level so they work from any phase
       on: {
         SET_VIEW_TIER: { actions: 'setViewTierContext' },
-        _PATCH_CONTEXT: { actions: 'patchContext' },
-        // Test support: jump directly to any phase (used by setState interceptor)
-        _JUMP_PHASE: [
-          { target: '.live.beat_check', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'live' && event.substate === 'beat_check' },
-          { target: '.live.celebrating', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'live' && event.substate === 'celebrating' },
-          { target: '.live', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'live' },
-          { target: '.no_show', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'no_show' },
-          { target: '.writers_room', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'writers_room' },
-          { target: '.cold_open', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'cold_open' },
-          { target: '.going_live', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'going_live' },
-          { target: '.intermission', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'intermission' },
-          { target: '.director', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'director' },
-          { target: '.strike', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'strike' },
-        ],
       },
       states: {
         no_show: {

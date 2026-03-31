@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { showActor, resetShowActor } from '../renderer/machines/showActor'
-import { getPhaseFromState } from '../renderer/machines/showMachine'
+import { getPhaseFromState, computeVerdict } from '../renderer/machines/showMachine'
 import type { ShowLineup } from '../shared/types'
 
 /** Helper to get current phase from the actor */
@@ -28,108 +28,66 @@ function goLive(beatThreshold: number) {
   showActor.send({ type: 'START_SHOW' })
 }
 
-describe('verdict calculation edge cases', () => {
-  beforeEach(() => resetShowActor())
-
-  // Exhaustive verdict boundary tests with threshold = 5
+describe('computeVerdict — pure function boundary tests', () => {
   describe('with beatThreshold = 5', () => {
     it('DAY_WON: 5/5 beats', () => {
-      goLive(5)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 5, beatThreshold: 5 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('DAY_WON')
+      expect(computeVerdict(5, 5)).toBe('DAY_WON')
     })
 
     it('DAY_WON: 6/5 beats (over threshold)', () => {
-      goLive(5)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 6, beatThreshold: 5 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('DAY_WON')
+      expect(computeVerdict(6, 5)).toBe('DAY_WON')
     })
 
     it('SOLID_SHOW: 4/5 beats (one short)', () => {
-      goLive(5)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 4, beatThreshold: 5 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('SOLID_SHOW')
+      expect(computeVerdict(4, 5)).toBe('SOLID_SHOW')
     })
 
     it('GOOD_EFFORT: 3/5 beats (ceil(5/2) = 3)', () => {
-      goLive(5)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 3, beatThreshold: 5 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('GOOD_EFFORT')
+      expect(computeVerdict(3, 5)).toBe('GOOD_EFFORT')
     })
 
     it('SHOW_CALLED_EARLY: 2/5 beats (below half)', () => {
-      goLive(5)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 2, beatThreshold: 5 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('SHOW_CALLED_EARLY')
+      expect(computeVerdict(2, 5)).toBe('SHOW_CALLED_EARLY')
     })
 
     it('SHOW_CALLED_EARLY: 0/5 beats', () => {
-      goLive(5)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 0, beatThreshold: 5 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('SHOW_CALLED_EARLY')
+      expect(computeVerdict(0, 5)).toBe('SHOW_CALLED_EARLY')
     })
   })
 
   describe('with beatThreshold = 1', () => {
     it('DAY_WON: 1/1 beats', () => {
-      goLive(1)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 1, beatThreshold: 1 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('DAY_WON')
+      expect(computeVerdict(1, 1)).toBe('DAY_WON')
     })
 
     it('SOLID_SHOW: 0/1 beats (one short = 0)', () => {
-      goLive(1)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 0, beatThreshold: 1 } })
-      showActor.send({ type: 'STRIKE' })
       // 0 === 1 - 1 = SOLID_SHOW
-      expect(ctx().verdict).toBe('SOLID_SHOW')
+      expect(computeVerdict(0, 1)).toBe('SOLID_SHOW')
     })
   })
 
   describe('with beatThreshold = 2', () => {
     it('DAY_WON: 2/2', () => {
-      goLive(2)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 2, beatThreshold: 2 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('DAY_WON')
+      expect(computeVerdict(2, 2)).toBe('DAY_WON')
     })
 
     it('SOLID_SHOW: 1/2 (one short)', () => {
-      goLive(2)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 1, beatThreshold: 2 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('SOLID_SHOW')
+      expect(computeVerdict(1, 2)).toBe('SOLID_SHOW')
     })
 
     it('SHOW_CALLED_EARLY: 0/2', () => {
-      goLive(2)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 0, beatThreshold: 2 } })
-      showActor.send({ type: 'STRIKE' })
       // 0 === 2-1? No. 0 >= ceil(2/2)=1? No. → SHOW_CALLED_EARLY
-      expect(ctx().verdict).toBe('SHOW_CALLED_EARLY')
+      expect(computeVerdict(0, 2)).toBe('SHOW_CALLED_EARLY')
     })
   })
 
   describe('with beatThreshold = 4', () => {
     it('GOOD_EFFORT: 2/4 (ceil(4/2) = 2)', () => {
-      goLive(4)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 2, beatThreshold: 4 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('GOOD_EFFORT')
+      expect(computeVerdict(2, 4)).toBe('GOOD_EFFORT')
     })
 
     it('SHOW_CALLED_EARLY: 1/4', () => {
-      goLive(4)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 1, beatThreshold: 4 } })
-      showActor.send({ type: 'STRIKE' })
-      expect(ctx().verdict).toBe('SHOW_CALLED_EARLY')
+      expect(computeVerdict(1, 4)).toBe('SHOW_CALLED_EARLY')
     })
   })
 })
