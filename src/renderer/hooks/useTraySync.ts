@@ -1,38 +1,42 @@
 import { useEffect, useRef } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useShowActor } from '../machines/ShowMachineProvider'
+import { getPhaseFromState } from '../machines/showMachine'
 import type { TrayShowState } from '../../shared/types'
 
 /**
- * Subscribes to showStore changes and sends tray state to the main process.
+ * Subscribes to the XState show actor and sends tray state to the main process.
  * Timer-only updates (every 1s during live/director phase) use a lightweight
  * IPC channel that only sets tray title + icon — no menu rebuild.
  * Full state updates (with menu rebuild) are sent only on phase/act/beat changes.
  */
 export function useTraySync(): void {
+  const actor = useShowActor()
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     function sendTrayState(): void {
-      const s = useShowStore.getState()
-      const currentAct = s.acts.find((a) => a.id === s.currentActId)
-      const currentIndex = s.acts.findIndex((a) => a.id === s.currentActId)
+      const snapshot = actor.getSnapshot()
+      const ctx = snapshot.context
+      const phase = getPhaseFromState(snapshot.value as Record<string, unknown>)
+      const currentAct = ctx.acts.find((a) => a.id === ctx.currentActId)
+      const currentIndex = ctx.acts.findIndex((a) => a.id === ctx.currentActId)
 
       let timerSeconds: number | null = null
-      if (s.timerEndAt) {
-        timerSeconds = Math.max(0, Math.ceil((s.timerEndAt - Date.now()) / 1000))
+      if (ctx.timerEndAt) {
+        timerSeconds = Math.max(0, Math.ceil((ctx.timerEndAt - Date.now()) / 1000))
       }
 
       const state: TrayShowState = {
-        phase: s.phase,
+        phase,
         currentActName: currentAct?.name ?? null,
         currentActCategory: currentAct?.sketch ?? null,
         timerSeconds,
-        beatsLocked: s.beatsLocked,
-        beatThreshold: s.beatThreshold,
+        beatsLocked: ctx.beatsLocked,
+        beatThreshold: ctx.beatThreshold,
         actIndex: Math.max(0, currentIndex),
-        totalActs: s.acts.length,
+        totalActs: ctx.acts.length,
         nextActs: currentIndex >= 0
-          ? s.acts.slice(currentIndex + 1, currentIndex + 3).map((a) => ({
+          ? ctx.acts.slice(currentIndex + 1, currentIndex + 3).map((a) => ({
               name: a.name,
               sketch: a.sketch,
               durationMinutes: a.durationMinutes,
@@ -45,9 +49,10 @@ export function useTraySync(): void {
 
     /** Lightweight timer-only update — no menu rebuild */
     function sendTimerOnly(): void {
-      const s = useShowStore.getState()
-      if (s.timerEndAt) {
-        const seconds = Math.max(0, Math.ceil((s.timerEndAt - Date.now()) / 1000))
+      const snapshot = actor.getSnapshot()
+      const ctx = snapshot.context
+      if (ctx.timerEndAt) {
+        const seconds = Math.max(0, Math.ceil((ctx.timerEndAt - Date.now()) / 1000))
         window.clui.updateTrayTimer(seconds)
       }
     }
@@ -68,37 +73,55 @@ export function useTraySync(): void {
     // Send immediately on mount
     sendTrayState()
 
-    // Subscribe to store changes for non-timer updates (phase, acts, beats)
-    const unsub = useShowStore.subscribe((curr, prev) => {
-      const timerChanged = curr.timerEndAt !== prev.timerEndAt
+    // Subscribe to actor state changes for non-timer updates (phase, acts, beats)
+    let prevPhase = getPhaseFromState(actor.getSnapshot().value as Record<string, unknown>)
+    let prevActId = actor.getSnapshot().context.currentActId
+    let prevBeatsLocked = actor.getSnapshot().context.beatsLocked
+    let prevBeatThreshold = actor.getSnapshot().context.beatThreshold
+    let prevActs = actor.getSnapshot().context.acts
+    let prevTimerEndAt = actor.getSnapshot().context.timerEndAt
+
+    const subscription = actor.subscribe((snapshot) => {
+      const ctx = snapshot.context
+      const phase = getPhaseFromState(snapshot.value as Record<string, unknown>)
+      const timerChanged = ctx.timerEndAt !== prevTimerEndAt
+
       if (
-        curr.phase !== prev.phase ||
-        curr.currentActId !== prev.currentActId ||
-        curr.beatsLocked !== prev.beatsLocked ||
-        curr.beatThreshold !== prev.beatThreshold ||
-        curr.acts !== prev.acts ||
+        phase !== prevPhase ||
+        ctx.currentActId !== prevActId ||
+        ctx.beatsLocked !== prevBeatsLocked ||
+        ctx.beatThreshold !== prevBeatThreshold ||
+        ctx.acts !== prevActs ||
         timerChanged
       ) {
         sendTrayState()
 
         // Start/stop the timer interval based on phase
-        if ((curr.phase === 'live' || curr.phase === 'director') && curr.timerEndAt) {
+        if ((phase === 'live' || phase === 'director') && ctx.timerEndAt) {
           startTimerInterval()
         } else {
           stopTimerInterval()
         }
       }
+
+      prevPhase = phase
+      prevActId = ctx.currentActId
+      prevBeatsLocked = ctx.beatsLocked
+      prevBeatThreshold = ctx.beatThreshold
+      prevActs = ctx.acts
+      prevTimerEndAt = ctx.timerEndAt
     })
 
     // Also start interval if we mount during a live/director phase
-    const initial = useShowStore.getState()
-    if ((initial.phase === 'live' || initial.phase === 'director') && initial.timerEndAt) {
+    const initialSnapshot = actor.getSnapshot()
+    const initialPhase = getPhaseFromState(initialSnapshot.value as Record<string, unknown>)
+    if ((initialPhase === 'live' || initialPhase === 'director') && initialSnapshot.context.timerEndAt) {
       startTimerInterval()
     }
 
     return () => {
-      unsub()
+      subscription.unsubscribe()
       stopTimerInterval()
     }
-  }, [])
+  }, [actor])
 }
