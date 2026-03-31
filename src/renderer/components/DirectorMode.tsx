@@ -36,8 +36,7 @@ export function DirectorMode() {
           <Button
             className="w-full py-3 rounded-xl bg-surface-hover text-txt-primary text-sm font-medium border border-border-default hover:bg-[#2a2a2e] transition-colors"
             onClick={() => {
-              send({ type: 'SKIP_ACT', actId: currentActId! })
-              send({ type: 'EXIT_DIRECTOR' })
+              send({ type: 'SKIP_TO_NEXT' })
             }}
           >
             Skip this act, move on

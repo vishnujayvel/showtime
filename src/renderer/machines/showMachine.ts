@@ -73,8 +73,6 @@ export type ShowMachineEvent =
   | { type: 'ADD_ACT'; name: string; sketch: string; durationMinutes: number }
   // View tier
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
-  // Session
-  | { type: 'SET_CLAUDE_SESSION_ID'; id: string }
   // Test-only: patch context fields directly (used by setActorState() in tests)
   | { type: '_PATCH_CONTEXT'; patch: Partial<ShowMachineContext> }
   // Test-only: jump to a specific phase (used by setActorState() in tests)
