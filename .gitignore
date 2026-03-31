@@ -57,3 +57,4 @@ openspec/changes/
 *.tmp
 *.bak
 /coverage/
+.claude/specs/journey-discovery/
