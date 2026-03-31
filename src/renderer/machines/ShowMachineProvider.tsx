@@ -15,7 +15,6 @@ import React, { createContext, useContext } from 'react'
 import { useSelector } from '@xstate/react'
 import { showActor } from './showActor'
 import {
-  showMachine,
   getPhaseFromState,
   getWritersRoomStep,
   isAnimationActive,
