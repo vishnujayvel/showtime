@@ -321,7 +321,7 @@ describe('Layer 2: Property-Based Actor Tests (fast-check)', () => {
                 showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[Math.max(idx - 1, 0)] })
                 break
               case 'set':
-                showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[Math.floor(Math.random() * tiers.length)] })
+                showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[(idx + 2) % tiers.length] })
                 break
             }
 

@@ -252,6 +252,11 @@ export const showMachine = setup({
       beatCheckPending: false,
     }),
 
+    clearBeatState: assign({
+      beatCheckPending: false,
+      celebrationActive: false,
+    }),
+
     celebrationDoneContext: assign({
       celebrationActive: false,
       beatCheckPending: false,
@@ -495,9 +500,12 @@ export const showMachine = setup({
           on: {
             ENTER_INTERMISSION: {
               target: 'intermission',
-              actions: 'enterIntermissionContext',
+              actions: ['clearBeatState', 'enterIntermissionContext'],
             },
-            ENTER_DIRECTOR: 'director',
+            ENTER_DIRECTOR: {
+              target: 'director',
+              actions: 'clearBeatState',
+            },
             STRIKE: {
               target: 'strike',
               actions: 'strikeContext',
@@ -508,7 +516,7 @@ export const showMachine = setup({
             },
             START_BREATHING_PAUSE: {
               target: 'intermission.breathing_pause',
-              actions: 'startBreathingPauseContext',
+              actions: ['clearBeatState', 'startBreathingPauseContext'],
             },
             EXTEND_ACT: { actions: 'extendActContext' },
             // These work from any live substate for backward compat
@@ -548,18 +556,27 @@ export const showMachine = setup({
                   actions: 'completeActContext',
                 },
                 SKIP_ACT: [
+                  // Skipping a non-current (upcoming) act — just mark it, don't touch current act
                   {
                     target: 'act_active',
                     guard: ({ context, event }) => {
                       if (event.type !== 'SKIP_ACT') return false
-                      const wasActive = context.currentActId === event.actId
-                      const newActs = context.acts.map((a) =>
-                        a.id === event.actId ? { ...a, status: 'skipped' as ActStatus } : a
-                      )
-                      return !wasActive || newActs.some((a) => a.status === 'upcoming')
+                      return context.currentActId !== event.actId
+                    },
+                    actions: 'skipActContext',
+                  },
+                  // Skipping the current act — advance to next if available
+                  {
+                    target: 'act_active',
+                    guard: ({ context, event }) => {
+                      if (event.type !== 'SKIP_ACT') return false
+                      if (context.currentActId !== event.actId) return false
+                      const remaining = context.acts.filter((a) => a.status === 'upcoming' && a.id !== event.actId)
+                      return remaining.length > 0
                     },
                     actions: ['skipActContext', 'autoStartNextAct'],
                   },
+                  // Skipping the current act with no next — go to strike
                   {
                     target: '#show.phase.strike',
                     actions: ['skipActContext', 'strikeContext'],

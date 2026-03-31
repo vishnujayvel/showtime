@@ -38,8 +38,6 @@ const ShowActorContext = createContext<ShowMachineActor>(showActor as unknown as
 
 interface ShowMachineProviderProps {
   children: React.ReactNode
-  /** Optional initial context override (e.g., for hydration from SQLite) */
-  initialContext?: Partial<ShowMachineContext>
 }
 
 export function ShowMachineProvider({ children }: ShowMachineProviderProps) {
