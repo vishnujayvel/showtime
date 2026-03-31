@@ -57,8 +57,34 @@ function tryClui(fn: () => void): void {
   try { fn() } catch { /* ignore if clui not ready */ }
 }
 
+// ─── Celebration Timer (moved from showStore) ───
+
+let celebrationTimeout: ReturnType<typeof setTimeout> | null = null
+
+function scheduleCelebration() {
+  if (celebrationTimeout) {
+    clearTimeout(celebrationTimeout)
+    celebrationTimeout = null
+  }
+  celebrationTimeout = setTimeout(() => {
+    celebrationTimeout = null
+    showActor.send({ type: 'CELEBRATION_DONE' })
+  }, 1800)
+}
+
+export function clearCelebrationTimeout() {
+  if (celebrationTimeout) {
+    clearTimeout(celebrationTimeout)
+    celebrationTimeout = null
+  }
+}
+
+// ─── State Change Subscriber ───
+
 let previousPhase: string = 'no_show'
 let previousActId: string | null = null
+let previousBeatCheckPending = false
+let previousCelebrationActive = false
 
 showActor.subscribe((snapshot) => {
   const phase = getPhaseFromState(snapshot.value as Record<string, unknown>)
@@ -132,6 +158,22 @@ showActor.subscribe((snapshot) => {
 
     previousPhase = phase
   }
+
+  // Act completion side effects — notify when beatCheckPending transitions to true
+  if (ctx.beatCheckPending && !previousBeatCheckPending) {
+    const completedAct = ctx.acts.find((a) => a.status === 'completed' && a.completedAt)
+    if (completedAct) {
+      tryClui(() => window.clui.notifyActComplete(completedAct.name, completedAct.sketch))
+      tryClui(() => window.clui.notifyBeatCheck(completedAct.name))
+    }
+  }
+  previousBeatCheckPending = ctx.beatCheckPending
+
+  // Celebration side effects — schedule timeout when celebrationActive goes true
+  if (ctx.celebrationActive && !previousCelebrationActive) {
+    scheduleCelebration()
+  }
+  previousCelebrationActive = ctx.celebrationActive
 
   // Act change side effects
   if (ctx.currentActId !== previousActId) {

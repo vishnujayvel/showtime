@@ -4,7 +4,15 @@ import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
 import { useTraySync } from './hooks/useTraySync'
 import { useSessionStore } from './stores/sessionStore'
-import { useShowStore, selectIsExpanded } from './stores/showStore'
+import {
+  useShowPhase,
+  useShowContext,
+  useShowSend,
+  useShowSelector,
+  useColdOpenActive,
+  useGoingLiveActive,
+  showSelectors,
+} from './machines/ShowMachineProvider'
 import { useThemeStore } from './theme'
 import { DarkStudioView } from './views/DarkStudioView'
 import { WritersRoomView } from './views/WritersRoomView'
@@ -42,16 +50,13 @@ export default function App() {
   useHealthReconciliation()
   useTraySync()
 
-  const phase = useShowStore((s) => s.phase)
-  const viewTier = useShowStore((s) => s.viewTier)
-  const isExpanded = useShowStore(selectIsExpanded)
-  const coldOpenActive = useShowStore((s) => s.coldOpenActive)
-  const completeColdOpen = useShowStore((s) => s.completeColdOpen)
-  const goingLiveActive = useShowStore((s) => s.goingLiveActive)
-  const completeGoingLive = useShowStore((s) => s.completeGoingLive)
-  const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
-  const beatCheckPending = useShowStore((s) => s.beatCheckPending)
-  const setViewTier = useShowStore((s) => s.setViewTier)
+  const phase = useShowPhase()
+  const viewTier = useShowContext((ctx) => ctx.viewTier)
+  const isExpanded = useShowSelector(showSelectors.isExpanded)
+  const coldOpenActive = useColdOpenActive()
+  const goingLiveActive = useGoingLiveActive()
+  const beatCheckPending = useShowContext((ctx) => ctx.beatCheckPending)
+  const send = useShowSend()
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
 
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -62,11 +67,10 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false)
 
   // ─── Listen for tray-triggered reset ───
-  const resetShow = useShowStore((s) => s.resetShow)
   useEffect(() => {
     if (!window.clui?.onResetShow) return
-    return window.clui.onResetShow(() => resetShow())
-  }, [resetShow])
+    return window.clui.onResetShow(() => send({ type: 'RESET' }))
+  }, [send])
 
   // ─── Listen for settings open (Cmd+, or tray) ───
   useEffect(() => {
@@ -134,18 +138,18 @@ export default function App() {
   // ─── Force-expand on Beat Check ───
   useEffect(() => {
     if (beatCheckPending && (viewTier === 'micro' || viewTier === 'compact')) {
-      setViewTier('dashboard')
+      send({ type: 'SET_VIEW_TIER', tier: 'dashboard' })
     }
-  }, [beatCheckPending, viewTier, setViewTier])
+  }, [beatCheckPending, viewTier, send])
 
   // ─── Onboarding completion handler ───
   const handleOnboardingComplete = useCallback((enterRoom: boolean) => {
     localStorage.setItem('showtime-onboarding-complete', 'true')
     setShowOnboarding(false)
     if (enterRoom) {
-      enterWritersRoom()
+      send({ type: 'ENTER_WRITERS_ROOM' })
     }
-  }, [enterWritersRoom])
+  }, [send])
 
   // ─── Help button opens help dialog ───
   const handleHelpClick = useCallback(() => {
@@ -177,12 +181,12 @@ export default function App() {
 
     // Cold Open transition (Dark Studio → Writer's Room)
     if (coldOpenActive) {
-      return <ColdOpenTransition key="cold-open" onComplete={completeColdOpen} />
+      return <ColdOpenTransition key="cold-open" onComplete={() => send({ type: 'COMPLETE_COLD_OPEN' })} />
     }
 
     // Going Live transition takes priority
     if (goingLiveActive) {
-      return <GoingLiveTransition key="going-live" onComplete={completeGoingLive} />
+      return <GoingLiveTransition key="going-live" onComplete={() => send({ type: 'COMPLETE_GOING_LIVE' })} />
     }
 
     // Full-screen phases render regardless of viewTier

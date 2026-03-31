@@ -11,8 +11,9 @@
  * Backward-compatible bridge: components can migrate incrementally
  * from useShowStore selectors to these hooks.
  */
-import React, { createContext, useContext, useRef } from 'react'
-import { useActorRef, useSelector } from '@xstate/react'
+import React, { createContext, useContext } from 'react'
+import { useSelector } from '@xstate/react'
+import { showActor } from './showActor'
 import {
   showMachine,
   getPhaseFromState,
@@ -33,7 +34,7 @@ import type {
 
 // ─── Context ───
 
-const ShowActorContext = createContext<ShowMachineActor | null>(null)
+const ShowActorContext = createContext<ShowMachineActor>(showActor as unknown as ShowMachineActor)
 
 // ─── Provider ───
 
@@ -43,11 +44,9 @@ interface ShowMachineProviderProps {
   initialContext?: Partial<ShowMachineContext>
 }
 
-export function ShowMachineProvider({ children, initialContext }: ShowMachineProviderProps) {
-  const actorRef = useActorRef(showMachine) as unknown as ShowMachineActor
-
+export function ShowMachineProvider({ children }: ShowMachineProviderProps) {
   return (
-    <ShowActorContext.Provider value={actorRef}>
+    <ShowActorContext.Provider value={showActor as unknown as ShowMachineActor}>
       {children}
     </ShowActorContext.Provider>
   )
@@ -57,11 +56,7 @@ export function ShowMachineProvider({ children, initialContext }: ShowMachinePro
 
 /** Access the raw show machine actor ref */
 export function useShowActor(): ShowMachineActor {
-  const actor = useContext(ShowActorContext)
-  if (!actor) {
-    throw new Error('useShowActor must be used within a ShowMachineProvider')
-  }
-  return actor
+  return useContext(ShowActorContext)
 }
 
 /** Select derived state from the show machine with automatic re-rendering */
