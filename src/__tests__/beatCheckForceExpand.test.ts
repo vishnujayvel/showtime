@@ -252,8 +252,11 @@ describe('beatCheckPending force-expand logic', () => {
     it('strikeTheStage clears beatCheckPending and sets expanded', () => {
       goLive()
 
-      // Manually set beatCheckPending (simulating a race where strike happens during beat check)
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatCheckPending: true } })
+      // Complete act to set beatCheckPending=true (enters beat_check substate)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
+
       showActor.send({ type: 'STRIKE' })
 
       expect(ctx().beatCheckPending).toBe(false)
@@ -264,7 +267,11 @@ describe('beatCheckPending force-expand logic', () => {
     it('callShowEarly clears beatCheckPending and sets expanded', () => {
       goLive()
 
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatCheckPending: true } })
+      // Complete act to set beatCheckPending=true
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
+
       showActor.send({ type: 'CALL_SHOW_EARLY' })
 
       expect(ctx().beatCheckPending).toBe(false)

@@ -58,10 +58,20 @@ beforeAll(() => {
   }
 })
 
-/** Set actor to a specific phase with context using _JUMP_PHASE + _PATCH_CONTEXT */
-function setActorState(phase: string, patch: Record<string, unknown>) {
-  showActor.send({ type: '_JUMP_PHASE', phase })
-  showActor.send({ type: '_PATCH_CONTEXT', patch })
+/** Navigate actor to live phase with optional lineup config */
+function goLive(options?: {
+  acts?: Array<{ name: string; sketch: string; durationMinutes: number }>
+  beatThreshold?: number
+}) {
+  const lineup = {
+    acts: options?.acts ?? [{ name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 }],
+    beatThreshold: options?.beatThreshold ?? 3,
+    openingNote: 'Test',
+  }
+  showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+  showActor.send({ type: 'SET_ENERGY', level: 'high' })
+  showActor.send({ type: 'SET_LINEUP', lineup })
+  showActor.send({ type: 'START_SHOW' })
 }
 
 beforeEach(() => {
@@ -127,23 +137,8 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('renders a help button with data-testid="pill-help-btn"', () => {
-    setActorState('live', {
-      acts: [
-        {
-          id: 'a1',
-          name: 'Deep Work',
-          sketch: 'Deep Work',
-          durationMinutes: 30,
-          status: 'active',
-          beatLocked: false,
-          order: 0,
-          startedAt: Date.now(),
-        },
-      ],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 30 * 60 * 1000,
-      viewTier: 'micro',
-    })
+    goLive({ acts: [{ name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 }] })
+    // START_SHOW sets viewTier to 'micro'
 
     render(<PillView />)
     const helpBtn = screen.getByTestId('pill-help-btn')
@@ -151,23 +146,7 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('help button displays "?" text', () => {
-    setActorState('live', {
-      acts: [
-        {
-          id: 'a1',
-          name: 'Focus Time',
-          sketch: 'Deep Work',
-          durationMinutes: 25,
-          status: 'active',
-          beatLocked: false,
-          order: 0,
-          startedAt: Date.now(),
-        },
-      ],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 25 * 60 * 1000,
-      viewTier: 'micro',
-    })
+    goLive({ acts: [{ name: 'Focus Time', sketch: 'Deep Work', durationMinutes: 25 }] })
 
     render(<PillView />)
     const helpBtn = screen.getByTestId('pill-help-btn')
@@ -175,24 +154,9 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('help button renders during intermission phase', () => {
-    setActorState('intermission', {
-      acts: [
-        {
-          id: 'a1',
-          name: 'Break',
-          sketch: 'Personal',
-          durationMinutes: 15,
-          status: 'completed',
-          beatLocked: true,
-          order: 0,
-          startedAt: Date.now() - 15 * 60 * 1000,
-          completedAt: Date.now(),
-        },
-      ],
-      currentActId: null,
-      timerEndAt: null,
-      viewTier: 'micro',
-    })
+    goLive({ acts: [{ name: 'Break', sketch: 'Personal', durationMinutes: 15 }] })
+    showActor.send({ type: 'SET_VIEW_TIER', tier: 'micro' })
+    showActor.send({ type: 'ENTER_INTERMISSION' })
 
     render(<PillView />)
     const helpBtn = screen.getByTestId('pill-help-btn')
@@ -200,27 +164,10 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('help button renders during strike phase', () => {
-    setActorState('strike', {
-      acts: [
-        {
-          id: 'a1',
-          name: 'Done',
-          sketch: 'Admin',
-          durationMinutes: 30,
-          status: 'completed',
-          beatLocked: true,
-          order: 0,
-          startedAt: Date.now() - 30 * 60 * 1000,
-          completedAt: Date.now(),
-        },
-      ],
-      currentActId: null,
-      timerEndAt: null,
-      viewTier: 'micro',
-      beatsLocked: 1,
-      beatThreshold: 3,
-      verdict: 'SHOW_CALLED_EARLY',
-    })
+    goLive({ acts: [{ name: 'Done', sketch: 'Admin', durationMinutes: 30 }], beatThreshold: 3 })
+    showActor.send({ type: 'STRIKE' })
+    // STRIKE sets viewTier to 'expanded', switch to micro for pill test
+    showActor.send({ type: 'SET_VIEW_TIER', tier: 'micro' })
 
     render(<PillView />)
     const helpBtn = screen.getByTestId('pill-help-btn')

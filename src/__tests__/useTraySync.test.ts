@@ -109,11 +109,15 @@ describe('useTraySync', () => {
     updateTrayState.mockClear()
 
     act(() => {
-      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 2 } })
+      // Complete act to enter beat_check, then lock beat to increment beatsLocked
+      const actId = showActor.getSnapshot().context.currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      showActor.send({ type: 'LOCK_BEAT' })
     })
 
-    expect(updateTrayState).toHaveBeenCalledOnce()
-    expect(updateTrayState.mock.calls[0][0].beatsLocked).toBe(2)
+    expect(updateTrayState).toHaveBeenCalled()
+    const lastCall = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
+    expect(lastCall.beatsLocked).toBe(1)
   })
 
   it('includes timerSeconds calculated from timerEndAt', async () => {
@@ -307,8 +311,9 @@ describe('useTraySync', () => {
     goLiveWithActs({
       acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 5 }],
     })
-    // Set timerEndAt to null (simulating edge case)
-    showActor.send({ type: '_PATCH_CONTEXT', patch: { timerEndAt: null } })
+    // Complete the act — this sets timerEndAt to null (enters beat_check substate)
+    const actId = showActor.getSnapshot().context.currentActId!
+    showActor.send({ type: 'COMPLETE_ACT', actId })
 
     renderHook(() => useTraySync())
     updateTrayTimer.mockClear()
