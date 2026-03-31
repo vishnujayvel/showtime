@@ -35,7 +35,8 @@ Showtime (Electron App, macOS only)
 │   ├── views/               ← 12 views: DarkStudioView, WritersRoomView, PillView, CompactView, DashboardView, ExpandedView, StrikeView, SettingsView, HistoryView, OnboardingView, GoingLiveTransition, ColdOpenTransition
 │   ├── panels/              ← TimerPanel, LineupPanel, ChatPanel
 │   ├── components/          ← ActCard, BeatCheckModal, BeatCounter, DirectorMode, etc.
-│   ├── stores/              ← showStore (Zustand), sessionStore (simplified)
+│   ├── machines/            ← showMachine (XState v5), showActor (singleton), ShowMachineProvider (React)
+│   ├── stores/              ← showStore (Zustand bridge over XState), uiStore (non-phase UI state), sessionStore
 │   ├── hooks/               ← useTimer
 │   └── ui/                  ← shadcn/ui components (Button, Dialog, Card, etc.)
 └── Skills
@@ -168,11 +169,15 @@ E2E tests must cover:
 
 The renderer communicates with main ONLY through the typed `window.clui` API defined in `preload/index.ts`. Never import Node.js modules in the renderer.
 
-### 8. State Management — Zustand Only
+### 8. State Management — XState for State Machines + Zustand for UI State
 
-Use Zustand for all global state. No React Context for state management.
+Show phase lifecycle is managed by an XState v5 machine (`showMachine.ts`). Non-phase UI state (calendar cache, Claude session ID) lives in Zustand (`uiStore.ts`). A backward-compatible Zustand bridge (`showStore.ts`) delegates all phase actions to the XState actor via `sendAndSync()`, so existing components continue to work through `useShowStore`.
 
-- `showStore.ts` — Show state machine (phase, acts, beats, energy, timer)
+- `showMachine.ts` — XState v5 machine: 6 top-level phases, nested substates, guarded transitions, parallel animation region
+- `showActor.ts` — Singleton actor instance + side effects (SQLite sync, notifications)
+- `showStore.ts` — Zustand bridge over XState (backward-compatible API for views/tests)
+- `uiStore.ts` — Non-phase Zustand state (calendar, Claude session)
+- `ShowMachineProvider.tsx` — React context + hooks (`useShowActor`, `useShowSelector`, etc.)
 - `sessionStore.ts` — Claude subprocess session (simplified to single session)
 
 ## Design System
