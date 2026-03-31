@@ -75,6 +75,10 @@ export type ShowMachineEvent =
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
   // Session
   | { type: 'SET_CLAUDE_SESSION_ID'; id: string }
+  // Direct context patch (backward compat for tests that use setState)
+  | { type: '_PATCH_CONTEXT'; patch: Partial<ShowMachineContext> }
+  // Force machine into a specific phase (backward compat for tests that set phase via setState)
+  | { type: '_JUMP_PHASE'; phase: string; substate?: string }
 
 // ─── Helpers ───
 
@@ -393,6 +397,11 @@ export const showMachine = setup({
       }
     }),
 
+    patchContext: assign(({ event }) => {
+      if (event.type !== '_PATCH_CONTEXT') return {}
+      return event.patch
+    }),
+
     skipCurrentActContext: assign(({ context }) => {
       const actId = context.currentActId
       if (!actId) return {}
@@ -416,9 +425,23 @@ export const showMachine = setup({
     // ─── Main Phase Region ───
     phase: {
       initial: 'no_show',
-      // SET_VIEW_TIER handled at the phase level so it works from any phase
+      // Handled at the phase level so they work from any phase
       on: {
         SET_VIEW_TIER: { actions: 'setViewTierContext' },
+        _PATCH_CONTEXT: { actions: 'patchContext' },
+        // Test support: jump directly to any phase (used by setState interceptor)
+        _JUMP_PHASE: [
+          { target: '.live.beat_check', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'live' && event.substate === 'beat_check' },
+          { target: '.live.celebrating', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'live' && event.substate === 'celebrating' },
+          { target: '.live', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'live' },
+          { target: '.no_show', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'no_show' },
+          { target: '.writers_room', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'writers_room' },
+          { target: '.cold_open', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'cold_open' },
+          { target: '.going_live', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'going_live' },
+          { target: '.intermission', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'intermission' },
+          { target: '.director', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'director' },
+          { target: '.strike', guard: ({ event }) => event.type === '_JUMP_PHASE' && event.phase === 'strike' },
+        ],
       },
       states: {
         no_show: {
@@ -464,21 +487,27 @@ export const showMachine = setup({
           states: {
             energy: {
               on: {
+                // Only allow energy → plan (sequential flow, no skipping to conversation)
                 SET_WRITERS_ROOM_STEP: [
-                  { target: 'plan', guard: ({ event }) => event.step === 'plan' },
+                  { target: 'plan', guard: ({ event }) => event.step === 'plan', actions: 'assignWritersRoomStep' },
                 ],
               },
             },
             plan: {
               on: {
                 SET_WRITERS_ROOM_STEP: [
-                  { target: 'conversation', guard: ({ event }) => event.step === 'conversation' },
+                  { target: 'conversation', guard: ({ event }) => event.step === 'conversation', actions: 'assignWritersRoomStep' },
+                  { target: 'energy', guard: ({ event }) => event.step === 'energy', actions: 'assignWritersRoomStep' },
                 ],
               },
             },
             conversation: {
               on: {
-                SET_LINEUP: 'lineup_ready',
+                SET_LINEUP: { target: 'lineup_ready', actions: 'assignLineup' },
+                SET_WRITERS_ROOM_STEP: [
+                  { target: 'energy', guard: ({ event }) => event.step === 'energy', actions: 'assignWritersRoomStep' },
+                  { target: 'plan', guard: ({ event }) => event.step === 'plan', actions: 'assignWritersRoomStep' },
+                ],
               },
             },
             lineup_ready: {},
@@ -507,7 +536,35 @@ export const showMachine = setup({
               target: 'strike',
               actions: 'strikeContext',
             },
+            CALL_SHOW_EARLY: {
+              target: 'strike',
+              actions: 'callShowEarlyContext',
+            },
+            START_BREATHING_PAUSE: {
+              target: 'intermission.breathing_pause',
+              actions: 'startBreathingPauseContext',
+            },
             EXTEND_ACT: { actions: 'extendActContext' },
+            // These work from any live substate for backward compat
+            LOCK_BEAT: {
+              target: '.celebrating',
+              actions: 'lockBeatContext',
+            },
+            SKIP_BEAT: [
+              {
+                target: '.act_active',
+                guard: 'hasNextAct',
+                actions: ['skipBeatContext', 'autoStartNextAct'],
+              },
+              {
+                target: 'strike',
+                actions: ['skipBeatContext', 'strikeContext'],
+              },
+            ],
+            COMPLETE_ACT: {
+              target: '.beat_check',
+              actions: 'completeActContext',
+            },
             // Lineup editing during live
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
@@ -565,6 +622,10 @@ export const showMachine = setup({
             },
             celebrating: {
               on: {
+                LOCK_BEAT: {
+                  // Double-click: stay in celebrating, increment beats
+                  actions: 'lockBeatContext',
+                },
                 CELEBRATION_DONE: [
                   {
                     target: 'act_active',

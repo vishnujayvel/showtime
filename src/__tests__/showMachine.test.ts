@@ -163,11 +163,16 @@ describe('showMachine', () => {
       expect(step).toBe('lineup_ready')
     })
 
-    it('cannot skip directly from energy to conversation', () => {
+    it('enforces sequential flow (energy → plan → conversation)', () => {
+      // Cannot skip from energy directly to conversation
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
-      const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
-      // Should still be energy — invalid transition ignored
-      expect(step).toBe('energy')
+      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('energy')
+
+      // Must go through plan first
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('plan')
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
+      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('conversation')
     })
   })
 

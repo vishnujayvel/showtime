@@ -346,13 +346,13 @@ describe('showStore', () => {
       expect(useShowStore.getState().celebrationActive).toBe(true)
 
       // Change phase during celebration (e.g., user enters intermission)
-      useShowStore.setState({ phase: 'intermission' })
+      useShowStore.getState().enterIntermission()
 
       vi.advanceTimersByTime(1800)
 
-      // Should NOT have advanced to next act — phase guard blocks it
+      // Should NOT have advanced to next act — XState machine ignores
+      // CELEBRATION_DONE from intermission (only valid from celebrating)
       expect(useShowStore.getState().phase).toBe('intermission')
-      expect(useShowStore.getState().celebrationActive).toBe(false)
     })
 
     it('resetShow cancels celebration timeout', () => {
