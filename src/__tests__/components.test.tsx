@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
 import { useShowStore } from '../renderer/stores/showStore'
-import { resetShowActor } from '../renderer/machines/showActor'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
 import type { Act, ShowVerdict as ShowVerdictType } from '../shared/types'
 
 // ─── Mock framer-motion to avoid animation issues in tests ───
@@ -127,8 +127,8 @@ describe('BeatCheckModal', () => {
     })
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText(/Lock the Beat/))
-    expect(useShowStore.getState().beatsLocked).toBe(1)
-    expect(useShowStore.getState().celebrationActive).toBe(true)
+    expect(showActor.getSnapshot().context.beatsLocked).toBe(1)
+    expect(showActor.getSnapshot().context.celebrationActive).toBe(true)
   })
 
   it('calls skipBeat when "Not this time" clicked', () => {
@@ -142,8 +142,8 @@ describe('BeatCheckModal', () => {
     })
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText('Not this time'))
-    expect(useShowStore.getState().beatsLocked).toBe(0)
-    expect(useShowStore.getState().beatCheckPending).toBe(false)
+    expect(showActor.getSnapshot().context.beatsLocked).toBe(0)
+    expect(showActor.getSnapshot().context.beatCheckPending).toBe(false)
   })
 })
 

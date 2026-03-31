@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useShowContext, useShowSend } from '../machines/ShowMachineProvider'
+import { useUIStore } from '../stores/uiStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
 import { buildRefinementPrompt } from '../lib/refinement-prompt'
@@ -11,7 +12,7 @@ import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatDateLabel } from '../lib/utils'
 import { cn } from '../lib/utils'
-import type { EnergyLevel } from '../../shared/types'
+import type { EnergyLevel, ShowLineup } from '../../shared/types'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
 
@@ -23,18 +24,19 @@ const ENERGY_OPTIONS: { level: EnergyLevel; emoji: string; label: string }[] = [
 ]
 
 export function WritersRoomView() {
-  const energy = useShowStore((s) => s.energy)
-  const acts = useShowStore((s) => s.acts)
-  const setEnergy = useShowStore((s) => s.setEnergy)
-  const setLineup = useShowStore((s) => s.setLineup)
-  const triggerGoingLive = useShowStore((s) => s.triggerGoingLive)
-  const calendarAvailable = useShowStore((s) => s.calendarAvailable)
-  const calendarEnabled = useShowStore((s) => s.calendarEnabled)
-  const setCalendarEnabled = useShowStore((s) => s.setCalendarEnabled)
-  const calendarEvents = useShowStore((s) => s.calendarEvents)
-  const calendarFetchStatus = useShowStore((s) => s.calendarFetchStatus)
-  const setCalendarEvents = useShowStore((s) => s.setCalendarEvents)
-  const setCalendarFetchStatus = useShowStore((s) => s.setCalendarFetchStatus)
+  const energy = useShowContext((ctx) => ctx.energy)
+  const acts = useShowContext((ctx) => ctx.acts)
+  const send = useShowSend()
+  const setEnergy = useCallback((level: EnergyLevel) => send({ type: 'SET_ENERGY', level }), [send])
+  const setLineup = useCallback((lineup: ShowLineup) => send({ type: 'SET_LINEUP', lineup }), [send])
+  const triggerGoingLive = useCallback(() => send({ type: 'TRIGGER_GOING_LIVE' }), [send])
+  const calendarAvailable = useUIStore((s) => s.calendarAvailable)
+  const calendarEnabled = useUIStore((s) => s.calendarEnabled)
+  const setCalendarEnabled = useUIStore((s) => s.setCalendarEnabled)
+  const calendarEvents = useUIStore((s) => s.calendarEvents)
+  const calendarFetchStatus = useUIStore((s) => s.calendarFetchStatus)
+  const setCalendarEvents = useUIStore((s) => s.setCalendarEvents)
+  const setCalendarFetchStatus = useUIStore((s) => s.setCalendarFetchStatus)
 
   const sendMessage = useSessionStore((s) => s.sendMessage)
   const tabs = useSessionStore((s) => s.tabs)

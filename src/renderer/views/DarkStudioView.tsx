@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore } from '../stores/showStore'
+import { useShowSend } from '../machines/ShowMachineProvider'
 import { Button } from '../ui/button'
 
 function getTemporalGreeting(): { heading: string; sub: string } {
@@ -28,7 +28,8 @@ interface DarkStudioViewProps {
 }
 
 export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
-  const triggerColdOpen = useShowStore((s) => s.triggerColdOpen)
+  const send = useShowSend()
+  const triggerColdOpen = useCallback(() => send({ type: 'TRIGGER_COLD_OPEN' }), [send])
   const greeting = useMemo(getTemporalGreeting, [])
 
   // Pre-warm Claude subprocess for faster Writer's Room startup

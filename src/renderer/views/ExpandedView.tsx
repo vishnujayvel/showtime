@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
+import { collapseTier } from '../../shared/types'
 import { TimerPanel } from '../panels/TimerPanel'
 import { LineupPanel } from '../panels/LineupPanel'
 import { OnAirIndicator } from '../components/OnAirIndicator'
@@ -20,14 +21,16 @@ function formatStartTime(timestamp: number): string {
 }
 
 export function ExpandedView() {
-  const phase = useShowStore((s) => s.phase)
-  const acts = useShowStore((s) => s.acts)
-  const currentAct = useShowStore(selectCurrentAct)
-  const beatsLocked = useShowStore((s) => s.beatsLocked)
-  const beatThreshold = useShowStore((s) => s.beatThreshold)
-  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
-  const enterDirector = useShowStore((s) => s.enterDirector)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
+  const phase = useShowPhase()
+  const acts = useShowContext((ctx) => ctx.acts)
+  const currentAct = useShowSelector(showSelectors.currentAct)
+  const beatsLocked = useShowContext((ctx) => ctx.beatsLocked)
+  const beatThreshold = useShowContext((ctx) => ctx.beatThreshold)
+  const viewTier = useShowContext((ctx) => ctx.viewTier)
+  const send = useShowSend()
+  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
+  const enterDirector = useCallback(() => send({ type: 'ENTER_DIRECTOR' }), [send])
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
 
   const dateLabel = useMemo(formatDateLabel, [])
 
