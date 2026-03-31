@@ -12,7 +12,8 @@ Showtime is an **AI-native macOS desktop app** — built with Claude Code as a f
 | **Styling** | Tailwind CSS v4 (CSS-first) | ^4.2.1 |
 | **Components** | shadcn/ui + Radix UI | latest |
 | **Animation** | Framer Motion (spring physics) | ^12.35.1 |
-| **State** | Zustand | ^5.0.0 |
+| **State (phases)** | XState v5 | ^5.0.0 |
+| **State (UI)** | Zustand | ^5.0.0 |
 | **Database** | SQLite via better-sqlite3 + Drizzle ORM | ^12.8.0 / ^0.45.1 |
 | **AI Runtime** | Claude Code subprocess (node-pty) | CLI v2.1+ |
 | **Unit Tests** | Vitest + Testing Library | ^4.1.0 |
@@ -157,14 +158,43 @@ Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightF
 
 ## State Management
 
-### Zustand (^5.0.0)
+### Hybrid: XState v5 + Zustand
 
-Two stores, no React Context for state:
+Show phase management uses an **XState v5 statechart** as the source of truth. UI-only state uses Zustand. See [ADR: XState Migration](../plans/adr-xstate-migration.md) for the full rationale.
 
-| Store | Purpose |
-|-------|---------|
-| `showStore` | Show phase machine, acts, beats, energy, timer, verdict, lineup |
-| `sessionStore` | Claude Code tab sessions, streaming state, error tracking |
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Phase machine** | XState v5 (`showMachine.ts`) | Declarative statechart: 6 phases, nested substates, guards, actions |
+| **React bridge** | `@xstate/react` (`ShowMachineProvider.tsx`) | `useShowActor`, `useShowSelector`, `useShowSend` hooks |
+| **Singleton actor** | `showActor.ts` | Actor lifecycle, SQLite sync subscription |
+| **UI store** | Zustand (`uiStore.ts`) | View tier preferences, transient UI flags |
+| **Bridge store** | Zustand (`showStore.ts`) | Backward-compatible API — delegates to XState actor |
+| **Session store** | Zustand (`sessionStore.ts`) | Claude Code tab sessions, streaming state, error tracking |
+
+#### Machine Structure
+
+```
+show (parallel)
+├── phase: no_show → cold_open → writers_room → going_live → live → intermission/director → strike
+│   ├── writers_room: energy → plan → conversation → lineup_ready
+│   ├── live: act_active → beat_check → celebrating
+│   └── intermission: resting / breathing_pause
+└── animation: idle / cold_open / going_live
+```
+
+#### Migration Path
+
+Components can use either API during the transition:
+
+```tsx
+// Legacy (Zustand bridge — still works)
+const phase = useShowStore((s) => s.phase)
+
+// New (XState hooks — preferred for new code)
+const phase = useShowSelector(showSelectors.phase)
+const send = useShowSend()
+send({ type: 'ENTER_WRITERS_ROOM' })
+```
 
 ---
 
@@ -292,7 +322,7 @@ These are enforced by CLAUDE.md, CodeRabbit, and pre-commit hooks:
 
 1. **No inline styles** — 100% Tailwind utility classes
 2. **Spring physics only** — No linear CSS transitions or Framer Motion durations
-3. **Zustand only** — No React Context for state management
+3. **XState for phases, Zustand for UI** — Phase state via `showMachine.ts`, UI state via Zustand stores. `ShowMachineProvider` is the one allowed React Context.
 4. **Typed IPC** — All channels via `IPC` enum, all payloads typed in `shared/types.ts`
 5. **E2E coverage** — Every feature must have Playwright tests
 6. **macOS native feel** — `frame: false`, no vibrancy, CSS backgrounds, content-tight sizing

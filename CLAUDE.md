@@ -35,7 +35,8 @@ Showtime (Electron App, macOS only)
 │   ├── views/               ← 12 views: DarkStudioView, WritersRoomView, PillView, CompactView, DashboardView, ExpandedView, StrikeView, SettingsView, HistoryView, OnboardingView, GoingLiveTransition, ColdOpenTransition
 │   ├── panels/              ← TimerPanel, LineupPanel, ChatPanel
 │   ├── components/          ← ActCard, BeatCheckModal, BeatCounter, DirectorMode, etc.
-│   ├── stores/              ← showStore (Zustand), sessionStore (simplified)
+│   ├── machines/            ← showMachine (XState v5), ShowMachineProvider, showActor
+│   ├── stores/              ← showStore (bridge → XState), uiStore, sessionStore
 │   ├── hooks/               ← useTimer
 │   └── ui/                  ← shadcn/ui components (Button, Dialog, Card, etc.)
 └── Skills
@@ -168,12 +169,24 @@ E2E tests must cover:
 
 The renderer communicates with main ONLY through the typed `window.clui` API defined in `preload/index.ts`. Never import Node.js modules in the renderer.
 
-### 8. State Management — Zustand Only
+### 8. State Management — XState for Phases, Zustand for UI
 
-Use Zustand for all global state. No React Context for state management.
+Show phase lifecycle is managed by an **XState v5 statechart** (`showMachine.ts`). UI-only state uses Zustand. See `docs/plans/adr-xstate-migration.md` for rationale.
 
-- `showStore.ts` — Show state machine (phase, acts, beats, energy, timer)
-- `sessionStore.ts` — Claude subprocess session (simplified to single session)
+| Layer | File | Purpose |
+|-------|------|---------|
+| Phase machine | `src/renderer/machines/showMachine.ts` | Declarative statechart: phases, guards, actions |
+| React bridge | `src/renderer/machines/ShowMachineProvider.tsx` | `useShowActor`, `useShowSelector`, `useShowSend` |
+| Singleton actor | `src/renderer/machines/showActor.ts` | Actor lifecycle + SQLite sync |
+| UI store | `src/renderer/stores/uiStore.ts` | View tier, transient UI flags |
+| Bridge store | `src/renderer/stores/showStore.ts` | Legacy Zustand API — delegates to XState |
+| Session store | `src/renderer/stores/sessionStore.ts` | Claude subprocess session |
+
+**Rules:**
+- `ShowMachineProvider` is the **one allowed React Context** — it wraps a single XState actor, not general state
+- New components should use `useShowSelector` / `useShowSend` hooks, not `useShowStore`
+- Phase transitions MUST go through the XState machine — never mutate phase directly in Zustand
+- UI-only state (view tier, overlay flags) stays in Zustand stores
 
 ## Design System
 
