@@ -3,7 +3,7 @@ import remarkGfm from 'remark-gfm'
 import { motion } from 'framer-motion'
 import { LineupCard } from './LineupCard'
 import { tryParseLineup } from '../lib/lineup-parser'
-import { useShowStore } from '../stores/showStore'
+import { useShowContext, useShowSend } from '../machines/ShowMachineProvider'
 import { cn } from '../lib/utils'
 import type { Message, ShowLineup } from '../../shared/types'
 import type { Components } from 'react-markdown'
@@ -165,9 +165,9 @@ const markdownComponents: Components = {
 }
 
 function AssistantBubble({ message }: { message: Message }) {
-  const setLineup = useShowStore((s) => s.setLineup)
-  const acts = useShowStore((s) => s.acts)
-  const handleLineupEdit = (updated: ShowLineup) => setLineup(updated)
+  const send = useShowSend()
+  const acts = useShowContext((ctx) => ctx.acts)
+  const handleLineupEdit = (updated: ShowLineup) => send({ type: 'SET_LINEUP', lineup: updated })
 
   // Split lineup JSON out BEFORE rendering — no raw JSON in chat
   const { textBefore, lineup: parsedLineup, textAfter } = splitLineupFromContent(message.content)

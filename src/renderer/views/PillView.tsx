@@ -1,6 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
+import { expandTier, collapseTier } from '../../shared/types'
+import type { ViewTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
@@ -18,11 +20,13 @@ const PHASE_INFO: Record<string, { label: string; description: string }> = {
 }
 
 export function PillView() {
-  const phase = useShowStore((s) => s.phase)
-  const expandViewTier = useShowStore((s) => s.expandViewTier)
-  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
-  const setViewTier = useShowStore((s) => s.setViewTier)
-  const currentAct = useShowStore(selectCurrentAct)
+  const phase = useShowPhase()
+  const viewTier = useShowContext((ctx) => ctx.viewTier)
+  const send = useShowSend()
+  const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
+  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
+  const setViewTier = useCallback((tier: ViewTier) => send({ type: 'SET_VIEW_TIER', tier }), [send])
+  const currentAct = useShowSelector(showSelectors.currentAct)
   const { minutes, seconds, isRunning } = useTimer()
 
   const isUrgent = minutes < 5 && isRunning

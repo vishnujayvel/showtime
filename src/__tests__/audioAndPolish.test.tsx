@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vite
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
 import { useShowStore } from '../renderer/stores/showStore'
-import { resetShowActor } from '../renderer/machines/showActor'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
 
 // ─── Mock framer-motion ───
 vi.mock('framer-motion', () => ({
@@ -140,20 +140,19 @@ describe('PillView drag zones', () => {
   })
 
   it('click zone triggers expandViewTier', () => {
-    const expandSpy = vi.fn()
     useShowStore.setState({
       phase: 'live',
       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
       viewTier: 'micro',
-      expandViewTier: expandSpy,
     })
     const { container } = render(<PillView />)
     const noDragZone = container.querySelector('.no-drag')
     expect(noDragZone).toBeInTheDocument()
     fireEvent.click(noDragZone!)
-    expect(expandSpy).toHaveBeenCalled()
+    // After expand, viewTier should no longer be 'micro'
+    expect(showActor.getSnapshot().context.viewTier).not.toBe('micro')
   })
 })
 

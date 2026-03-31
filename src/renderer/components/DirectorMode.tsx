@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useShowContext, useShowSend } from '../machines/ShowMachineProvider'
 import { Button } from '../ui/button'
 import { getTemporalShowLabel } from '../lib/utils'
 import { motion } from 'framer-motion'
@@ -13,13 +13,8 @@ import {
 } from '../ui/dialog'
 
 export function DirectorMode() {
-  const exitDirector = useShowStore((s) => s.exitDirector)
-  const skipAct = useShowStore((s) => s.skipAct)
-  const currentActId = useShowStore((s) => s.currentActId)
-  const callShowEarly = useShowStore((s) => s.callShowEarly)
-  const enterIntermission = useShowStore((s) => s.enterIntermission)
-  const startBreathingPause = useShowStore((s) => s.startBreathingPause)
-  const resetShow = useShowStore((s) => s.resetShow)
+  const send = useShowSend()
+  const currentActId = useShowContext((ctx) => ctx.currentActId)
   const [confirmReset, setConfirmReset] = useState(false)
 
   return (
@@ -41,8 +36,8 @@ export function DirectorMode() {
           <Button
             className="w-full py-3 rounded-xl bg-surface-hover text-txt-primary text-sm font-medium border border-border-default hover:bg-[#2a2a2e] transition-colors"
             onClick={() => {
-              skipAct(currentActId!)
-              exitDirector()
+              send({ type: 'SKIP_ACT', actId: currentActId! })
+              send({ type: 'EXIT_DIRECTOR' })
             }}
           >
             Skip this act, move on
@@ -51,7 +46,7 @@ export function DirectorMode() {
           <Button
             className="w-full py-3 rounded-xl bg-onair/10 text-onair text-sm font-medium border border-onair/20 hover:bg-onair/15 transition-colors"
             onClick={() => {
-              callShowEarly()
+              send({ type: 'CALL_SHOW_EARLY' })
             }}
           >
             Call the show early
@@ -60,8 +55,8 @@ export function DirectorMode() {
           <Button
             className="w-full py-3 rounded-xl bg-purple-500/10 text-purple-400 text-sm font-medium border border-purple-500/20 hover:bg-purple-500/15 transition-colors"
             onClick={() => {
-              enterIntermission()
-              exitDirector()
+              send({ type: 'ENTER_INTERMISSION' })
+              send({ type: 'EXIT_DIRECTOR' })
             }}
           >
             Take a longer break
@@ -70,8 +65,8 @@ export function DirectorMode() {
           <Button
             className="w-full py-3 rounded-xl bg-blue-500/10 text-blue-400 text-sm font-medium border border-blue-500/20 hover:bg-blue-500/15 transition-colors"
             onClick={() => {
-              startBreathingPause()
-              exitDirector()
+              send({ type: 'START_BREATHING_PAUSE' })
+              send({ type: 'EXIT_DIRECTOR' })
             }}
           >
             Just a moment
@@ -104,7 +99,7 @@ export function DirectorMode() {
               variant="accent"
               onClick={() => {
                 setConfirmReset(false)
-                resetShow()
+                send({ type: 'RESET' })
               }}
             >
               Reset Show

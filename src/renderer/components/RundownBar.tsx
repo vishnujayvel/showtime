@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowPhase, useShowContext, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
 import { getCategoryClasses } from '../lib/category-colors'
 import type { Act } from '../../shared/types'
 
@@ -24,12 +24,12 @@ function formatDriftBadge(currentActIndex: number, totalActs: number, driftSecon
 }
 
 export function RundownBar({ variant = 'full' }: RundownBarProps) {
-  const phase = useShowStore((s) => s.phase)
-  const acts = useShowStore((s) => s.acts)
-  const currentActId = useShowStore((s) => s.currentActId)
-  const currentAct = useShowStore(selectCurrentAct)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
-  const showDate = useShowStore((s) => s.showDate)
+  const phase = useShowPhase()
+  const acts = useShowContext((ctx) => ctx.acts)
+  const currentActId = useShowContext((ctx) => ctx.currentActId)
+  const currentAct = useShowSelector(showSelectors.currentAct)
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
+  const showDate = useShowContext((ctx) => ctx.showDate)
 
   const [driftSeconds, setDriftSeconds] = useState(0)
   const [nowPercent, setNowPercent] = useState(0)
