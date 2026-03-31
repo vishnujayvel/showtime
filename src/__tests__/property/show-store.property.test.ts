@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import fc from 'fast-check'
 import { useShowStore } from '../../renderer/stores/showStore'
+import { resetShowActor } from '../../renderer/machines/showActor'
 import type { ShowPhase, ViewTier, ShowLineup } from '../../shared/types'
 
 // ─── Helpers ───
@@ -25,6 +26,7 @@ const sampleLineup: ShowLineup = {
 }
 
 function resetStore() {
+  resetShowActor()
   useShowStore.setState({
     phase: 'no_show',
     energy: null,

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
 import { useShowStore } from '../renderer/stores/showStore'
+import { resetShowActor } from '../renderer/machines/showActor'
 import type { Act, ShowVerdict as ShowVerdictType } from '../shared/types'
 
 // ─── Mock framer-motion to avoid animation issues in tests ───
@@ -28,6 +29,7 @@ function stripMotionProps(props: any) {
 
 // Reset store between tests
 function resetStore() {
+  resetShowActor()
   useShowStore.setState({
     phase: 'no_show',
     energy: null,

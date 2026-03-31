@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useShowStore } from '../renderer/stores/showStore'
+import { resetShowActor } from '../renderer/machines/showActor'
 import { useTimer } from '../renderer/hooks/useTimer'
 
 function resetStore() {
+  resetShowActor()
   useShowStore.setState({
     phase: 'live',
     energy: 'high',

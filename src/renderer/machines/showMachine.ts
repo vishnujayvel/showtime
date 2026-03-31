@@ -416,6 +416,10 @@ export const showMachine = setup({
     // ─── Main Phase Region ───
     phase: {
       initial: 'no_show',
+      // SET_VIEW_TIER handled at the phase level so it works from any phase
+      on: {
+        SET_VIEW_TIER: { actions: 'setViewTierContext' },
+      },
       states: {
         no_show: {
           on: {
@@ -508,7 +512,6 @@ export const showMachine = setup({
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
-            SET_VIEW_TIER: { actions: 'setViewTierContext' },
             RESET: {
               target: 'no_show',
               actions: 'resetContext',
@@ -605,7 +608,6 @@ export const showMachine = setup({
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
-            SET_VIEW_TIER: { actions: 'setViewTierContext' },
             RESET: {
               target: 'no_show',
               actions: 'resetContext',
