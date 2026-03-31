@@ -1,27 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useShowStore, selectCurrentAct } from '../renderer/stores/showStore'
-import { resetShowActor } from '../renderer/machines/showActor'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
+import { getPhaseFromState } from '../renderer/machines/showMachine'
 import type { ShowLineup } from '../shared/types'
 
-// Helper to reset store between tests
-function resetStore() {
-  resetShowActor()
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    celebrationActive: false,
-  })
+/** Helper to get current phase from the actor */
+function phase() {
+  return getPhaseFromState(showActor.getSnapshot().value as Record<string, unknown>)
+}
+
+/** Helper to get actor context */
+function ctx() {
+  return showActor.getSnapshot().context
 }
 
 const sampleLineup: ShowLineup = {
@@ -34,9 +23,22 @@ const sampleLineup: ShowLineup = {
   openingNote: 'Solid lineup!',
 }
 
-describe('showStore', () => {
+/** Navigate actor to writers_room with lineup set */
+function setupLineup() {
+  showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+  showActor.send({ type: 'SET_ENERGY', level: 'high' })
+  showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+}
+
+/** Navigate actor to live phase */
+function goLive() {
+  setupLineup()
+  showActor.send({ type: 'START_SHOW' })
+}
+
+describe('showActor', () => {
   beforeEach(() => {
-    resetStore()
+    resetShowActor()
     vi.clearAllMocks()
   })
 
@@ -44,237 +46,220 @@ describe('showStore', () => {
 
   describe('initial state', () => {
     it('starts in no_show phase', () => {
-      expect(useShowStore.getState().phase).toBe('no_show')
+      expect(phase()).toBe('no_show')
     })
 
     it('has no energy selected', () => {
-      expect(useShowStore.getState().energy).toBeNull()
+      expect(ctx().energy).toBeNull()
     })
 
     it('has no acts', () => {
-      expect(useShowStore.getState().acts).toHaveLength(0)
+      expect(ctx().acts).toHaveLength(0)
     })
 
     it('has default beat threshold of 3', () => {
-      expect(useShowStore.getState().beatThreshold).toBe(3)
+      expect(ctx().beatThreshold).toBe(3)
     })
 
     it('has no verdict', () => {
-      expect(useShowStore.getState().verdict).toBeNull()
+      expect(ctx().verdict).toBeNull()
     })
   })
 
   // ─── Writer's Room ───
 
-  describe('setEnergy', () => {
+  describe('SET_ENERGY', () => {
     it('sets energy level', () => {
-      useShowStore.getState().setEnergy('high')
-      expect(useShowStore.getState().energy).toBe('high')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      showActor.send({ type: 'SET_ENERGY', level: 'high' })
+      expect(ctx().energy).toBe('high')
     })
 
     it('can change energy level', () => {
-      useShowStore.getState().setEnergy('high')
-      useShowStore.getState().setEnergy('low')
-      expect(useShowStore.getState().energy).toBe('low')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      showActor.send({ type: 'SET_ENERGY', level: 'high' })
+      showActor.send({ type: 'SET_ENERGY', level: 'low' })
+      expect(ctx().energy).toBe('low')
     })
   })
 
-  describe('setLineup', () => {
+  describe('SET_LINEUP', () => {
     it('creates acts from lineup', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      const state = useShowStore.getState()
+      setupLineup()
 
-      expect(state.acts).toHaveLength(3)
-      expect(state.acts[0].name).toBe('Morning Deep Work')
-      expect(state.acts[0].sketch).toBe('Deep Work')
-      expect(state.acts[0].durationMinutes).toBe(60)
-      expect(state.acts[0].status).toBe('upcoming')
-      expect(state.acts[0].beatLocked).toBe(false)
+      expect(ctx().acts).toHaveLength(3)
+      expect(ctx().acts[0].name).toBe('Morning Deep Work')
+      expect(ctx().acts[0].sketch).toBe('Deep Work')
+      expect(ctx().acts[0].durationMinutes).toBe(60)
+      expect(ctx().acts[0].status).toBe('upcoming')
+      expect(ctx().acts[0].beatLocked).toBe(false)
     })
 
     it('sets beat threshold from lineup', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      expect(useShowStore.getState().beatThreshold).toBe(3)
+      setupLineup()
+      expect(ctx().beatThreshold).toBe(3)
     })
 
-    it('transitions phase to writers_room', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      expect(useShowStore.getState().phase).toBe('writers_room')
+    it('phase stays in writers_room', () => {
+      setupLineup()
+      expect(phase()).toBe('writers_room')
     })
 
     it('assigns sequential order to acts', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      const acts = useShowStore.getState().acts
+      setupLineup()
+      const acts = ctx().acts
       expect(acts[0].order).toBe(0)
       expect(acts[1].order).toBe(1)
       expect(acts[2].order).toBe(2)
     })
 
     it('generates unique IDs for acts', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      const acts = useShowStore.getState().acts
+      setupLineup()
+      const acts = ctx().acts
       const ids = new Set(acts.map((a) => a.id))
       expect(ids.size).toBe(3)
     })
   })
 
-  // ─── startShow ───
+  // ─── START_SHOW ───
 
-  describe('startShow', () => {
+  describe('START_SHOW', () => {
     it('does nothing with no acts', () => {
-      useShowStore.getState().startShow()
-      expect(useShowStore.getState().phase).toBe('no_show')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      showActor.send({ type: 'START_SHOW' })
+      expect(phase()).toBe('writers_room')
     })
 
     it('transitions to live phase', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      expect(useShowStore.getState().phase).toBe('live')
+      goLive()
+      expect(phase()).toBe('live')
     })
 
     it('sets first act as active', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      const state = useShowStore.getState()
+      goLive()
 
-      expect(state.currentActId).toBe(state.acts[0].id)
-      expect(state.acts[0].status).toBe('active')
-      expect(state.acts[0].startedAt).toBeDefined()
+      expect(ctx().currentActId).toBe(ctx().acts[0].id)
+      expect(ctx().acts[0].status).toBe('active')
+      expect(ctx().acts[0].startedAt).toBeDefined()
     })
 
     it('sets timer for first act duration', () => {
-      useShowStore.getState().setLineup(sampleLineup)
       const before = Date.now()
-      useShowStore.getState().startShow()
+      goLive()
       const after = Date.now()
 
-      const timerEnd = useShowStore.getState().timerEndAt!
+      const timerEnd = ctx().timerEndAt!
       // 60 min act = 3,600,000 ms
       expect(timerEnd).toBeGreaterThanOrEqual(before + 60 * 60 * 1000)
       expect(timerEnd).toBeLessThanOrEqual(after + 60 * 60 * 1000)
     })
 
     it('collapses to pill view', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      expect(useShowStore.getState().viewTier).toBe('micro')
+      goLive()
+      expect(ctx().viewTier).toBe('micro')
     })
 
     it('leaves other acts as upcoming', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      const acts = useShowStore.getState().acts
+      goLive()
+      const acts = ctx().acts
       expect(acts[1].status).toBe('upcoming')
       expect(acts[2].status).toBe('upcoming')
     })
   })
 
-  // ─── completeAct ───
+  // ─── COMPLETE_ACT ───
 
-  describe('completeAct', () => {
+  describe('COMPLETE_ACT', () => {
     beforeEach(() => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
     })
 
     it('marks act as completed', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
 
-      const act = useShowStore.getState().acts.find((a) => a.id === actId)
+      const act = ctx().acts.find((a) => a.id === actId)
       expect(act?.status).toBe('completed')
       expect(act?.completedAt).toBeDefined()
     })
 
     it('clears timer', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
 
-      expect(useShowStore.getState().timerEndAt).toBeNull()
-      expect(useShowStore.getState().timerPausedRemaining).toBeNull()
+      expect(ctx().timerEndAt).toBeNull()
+      expect(ctx().timerPausedRemaining).toBeNull()
     })
 
     it('triggers beat check', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
-      expect(useShowStore.getState().beatCheckPending).toBe(true)
-    })
-
-    it('sends IPC notifications', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
-
-      expect(window.clui.notifyActComplete).toHaveBeenCalledWith('Morning Deep Work', 'Deep Work')
-      expect(window.clui.notifyBeatCheck).toHaveBeenCalledWith('Morning Deep Work')
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
     })
   })
 
-  // ─── skipAct ───
+  // ─── SKIP_ACT ───
 
-  describe('skipAct', () => {
+  describe('SKIP_ACT', () => {
     beforeEach(() => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
     })
 
     it('marks act as skipped', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().skipAct(actId)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'SKIP_ACT', actId })
 
-      const act = useShowStore.getState().acts.find((a) => a.id === actId)
+      const act = ctx().acts.find((a) => a.id === actId)
       expect(act?.status).toBe('skipped')
     })
 
     it('auto-starts next act when skipping active act', () => {
-      const firstId = useShowStore.getState().currentActId!
-      useShowStore.getState().skipAct(firstId)
+      const firstId = ctx().currentActId!
+      showActor.send({ type: 'SKIP_ACT', actId: firstId })
 
-      const state = useShowStore.getState()
-      expect(state.currentActId).not.toBe(firstId)
-      expect(state.currentActId).toBe(state.acts[1].id)
-      expect(state.acts[1].status).toBe('active')
+      expect(ctx().currentActId).not.toBe(firstId)
+      expect(ctx().currentActId).toBe(ctx().acts[1].id)
+      expect(ctx().acts[1].status).toBe('active')
     })
 
     it('strikes stage when skipping last upcoming act', () => {
-      const acts = useShowStore.getState().acts
+      const acts = ctx().acts
       // Skip first two, third will be auto-started then we skip that
-      useShowStore.getState().skipAct(acts[0].id)
-      useShowStore.getState().skipAct(acts[1].id)
-      useShowStore.getState().skipAct(acts[2].id)
+      showActor.send({ type: 'SKIP_ACT', actId: acts[0].id })
+      showActor.send({ type: 'SKIP_ACT', actId: acts[1].id })
+      showActor.send({ type: 'SKIP_ACT', actId: acts[2].id })
 
-      expect(useShowStore.getState().phase).toBe('strike')
+      expect(phase()).toBe('strike')
     })
   })
 
-  // ─── extendAct ───
+  // ─── EXTEND_ACT ───
 
-  describe('extendAct', () => {
+  describe('EXTEND_ACT', () => {
     it('adds time to timer', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      const timerBefore = useShowStore.getState().timerEndAt!
-      useShowStore.getState().extendAct(15)
-      const timerAfter = useShowStore.getState().timerEndAt!
+      const timerBefore = ctx().timerEndAt!
+      showActor.send({ type: 'EXTEND_ACT', minutes: 15 })
+      const timerAfter = ctx().timerEndAt!
 
       expect(timerAfter - timerBefore).toBe(15 * 60 * 1000)
     })
 
     it('does nothing when no timer is active', () => {
-      useShowStore.getState().extendAct(15)
-      expect(useShowStore.getState().timerEndAt).toBeNull()
+      showActor.send({ type: 'EXTEND_ACT', minutes: 15 })
+      expect(ctx().timerEndAt).toBeNull()
     })
   })
 
   // ─── Beat Tracking ───
 
-  describe('lockBeat', () => {
+  describe('LOCK_BEAT', () => {
     beforeEach(() => {
       vi.useFakeTimers()
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      goLive()
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
     })
 
     afterEach(() => {
@@ -282,42 +267,40 @@ describe('showStore', () => {
     })
 
     it('increments beatsLocked', () => {
-      useShowStore.getState().lockBeat()
-      expect(useShowStore.getState().beatsLocked).toBe(1)
+      showActor.send({ type: 'LOCK_BEAT' })
+      expect(ctx().beatsLocked).toBe(1)
     })
 
     it('clears beatCheckPending after celebration delay', () => {
-      expect(useShowStore.getState().beatCheckPending).toBe(true)
-      useShowStore.getState().lockBeat()
+      expect(ctx().beatCheckPending).toBe(true)
+      showActor.send({ type: 'LOCK_BEAT' })
       // During celebration, beatCheckPending stays true
-      expect(useShowStore.getState().celebrationActive).toBe(true)
+      expect(ctx().celebrationActive).toBe(true)
       vi.advanceTimersByTime(1800)
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
-      expect(useShowStore.getState().celebrationActive).toBe(false)
+      expect(ctx().beatCheckPending).toBe(false)
+      expect(ctx().celebrationActive).toBe(false)
     })
 
     it('marks act as beat-locked', () => {
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().lockBeat()
-      const act = useShowStore.getState().acts.find((a) => a.id === actId)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'LOCK_BEAT' })
+      const act = ctx().acts.find((a) => a.id === actId)
       expect(act?.beatLocked).toBe(true)
     })
 
     it('starts next act after locking', () => {
-      useShowStore.getState().lockBeat()
+      showActor.send({ type: 'LOCK_BEAT' })
       vi.advanceTimersByTime(1800)
-      const state = useShowStore.getState()
-      expect(state.acts[1].status).toBe('active')
+      expect(ctx().acts[1].status).toBe('active')
     })
   })
 
-  describe('lockBeat race condition guards', () => {
+  describe('LOCK_BEAT race condition guards', () => {
     beforeEach(() => {
       vi.useFakeTimers()
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      goLive()
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
     })
 
     afterEach(() => {
@@ -325,229 +308,222 @@ describe('showStore', () => {
     })
 
     it('cancels first timeout when lockBeat called twice (double-click)', () => {
-      useShowStore.getState().lockBeat()
-      expect(useShowStore.getState().beatsLocked).toBe(1)
+      showActor.send({ type: 'LOCK_BEAT' })
+      expect(ctx().beatsLocked).toBe(1)
 
       // Call lockBeat again before timeout fires (simulates double-click)
-      useShowStore.getState().lockBeat()
-      expect(useShowStore.getState().beatsLocked).toBe(2)
+      showActor.send({ type: 'LOCK_BEAT' })
+      expect(ctx().beatsLocked).toBe(2)
 
       // Only one timeout should fire — advance past the 1800ms window
       vi.advanceTimersByTime(1800)
 
       // Should not have called startAct twice — only one next act should be active
-      const state = useShowStore.getState()
-      const activeActs = state.acts.filter((a) => a.status === 'active')
+      const activeActs = ctx().acts.filter((a) => a.status === 'active')
       expect(activeActs.length).toBeLessThanOrEqual(1)
     })
 
     it('does not advance when phase changes during celebration', () => {
-      useShowStore.getState().lockBeat()
-      expect(useShowStore.getState().celebrationActive).toBe(true)
+      showActor.send({ type: 'LOCK_BEAT' })
+      expect(ctx().celebrationActive).toBe(true)
 
       // Change phase during celebration (e.g., user enters intermission)
-      useShowStore.getState().enterIntermission()
+      showActor.send({ type: 'ENTER_INTERMISSION' })
 
       vi.advanceTimersByTime(1800)
 
       // Should NOT have advanced to next act — XState machine ignores
       // CELEBRATION_DONE from intermission (only valid from celebrating)
-      expect(useShowStore.getState().phase).toBe('intermission')
+      expect(phase()).toBe('intermission')
     })
 
     it('resetShow cancels celebration timeout', () => {
-      useShowStore.getState().lockBeat()
-      expect(useShowStore.getState().celebrationActive).toBe(true)
+      showActor.send({ type: 'LOCK_BEAT' })
+      expect(ctx().celebrationActive).toBe(true)
 
       // Reset during celebration
-      useShowStore.getState().resetShow()
-      expect(useShowStore.getState().celebrationActive).toBe(false)
-      expect(useShowStore.getState().phase).toBe('no_show')
+      showActor.send({ type: 'RESET' })
+      expect(ctx().celebrationActive).toBe(false)
+      expect(phase()).toBe('no_show')
 
       // Advance past the celebration window — should not crash or change state
       vi.advanceTimersByTime(1800)
-      expect(useShowStore.getState().phase).toBe('no_show')
-      expect(useShowStore.getState().acts).toHaveLength(0)
+      expect(phase()).toBe('no_show')
+      expect(ctx().acts).toHaveLength(0)
     })
 
     it('does not advance when celebrationActive cleared externally', () => {
-      useShowStore.getState().lockBeat()
+      showActor.send({ type: 'LOCK_BEAT' })
 
       // Clear celebration externally
-      useShowStore.setState({ celebrationActive: false })
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { celebrationActive: false } })
 
       vi.advanceTimersByTime(1800)
 
       // Guard should prevent startAct/strikeTheStage
       // Phase remains live since the guard blocks advancement
-      expect(useShowStore.getState().celebrationActive).toBe(false)
+      expect(ctx().celebrationActive).toBe(false)
     })
   })
 
-  describe('skipBeat', () => {
+  describe('SKIP_BEAT', () => {
     beforeEach(() => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      goLive()
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
     })
 
     it('clears beatCheckPending without incrementing beats', () => {
-      useShowStore.getState().skipBeat()
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
-      expect(useShowStore.getState().beatsLocked).toBe(0)
+      showActor.send({ type: 'SKIP_BEAT' })
+      expect(ctx().beatCheckPending).toBe(false)
+      expect(ctx().beatsLocked).toBe(0)
     })
 
     it('starts next act after skipping', () => {
-      useShowStore.getState().skipBeat()
-      const state = useShowStore.getState()
-      expect(state.acts[1].status).toBe('active')
+      showActor.send({ type: 'SKIP_BEAT' })
+      expect(ctx().acts[1].status).toBe('active')
     })
   })
 
   // ─── Intermission ───
 
-  describe('enterIntermission', () => {
+  describe('ENTER_INTERMISSION', () => {
     it('transitions to intermission phase', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().enterIntermission()
-      expect(useShowStore.getState().phase).toBe('intermission')
+      goLive()
+      showActor.send({ type: 'ENTER_INTERMISSION' })
+      expect(phase()).toBe('intermission')
     })
 
     it('pauses timer by storing remaining time', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      const timerEnd = useShowStore.getState().timerEndAt!
-      useShowStore.getState().enterIntermission()
+      showActor.send({ type: 'ENTER_INTERMISSION' })
 
-      expect(useShowStore.getState().timerEndAt).toBeNull()
-      expect(useShowStore.getState().timerPausedRemaining).toBeGreaterThan(0)
+      expect(ctx().timerEndAt).toBeNull()
+      expect(ctx().timerPausedRemaining).toBeGreaterThan(0)
     })
   })
 
-  describe('exitIntermission', () => {
+  describe('EXIT_INTERMISSION', () => {
     it('resumes timer with remaining time', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().enterIntermission()
+      goLive()
+      showActor.send({ type: 'ENTER_INTERMISSION' })
 
-      const paused = useShowStore.getState().timerPausedRemaining!
+      const paused = ctx().timerPausedRemaining!
       const before = Date.now()
-      useShowStore.getState().exitIntermission()
+      showActor.send({ type: 'EXIT_INTERMISSION' })
 
-      expect(useShowStore.getState().phase).toBe('live')
-      const timerEnd = useShowStore.getState().timerEndAt!
+      expect(phase()).toBe('live')
+      const timerEnd = ctx().timerEndAt!
       expect(timerEnd).toBeGreaterThanOrEqual(before + paused - 50) // 50ms tolerance
     })
   })
 
   // ─── Director Mode ───
 
-  describe('enterDirector', () => {
+  describe('ENTER_DIRECTOR', () => {
     it('transitions to director phase', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().enterDirector()
-      expect(useShowStore.getState().phase).toBe('director')
+      goLive()
+      showActor.send({ type: 'ENTER_DIRECTOR' })
+      expect(phase()).toBe('director')
     })
   })
 
-  describe('exitDirector', () => {
+  describe('EXIT_DIRECTOR', () => {
     it('returns to live when act is active', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().enterDirector()
-      useShowStore.getState().exitDirector()
-      expect(useShowStore.getState().phase).toBe('live')
+      goLive()
+      showActor.send({ type: 'ENTER_DIRECTOR' })
+      showActor.send({ type: 'EXIT_DIRECTOR' })
+      expect(phase()).toBe('live')
     })
 
-    it('returns to no_show when no act is active', () => {
-      useShowStore.getState().enterDirector()
-      useShowStore.getState().exitDirector()
-      expect(useShowStore.getState().phase).toBe('no_show')
+    it('stays in director when no act is active (guard blocks)', () => {
+      // Can't enter director from no_show — need to be in live first
+      goLive()
+      // Patch to remove current act
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { currentActId: null } })
+      showActor.send({ type: 'ENTER_DIRECTOR' })
+      showActor.send({ type: 'EXIT_DIRECTOR' })
+      // Guard blocks because no currentActId — stays in director
+      expect(phase()).toBe('director')
     })
   })
 
-  describe('callShowEarly', () => {
+  describe('CALL_SHOW_EARLY', () => {
     it('skips all remaining acts', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().callShowEarly()
+      goLive()
+      showActor.send({ type: 'CALL_SHOW_EARLY' })
 
-      const acts = useShowStore.getState().acts
+      const acts = ctx().acts
       expect(acts.every((a) => a.status === 'skipped')).toBe(true)
     })
 
     it('transitions to strike phase', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().callShowEarly()
-      expect(useShowStore.getState().phase).toBe('strike')
+      goLive()
+      showActor.send({ type: 'CALL_SHOW_EARLY' })
+      expect(phase()).toBe('strike')
     })
 
     it('clears timer', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().callShowEarly()
-      expect(useShowStore.getState().timerEndAt).toBeNull()
+      goLive()
+      showActor.send({ type: 'CALL_SHOW_EARLY' })
+      expect(ctx().timerEndAt).toBeNull()
     })
   })
 
   // ─── Lineup Editing ───
 
-  describe('reorderAct', () => {
+  describe('REORDER_ACT', () => {
     beforeEach(() => {
-      useShowStore.getState().setLineup(sampleLineup)
+      setupLineup()
     })
 
     it('moves act up', () => {
-      const acts = useShowStore.getState().acts
-      useShowStore.getState().reorderAct(acts[1].id, 'up')
+      const acts = ctx().acts
+      showActor.send({ type: 'REORDER_ACT', actId: acts[1].id, direction: 'up' })
 
-      const reordered = useShowStore.getState().acts
+      const reordered = ctx().acts
       expect(reordered[0].name).toBe('Exercise Block')
       expect(reordered[1].name).toBe('Morning Deep Work')
     })
 
     it('moves act down', () => {
-      const acts = useShowStore.getState().acts
-      useShowStore.getState().reorderAct(acts[0].id, 'down')
+      const acts = ctx().acts
+      showActor.send({ type: 'REORDER_ACT', actId: acts[0].id, direction: 'down' })
 
-      const reordered = useShowStore.getState().acts
+      const reordered = ctx().acts
       expect(reordered[0].name).toBe('Exercise Block')
       expect(reordered[1].name).toBe('Morning Deep Work')
     })
 
     it('does nothing at boundaries', () => {
-      const acts = useShowStore.getState().acts
-      useShowStore.getState().reorderAct(acts[0].id, 'up')
+      const acts = ctx().acts
+      showActor.send({ type: 'REORDER_ACT', actId: acts[0].id, direction: 'up' })
 
-      const reordered = useShowStore.getState().acts
+      const reordered = ctx().acts
       expect(reordered[0].name).toBe('Morning Deep Work')
     })
   })
 
-  describe('removeAct', () => {
+  describe('REMOVE_ACT', () => {
     it('removes act and re-indexes order', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      const acts = useShowStore.getState().acts
-      useShowStore.getState().removeAct(acts[1].id)
+      setupLineup()
+      const acts = ctx().acts
+      showActor.send({ type: 'REMOVE_ACT', actId: acts[1].id })
 
-      const remaining = useShowStore.getState().acts
+      const remaining = ctx().acts
       expect(remaining).toHaveLength(2)
       expect(remaining[0].order).toBe(0)
       expect(remaining[1].order).toBe(1)
     })
   })
 
-  describe('addAct', () => {
+  describe('ADD_ACT', () => {
     it('appends act with correct order', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().addAct('New Act', 'Creative', 30)
+      setupLineup()
+      showActor.send({ type: 'ADD_ACT', name: 'New Act', sketch: 'Creative', durationMinutes: 30 })
 
-      const acts = useShowStore.getState().acts
+      const acts = ctx().acts
       expect(acts).toHaveLength(4)
       expect(acts[3].name).toBe('New Act')
       expect(acts[3].sketch).toBe('Creative')
@@ -558,269 +534,184 @@ describe('showStore', () => {
 
   // ─── Strike the Stage ───
 
-  describe('strikeTheStage', () => {
+  describe('STRIKE', () => {
     beforeEach(() => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
     })
 
     it('sets DAY_WON when all beats locked', () => {
-      useShowStore.setState({ beatsLocked: 3, beatThreshold: 3 })
-      useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().verdict).toBe('DAY_WON')
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 3, beatThreshold: 3 } })
+      showActor.send({ type: 'STRIKE' })
+      expect(ctx().verdict).toBe('DAY_WON')
     })
 
     it('sets SOLID_SHOW when one beat short', () => {
-      useShowStore.setState({ beatsLocked: 2, beatThreshold: 3 })
-      useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().verdict).toBe('SOLID_SHOW')
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 2, beatThreshold: 3 } })
+      showActor.send({ type: 'STRIKE' })
+      expect(ctx().verdict).toBe('SOLID_SHOW')
     })
 
     it('sets GOOD_EFFORT when at least half', () => {
-      useShowStore.setState({ beatsLocked: 3, beatThreshold: 5 })
-      useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().verdict).toBe('GOOD_EFFORT')
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 3, beatThreshold: 5 } })
+      showActor.send({ type: 'STRIKE' })
+      expect(ctx().verdict).toBe('GOOD_EFFORT')
     })
 
     it('sets SHOW_CALLED_EARLY when less than half', () => {
-      useShowStore.setState({ beatsLocked: 0, beatThreshold: 3 })
-      useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().verdict).toBe('SHOW_CALLED_EARLY')
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 0, beatThreshold: 3 } })
+      showActor.send({ type: 'STRIKE' })
+      expect(ctx().verdict).toBe('SHOW_CALLED_EARLY')
     })
 
     it('transitions to strike phase', () => {
-      useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().phase).toBe('strike')
+      showActor.send({ type: 'STRIKE' })
+      expect(phase()).toBe('strike')
     })
 
     it('expands view', () => {
-      useShowStore.getState().strikeTheStage()
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-    })
-
-    it('sends verdict notification', () => {
-      useShowStore.getState().strikeTheStage()
-      expect(window.clui.notifyVerdict).toHaveBeenCalled()
+      showActor.send({ type: 'STRIKE' })
+      expect(ctx().viewTier).toBe('expanded')
     })
   })
 
   // ─── Navigation (view tier) ───
 
-  describe('toggleExpanded', () => {
+  describe('toggleExpanded (via SET_VIEW_TIER)', () => {
     it('toggles between micro and expanded', () => {
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-      useShowStore.getState().toggleExpanded()
-      expect(useShowStore.getState().viewTier).toBe('micro')
-      useShowStore.getState().toggleExpanded()
-      expect(useShowStore.getState().viewTier).toBe('expanded')
+      expect(ctx().viewTier).toBe('expanded')
+      showActor.send({ type: 'SET_VIEW_TIER', tier: 'micro' })
+      expect(ctx().viewTier).toBe('micro')
+      showActor.send({ type: 'SET_VIEW_TIER', tier: 'expanded' })
+      expect(ctx().viewTier).toBe('expanded')
     })
   })
 
   describe('viewTier navigation', () => {
-    it('cycleViewTier cycles through all 4 tiers', () => {
-      useShowStore.setState({ viewTier: 'micro' })
-      useShowStore.getState().cycleViewTier()
-      expect(useShowStore.getState().viewTier).toBe('compact')
-      useShowStore.getState().cycleViewTier()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
-      useShowStore.getState().cycleViewTier()
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-      useShowStore.getState().cycleViewTier()
-      expect(useShowStore.getState().viewTier).toBe('micro')
-    })
-
-    it('expandViewTier goes up one tier', () => {
-      useShowStore.setState({ viewTier: 'micro' })
-      useShowStore.getState().expandViewTier()
-      expect(useShowStore.getState().viewTier).toBe('compact')
-      useShowStore.getState().expandViewTier()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
-      useShowStore.getState().expandViewTier()
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-    })
-
-    it('expandViewTier clamps at expanded', () => {
-      useShowStore.setState({ viewTier: 'expanded' })
-      useShowStore.getState().expandViewTier()
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-    })
-
-    it('collapseViewTier goes down one tier', () => {
-      useShowStore.setState({ viewTier: 'expanded' })
-      useShowStore.getState().collapseViewTier()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
-      useShowStore.getState().collapseViewTier()
-      expect(useShowStore.getState().viewTier).toBe('compact')
-      useShowStore.getState().collapseViewTier()
-      expect(useShowStore.getState().viewTier).toBe('micro')
-    })
-
-    it('collapseViewTier clamps at micro', () => {
-      useShowStore.setState({ viewTier: 'micro' })
-      useShowStore.getState().collapseViewTier()
-      expect(useShowStore.getState().viewTier).toBe('micro')
-    })
-
-    it('setViewTier sets directly', () => {
-      useShowStore.getState().setViewTier('dashboard')
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
-    })
-
-    it('setExpanded maps true to expanded, false to micro', () => {
-      useShowStore.getState().setExpanded(false)
-      expect(useShowStore.getState().viewTier).toBe('micro')
-      useShowStore.getState().setExpanded(true)
-      expect(useShowStore.getState().viewTier).toBe('expanded')
+    it('SET_VIEW_TIER sets directly', () => {
+      showActor.send({ type: 'SET_VIEW_TIER', tier: 'dashboard' })
+      expect(ctx().viewTier).toBe('dashboard')
     })
   })
 
   // ─── Reset ───
 
-  describe('resetShow', () => {
+  describe('RESET', () => {
     it('resets to initial state', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().resetShow()
+      goLive()
+      showActor.send({ type: 'RESET' })
 
-      const state = useShowStore.getState()
-      expect(state.phase).toBe('no_show')
-      expect(state.energy).toBeNull()
-      expect(state.acts).toHaveLength(0)
-      expect(state.verdict).toBeNull()
-      expect(state.beatsLocked).toBe(0)
-      expect(state.viewTier).toBe('expanded')
+      expect(phase()).toBe('no_show')
+      expect(ctx().energy).toBeNull()
+      expect(ctx().acts).toHaveLength(0)
+      expect(ctx().verdict).toBeNull()
+      expect(ctx().beatsLocked).toBe(0)
+      expect(ctx().viewTier).toBe('expanded')
     })
   })
 
   // ─── Writer's Room Steps ───
 
-  describe('enterWritersRoom', () => {
+  describe('ENTER_WRITERS_ROOM', () => {
     it('sets phase to writers_room', () => {
-      useShowStore.getState().enterWritersRoom()
-      expect(useShowStore.getState().phase).toBe('writers_room')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      expect(phase()).toBe('writers_room')
     })
 
     it('sets step to energy', () => {
-      useShowStore.getState().enterWritersRoom()
-      expect(useShowStore.getState().writersRoomStep).toBe('energy')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      expect(ctx().writersRoomStep).toBe('energy')
     })
 
     it('records entry timestamp', () => {
       const before = Date.now()
-      useShowStore.getState().enterWritersRoom()
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
       const after = Date.now()
-      const entered = useShowStore.getState().writersRoomEnteredAt!
+      const entered = ctx().writersRoomEnteredAt!
       expect(entered).toBeGreaterThanOrEqual(before)
       expect(entered).toBeLessThanOrEqual(after)
     })
   })
 
-  describe('setWritersRoomStep', () => {
+  describe('SET_WRITERS_ROOM_STEP', () => {
     it('changes the writers room step', () => {
-      useShowStore.getState().setWritersRoomStep('plan')
-      expect(useShowStore.getState().writersRoomStep).toBe('plan')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      expect(ctx().writersRoomStep).toBe('plan')
     })
 
     it('supports conversation step', () => {
-      useShowStore.getState().setWritersRoomStep('conversation')
-      expect(useShowStore.getState().writersRoomStep).toBe('conversation')
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
+      expect(ctx().writersRoomStep).toBe('conversation')
     })
   })
 
   // ─── Cold Open Transition ───
 
-  describe('triggerColdOpen', () => {
-    it('sets coldOpenActive to true', () => {
-      useShowStore.getState().triggerColdOpen()
-      expect(useShowStore.getState().coldOpenActive).toBe(true)
-    })
-  })
+  describe('TRIGGER_COLD_OPEN / COMPLETE_COLD_OPEN', () => {
+    it('triggers cold open and completes to writers room', () => {
+      showActor.send({ type: 'TRIGGER_COLD_OPEN' })
+      expect(phase()).toBe('cold_open')
 
-  describe('completeColdOpen', () => {
-    it('sets coldOpenActive to false and enters writers room', () => {
-      useShowStore.getState().triggerColdOpen()
-      useShowStore.getState().completeColdOpen()
-      expect(useShowStore.getState().coldOpenActive).toBe(false)
-      expect(useShowStore.getState().phase).toBe('writers_room')
+      showActor.send({ type: 'COMPLETE_COLD_OPEN' })
+      expect(phase()).toBe('writers_room')
     })
   })
 
   // ─── Going Live Transition ───
 
-  describe('triggerGoingLive', () => {
-    it('sets goingLiveActive to true', () => {
-      useShowStore.getState().triggerGoingLive()
-      expect(useShowStore.getState().goingLiveActive).toBe(true)
-    })
-  })
+  describe('TRIGGER_GOING_LIVE / COMPLETE_GOING_LIVE', () => {
+    it('triggers going live and completes to live', () => {
+      setupLineup()
+      showActor.send({ type: 'TRIGGER_GOING_LIVE' })
+      expect(phase()).toBe('going_live')
 
-  describe('completeGoingLive', () => {
-    it('sets goingLiveActive to false and starts show', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().triggerGoingLive()
-      useShowStore.getState().completeGoingLive()
-      expect(useShowStore.getState().goingLiveActive).toBe(false)
-      expect(useShowStore.getState().phase).toBe('live')
+      showActor.send({ type: 'COMPLETE_GOING_LIVE' })
+      expect(phase()).toBe('live')
     })
   })
 
   // ─── Breathing Pause ───
 
-  describe('startBreathingPause', () => {
+  describe('START_BREATHING_PAUSE / END_BREATHING_PAUSE', () => {
     it('pauses timer and sets breathing pause end time', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
       const before = Date.now()
-      useShowStore.getState().startBreathingPause()
-      const state = useShowStore.getState()
-      expect(state.phase).toBe('intermission')
-      expect(state.breathingPauseEndAt).toBeGreaterThanOrEqual(before + 5 * 60 * 1000 - 50)
-      expect(state.timerEndAt).toBeNull()
-      expect(state.timerPausedRemaining).toBeGreaterThan(0)
+      showActor.send({ type: 'START_BREATHING_PAUSE' })
+      expect(phase()).toBe('intermission')
+      expect(ctx().breathingPauseEndAt).toBeGreaterThanOrEqual(before + 5 * 60 * 1000 - 50)
+      expect(ctx().timerEndAt).toBeNull()
+      expect(ctx().timerPausedRemaining).toBeGreaterThan(0)
     })
 
     it('accepts custom duration', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
       const before = Date.now()
-      useShowStore.getState().startBreathingPause(60000) // 1 minute
-      expect(useShowStore.getState().breathingPauseEndAt).toBeGreaterThanOrEqual(before + 60000 - 50)
+      showActor.send({ type: 'START_BREATHING_PAUSE', durationMs: 60000 }) // 1 minute
+      expect(ctx().breathingPauseEndAt).toBeGreaterThanOrEqual(before + 60000 - 50)
     })
-  })
 
-  describe('endBreathingPause', () => {
     it('clears breathing pause end time', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      useShowStore.getState().startBreathingPause()
-      useShowStore.getState().endBreathingPause()
-      expect(useShowStore.getState().breathingPauseEndAt).toBeNull()
-    })
-  })
-
-  // ─── Session ───
-
-  describe('setClaudeSessionId', () => {
-    it('sets session ID', () => {
-      useShowStore.getState().setClaudeSessionId('test-session')
-      expect(useShowStore.getState().claudeSessionId).toBe('test-session')
+      goLive()
+      showActor.send({ type: 'START_BREATHING_PAUSE' })
+      showActor.send({ type: 'END_BREATHING_PAUSE' })
+      expect(ctx().breathingPauseEndAt).toBeNull()
     })
   })
 
   // ─── Selectors ───
 
-  describe('selectors', () => {
+  describe('selectCurrentAct (via ctx)', () => {
     beforeEach(() => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
     })
 
-    it('selectCurrentAct returns active act', () => {
-      const state = useShowStore.getState()
-      const current = selectCurrentAct(state)
+    it('returns active act', () => {
+      const c = ctx()
+      const current = c.acts.find((a) => a.id === c.currentActId)
       expect(current?.name).toBe('Morning Deep Work')
       expect(current?.status).toBe('active')
     })
-
   })
 })

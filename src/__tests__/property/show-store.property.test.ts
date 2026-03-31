@@ -1,13 +1,13 @@
 /**
- * Layer 2: fast-check Property-Based Store Testing
+ * Layer 2: fast-check Property-Based Actor Testing
  *
- * Command-based model testing that generates random sequences of store actions
+ * Command-based model testing that generates random sequences of actor events
  * and verifies invariants hold after EVERY command.
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import fc from 'fast-check'
-import { useShowStore } from '../../renderer/stores/showStore'
-import { resetShowActor } from '../../renderer/machines/showActor'
+import { showActor, resetShowActor } from '../../renderer/machines/showActor'
+import { getPhaseFromState } from '../../renderer/machines/showMachine'
 import type { ShowPhase, ViewTier, ShowLineup } from '../../shared/types'
 
 // ─── Helpers ───
@@ -25,116 +25,100 @@ const sampleLineup: ShowLineup = {
   openingNote: 'Test',
 }
 
-function resetStore() {
-  resetShowActor()
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded' as ViewTier,
-    beatCheckPending: false,
-    celebrationActive: false,
-    coldOpenActive: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
+/** Helper to get current phase from the actor */
+function phase(): ShowPhase {
+  return getPhaseFromState(showActor.getSnapshot().value as Record<string, unknown>)
+}
+
+/** Helper to get actor context */
+function ctx() {
+  return showActor.getSnapshot().context
 }
 
 // ─── Invariants ───
 
 function checkInvariants(): void {
-  const s = useShowStore.getState()
+  const p = phase()
+  const c = ctx()
 
   // Phase is always valid
-  expect(VALID_PHASES).toContain(s.phase)
+  expect(VALID_PHASES).toContain(p)
 
   // ViewTier is always valid
-  expect(VALID_TIERS).toContain(s.viewTier)
+  expect(VALID_TIERS).toContain(c.viewTier)
 
   // Beats are bounded
-  expect(s.beatsLocked).toBeGreaterThanOrEqual(0)
-  expect(s.beatsLocked).toBeLessThanOrEqual(s.beatThreshold)
+  expect(c.beatsLocked).toBeGreaterThanOrEqual(0)
+  expect(c.beatsLocked).toBeLessThanOrEqual(c.beatThreshold)
 
   // Acts array is never null/undefined
-  expect(Array.isArray(s.acts)).toBe(true)
+  expect(Array.isArray(c.acts)).toBe(true)
 
   // If live, at most one act has status 'active'
-  if (s.phase === 'live') {
-    const activeCount = s.acts.filter((a) => a.status === 'active').length
+  if (p === 'live') {
+    const activeCount = c.acts.filter((a) => a.status === 'active').length
     expect(activeCount).toBeLessThanOrEqual(1)
   }
 
   // If strike, verdict must be set
-  if (s.phase === 'strike') {
-    expect(s.verdict).not.toBeNull()
+  if (p === 'strike') {
+    expect(c.verdict).not.toBeNull()
   }
 
   // currentActId, if set, must reference a real act
-  if (s.currentActId) {
-    const found = s.acts.find((a) => a.id === s.currentActId)
+  if (c.currentActId) {
+    const found = c.acts.find((a) => a.id === c.currentActId)
     expect(found).toBeDefined()
   }
 
   // timerPausedRemaining only during intermission
-  if (s.timerPausedRemaining !== null) {
-    expect(['intermission']).toContain(s.phase)
+  if (c.timerPausedRemaining !== null) {
+    expect(['intermission']).toContain(p)
   }
 }
 
 // ─── Commands ───
 
-type StoreCommand = {
+type ActorCommand = {
   name: string
   precondition: () => boolean
   run: () => void
 }
 
-const commands: (() => StoreCommand)[] = [
+const commands: (() => ActorCommand)[] = [
   // ENTER_WRITERS_ROOM
   () => ({
     name: 'enterWritersRoom',
-    precondition: () => useShowStore.getState().phase === 'no_show',
-    run: () => useShowStore.getState().enterWritersRoom(),
+    precondition: () => phase() === 'no_show',
+    run: () => showActor.send({ type: 'ENTER_WRITERS_ROOM' }),
   }),
 
   // SET_LINEUP
   () => ({
     name: 'setLineup',
-    precondition: () => useShowStore.getState().phase === 'writers_room',
-    run: () => useShowStore.getState().setLineup(sampleLineup),
+    precondition: () => phase() === 'writers_room',
+    run: () => showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup }),
   }),
 
   // START_SHOW
   () => ({
     name: 'startShow',
     precondition: () => {
-      const s = useShowStore.getState()
-      return s.phase === 'writers_room' && s.acts.length > 0
+      return phase() === 'writers_room' && ctx().acts.length > 0
     },
-    run: () => useShowStore.getState().startShow(),
+    run: () => showActor.send({ type: 'START_SHOW' }),
   }),
 
   // COMPLETE_ACT
   () => ({
     name: 'completeAct',
     precondition: () => {
-      const s = useShowStore.getState()
-      return s.phase === 'live' && s.currentActId !== null
+      return phase() === 'live' && ctx().currentActId !== null
     },
     run: () => {
-      const s = useShowStore.getState()
-      if (s.currentActId) {
-        s.completeAct(s.currentActId)
+      const actId = ctx().currentActId
+      if (actId) {
+        showActor.send({ type: 'COMPLETE_ACT', actId })
       }
     },
   }),
@@ -142,9 +126,9 @@ const commands: (() => StoreCommand)[] = [
   // LOCK_BEAT
   () => ({
     name: 'lockBeat',
-    precondition: () => useShowStore.getState().beatCheckPending === true,
+    precondition: () => ctx().beatCheckPending === true,
     run: () => {
-      useShowStore.getState().lockBeat()
+      showActor.send({ type: 'LOCK_BEAT' })
       // Advance past celebration timeout
       vi.advanceTimersByTime(2000)
     },
@@ -153,81 +137,98 @@ const commands: (() => StoreCommand)[] = [
   // SKIP_BEAT
   () => ({
     name: 'skipBeat',
-    precondition: () => useShowStore.getState().beatCheckPending === true,
-    run: () => useShowStore.getState().skipBeat(),
+    precondition: () => ctx().beatCheckPending === true,
+    run: () => showActor.send({ type: 'SKIP_BEAT' }),
   }),
 
   // ENTER_INTERMISSION
   () => ({
     name: 'enterIntermission',
-    precondition: () => useShowStore.getState().phase === 'live',
-    run: () => useShowStore.getState().enterIntermission(),
+    precondition: () => phase() === 'live',
+    run: () => showActor.send({ type: 'ENTER_INTERMISSION' }),
   }),
 
   // EXIT_INTERMISSION
   () => ({
     name: 'exitIntermission',
-    precondition: () => useShowStore.getState().phase === 'intermission',
-    run: () => useShowStore.getState().exitIntermission(),
+    precondition: () => phase() === 'intermission',
+    run: () => showActor.send({ type: 'EXIT_INTERMISSION' }),
   }),
 
   // ENTER_DIRECTOR
   () => ({
     name: 'enterDirector',
-    precondition: () => useShowStore.getState().phase === 'live',
-    run: () => useShowStore.getState().enterDirector(),
+    precondition: () => phase() === 'live',
+    run: () => showActor.send({ type: 'ENTER_DIRECTOR' }),
   }),
 
   // EXIT_DIRECTOR
   () => ({
     name: 'exitDirector',
-    precondition: () => useShowStore.getState().phase === 'director',
-    run: () => useShowStore.getState().exitDirector(),
+    precondition: () => phase() === 'director',
+    run: () => showActor.send({ type: 'EXIT_DIRECTOR' }),
   }),
 
   // CALL_SHOW_EARLY
   () => ({
     name: 'callShowEarly',
-    precondition: () => useShowStore.getState().phase === 'director',
-    run: () => useShowStore.getState().callShowEarly(),
+    precondition: () => phase() === 'director',
+    run: () => showActor.send({ type: 'CALL_SHOW_EARLY' }),
   }),
 
   // SKIP_TO_NEXT
   () => ({
     name: 'skipToNextAct',
     precondition: () => {
-      const s = useShowStore.getState()
-      return s.phase === 'director' && s.currentActId !== null
+      return phase() === 'director' && ctx().currentActId !== null
     },
-    run: () => useShowStore.getState().skipToNextAct(),
+    run: () => showActor.send({ type: 'SKIP_TO_NEXT' }),
   }),
 
   // RESET
   () => ({
     name: 'resetShow',
     precondition: () => true, // can always reset
-    run: () => useShowStore.getState().resetShow(),
+    run: () => showActor.send({ type: 'RESET' }),
   }),
 
-  // CYCLE_TIER
+  // SET_VIEW_TIER (cycle-like)
   () => ({
     name: 'cycleViewTier',
     precondition: () => true,
-    run: () => useShowStore.getState().cycleViewTier(),
+    run: () => {
+      const tiers: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
+      const current = ctx().viewTier
+      const idx = tiers.indexOf(current)
+      const next = tiers[(idx + 1) % tiers.length]
+      showActor.send({ type: 'SET_VIEW_TIER', tier: next })
+    },
   }),
 
-  // EXPAND_TIER
+  // SET_VIEW_TIER (expand-like)
   () => ({
     name: 'expandViewTier',
     precondition: () => true,
-    run: () => useShowStore.getState().expandViewTier(),
+    run: () => {
+      const tiers: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
+      const current = ctx().viewTier
+      const idx = tiers.indexOf(current)
+      const next = tiers[Math.min(idx + 1, tiers.length - 1)]
+      showActor.send({ type: 'SET_VIEW_TIER', tier: next })
+    },
   }),
 
-  // COLLAPSE_TIER
+  // SET_VIEW_TIER (collapse-like)
   () => ({
     name: 'collapseViewTier',
     precondition: () => true,
-    run: () => useShowStore.getState().collapseViewTier(),
+    run: () => {
+      const tiers: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
+      const current = ctx().viewTier
+      const idx = tiers.indexOf(current)
+      const next = tiers[Math.max(idx - 1, 0)]
+      showActor.send({ type: 'SET_VIEW_TIER', tier: next })
+    },
   }),
 ]
 
@@ -237,9 +238,9 @@ const commandIdxArb = fc.integer({ min: 0, max: commands.length - 1 })
 
 // ─── Tests ───
 
-describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
+describe('Layer 2: Property-Based Actor Tests (fast-check)', () => {
   beforeEach(() => {
-    resetStore()
+    resetShowActor()
     vi.useFakeTimers()
   })
 
@@ -252,7 +253,7 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
       fc.property(
         fc.array(commandIdxArb, { minLength: 1, maxLength: 50 }),
         (indices) => {
-          resetStore()
+          resetShowActor()
 
           for (const idx of indices) {
             const cmd = commands[idx]()
@@ -272,7 +273,7 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
       fc.property(
         fc.array(commandIdxArb, { minLength: 1, maxLength: 30 }),
         (indices) => {
-          resetStore()
+          resetShowActor()
 
           // Apply random commands
           for (const idx of indices) {
@@ -283,15 +284,14 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
           }
 
           // Reset and verify clean state
-          useShowStore.getState().resetShow()
-          const s = useShowStore.getState()
-          expect(s.phase).toBe('no_show')
-          expect(s.acts).toHaveLength(0)
-          expect(s.verdict).toBeNull()
-          expect(s.currentActId).toBeNull()
-          expect(s.timerEndAt).toBeNull()
-          expect(s.beatsLocked).toBe(0)
-          expect(s.beatCheckPending).toBe(false)
+          showActor.send({ type: 'RESET' })
+          expect(phase()).toBe('no_show')
+          expect(ctx().acts).toHaveLength(0)
+          expect(ctx().verdict).toBeNull()
+          expect(ctx().currentActId).toBeNull()
+          expect(ctx().timerEndAt).toBeNull()
+          expect(ctx().beatsLocked).toBe(0)
+          expect(ctx().beatCheckPending).toBe(false)
         }
       ),
       { numRuns: 50 }
@@ -303,27 +303,29 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
       fc.property(
         fc.array(fc.constantFrom('cycle', 'expand', 'collapse', 'set'), { minLength: 1, maxLength: 100 }),
         (ops) => {
-          resetStore()
+          resetShowActor()
+
+          const tiers: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
 
           for (const op of ops) {
+            const current = ctx().viewTier
+            const idx = tiers.indexOf(current)
             switch (op) {
               case 'cycle':
-                useShowStore.getState().cycleViewTier()
+                showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[(idx + 1) % tiers.length] })
                 break
               case 'expand':
-                useShowStore.getState().expandViewTier()
+                showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[Math.min(idx + 1, tiers.length - 1)] })
                 break
               case 'collapse':
-                useShowStore.getState().collapseViewTier()
+                showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[Math.max(idx - 1, 0)] })
                 break
               case 'set':
-                useShowStore.getState().setViewTier(
-                  VALID_TIERS[Math.floor(Math.random() * VALID_TIERS.length)]
-                )
+                showActor.send({ type: 'SET_VIEW_TIER', tier: tiers[Math.floor(Math.random() * tiers.length)] })
                 break
             }
 
-            const tier = useShowStore.getState().viewTier
+            const tier = ctx().viewTier
             expect(VALID_TIERS).toContain(tier)
           }
         }
@@ -337,14 +339,14 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
       fc.property(
         fc.array(commandIdxArb, { minLength: 1, maxLength: 50 }),
         (indices) => {
-          resetStore()
+          resetShowActor()
 
           for (const idx of indices) {
             const cmd = commands[idx]()
             if (cmd.precondition()) {
               cmd.run()
-              const s = useShowStore.getState()
-              expect(s.beatsLocked).toBeLessThanOrEqual(s.beatThreshold)
+              const c = ctx()
+              expect(c.beatsLocked).toBeLessThanOrEqual(c.beatThreshold)
             }
           }
         }
@@ -358,15 +360,14 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
       fc.property(
         fc.array(commandIdxArb, { minLength: 5, maxLength: 40 }),
         (indices) => {
-          resetStore()
+          resetShowActor()
 
           let prevFinished = 0
           for (const idx of indices) {
             const cmd = commands[idx]()
             if (cmd.precondition()) {
               cmd.run()
-              const s = useShowStore.getState()
-              const finished = s.acts.filter((a) => a.status === 'completed' || a.status === 'skipped').length
+              const finished = ctx().acts.filter((a) => a.status === 'completed' || a.status === 'skipped').length
               // Can only reset finished count via resetShow
               if (cmd.name !== 'resetShow' && cmd.name !== 'callShowEarly') {
                 expect(finished).toBeGreaterThanOrEqual(prevFinished)
@@ -381,32 +382,32 @@ describe('Layer 2: Property-Based Store Tests (fast-check)', () => {
   })
 
   it('the full happy path (writers_room → live → complete all → strike) works', () => {
-    resetStore()
-    const store = useShowStore.getState()
+    resetShowActor()
 
     // Enter writers room and set lineup
-    store.enterWritersRoom()
-    expect(useShowStore.getState().phase).toBe('writers_room')
+    showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+    expect(phase()).toBe('writers_room')
 
-    useShowStore.getState().setLineup(sampleLineup)
-    expect(useShowStore.getState().acts.length).toBe(3)
+    showActor.send({ type: 'SET_ENERGY', level: 'high' })
+    showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+    expect(ctx().acts.length).toBe(3)
 
     // Start show
-    useShowStore.getState().startShow()
-    expect(useShowStore.getState().phase).toBe('live')
+    showActor.send({ type: 'START_SHOW' })
+    expect(phase()).toBe('live')
 
     // Complete all 3 acts with beat skips
     for (let i = 0; i < 3; i++) {
-      const s = useShowStore.getState()
-      if (s.currentActId) {
-        s.completeAct(s.currentActId)
-        useShowStore.getState().skipBeat()
+      const actId = ctx().currentActId
+      if (actId) {
+        showActor.send({ type: 'COMPLETE_ACT', actId })
+        showActor.send({ type: 'SKIP_BEAT' })
       }
     }
 
     // Should be at strike
-    expect(useShowStore.getState().phase).toBe('strike')
-    expect(useShowStore.getState().verdict).not.toBeNull()
+    expect(phase()).toBe('strike')
+    expect(ctx().verdict).not.toBeNull()
     checkInvariants()
   })
 })

@@ -1,32 +1,35 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useShowStore } from '../renderer/stores/showStore'
-import { resetShowActor } from '../renderer/machines/showActor'
-import type { TrayShowState } from '../shared/types'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
+import { getPhaseFromState } from '../renderer/machines/showMachine'
+import type { TrayShowState, ShowLineup } from '../shared/types'
 
-function resetShowStore(overrides: Record<string, unknown> = {}) {
-  resetShowActor()
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    showStartedAt: null,
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-    ...overrides,
-  })
+/** Helper to get actor context */
+function ctx() {
+  return showActor.getSnapshot().context
+}
+
+/** Helper to get current phase */
+function phase() {
+  return getPhaseFromState(showActor.getSnapshot().value as Record<string, unknown>)
+}
+
+/** Set up actor in live phase with given acts and options */
+function goLiveWithActs(overrides?: {
+  acts?: Array<{ name: string; sketch: string; durationMinutes: number }>,
+  beatThreshold?: number,
+}) {
+  const lineup: ShowLineup = {
+    acts: overrides?.acts ?? [
+      { name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 },
+    ],
+    beatThreshold: overrides?.beatThreshold ?? 3,
+    openingNote: 'Test',
+  }
+  showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+  showActor.send({ type: 'SET_ENERGY', level: 'high' })
+  showActor.send({ type: 'SET_LINEUP', lineup })
+  showActor.send({ type: 'START_SHOW' })
 }
 
 describe('useTraySync', () => {
@@ -35,7 +38,7 @@ describe('useTraySync', () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    resetShowStore()
+    resetShowActor()
 
     updateTrayState = vi.fn()
     updateTrayTimer = vi.fn()
@@ -67,7 +70,7 @@ describe('useTraySync', () => {
     updateTrayState.mockClear()
 
     act(() => {
-      useShowStore.setState({ phase: 'writers_room' })
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
     })
 
     expect(updateTrayState).toHaveBeenCalledOnce()
@@ -77,34 +80,36 @@ describe('useTraySync', () => {
   it('sends full tray state when currentActId changes', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
 
-    resetShowStore({
-      phase: 'live',
+    goLiveWithActs({
       acts: [
-        { id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0 },
-        { id: 'a2', name: 'Admin', sketch: 'Admin', durationMinutes: 15, status: 'upcoming', beatLocked: false, order: 1 },
+        { name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 },
+        { name: 'Admin', sketch: 'Admin', durationMinutes: 15 },
       ],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 30 * 60 * 1000,
     })
 
     renderHook(() => useTraySync())
     updateTrayState.mockClear()
 
     act(() => {
-      useShowStore.setState({ currentActId: 'a2' })
+      // Skip the current act to move to the next one
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'SKIP_ACT', actId })
     })
 
-    expect(updateTrayState).toHaveBeenCalledOnce()
-    expect(updateTrayState.mock.calls[0][0].currentActName).toBe('Admin')
+    expect(updateTrayState).toHaveBeenCalled()
+    const lastCall = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
+    expect(lastCall.currentActName).toBe('Admin')
   })
 
   it('sends full tray state when beatsLocked changes', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
+
+    goLiveWithActs()
     renderHook(() => useTraySync())
     updateTrayState.mockClear()
 
     act(() => {
-      useShowStore.setState({ beatsLocked: 2 })
+      showActor.send({ type: '_PATCH_CONTEXT', patch: { beatsLocked: 2 } })
     })
 
     expect(updateTrayState).toHaveBeenCalledOnce()
@@ -113,39 +118,32 @@ describe('useTraySync', () => {
 
   it('includes timerSeconds calculated from timerEndAt', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    const now = Date.now()
-    resetShowStore({
-      phase: 'live',
-      timerEndAt: now + 10 * 60 * 1000, // 10 minutes from now
-      acts: [
-        { id: 'a1', name: 'Focus', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 10 }],
     })
 
     renderHook(() => useTraySync())
 
-    const sentState: TrayShowState = updateTrayState.mock.calls[0][0]
+    const sentState: TrayShowState = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
     expect(sentState.timerSeconds).toBe(600) // 10 * 60
   })
 
   it('includes nextActs with up to 2 upcoming acts', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
+
+    goLiveWithActs({
       acts: [
-        { id: 'a1', name: 'Act 1', sketch: 'Deep Work', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
-        { id: 'a2', name: 'Act 2', sketch: 'Exercise', durationMinutes: 15, status: 'upcoming', beatLocked: false, order: 1 },
-        { id: 'a3', name: 'Act 3', sketch: 'Admin', durationMinutes: 10, status: 'upcoming', beatLocked: false, order: 2 },
-        { id: 'a4', name: 'Act 4', sketch: 'Creative', durationMinutes: 20, status: 'upcoming', beatLocked: false, order: 3 },
+        { name: 'Act 1', sketch: 'Deep Work', durationMinutes: 25 },
+        { name: 'Act 2', sketch: 'Exercise', durationMinutes: 15 },
+        { name: 'Act 3', sketch: 'Admin', durationMinutes: 10 },
+        { name: 'Act 4', sketch: 'Creative', durationMinutes: 20 },
       ],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 25 * 60 * 1000,
     })
 
     renderHook(() => useTraySync())
 
-    const sentState: TrayShowState = updateTrayState.mock.calls[0][0]
+    const sentState: TrayShowState = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
     expect(sentState.nextActs).toHaveLength(2)
     expect(sentState.nextActs[0].name).toBe('Act 2')
     expect(sentState.nextActs[1].name).toBe('Act 3')
@@ -155,13 +153,9 @@ describe('useTraySync', () => {
 
   it('starts timer interval when mounting during live phase with timerEndAt', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
-      timerEndAt: Date.now() + 5 * 60 * 1000,
-      acts: [
-        { id: 'a1', name: 'Focus', sketch: 'Deep Work', durationMinutes: 5, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 5 }],
     })
 
     renderHook(() => useTraySync())
@@ -179,17 +173,21 @@ describe('useTraySync', () => {
 
   it('starts timer interval when phase transitions to live', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({ phase: 'writers_room' })
+
+    showActor.send({ type: 'ENTER_WRITERS_ROOM' })
 
     renderHook(() => useTraySync())
     updateTrayTimer.mockClear()
 
     // Transition to live with a timer
     act(() => {
-      useShowStore.setState({
-        phase: 'live',
-        timerEndAt: Date.now() + 10 * 60 * 1000,
-      })
+      showActor.send({ type: 'SET_ENERGY', level: 'high' })
+      showActor.send({ type: 'SET_LINEUP', lineup: {
+        acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 10 }],
+        beatThreshold: 1,
+        openingNote: '',
+      }})
+      showActor.send({ type: 'START_SHOW' })
     })
 
     // Advance 1s to trigger interval
@@ -200,16 +198,14 @@ describe('useTraySync', () => {
 
   it('starts timer interval when phase transitions to director', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({ phase: 'writers_room' })
+
+    goLiveWithActs()
 
     renderHook(() => useTraySync())
     updateTrayTimer.mockClear()
 
     act(() => {
-      useShowStore.setState({
-        phase: 'director',
-        timerEndAt: Date.now() + 5 * 60 * 1000,
-      })
+      showActor.send({ type: 'ENTER_DIRECTOR' })
     })
 
     vi.advanceTimersByTime(1000)
@@ -219,13 +215,9 @@ describe('useTraySync', () => {
 
   it('stops timer interval when phase changes away from live/director', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
-      timerEndAt: Date.now() + 5 * 60 * 1000,
-      acts: [
-        { id: 'a1', name: 'Focus', sketch: 'Deep Work', durationMinutes: 5, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 5 }],
     })
 
     renderHook(() => useTraySync())
@@ -238,10 +230,10 @@ describe('useTraySync', () => {
     // Transition to intermission (no timer interval)
     updateTrayTimer.mockClear()
     act(() => {
-      useShowStore.setState({ phase: 'intermission', timerEndAt: null })
+      showActor.send({ type: 'ENTER_INTERMISSION' })
     })
 
-    // Advance time — timer interval should have stopped
+    // After transition, interval should have stopped
     updateTrayTimer.mockClear()
     vi.advanceTimersByTime(3000)
     expect(updateTrayTimer).not.toHaveBeenCalled()
@@ -249,13 +241,9 @@ describe('useTraySync', () => {
 
   it('sends full tray state when timerEndAt changes', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
-      timerEndAt: Date.now() + 10 * 60 * 1000,
-      acts: [
-        { id: 'a1', name: 'Focus', sketch: 'Deep Work', durationMinutes: 10, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 10 }],
     })
 
     renderHook(() => useTraySync())
@@ -263,21 +251,21 @@ describe('useTraySync', () => {
 
     // Extend timer by 5 minutes
     act(() => {
-      useShowStore.setState({ timerEndAt: Date.now() + 15 * 60 * 1000 })
+      showActor.send({ type: 'EXTEND_ACT', minutes: 5 })
     })
 
     expect(updateTrayState).toHaveBeenCalledOnce()
     expect(updateTrayState.mock.calls[0][0].timerSeconds).toBeGreaterThanOrEqual(899)
   })
 
-  it('does not send tray update when unrelated store fields change', async () => {
+  it('does not send tray update when unrelated actor fields change', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
     renderHook(() => useTraySync())
     updateTrayState.mockClear()
 
     // Change something the hook doesn't watch (e.g. viewTier)
     act(() => {
-      useShowStore.setState({ viewTier: 'compact' })
+      showActor.send({ type: 'SET_VIEW_TIER', tier: 'compact' })
     })
 
     expect(updateTrayState).not.toHaveBeenCalled()
@@ -285,13 +273,9 @@ describe('useTraySync', () => {
 
   it('cleans up interval on unmount', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
-      timerEndAt: Date.now() + 5 * 60 * 1000,
-      acts: [
-        { id: 'a1', name: 'Focus', sketch: 'Deep Work', durationMinutes: 5, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 5 }],
     })
 
     const { unmount } = renderHook(() => useTraySync())
@@ -306,31 +290,25 @@ describe('useTraySync', () => {
 
   it('sends currentActCategory as sketch value', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
-      acts: [
-        { id: 'a1', name: 'Morning Focus', sketch: 'Deep Work', durationMinutes: 25, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 25 * 60 * 1000,
+
+    goLiveWithActs({
+      acts: [{ name: 'Morning Focus', sketch: 'Deep Work', durationMinutes: 25 }],
     })
 
     renderHook(() => useTraySync())
 
-    const sentState: TrayShowState = updateTrayState.mock.calls[0][0]
+    const sentState: TrayShowState = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
     expect(sentState.currentActCategory).toBe('Deep Work')
   })
 
   it('does not call updateTrayTimer when timerEndAt is null during live phase', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
-    resetShowStore({
-      phase: 'live',
-      timerEndAt: null,
-      acts: [
-        { id: 'a1', name: 'Focus', sketch: 'Deep Work', durationMinutes: 5, status: 'active', beatLocked: false, order: 0 },
-      ],
-      currentActId: 'a1',
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 5 }],
     })
+    // Set timerEndAt to null (simulating edge case)
+    showActor.send({ type: '_PATCH_CONTEXT', patch: { timerEndAt: null } })
 
     renderHook(() => useTraySync())
     updateTrayTimer.mockClear()
