@@ -8,8 +8,7 @@
  * - useShowPhase — shortcut for current ShowPhase
  * - useShowSend — shortcut for the send function
  *
- * Backward-compatible bridge: components can migrate incrementally
- * from useShowStore selectors to these hooks.
+ * This is the primary API for reading show state in React components.
  */
 import React, { createContext, useContext, useCallback } from 'react'
 import { useSelector } from '@xstate/react'
