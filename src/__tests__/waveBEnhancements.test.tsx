@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
-import { useShowStore } from '../renderer/stores/showStore'
-import { resetShowActor } from '../renderer/machines/showActor'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
 
 // ─── Mock framer-motion ───
 vi.mock('framer-motion', () => ({
@@ -59,33 +58,14 @@ beforeAll(() => {
   }
 })
 
-function resetStore() {
-  resetShowActor()
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    showStartedAt: null,
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    celebrationActive: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
+/** Set actor to a specific phase with context using _JUMP_PHASE + _PATCH_CONTEXT */
+function setActorState(phase: string, patch: Record<string, unknown>) {
+  showActor.send({ type: '_JUMP_PHASE', phase })
+  showActor.send({ type: '_PATCH_CONTEXT', patch })
 }
 
 beforeEach(() => {
-  resetStore()
+  resetShowActor()
   cleanup()
 })
 
@@ -147,8 +127,7 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('renders a help button with data-testid="pill-help-btn"', () => {
-    useShowStore.setState({
-      phase: 'live',
+    setActorState('live', {
       acts: [
         {
           id: 'a1',
@@ -172,8 +151,7 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('help button displays "?" text', () => {
-    useShowStore.setState({
-      phase: 'live',
+    setActorState('live', {
       acts: [
         {
           id: 'a1',
@@ -197,8 +175,7 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('help button renders during intermission phase', () => {
-    useShowStore.setState({
-      phase: 'intermission',
+    setActorState('intermission', {
       acts: [
         {
           id: 'a1',
@@ -223,8 +200,7 @@ describe('PillView help button (Issue #117)', () => {
   })
 
   it('help button renders during strike phase', () => {
-    useShowStore.setState({
-      phase: 'strike',
+    setActorState('strike', {
       acts: [
         {
           id: 'a1',
@@ -243,6 +219,7 @@ describe('PillView help button (Issue #117)', () => {
       viewTier: 'micro',
       beatsLocked: 1,
       beatThreshold: 3,
+      verdict: 'SHOW_CALLED_EARLY',
     })
 
     render(<PillView />)

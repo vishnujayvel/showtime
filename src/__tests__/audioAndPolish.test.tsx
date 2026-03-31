@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
-import { useShowStore } from '../renderer/stores/showStore'
 import { showActor, resetShowActor } from '../renderer/machines/showActor'
 
 // ─── Mock framer-motion ───
@@ -50,29 +49,14 @@ beforeAll(() => {
   }
 })
 
+/** Set actor to a specific phase with context using _JUMP_PHASE + _PATCH_CONTEXT */
+function setActorState(phase: string, patch: Record<string, unknown>) {
+  showActor.send({ type: '_JUMP_PHASE', phase })
+  showActor.send({ type: '_PATCH_CONTEXT', patch })
+}
+
 function resetStore() {
   resetShowActor()
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    showStartedAt: null,
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    celebrationActive: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
 }
 
 beforeEach(() => {
@@ -125,8 +109,7 @@ describe('PillView drag zones', () => {
   })
 
   it('renders drag zone and click zone when live', () => {
-    useShowStore.setState({
-      phase: 'live',
+    setActorState('live', {
       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
@@ -140,8 +123,7 @@ describe('PillView drag zones', () => {
   })
 
   it('click zone triggers expandViewTier', () => {
-    useShowStore.setState({
-      phase: 'live',
+    setActorState('live', {
       acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
@@ -167,9 +149,8 @@ describe('StrikeView celebration', () => {
   })
 
   it('renders celebration buttons', () => {
-    useShowStore.setState({
-      phase: 'strike',
-      verdict: 'SOLID_SHOW' as any,
+    setActorState('strike', {
+      verdict: 'SOLID_SHOW',
       acts: [{ id: 'a1', name: 'Work', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0, startedAt: Date.now() - 30 * 60 * 1000, completedAt: Date.now() }],
       beatsLocked: 1,
       beatThreshold: 3,
@@ -183,9 +164,8 @@ describe('StrikeView celebration', () => {
   })
 
   it('shows show duration stat', () => {
-    useShowStore.setState({
-      phase: 'strike',
-      verdict: 'SOLID_SHOW' as any,
+    setActorState('strike', {
+      verdict: 'SOLID_SHOW',
       acts: [],
       beatsLocked: 0,
       beatThreshold: 3,
@@ -199,9 +179,8 @@ describe('StrikeView celebration', () => {
   })
 
   it('shows standing ovation for DAY_WON', () => {
-    useShowStore.setState({
-      phase: 'strike',
-      verdict: 'DAY_WON' as any,
+    setActorState('strike', {
+      verdict: 'DAY_WON',
       acts: [],
       beatsLocked: 3,
       beatThreshold: 3,
@@ -218,8 +197,7 @@ describe('StrikeView celebration', () => {
 describe('Temporal context', () => {
   it('ExpandedView shows date label', async () => {
     const { ExpandedView } = await import('../renderer/views/ExpandedView')
-    useShowStore.setState({
-      phase: 'live',
+    setActorState('live', {
       acts: [{ id: 'a1', name: 'Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,
@@ -235,8 +213,7 @@ describe('Temporal context', () => {
 
   it('ExpandedView shows started-at time', async () => {
     const { ExpandedView } = await import('../renderer/views/ExpandedView')
-    useShowStore.setState({
-      phase: 'live',
+    setActorState('live', {
       acts: [{ id: 'a1', name: 'Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
       currentActId: 'a1',
       timerEndAt: Date.now() + 30 * 60 * 1000,

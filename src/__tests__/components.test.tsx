@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
-import { useShowStore } from '../renderer/stores/showStore'
 import { showActor, resetShowActor } from '../renderer/machines/showActor'
 import type { Act, ShowVerdict as ShowVerdictType } from '../shared/types'
 
@@ -27,28 +26,15 @@ function stripMotionProps(props: any) {
   return rest
 }
 
+/** Set actor to a specific phase with context using _JUMP_PHASE + _PATCH_CONTEXT */
+function setActorState(phase: string, patch: Record<string, unknown>) {
+  showActor.send({ type: '_JUMP_PHASE', phase })
+  showActor.send({ type: '_PATCH_CONTEXT', patch })
+}
+
 // Reset store between tests
 function resetStore() {
   resetShowActor()
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
 }
 
 beforeEach(() => {
@@ -100,13 +86,13 @@ describe('BeatCheckModal', () => {
   })
 
   it('does not render when beatCheckPending is false', () => {
-    useShowStore.setState({ beatCheckPending: false })
+    showActor.send({ type: '_PATCH_CONTEXT', patch: { beatCheckPending: false } })
     const { container } = render(<BeatCheckModal />)
     expect(container.textContent).toBe('')
   })
 
   it('renders modal when beatCheckPending is true', () => {
-    useShowStore.setState({
+    setActorState('live', {
       beatCheckPending: true,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',
@@ -117,13 +103,12 @@ describe('BeatCheckModal', () => {
   })
 
   it('calls lockBeat when lock button clicked', () => {
-    useShowStore.setState({
+    setActorState('live', {
       beatCheckPending: true,
       celebrationActive: false,
       beatsLocked: 0,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',
-      phase: 'live',
     })
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText(/Lock the Beat/))
@@ -132,13 +117,12 @@ describe('BeatCheckModal', () => {
   })
 
   it('calls skipBeat when "Not this time" clicked', () => {
-    useShowStore.setState({
+    setActorState('live', {
       beatCheckPending: true,
       celebrationActive: false,
       beatsLocked: 0,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
       currentActId: 'a1',
-      phase: 'live',
     })
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText('Not this time'))
@@ -220,41 +204,41 @@ describe('BeatCheckModal — celebration display', () => {
   })
 
   it('shows celebration text when celebrationActive is true', () => {
-    useShowStore.setState({
+    showActor.send({ type: '_JUMP_PHASE', phase: 'live', substate: 'celebrating' })
+    showActor.send({ type: '_PATCH_CONTEXT', patch: {
       beatCheckPending: true,
       celebrationActive: true,
       beatsLocked: 1,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
       currentActId: 'a1',
-      phase: 'live',
-    })
+    }})
     render(<BeatCheckModal />)
     expect(screen.getByText('That moment was real.')).toBeInTheDocument()
   })
 
   it('hides lock/skip buttons during celebration', () => {
-    useShowStore.setState({
+    showActor.send({ type: '_JUMP_PHASE', phase: 'live', substate: 'celebrating' })
+    showActor.send({ type: '_PATCH_CONTEXT', patch: {
       beatCheckPending: true,
       celebrationActive: true,
       beatsLocked: 1,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
       currentActId: 'a1',
-      phase: 'live',
-    })
+    }})
     render(<BeatCheckModal />)
     expect(screen.queryByText(/Lock the Beat/)).not.toBeInTheDocument()
     expect(screen.queryByText('Not this time')).not.toBeInTheDocument()
   })
 
   it('celebration text has animate-beat-ignite class', () => {
-    useShowStore.setState({
+    showActor.send({ type: '_JUMP_PHASE', phase: 'live', substate: 'celebrating' })
+    showActor.send({ type: '_PATCH_CONTEXT', patch: {
       beatCheckPending: true,
       celebrationActive: true,
       beatsLocked: 1,
       acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
       currentActId: 'a1',
-      phase: 'live',
-    })
+    }})
     render(<BeatCheckModal />)
     const celebrationEl = screen.getByText('That moment was real.')
     expect(celebrationEl.className).toContain('animate-beat-ignite')
