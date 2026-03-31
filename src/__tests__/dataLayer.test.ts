@@ -401,6 +401,47 @@ describe('CalendarCacheRepository', () => {
     const dayEnd = new Date('2099-01-01T23:59:59Z').getTime()
     expect(data.calendarCache.getEventsForDay(dayStart, dayEnd)).toHaveLength(0)
   })
+
+  it('finds events spanning midnight (start before day, end within day)', () => {
+    const dayStart = new Date('2026-03-30T00:00:00Z').getTime()
+    const dayEnd = new Date('2026-03-30T23:59:59Z').getTime()
+
+    data.calendarCache.upsertEvents([
+      {
+        id: 'evt-overnight',
+        title: 'Overnight Deploy',
+        startTime: dayStart - 4 * 3600000, // 4 hours before midnight
+        endTime: dayStart + 2 * 3600000,   // 2am within the day
+        isFixed: true,
+        category: 'Admin',
+        lastSynced: Date.now(),
+      },
+    ])
+
+    const events = data.calendarCache.getEventsForDay(dayStart, dayEnd)
+    expect(events).toHaveLength(1)
+    expect(events[0].title).toBe('Overnight Deploy')
+  })
+
+  it('removes stale rows when a subsequent sync omits them', () => {
+    const dayStart = new Date('2026-03-30T00:00:00Z').getTime()
+    const dayEnd = new Date('2026-03-30T23:59:59Z').getTime()
+
+    // First sync: two events
+    data.calendarCache.upsertEvents([
+      { id: 'evt-old', title: 'Cancelled Meeting', startTime: dayStart + 9 * 3600000, endTime: dayStart + 10 * 3600000, isFixed: true, category: 'Admin', lastSynced: Date.now() },
+      { id: 'evt-keep', title: 'Standup', startTime: dayStart + 10 * 3600000, endTime: dayStart + 10.5 * 3600000, isFixed: true, category: 'Admin', lastSynced: Date.now() },
+    ], dayStart, dayEnd)
+
+    // Second sync: only one event (evt-old was cancelled)
+    data.calendarCache.upsertEvents([
+      { id: 'evt-keep', title: 'Standup', startTime: dayStart + 10 * 3600000, endTime: dayStart + 10.5 * 3600000, isFixed: true, category: 'Admin', lastSynced: Date.now() },
+    ], dayStart, dayEnd)
+
+    const events = data.calendarCache.getEventsForDay(dayStart, dayEnd)
+    expect(events).toHaveLength(1)
+    expect(events[0].id).toBe('evt-keep')
+  })
 })
 
 describe('resetAllData', () => {

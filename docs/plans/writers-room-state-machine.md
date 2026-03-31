@@ -2,7 +2,7 @@
 
 ## States
 
-```
+```text
 DARK_STUDIO
   → [user clicks "Enter the Writer's Room"]
 
@@ -46,7 +46,7 @@ GOING_LIVE
 
 ## Error States
 
-```
+```text
 SKELETON_LINEUP
   → [Claude subprocess fails to boot after 10s]
 CLAUDE_ERROR
@@ -85,7 +85,7 @@ EMPTY_STATE
 
 With subprocess pre-warming during Dark Studio:
 
-```
+```text
 DARK_STUDIO (subprocess booting in background)
   → WRITERS_ROOM_INIT
   → SKELETON_LINEUP (cached events)
