@@ -169,15 +169,17 @@ E2E tests must cover:
 
 The renderer communicates with main ONLY through the typed `window.clui` API defined in `preload/index.ts`. Never import Node.js modules in the renderer.
 
-### 8. State Management — XState v5 (Phase State) + Zustand (UI State)
+### 8. State Management — XState v5
 
-Show phase lifecycle is managed by an XState v5 machine (`showMachine.ts`). The singleton `showActor` is the sole source of truth for all phase state. Components read state via React hooks from `ShowMachineProvider.tsx` and dispatch events via `useShowSend()`. Non-phase UI state (calendar cache, Claude session ID) lives in Zustand (`uiStore.ts`).
+Show phase lifecycle is managed by an XState v5 state machine. The singleton `showActor` is the **sole source of truth** for all phase state. Components read state via React hooks from `ShowMachineProvider.tsx` and dispatch events via `useShowSend()`.
 
 - `showMachine.ts` — XState v5 machine: 6 top-level phases, nested substates, guarded transitions, parallel animation region
 - `showActor.ts` — Singleton actor instance + side effects (SQLite sync, notifications, celebration timeout)
 - `ShowMachineProvider.tsx` — React context + hooks (`useShowPhase`, `useShowContext`, `useShowSend`, `useShowSelector`)
-- `uiStore.ts` — Non-phase Zustand state (calendar, Claude session)
+- `uiStore.ts` — Non-phase UI state only (calendar cache, Claude session ID)
 - `sessionStore.ts` — Claude subprocess session (simplified to single session)
+
+**Do NOT use Zustand for phase state.** All show phases, acts, beats, timers, and transitions go through the XState machine.
 
 **How to read phase state in components:**
 ```tsx
@@ -188,7 +190,7 @@ const send = useShowSend()
 send({ type: 'START_SHOW' })
 ```
 
-**How to read calendar/session state:**
+**How to read non-phase UI state (calendar, session):**
 ```tsx
 import { useUIStore } from '../stores/uiStore'
 const calendarEvents = useUIStore(s => s.calendarEvents)
