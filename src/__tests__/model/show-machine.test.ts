@@ -13,6 +13,7 @@ import { createActor } from 'xstate'
 import { showMachine } from './show-machine'
 import type { ShowMachineEvent } from './show-machine'
 import { useShowStore } from '../../renderer/stores/showStore'
+import { resetShowActor } from '../../renderer/machines/showActor'
 import type { ShowLineup, ShowPhase, ViewTier } from '../../shared/types'
 
 // ─── Helpers ───
@@ -27,6 +28,7 @@ const sampleLineup: ShowLineup = {
 }
 
 function resetStore() {
+  resetShowActor()
   useShowStore.setState({
     phase: 'no_show',
     energy: null,

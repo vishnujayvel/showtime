@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useShowStore } from '../renderer/stores/showStore'
+import { resetShowActor } from '../renderer/machines/showActor'
 import type { ShowLineup, ShowPhase } from '../shared/types'
 
 function resetStore() {
+  resetShowActor()
   useShowStore.setState({
     phase: 'no_show',
     energy: null,

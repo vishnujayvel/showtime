@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useShowStore } from '../renderer/stores/showStore'
+import { resetShowActor } from '../renderer/machines/showActor'
 import type { TrayShowState } from '../shared/types'
 
 function resetShowStore(overrides: Record<string, unknown> = {}) {
+  resetShowActor()
   useShowStore.setState({
     phase: 'no_show',
     energy: null,

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
 import { useShowStore } from '../renderer/stores/showStore'
+import { resetShowActor } from '../renderer/machines/showActor'
 
 // ─── Mock framer-motion ───
 vi.mock('framer-motion', () => ({
@@ -23,6 +24,7 @@ vi.mock('framer-motion', () => ({
 }))
 
 function resetStore() {
+  resetShowActor()
   useShowStore.setState({
     phase: 'writers_room',
     energy: 'medium',
