@@ -75,9 +75,9 @@ export type ShowMachineEvent =
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
   // Session
   | { type: 'SET_CLAUDE_SESSION_ID'; id: string }
-  // Direct context patch (backward compat for tests that use setState)
+  // Test-only: patch context fields directly (used by setActorState() in tests)
   | { type: '_PATCH_CONTEXT'; patch: Partial<ShowMachineContext> }
-  // Force machine into a specific phase (backward compat for tests that set phase via setState)
+  // Test-only: jump to a specific phase (used by setActorState() in tests)
   | { type: '_JUMP_PHASE'; phase: string; substate?: string }
 
 // ─── Helpers ───
