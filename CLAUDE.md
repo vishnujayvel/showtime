@@ -36,7 +36,7 @@ Showtime (Electron App, macOS only)
 │   ├── panels/              ← TimerPanel, LineupPanel, ChatPanel
 │   ├── components/          ← ActCard, BeatCheckModal, BeatCounter, DirectorMode, etc.
 │   ├── machines/            ← showMachine (XState v5), showActor (singleton), ShowMachineProvider (React)
-│   ├── stores/              ← showStore (Zustand bridge over XState), uiStore (non-phase UI state), sessionStore
+│   ├── stores/              ← uiStore (calendar/session UI state), sessionStore (Claude subprocess)
 │   ├── hooks/               ← useTimer
 │   └── ui/                  ← shadcn/ui components (Button, Dialog, Card, etc.)
 └── Skills
@@ -169,16 +169,30 @@ E2E tests must cover:
 
 The renderer communicates with main ONLY through the typed `window.clui` API defined in `preload/index.ts`. Never import Node.js modules in the renderer.
 
-### 8. State Management — XState for State Machines + Zustand for UI State
+### 8. State Management — XState v5 (Phase State) + Zustand (UI State)
 
-Show phase lifecycle is managed by an XState v5 machine (`showMachine.ts`). Non-phase UI state (calendar cache, Claude session ID) lives in Zustand (`uiStore.ts`). A backward-compatible Zustand bridge (`showStore.ts`) delegates all phase actions to the XState actor via `sendAndSync()`, so existing components continue to work through `useShowStore`.
+Show phase lifecycle is managed by an XState v5 machine (`showMachine.ts`). The singleton `showActor` is the sole source of truth for all phase state. Components read state via React hooks from `ShowMachineProvider.tsx` and dispatch events via `useShowSend()`. Non-phase UI state (calendar cache, Claude session ID) lives in Zustand (`uiStore.ts`).
 
 - `showMachine.ts` — XState v5 machine: 6 top-level phases, nested substates, guarded transitions, parallel animation region
-- `showActor.ts` — Singleton actor instance + side effects (SQLite sync, notifications)
-- `showStore.ts` — Zustand bridge over XState (backward-compatible API for views/tests)
+- `showActor.ts` — Singleton actor instance + side effects (SQLite sync, notifications, celebration timeout)
+- `ShowMachineProvider.tsx` — React context + hooks (`useShowPhase`, `useShowContext`, `useShowSend`, `useShowSelector`)
 - `uiStore.ts` — Non-phase Zustand state (calendar, Claude session)
-- `ShowMachineProvider.tsx` — React context + hooks (`useShowActor`, `useShowSelector`, etc.)
 - `sessionStore.ts` — Claude subprocess session (simplified to single session)
+
+**How to read phase state in components:**
+```tsx
+import { useShowPhase, useShowContext, useShowSend } from '../machines/ShowMachineProvider'
+const phase = useShowPhase()
+const acts = useShowContext(ctx => ctx.acts)
+const send = useShowSend()
+send({ type: 'START_SHOW' })
+```
+
+**How to read calendar/session state:**
+```tsx
+import { useUIStore } from '../stores/uiStore'
+const calendarEvents = useUIStore(s => s.calendarEvents)
+```
 
 ## Design System
 
