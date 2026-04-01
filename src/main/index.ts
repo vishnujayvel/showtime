@@ -20,15 +20,15 @@ import { startDayBoundaryCheck } from './day-boundary'
 // ─── Wire ControlPlane events → renderer ───
 
 controlPlane.on('event', (tabId: string, event: NormalizedEvent) => {
-  broadcast('showtime:normalized-event', tabId, event)
+  broadcast(IPC.NORMALIZED_EVENT, tabId, event)
 })
 
 controlPlane.on('tab-status-change', (tabId: string, newStatus: string, oldStatus: string) => {
-  broadcast('showtime:tab-status-change', tabId, newStatus, oldStatus)
+  broadcast(IPC.TAB_STATUS_CHANGE, tabId, newStatus, oldStatus)
 })
 
 controlPlane.on('error', (tabId: string, error: EnrichedError) => {
-  broadcast('showtime:enriched-error', tabId, error)
+  broadcast(IPC.ENRICHED_ERROR, tabId, error)
 })
 
 // ─── Isolated userData for parallel E2E workers ───

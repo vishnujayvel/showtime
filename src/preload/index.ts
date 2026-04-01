@@ -113,22 +113,22 @@ const api: ShowtimeAPI = {
   onEvent: (callback) => {
     // Single unified handler — all normalized events come through one channel
     const handler = (_e: Electron.IpcRendererEvent, tabId: string, event: NormalizedEvent) => callback(tabId, event)
-    ipcRenderer.on('showtime:normalized-event', handler)
-    return () => ipcRenderer.removeListener('showtime:normalized-event', handler)
+    ipcRenderer.on(IPC.NORMALIZED_EVENT, handler)
+    return () => ipcRenderer.removeListener(IPC.NORMALIZED_EVENT, handler)
   },
 
   onTabStatusChange: (callback) => {
     const handler = (_e: Electron.IpcRendererEvent, tabId: string, newStatus: string, oldStatus: string) =>
       callback(tabId, newStatus, oldStatus)
-    ipcRenderer.on('showtime:tab-status-change', handler)
-    return () => ipcRenderer.removeListener('showtime:tab-status-change', handler)
+    ipcRenderer.on(IPC.TAB_STATUS_CHANGE, handler)
+    return () => ipcRenderer.removeListener(IPC.TAB_STATUS_CHANGE, handler)
   },
 
   onError: (callback) => {
     const handler = (_e: Electron.IpcRendererEvent, tabId: string, error: EnrichedError) =>
       callback(tabId, error)
-    ipcRenderer.on('showtime:enriched-error', handler)
-    return () => ipcRenderer.removeListener('showtime:enriched-error', handler)
+    ipcRenderer.on(IPC.ENRICHED_ERROR, handler)
+    return () => ipcRenderer.removeListener(IPC.ENRICHED_ERROR, handler)
   },
 
   onSkillStatus: (callback) => {

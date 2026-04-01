@@ -34,7 +34,7 @@ function formatDuration(ms: number): string {
   return `${Math.floor(mins / 60)}h ${mins % 60}m`
 }
 
-const springTransition = { type: 'spring' as const, stiffness: 200, damping: 25 }
+import { springGentle as springTransition } from '../constants/animations'
 
 export function HistoryView({ onBack }: HistoryViewProps) {
   const [history, setHistory] = useState<ShowHistoryEntry[]>([])

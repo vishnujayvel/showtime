@@ -424,6 +424,11 @@ export const IPC = {
   INIT_SESSION: 'showtime:init-session',
   RESET_TAB_SESSION: 'showtime:reset-tab-session',
 
+  // Aggregated events (main → renderer, via ControlPlane)
+  NORMALIZED_EVENT: 'showtime:normalized-event',
+  TAB_STATUS_CHANGE: 'showtime:tab-status-change',
+  ENRICHED_ERROR: 'showtime:enriched-error',
+
   // One-way events (main → renderer)
   TEXT_CHUNK: 'showtime:text-chunk',
   TOOL_CALL: 'showtime:tool-call',
