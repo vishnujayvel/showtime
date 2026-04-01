@@ -3,8 +3,53 @@ import { motion } from 'framer-motion'
 import { useShowSend } from '../machines/ShowMachineProvider'
 import { Button } from '../ui/button'
 
-function getTemporalGreeting(): { heading: string; sub: string } {
+const PERSIST_KEY = 'showtime-show-state'
+
+interface PersistedShowInfo {
+  phase: string
+  actCount: number
+  completedCount: number
+  isStrike: boolean
+}
+
+/** Check localStorage for today's persisted show state */
+export function getTodayPersistedShow(): PersistedShowInfo | null {
+  try {
+    const raw = localStorage.getItem(PERSIST_KEY)
+    if (!raw) return null
+    const { context } = JSON.parse(raw)
+    if (!context) return null
+    const today = new Date().toISOString().slice(0, 10)
+    if (context.showDate !== today) return null
+
+    const acts = context.acts ?? []
+    const completedCount = acts.filter((a: { status: string }) =>
+      a.status === 'completed'
+    ).length
+
+    // Determine phase from the persisted state
+    const phase = context.verdict ? 'strike' : (acts.some((a: { status: string }) => a.status === 'active') ? 'live' : 'writers_room')
+
+    return {
+      phase,
+      actCount: acts.length,
+      completedCount,
+      isStrike: !!context.verdict,
+    }
+  } catch {
+    return null
+  }
+}
+
+function getTemporalGreeting(hasShow: boolean): { heading: string; sub: string } {
   const hour = new Date().getHours()
+
+  if (hasShow) {
+    if (hour < 12) return { heading: "Your show is waiting.", sub: 'Pick up where you left off.' }
+    if (hour < 18) return { heading: "The show must go on.", sub: 'Resume your lineup and keep the momentum.' }
+    return { heading: "Tonight's show has a history.", sub: 'Review or wrap up.' }
+  }
+
   if (hour < 12) {
     return {
       heading: "Today's show hasn't been written yet.",
@@ -30,12 +75,20 @@ interface DarkStudioViewProps {
 export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
   const send = useShowSend()
   const triggerColdOpen = useCallback(() => send({ type: 'TRIGGER_COLD_OPEN' }), [send])
-  const greeting = useMemo(getTemporalGreeting, [])
+  const todayShow = useMemo(getTodayPersistedShow, [])
+  const greeting = useMemo(() => getTemporalGreeting(!!todayShow), [todayShow])
 
   // Pre-warm Claude subprocess for faster Writer's Room startup
   useEffect(() => {
     window.clui.prewarmSubprocess()
   }, [])
+
+  const handleResumeShow = useCallback(() => {
+    // ENTER_WRITERS_ROOM will hydrate from localStorage (showActor already does this)
+    // The persisted snapshot is already loaded by showActor on app start
+    // Just trigger the cold open which transitions to writers_room
+    send({ type: 'TRIGGER_COLD_OPEN' })
+  }, [send])
 
   return (
     <div
@@ -59,15 +112,47 @@ export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
           {greeting.sub}
         </p>
 
+        {/* Show summary when resuming */}
+        {todayShow && !todayShow.isStrike && (
+          <motion.p
+            className="font-mono text-xs text-txt-secondary mt-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 0.6 }}
+            data-testid="resume-summary"
+          >
+            {todayShow.completedCount}/{todayShow.actCount} acts done
+            {todayShow.phase === 'live' && ' — show in progress'}
+          </motion.p>
+        )}
+
+        {todayShow && todayShow.isStrike && (
+          <motion.p
+            className="font-mono text-xs text-beat mt-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 0.6 }}
+            data-testid="strike-summary"
+          >
+            Show complete — {todayShow.completedCount} acts wrapped
+          </motion.p>
+        )}
+
         <motion.div
           className="mt-8 flex items-center gap-3"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 1.2 }}
         >
-          <Button variant="accent" onClick={triggerColdOpen} data-testid="enter-writers-room">
-            Enter the Writer&apos;s Room
-          </Button>
+          {todayShow && !todayShow.isStrike ? (
+            <Button variant="accent" onClick={handleResumeShow} data-testid="resume-show-btn">
+              Resume Today&apos;s Show
+            </Button>
+          ) : (
+            <Button variant="accent" onClick={triggerColdOpen} data-testid="enter-writers-room">
+              Enter the Writer&apos;s Room
+            </Button>
+          )}
           {onShowHistory && (
             <Button variant="ghost_muted" onClick={onShowHistory}>
               Past Shows
