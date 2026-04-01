@@ -157,6 +157,8 @@ export const showMachine = setup({
         status: 'upcoming' as ActStatus,
         beatLocked: false,
         order: i,
+        pinnedStartAt: a.pinnedStartAt ?? null,
+        calendarEventId: a.calendarEventId ?? null,
       }))
       return {
         acts,

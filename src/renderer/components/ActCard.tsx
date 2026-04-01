@@ -12,9 +12,11 @@ interface ActCardProps {
   timeLabel?: string
   timeDrifted?: boolean
   plannedTimeLabel?: string
+  /** Whether this act is pinned to a fixed calendar time */
+  pinned?: boolean
 }
 
-function FullActCard({ act, actNumber, onReorder, onRemove }: Omit<ActCardProps, 'variant'>) {
+function FullActCard({ act, actNumber, onReorder, onRemove, pinned }: Omit<ActCardProps, 'variant'>) {
   const categoryClasses = getCategoryClasses(act.sketch)
 
   return (
@@ -25,6 +27,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove }: Omit<ActCardProps,
       {/* Middle content */}
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm text-txt-primary truncate">
+          {pinned && <span className="text-txt-muted mr-1" title="Pinned to calendar time">&#128204;</span>}
           {act.name}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
@@ -67,7 +70,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove }: Omit<ActCardProps,
   )
 }
 
-function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReorder, onRemove }: Omit<ActCardProps, 'variant'>) {
+function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReorder, onRemove, pinned }: Omit<ActCardProps, 'variant'>) {
   const statusDotClass = (() => {
     switch (act.status) {
       case 'active':
@@ -104,6 +107,7 @@ function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReord
       {/* Act info */}
       <div className="flex-1 min-w-0">
         <span className={cn('truncate block', nameClass)}>
+          {pinned && <span className="text-txt-muted mr-0.5" title="Pinned to calendar time">&#128204;</span>}
           {act.name}
         </span>
         {/* Projected time display */}
@@ -142,7 +146,7 @@ function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReord
   )
 }
 
-export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabel, timeDrifted, plannedTimeLabel }: ActCardProps) {
+export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabel, timeDrifted, plannedTimeLabel, pinned }: ActCardProps) {
   if (variant === 'sidebar') {
     return (
       <SidebarActCard
@@ -153,6 +157,7 @@ export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabe
         plannedTimeLabel={plannedTimeLabel}
         onReorder={onReorder}
         onRemove={onRemove}
+        pinned={pinned}
       />
     )
   }
@@ -163,6 +168,7 @@ export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabe
       actNumber={actNumber}
       onReorder={onReorder}
       onRemove={onRemove}
+      pinned={pinned}
     />
   )
 }
