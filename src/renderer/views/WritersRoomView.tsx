@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useShowContext, useShowSend } from '../machines/ShowMachineProvider'
 import { useUIStore } from '../stores/uiStore'
 import { useSessionStore } from '../stores/sessionStore'
@@ -16,6 +16,69 @@ import { cn } from '../lib/utils'
 import type { EnergyLevel, ShowLineup } from '../../shared/types'
 
 const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
+
+// ─── Time-of-day contextual prompts ───
+
+export interface TimeOfDayPrompt {
+  greeting: string
+  sub: string
+  period: 'morning' | 'midday' | 'late' | 'evening'
+}
+
+export function getTimeOfDayPrompt(hour?: number): TimeOfDayPrompt {
+  const h = hour ?? new Date().getHours()
+  if (h < 10) {
+    return { greeting: "Fresh start! Let's build today's show.", sub: 'The morning is prime time.', period: 'morning' }
+  }
+  if (h < 14) {
+    return { greeting: "Afternoon \u2014 here's what's left.", sub: 'Midday momentum.', period: 'midday' }
+  }
+  if (h < 18) {
+    return { greeting: 'Evening wind-down.', sub: 'Focus on what matters most.', period: 'late' }
+  }
+  return { greeting: "Show's wrapping up.", sub: 'Strike or encore?', period: 'evening' }
+}
+
+// ─── Quick-start template definitions ───
+
+export interface QuickStartTemplate {
+  id: string
+  label: string
+  description: string
+  available: boolean
+}
+
+export function getQuickStartTemplates(opts: {
+  hasTodayShow: boolean
+  hasYesterdayLineup: boolean
+}): QuickStartTemplate[] {
+  return [
+    {
+      id: 'resume',
+      label: "Resume today's show",
+      description: 'Pick up where you left off',
+      available: opts.hasTodayShow,
+    },
+    {
+      id: 'yesterday',
+      label: 'Same lineup as yesterday',
+      description: 'Repeat what worked',
+      available: opts.hasYesterdayLineup,
+    },
+    {
+      id: 'light',
+      label: 'Light day',
+      description: '2\u20133 gentle acts, low pressure',
+      available: true,
+    },
+    {
+      id: 'deep-focus',
+      label: 'Deep focus day',
+      description: 'Long deep work blocks, minimal switching',
+      available: true,
+    },
+  ]
+}
 
 const ENERGY_OPTIONS: { level: EnergyLevel; emoji: string; label: string }[] = [
   { level: 'high', emoji: '⚡', label: 'High' },
@@ -56,6 +119,7 @@ export function WritersRoomView() {
   const messages = tab?.messages ?? []
   const isRunning = tab?.status === 'running' || tab?.status === 'connecting'
   const currentActivity = tab?.currentActivity ?? ''
+  const timePrompt = useMemo(() => getTimeOfDayPrompt(), [])
 
   // Auto-scroll: scroll to bottom when near bottom (<60px threshold)
   const scrollToBottom = useCallback(() => {
@@ -270,7 +334,7 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
         className="flex-1 overflow-y-auto px-6 py-4 space-y-3"
         data-testid="chat-messages"
       >
-        {/* Empty state */}
+        {/* Empty state with time-of-day prompt and quick-start templates */}
         {messages.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -279,12 +343,36 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
             className="flex flex-col items-center justify-center h-full text-center"
           >
             <div className="spotlight-warm absolute inset-0 pointer-events-none" />
-            <p className="text-txt-secondary text-sm mb-1">
-              What&apos;s on the schedule?
+            <p className="text-txt-secondary text-sm mb-1" data-testid="time-of-day-greeting">
+              {timePrompt.greeting}
             </p>
             <p className="text-txt-muted text-xs">
-              Tell me about your day and I&apos;ll build your lineup.
+              {timePrompt.sub}
             </p>
+
+            {/* Quick-start templates */}
+            <div className="mt-6 flex flex-col gap-2 w-full max-w-xs" data-testid="quick-start-templates">
+              <button
+                onClick={() => {
+                  sendMessage(`I want a light day — 2-3 gentle acts, low pressure. Energy: ${energy ?? 'low'}`)
+                }}
+                className="text-left px-3 py-2 rounded-lg border border-surface-hover/60 text-xs text-txt-secondary hover:text-txt-primary hover:border-accent/30 hover:bg-surface-hover/40 transition-colors"
+                data-testid="template-light"
+              >
+                <span className="font-medium text-txt-primary">Light day</span>
+                <span className="text-txt-muted ml-2">2–3 gentle acts, low pressure</span>
+              </button>
+              <button
+                onClick={() => {
+                  sendMessage(`I want a deep focus day — long deep work blocks, minimal context switching. Energy: ${energy ?? 'high'}`)
+                }}
+                className="text-left px-3 py-2 rounded-lg border border-surface-hover/60 text-xs text-txt-secondary hover:text-txt-primary hover:border-accent/30 hover:bg-surface-hover/40 transition-colors"
+                data-testid="template-deep-focus"
+              >
+                <span className="font-medium text-txt-primary">Deep focus day</span>
+                <span className="text-txt-muted ml-2">Long deep work blocks</span>
+              </button>
+            </div>
           </motion.div>
         )}
 

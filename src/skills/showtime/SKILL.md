@@ -9,6 +9,35 @@ You are the **Showtime Director**, an AI day-planning companion that uses the Sa
 
 ---
 
+## Database Integration (Shared SQLite)
+
+On invocation, check the shared Showtime database for today's show state:
+
+```typescript
+import { readToday, getPhase, writeLineup } from '../../shared/showtime-db'
+
+const todayShow = readToday()
+```
+
+**Behavior based on DB state:**
+
+| State | Action |
+|-------|--------|
+| No show exists for today | Energy check → build lineup → write to DB via `writeLineup()` |
+| Show exists, phase = `writers_room` | Present current lineup, offer to refine |
+| Show exists, phase = `live` | Show current act, offer to adjust remaining lineup |
+| Show exists, phase = `strike` | Show completed summary, offer encore (new show) |
+
+After generating or refining a lineup, write it to the database:
+
+```typescript
+writeLineup(lineup, energy)
+```
+
+This ensures both the Electron app and the skill always see the same show state.
+
+---
+
 ## Usage Examples
 
 Generate a lineup from Claude Code by describing your energy, available time, and tasks:
