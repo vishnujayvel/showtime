@@ -1,5 +1,9 @@
 # Showtime Codebase Audit — March 28, 2026
 
+> **Note:** This audit predates the XState v5 migration. State management now uses
+> XState (ShowMachineProvider) instead of Zustand-only. The preload API was renamed
+> from `window.clui` to `window.showtime`. See issue #153 for the latest audit.
+
 ## Overall Health: 8/10
 
 The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, zero inline styles, zero IPC violations) with strong E2E coverage. Key gaps are in test visibility, hook coverage, docs organization, and CI integration.
