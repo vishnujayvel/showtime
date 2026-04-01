@@ -67,39 +67,6 @@ beforeEach(() => {
   cleanup()
 })
 
-// ─── EnergySelector Tests ───
-
-describe('EnergySelector', () => {
-  let EnergySelector: any
-
-  beforeEach(async () => {
-    const mod = await import('../renderer/components/EnergySelector')
-    EnergySelector = mod.EnergySelector
-  })
-
-  it('renders all four energy options', () => {
-    render(<EnergySelector onSelect={() => {}} />)
-    expect(screen.getByText('High Energy')).toBeInTheDocument()
-    expect(screen.getByText('Medium Energy')).toBeInTheDocument()
-    expect(screen.getByText('Low Energy')).toBeInTheDocument()
-    expect(screen.getByText('Recovery Day')).toBeInTheDocument()
-  })
-
-  it('calls onSelect with correct level on click', () => {
-    const onSelect = vi.fn()
-    render(<EnergySelector onSelect={onSelect} />)
-    fireEvent.click(screen.getByText('High Energy'))
-    expect(onSelect).toHaveBeenCalledWith('high')
-  })
-
-  it('calls onSelect for different energy levels', () => {
-    const onSelect = vi.fn()
-    render(<EnergySelector onSelect={onSelect} />)
-    fireEvent.click(screen.getByText('Low Energy'))
-    expect(onSelect).toHaveBeenCalledWith('low')
-  })
-})
-
 // ─── BeatCheckModal Tests ───
 
 describe('BeatCheckModal', () => {

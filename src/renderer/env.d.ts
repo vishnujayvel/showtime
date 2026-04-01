@@ -1,4 +1,4 @@
-import type { CluiAPI } from '../preload/index'
+import type { ShowtimeAPI } from '../preload/index'
 
 declare module '*.mp3' {
   const src: string
@@ -8,6 +8,6 @@ declare module '*.mp3' {
 declare global {
   const __APP_VERSION__: string
   interface Window {
-    clui: CluiAPI
+    showtime: ShowtimeAPI
   }
 }

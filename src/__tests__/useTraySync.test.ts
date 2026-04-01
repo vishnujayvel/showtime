@@ -44,7 +44,7 @@ describe('useTraySync', () => {
 
     updateTrayState = vi.fn()
     updateTrayTimer = vi.fn()
-    Object.assign(window.clui, { updateTrayState, updateTrayTimer })
+    Object.assign(window.showtime, { updateTrayState, updateTrayTimer })
   })
 
   afterEach(() => {

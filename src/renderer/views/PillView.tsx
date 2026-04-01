@@ -42,7 +42,7 @@ export function PillView() {
       if (el) {
         const rect = el.getBoundingClientRect()
         if (rect.width === 0 || rect.height === 0) {
-          window.clui.forceRepaint()
+          window.showtime.forceRepaint()
         }
       }
     }, 3000)
