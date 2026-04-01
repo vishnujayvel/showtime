@@ -20,7 +20,7 @@ User types a brain dump and sends it
 Claude responds with a ```showtime-lineup JSON block
   └─ tryParseLineup() detects the lineup in the response
   └─ ChatMessage renders it as an interactive LineupCard (no raw JSON shown)
-  └─ setLineup() stores acts in showStore
+  └─ Lineup is stored in the XState show machine context via send({ type: 'SET_LINEUP', lineup })
 
 User refines via follow-up messages
   └─ buildRefinementPrompt() wraps user text with current lineup context
@@ -41,7 +41,9 @@ User clicks WE'RE LIVE!
 | `src/renderer/lib/lineup-parser.ts` | Parses `showtime-lineup` JSON blocks from Claude responses |
 | `src/renderer/lib/refinement-prompt.ts` | Builds the hidden refinement prompt with current lineup context |
 | `src/renderer/stores/sessionStore.ts` | Manages Claude subprocess, tabs, messages |
-| `src/renderer/stores/showStore.ts` | Stores parsed lineup (acts), energy, phase |
+| `src/renderer/machines/showMachine.ts` | XState v5 machine — show phases, acts, beats, energy, timer |
+| `src/renderer/machines/showActor.ts` | Singleton actor instance + side effects (SQLite sync) |
+| `src/renderer/machines/ShowMachineProvider.tsx` | React context + hooks for reading phase state |
 
 ## The Three-Argument sendMessage Pattern
 
@@ -78,7 +80,7 @@ The `LineupCard` component renders the parsed lineup and supports inline editing
 - **Add Act** — Button at the bottom adds a new default act
 - **Remove Act** — Hover over a row to reveal the × button
 
-All edits call `onEdit(updatedLineup)` which flows back to `showStore.setLineup()`.
+All edits call `onEdit(updatedLineup)` which dispatches a `SET_LINEUP` event to the XState show machine.
 
 ## Calendar Integration
 

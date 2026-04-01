@@ -64,7 +64,7 @@ Row of gold stars (locked beats) and gray stars (empty slots).
 
 **File:** `BeatCheckModal.tsx`
 
-Spotlight modal that appears after each Act: "Did you have a moment of presence?" User can lock or skip the beat. Renders globally in `App.tsx`, triggered by `beatCheckPending` in `showStore`.
+Spotlight modal that appears after each Act: "Did you have a moment of presence?" User can lock or skip the beat. Renders globally in `App.tsx`, triggered by the `beatCheckPending` state in the XState show machine.
 
 ### OnAirIndicator
 

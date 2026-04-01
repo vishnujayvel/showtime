@@ -12,7 +12,7 @@ Showtime is an **AI-native macOS desktop app** — built with Claude Code as a f
 | **Styling** | Tailwind CSS v4 (CSS-first) | ^4.2.1 |
 | **Components** | shadcn/ui + Radix UI | latest |
 | **Animation** | Framer Motion (spring physics) | ^12.35.1 |
-| **State** | Zustand | ^5.0.0 |
+| **State** | XState v5 (phase machine) + Zustand (UI state) | ^5.0.0 / ^5.0.0 |
 | **Database** | SQLite via better-sqlite3 + Drizzle ORM | ^12.8.0 / ^0.45.1 |
 | **AI Runtime** | Claude Code subprocess (node-pty) | CLI v2.1+ |
 | **Unit Tests** | Vitest + Testing Library | ^4.1.0 |
@@ -157,14 +157,24 @@ Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightF
 
 ## State Management
 
+### XState v5 (Phase Machine)
+
+Show phase lifecycle is managed by an XState v5 state machine. The singleton `showActor` is the sole source of truth for all phase state (6 top-level phases, nested substates, guarded transitions, parallel animation region).
+
+| File | Purpose |
+|------|---------|
+| `showMachine.ts` | XState v5 machine definition |
+| `showActor.ts` | Singleton actor instance + side effects (SQLite sync, notifications) |
+| `ShowMachineProvider.tsx` | React context + hooks (`useShowPhase`, `useShowContext`, `useShowSend`, `useShowSelector`) |
+
 ### Zustand (^5.0.0)
 
-Two stores, no React Context for state:
+Used for non-phase UI state only:
 
 | Store | Purpose |
 |-------|---------|
-| `showStore` | Show phase machine, acts, beats, energy, timer, verdict, lineup |
-| `sessionStore` | Claude Code tab sessions, streaming state, error tracking |
+| `uiStore` | Calendar cache, session UI state |
+| `sessionStore` | Claude Code subprocess session, streaming state |
 
 ---
 
@@ -292,7 +302,7 @@ These are enforced by CLAUDE.md, CodeRabbit, and pre-commit hooks:
 
 1. **No inline styles** — 100% Tailwind utility classes
 2. **Spring physics only** — No linear CSS transitions or Framer Motion durations
-3. **Zustand only** — No React Context for state management
+3. **XState v5 for phase state** — All show phases, acts, beats, timers go through the state machine. Zustand for non-phase UI state only
 4. **Typed IPC** — All channels via `IPC` enum, all payloads typed in `shared/types.ts`
 5. **E2E coverage** — Every feature must have Playwright tests
 6. **macOS native feel** — `frame: false`, no vibrancy, CSS backgrounds, content-tight sizing

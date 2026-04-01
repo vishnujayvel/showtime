@@ -33,7 +33,7 @@ Showtime (Electron App, macOS only)
 │   └── window.clui API      ← KEEP: typed IPC bridge, strict process isolation
 ├── Renderer (React 19)
 │   ├── views/               ← 12 views: DarkStudioView, WritersRoomView, PillView, CompactView, DashboardView, ExpandedView, StrikeView, SettingsView, HistoryView, OnboardingView, GoingLiveTransition, ColdOpenTransition
-│   ├── panels/              ← TimerPanel, LineupPanel, ChatPanel
+│   ├── panels/              ← TimerPanel, LineupPanel
 │   ├── components/          ← ActCard, BeatCheckModal, BeatCounter, DirectorMode, etc.
 │   ├── machines/            ← showMachine (XState v5), showActor (singleton), ShowMachineProvider (React)
 │   ├── stores/              ← uiStore (calendar/session UI state), sessionStore (Claude subprocess)
