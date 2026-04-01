@@ -137,7 +137,10 @@ export const showMachine = setup({
     hasNextAct: ({ context }) => findNextUpcoming(context.acts) !== undefined,
     noNextAct: ({ context }) => findNextUpcoming(context.acts) === undefined,
     hasTimerRunning: ({ context }) => context.timerEndAt !== null,
-    hasPausedTimer: ({ context }) => context.timerPausedRemaining !== null && context.currentActId !== null,
+    hasPausedTimer: ({ context }) =>
+      context.timerPausedRemaining !== null &&
+      context.currentActId !== null &&
+      context.acts.some((a) => a.id === context.currentActId && a.status === 'active'),
   },
   actions: {
     assignEnergy: assign({
@@ -433,6 +436,10 @@ export const showMachine = setup({
               target: 'writers_room',
               actions: 'enterWritersRoom',
             },
+            RESET: {
+              target: 'no_show',
+              actions: 'resetContext',
+            },
           },
         },
 
@@ -451,7 +458,10 @@ export const showMachine = setup({
               guard: 'hasActs',
               actions: 'startShowContext',
             },
-            TRIGGER_GOING_LIVE: 'going_live',
+            TRIGGER_GOING_LIVE: {
+              target: 'going_live',
+              guard: 'hasActs',
+            },
             RESET: {
               target: 'no_show',
               actions: 'resetContext',
@@ -483,7 +493,17 @@ export const showMachine = setup({
                 ],
               },
             },
-            lineup_ready: {},
+            lineup_ready: {
+              on: {
+                SET_WRITERS_ROOM_STEP: [
+                  { target: 'conversation', guard: ({ event }) => event.step === 'conversation', actions: 'assignWritersRoomStep' },
+                  { target: 'plan', guard: ({ event }) => event.step === 'plan', actions: 'assignWritersRoomStep' },
+                  { target: 'energy', guard: ({ event }) => event.step === 'energy', actions: 'assignWritersRoomStep' },
+                ],
+                SET_ENERGY: { actions: 'assignEnergy' },
+                SET_LINEUP: { actions: 'assignLineup' },
+              },
+            },
           },
         },
 
@@ -493,6 +513,10 @@ export const showMachine = setup({
               target: 'live',
               guard: 'hasActs',
               actions: 'startShowContext',
+            },
+            RESET: {
+              target: 'no_show',
+              actions: 'resetContext',
             },
           },
         },
@@ -537,10 +561,6 @@ export const showMachine = setup({
                 actions: ['skipBeatContext', 'strikeContext'],
               },
             ],
-            COMPLETE_ACT: {
-              target: '.beat_check',
-              actions: 'completeActContext',
-            },
             // Lineup editing during live
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
@@ -582,6 +602,33 @@ export const showMachine = setup({
                   {
                     target: '#show.phase.strike',
                     actions: ['skipActContext', 'strikeContext'],
+                  },
+                ],
+                REMOVE_ACT: [
+                  // Removing a non-current (upcoming) act — just remove it
+                  {
+                    target: 'act_active',
+                    guard: ({ context, event }) => {
+                      if (event.type !== 'REMOVE_ACT') return false
+                      return context.currentActId !== event.actId
+                    },
+                    actions: 'removeActContext',
+                  },
+                  // Removing the current act — advance to next if available
+                  {
+                    target: 'act_active',
+                    guard: ({ context, event }) => {
+                      if (event.type !== 'REMOVE_ACT') return false
+                      if (context.currentActId !== event.actId) return false
+                      const remaining = context.acts.filter((a) => a.status === 'upcoming' && a.id !== event.actId)
+                      return remaining.length > 0
+                    },
+                    actions: ['removeActContext', 'autoStartNextAct'],
+                  },
+                  // Removing the current act with no next — go to strike
+                  {
+                    target: '#show.phase.strike',
+                    actions: ['removeActContext', 'strikeContext'],
                   },
                 ],
               },
