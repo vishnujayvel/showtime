@@ -15,7 +15,7 @@ import { formatDateLabel } from '../lib/utils'
 import { cn } from '../lib/utils'
 import type { EnergyLevel, ShowLineup } from '../../shared/types'
 
-const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
+import { springDefault as springTransition } from '../constants/animations'
 
 // ─── Time-of-day contextual prompts ───
 
@@ -164,18 +164,18 @@ export function WritersRoomView() {
 
     const elapsed = lineupStartRef.current ? Date.now() - lineupStartRef.current : undefined
     if (lineupStartRef.current) {
-      window.clui.recordMetricTiming('claude.lineup_generation', Date.now() - lineupStartRef.current)
+      window.showtime.recordMetricTiming('claude.lineup_generation', Date.now() - lineupStartRef.current)
       lineupStartRef.current = null
     }
 
     const oldActCount = acts.length
     if (oldActCount > 0) {
-      window.clui.logEvent('INFO', 'claude.refinement_parsed', {
+      window.showtime.logEvent('INFO', 'claude.refinement_parsed', {
         oldActCount,
         newActCount: lineup.acts.length,
       })
     } else {
-      window.clui.logEvent('INFO', 'claude.lineup_parsed', {
+      window.showtime.logEvent('INFO', 'claude.lineup_parsed', {
         actCount: lineup.acts.length,
         ...(elapsed !== undefined ? { durationMs: elapsed } : {}),
       })
@@ -194,7 +194,7 @@ export function WritersRoomView() {
     if (hasLineup) {
       lineupStartRef.current = Date.now()
       const prompt = buildRefinementPrompt(trimmed, energy ?? 'medium', acts)
-      window.clui.logEvent('INFO', 'claude.refinement_sent', {
+      window.showtime.logEvent('INFO', 'claude.refinement_sent', {
         messageText: trimmed.slice(0, 100),
       })
       sendMessage(prompt, undefined, trimmed)
@@ -321,7 +321,7 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
 
           {/* Close button */}
           <button
-            onClick={() => window.clui.quit()}
+            onClick={() => window.showtime.quit()}
             className="text-txt-muted hover:text-onair transition-colors text-sm"
             title="Quit Showtime"
           >
@@ -445,7 +445,7 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
               variant="primary"
               className="flex-1"
               onClick={() => {
-                window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
+                window.showtime.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
                 triggerGoingLive()
               }}
               data-testid="confirm-go-live-btn"
@@ -510,7 +510,7 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
                 variant="primary"
                 className="flex-1"
                 onClick={() => {
-                  window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
+                  window.showtime.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
                   triggerGoingLive()
                 }}
                 data-testid="go-live-btn"

@@ -5,7 +5,7 @@ if (typeof window !== 'undefined') {
   // Must be dynamic to avoid breaking in node environment
   await import('@testing-library/jest-dom/vitest')
 
-  // Mock window.clui for all tests (Electron preload API)
+  // Mock window.showtime for all tests (Electron preload API)
   const mockClui = {
     notifyActComplete: vi.fn(),
     notifyBeatCheck: vi.fn(),
@@ -44,7 +44,7 @@ if (typeof window !== 'undefined') {
     getShowHistory: vi.fn().mockResolvedValue([]),
   }
 
-  Object.defineProperty(window, 'clui', {
+  Object.defineProperty(window, 'showtime', {
     value: mockClui,
     writable: true,
   })

@@ -56,7 +56,7 @@ notificationAudio.volume = 1.0
 async function playNotificationIfHidden(): Promise<void> {
   if (!useThemeStore.getState().soundEnabled) return
   try {
-    const visible = await window.clui.isVisible()
+    const visible = await window.showtime.isVisible()
     if (!visible) {
       notificationAudio.currentTime = 0
       notificationAudio.play().catch(() => {})
@@ -110,7 +110,7 @@ export const useSessionStore = create<State>((set, get) => ({
 
   initStaticInfo: async () => {
     try {
-      const result = await window.clui.start()
+      const result = await window.showtime.start()
       set({
         staticInfo: {
           version: result.version || 'unknown',
@@ -130,7 +130,7 @@ export const useSessionStore = create<State>((set, get) => ({
   createTab: async () => {
     const homeDir = get().staticInfo?.homePath || '~'
     try {
-      const { tabId } = await window.clui.createTab()
+      const { tabId } = await window.showtime.createTab()
       const tab: TabState = { ...makeLocalTab(), id: tabId, workingDirectory: homeDir }
       set({ tabs: [tab], activeTabId: tab.id })
       return tabId
@@ -156,7 +156,7 @@ export const useSessionStore = create<State>((set, get) => ({
   },
 
   respondPermission: (tabId, questionId, optionId) => {
-    window.clui.respondPermission(tabId, questionId, optionId).catch(() => {})
+    window.showtime.respondPermission(tabId, questionId, optionId).catch(() => {})
     set((s) => ({
       tabs: s.tabs.map((t) => {
         if (t.id !== tabId) return t
@@ -175,19 +175,19 @@ export const useSessionStore = create<State>((set, get) => ({
   sendMessage: (prompt, projectPath, displayText) => {
     const { activeTabId, tabs, staticInfo, tabReady } = get()
     if (!tabReady) {
-      window.clui.logEvent('WARN', 'sendMessage.dropped', { reason: 'tab not ready yet', activeTabId })
+      window.showtime.logEvent('WARN', 'sendMessage.dropped', { reason: 'tab not ready yet', activeTabId })
       return
     }
     const tab = tabs.find((t) => t.id === activeTabId)
     const resolvedPath = projectPath || (tab?.hasChosenDirectory ? tab.workingDirectory : (staticInfo?.homePath || tab?.workingDirectory || '~'))
     if (!tab) {
-      window.clui.logEvent('ERROR', 'sendMessage.dropped', { reason: 'no tab', activeTabId })
+      window.showtime.logEvent('ERROR', 'sendMessage.dropped', { reason: 'no tab', activeTabId })
       return
     }
     // Don't drop messages while connecting — queue them instead.
     // The warmup (initSession) sets status to 'connecting' for 20-40s.
     // User prompts during this window must be queued, not silently discarded.
-    window.clui.logEvent('INFO', 'sendMessage.dispatching', { tabId: tab.id, status: tab.status, promptLength: prompt.length })
+    window.showtime.logEvent('INFO', 'sendMessage.dispatching', { tabId: tab.id, status: tab.status, promptLength: prompt.length })
 
     const isBusy = tab.status === 'running' || tab.status === 'connecting'
     const requestId = crypto.randomUUID()
@@ -230,7 +230,7 @@ export const useSessionStore = create<State>((set, get) => ({
     }))
 
     const { preferredModel } = get()
-    window.clui.prompt(activeTabId, requestId, {
+    window.showtime.prompt(activeTabId, requestId, {
       prompt,
       projectPath: resolvedPath,
       sessionId: tab.claudeSessionId || undefined,

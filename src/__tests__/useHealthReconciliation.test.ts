@@ -66,7 +66,7 @@ describe('useHealthReconciliation', () => {
     useSessionStore.setState({ tabs: [idleTab] })
 
     const tabHealthSpy = vi.fn()
-    Object.assign(window.clui, { tabHealth: tabHealthSpy })
+    Object.assign(window.showtime, { tabHealth: tabHealthSpy })
 
     renderHook(() => useHealthReconciliation())
 
@@ -86,7 +86,7 @@ describe('useHealthReconciliation', () => {
       queueDepth: 0,
     }
     const tabHealthSpy = vi.fn().mockResolvedValue(healthResponse)
-    Object.assign(window.clui, { tabHealth: tabHealthSpy })
+    Object.assign(window.showtime, { tabHealth: tabHealthSpy })
 
     renderHook(() => useHealthReconciliation())
 
@@ -104,7 +104,7 @@ describe('useHealthReconciliation', () => {
       tabs: [{ tabId: 'tab-1', status: 'dead', activeRequestId: null, claudeSessionId: null, alive: false }],
       queueDepth: 0,
     }
-    Object.assign(window.clui, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
+    Object.assign(window.showtime, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
 
     renderHook(() => useHealthReconciliation())
 
@@ -125,7 +125,7 @@ describe('useHealthReconciliation', () => {
       tabs: [{ tabId: 'tab-1', status: 'idle', activeRequestId: null, claudeSessionId: null, alive: false }],
       queueDepth: 0,
     }
-    Object.assign(window.clui, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
+    Object.assign(window.showtime, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
 
     renderHook(() => useHealthReconciliation())
 
@@ -146,7 +146,7 @@ describe('useHealthReconciliation', () => {
       tabs: [{ tabId: 'tab-1', status: 'failed', activeRequestId: null, claudeSessionId: null, alive: false }],
       queueDepth: 0,
     }
-    Object.assign(window.clui, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
+    Object.assign(window.showtime, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
 
     renderHook(() => useHealthReconciliation())
 
@@ -166,7 +166,7 @@ describe('useHealthReconciliation', () => {
       tabs: [{ tabId: 'tab-1', status: 'running', activeRequestId: 'req-1', claudeSessionId: null, alive: true }],
       queueDepth: 0,
     }
-    Object.assign(window.clui, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
+    Object.assign(window.showtime, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
 
     // Spy on setState to verify it's not called unnecessarily
     const setStateSpy = vi.spyOn(useSessionStore, 'setState')
@@ -185,7 +185,7 @@ describe('useHealthReconciliation', () => {
     const runningTab = makeTab({ status: 'running', activeRequestId: 'req-1' })
     useSessionStore.setState({ tabs: [runningTab] })
 
-    Object.assign(window.clui, {
+    Object.assign(window.showtime, {
       tabHealth: vi.fn().mockRejectedValue(new Error('network error')),
     })
 
@@ -205,7 +205,7 @@ describe('useHealthReconciliation', () => {
     useSessionStore.setState({ tabs: [runningTab] })
 
     // health returns response without tabs array
-    Object.assign(window.clui, {
+    Object.assign(window.showtime, {
       tabHealth: vi.fn().mockResolvedValue({ tabs: null, queueDepth: 0 }),
     })
 
@@ -225,7 +225,7 @@ describe('useHealthReconciliation', () => {
     useSessionStore.setState({ tabs: [runningTab] })
 
     const tabHealthSpy = vi.fn()
-    Object.assign(window.clui, { tabHealth: tabHealthSpy })
+    Object.assign(window.showtime, { tabHealth: tabHealthSpy })
 
     renderHook(() => useHealthReconciliation())
 
@@ -249,7 +249,7 @@ describe('useHealthReconciliation', () => {
       ],
       queueDepth: 0,
     }
-    Object.assign(window.clui, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
+    Object.assign(window.showtime, { tabHealth: vi.fn().mockResolvedValue(healthResponse) })
 
     renderHook(() => useHealthReconciliation())
 
