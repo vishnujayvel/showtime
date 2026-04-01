@@ -49,6 +49,7 @@ export function MiniRundownStrip() {
             className={`h-full ${catClasses.bg} ${
               isCompleted ? 'opacity-80' : isActive ? 'opacity-80' : 'opacity-30'
             } ${isActive ? 'shadow-[0_0_4px_1px_currentColor]' : ''}`}
+            // dynamic: act segment width is proportional to its duration
             style={{ width: `${widthPercent}%` }}
           />
         )
@@ -57,6 +58,7 @@ export function MiniRundownStrip() {
       {/* NOW marker: 1px wide, 6px tall, extends above and below */}
       <div
         className="absolute -top-px -bottom-px w-px bg-onair z-10"
+        // dynamic: NOW marker position tracks elapsed time on the timeline
         style={{ left: `${nowPercent}%` }}
       />
     </div>

@@ -196,6 +196,7 @@ export function StrikeView({ onShowHistory }: StrikeViewProps) {
                 'absolute w-2 h-2 rounded-full animate-confetti',
                 `confetti-${i % 6}`
               )}
+              // dynamic: each confetti piece needs a unique random position and delay
               style={{
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 1.5}s`,

@@ -17,6 +17,7 @@ const Progress = React.forwardRef<
   >
     <ProgressPrimitive.Indicator
       className="h-full w-full flex-1 rounded-full bg-accent transition-all"
+      // dynamic: standard shadcn/ui progress indicator — value is a runtime prop
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>
