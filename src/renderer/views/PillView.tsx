@@ -117,6 +117,16 @@ export function PillView() {
               <BeatCounter size="sm" />
             </>
           )}
+          {phase !== 'live' && phase !== 'intermission' && phase !== 'strike' && (
+            <>
+              <span className="font-body text-sm text-txt-secondary flex-1">
+                {PHASE_INFO[phase]?.label ?? 'Showtime'}
+              </span>
+              <span className="font-body text-xs text-txt-muted">
+                Tap to expand
+              </span>
+            </>
+          )}
         </div>
 
         {/* Help button */}
