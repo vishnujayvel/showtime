@@ -15,9 +15,54 @@ import {
 } from './showMachine'
 import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, ViewTier } from '../../shared/types'
 
+// ─── State Persistence ───
+
+const PERSIST_KEY = 'showtime-show-state'
+const TRANSIENT_KEYS = new Set(['beatCheckPending', 'celebrationActive'])
+
+function getPersistedSnapshot() {
+  try {
+    const raw = localStorage.getItem(PERSIST_KEY)
+    if (!raw) return undefined
+    const { stateValue, context } = JSON.parse(raw)
+    // Only hydrate if same day
+    const today = new Date().toISOString().slice(0, 10)
+    if (context.showDate !== today) {
+      localStorage.removeItem(PERSIST_KEY)
+      return undefined
+    }
+    return showMachine.resolveState({
+      value: stateValue,
+      context: { ...createInitialContext(), ...context },
+    })
+  } catch {
+    return undefined
+  }
+}
+
+function persistState(stateValue: unknown, ctx: ShowMachineContext) {
+  try {
+    const persisted = Object.fromEntries(
+      Object.entries(ctx).filter(([k]) => !TRANSIENT_KEYS.has(k))
+    )
+    localStorage.setItem(
+      PERSIST_KEY,
+      JSON.stringify({ stateValue, context: persisted, savedAt: Date.now() })
+    )
+  } catch { /* ignore storage errors */ }
+}
+
+export function clearPersistedState() {
+  try { localStorage.removeItem(PERSIST_KEY) } catch { /* ignore */ }
+}
+
 // ─── Singleton Actor ───
 
-export const showActor = createActor(showMachine)
+const persistedSnapshot = getPersistedSnapshot()
+
+export const showActor = createActor(showMachine, {
+  ...(persistedSnapshot ? { snapshot: persistedSnapshot } : {}),
+})
 
 // Start immediately — actor is alive for the entire app lifecycle
 showActor.start()
@@ -200,6 +245,13 @@ showActor.subscribe((snapshot) => {
   if (phase === 'live' || phase === 'intermission' || phase === 'director' || phase === 'strike') {
     tryClui(() => window.clui.dataFlush(snap))
   }
+
+  // Persistence: save actor state to localStorage on every change
+  if (phase === 'no_show') {
+    clearPersistedState()
+  } else {
+    persistState(snapshot.value, ctx)
+  }
 })
 
 // ─── Test Support ───
@@ -212,6 +264,7 @@ export function resetShowActor(): void {
   previousBeatCheckPending = false
   previousCelebrationActive = false
   clearCelebrationTimeout()
+  clearPersistedState()
 }
 
 // ─── Convenience: re-export for consumers ───
