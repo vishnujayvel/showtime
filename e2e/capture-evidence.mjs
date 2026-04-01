@@ -1,5 +1,5 @@
 /**
- * Standalone evidence capture — launches Electron via Playwright, interacts with UI, takes screenshots.
+ * Evidence capture — drives the app through real UI interactions and screenshots each state.
  * Run: node e2e/capture-evidence.mjs
  */
 import { _electron as electron } from 'playwright'
@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.join(__dirname, '..')
+const ssDir = path.join(rootDir, 'e2e', 'screenshots')
 
 async function main() {
   console.log('Launching Showtime...')
@@ -16,136 +17,86 @@ async function main() {
 
   const app = await electron.launch({
     args: [path.join(rootDir, 'dist', 'main', 'index.js')],
-    env: {
-      ...process.env,
-      NODE_ENV: 'test',
-      SHOWTIME_USER_DATA: userDataDir,
-    },
+    env: { ...process.env, NODE_ENV: 'test', SHOWTIME_USER_DATA: userDataDir },
     timeout: 30000,
   })
 
   const page = await app.firstWindow()
   await page.waitForSelector('#root > *', { timeout: 15000 }).catch(() => {})
-
-  // Skip onboarding
-  await page.evaluate(() => {
-    localStorage.setItem('showtime-onboarding-complete', 'true')
-  })
+  await page.evaluate(() => localStorage.setItem('showtime-onboarding-complete', 'true'))
   await page.reload()
   await page.waitForTimeout(2000)
 
-  // --- Dark Studio (initial state) ---
-  console.log('1. Capturing Dark Studio...')
-  await page.screenshot({ path: 'e2e/screenshots/evidence-dark-studio.png' })
+  // Resize window for consistent screenshots
+  const bw = await app.browserWindow(page)
+  await bw.evaluate(win => win.setSize(560, 680))
+  await page.waitForTimeout(500)
 
-  // --- Click "Enter the Writer's Room" ---
-  console.log('2. Entering Writer\'s Room...')
-  const wrButton = page.getByText("Enter the Writer's Room")
-  if (await wrButton.isVisible()) {
-    await wrButton.click()
+  // 1. Dark Studio
+  console.log('1. Dark Studio...')
+  await page.screenshot({ path: `${ssDir}/evidence-dark-studio.png` })
+
+  // 2. Enter Writer's Room
+  console.log('2. Writer\'s Room...')
+  const enterBtn = page.getByText("Enter the Writer's Room")
+  if (await enterBtn.isVisible()) {
+    await enterBtn.click()
     await page.waitForTimeout(2000)
-    console.log('   Capturing Writer\'s Room...')
-    await page.screenshot({ path: 'e2e/screenshots/evidence-writers-room.png' })
+    await page.screenshot({ path: `${ssDir}/evidence-writers-room.png` })
+  }
 
-    // --- Select energy level ---
-    const mediumBtn = page.getByText('Medium')
-    if (await mediumBtn.isVisible().catch(() => false)) {
-      await mediumBtn.click()
+  // 3. Select energy
+  console.log('3. Energy selection...')
+  const energyBadge = page.locator('[data-testid="energy-badge"], button:has-text("Medium"), button:has-text("High")')
+  if (await energyBadge.first().isVisible().catch(() => false)) {
+    await energyBadge.first().click()
+    await page.waitForTimeout(500)
+    // Click "Medium" in dropdown
+    const medium = page.getByText('Medium', { exact: true })
+    if (await medium.isVisible().catch(() => false)) {
+      await medium.click()
       await page.waitForTimeout(1000)
-      console.log('   Capturing energy selection...')
-      await page.screenshot({ path: 'e2e/screenshots/evidence-writers-room-energy.png' })
+    }
+  }
+  await page.screenshot({ path: `${ssDir}/evidence-energy-selected.png` })
+
+  // 4. Type a plan and build lineup
+  console.log('4. Building lineup...')
+  const input = page.locator('input[placeholder*="accomplish"], textarea[placeholder*="accomplish"]')
+  if (await input.isVisible().catch(() => false)) {
+    await input.fill('Deep work on XState, walk with Steven, tea time with Aseem')
+    await page.screenshot({ path: `${ssDir}/evidence-plan-input.png` })
+    // Click BUILD MY LINEUP
+    const buildBtn = page.getByText('BUILD MY LINEUP')
+    if (await buildBtn.isVisible().catch(() => false)) {
+      await buildBtn.click()
+      await page.waitForTimeout(5000) // Wait for Claude to generate lineup
+      await page.screenshot({ path: `${ssDir}/evidence-lineup-built.png` })
     }
   }
 
-  // --- Now test pill view: set localStorage to simulate live + micro ---
-  console.log('3. Simulating live show in pill view...')
-  const now = Date.now()
-  await page.evaluate((now) => {
-    // Inject state via localStorage (Zustand persist reads this)
-    localStorage.setItem('showtime-show-state', JSON.stringify({
-      state: {
-        phase: 'live',
-        energy: 'medium',
-        viewTier: 'micro',
-        acts: [
-          { id: 'a1', name: 'Deep Work', sketch: 'Focus session', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: now },
-          { id: 'a2', name: 'Tea Time (Aseem)', sketch: 'Catch up', durationMinutes: 60, status: 'upcoming', beatLocked: false, order: 1, pinnedStartAt: now + 3600000, isFlexible: false },
-          { id: 'a3', name: 'Walk', sketch: 'Exercise', durationMinutes: 30, status: 'upcoming', beatLocked: false, order: 2, isFlexible: true },
-        ],
-        currentActId: 'a1',
-        timerEndAt: now + 30 * 60 * 1000,
-        beatsLocked: 1,
-        beatThreshold: 3,
-        showDate: new Date().toISOString().slice(0, 10),
-        showStartedAt: now,
-        beatCheckPending: false,
-        celebrationActive: false,
-      }
-    }))
-  }, now)
-  await page.reload()
-  await page.waitForTimeout(3000)
-  console.log('   Capturing pill view (live phase)...')
-  await page.screenshot({ path: 'e2e/screenshots/evidence-131-pill-live.png' })
+  // 5. Check for lineup with reorder controls (#132)
+  console.log('5. Checking lineup reorder controls...')
+  const upBtn = page.locator('[data-testid="reorder-up"], button:has-text("↑"), [aria-label*="move up"]')
+  if (await upBtn.first().isVisible().catch(() => false)) {
+    await page.screenshot({ path: `${ssDir}/evidence-132-reorder-controls.png` })
+    console.log('   Reorder controls visible!')
+  } else {
+    console.log('   No reorder controls found (lineup may not have loaded)')
+  }
 
-  // --- Switch to expanded to show lineup with pinned acts ---
-  console.log('4. Simulating expanded view with pinned acts...')
-  await page.evaluate((now) => {
-    localStorage.setItem('showtime-show-state', JSON.stringify({
-      state: {
-        phase: 'live',
-        energy: 'medium',
-        viewTier: 'expanded',
-        acts: [
-          { id: 'a1', name: 'Deep Work', sketch: 'Focus session', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: now },
-          { id: 'a2', name: 'Tea Time (Aseem)', sketch: 'Catch up', durationMinutes: 60, status: 'upcoming', beatLocked: false, order: 1, pinnedStartAt: now + 3600000, isFlexible: false, calendarEventId: 'gcal-123' },
-          { id: 'a3', name: 'Catch up (KDR)', sketch: 'Weekly sync', durationMinutes: 60, status: 'upcoming', beatLocked: false, order: 2, pinnedStartAt: now + 7200000, isFlexible: false, calendarEventId: 'gcal-456' },
-          { id: 'a4', name: 'Wind down', sketch: 'No screens', durationMinutes: 30, status: 'upcoming', beatLocked: false, order: 3, isFlexible: true },
-        ],
-        currentActId: 'a1',
-        timerEndAt: now + 30 * 60 * 1000,
-        beatsLocked: 1,
-        beatThreshold: 3,
-        showDate: new Date().toISOString().slice(0, 10),
-        showStartedAt: now,
-        beatCheckPending: false,
-        celebrationActive: false,
-      }
-    }))
-  }, now)
-  await page.reload()
-  await page.waitForTimeout(3000)
-  console.log('   Capturing expanded view with pinned calendar acts...')
-  await page.screenshot({ path: 'e2e/screenshots/evidence-130-pinned-acts.png' })
+  // 6. Minimize to pill view to test #131 fallback
+  console.log('6. Testing pill view...')
+  await bw.evaluate(win => win.setSize(320, 64))
+  await page.waitForTimeout(1000)
+  await page.screenshot({ path: `${ssDir}/evidence-131-pill-writers-room.png` })
 
-  // --- Test pill in no_show (the original bug) ---
-  console.log('5. Simulating pill in no_show phase (was the empty bug)...')
-  await page.evaluate(() => {
-    localStorage.setItem('showtime-show-state', JSON.stringify({
-      state: {
-        phase: 'no_show',
-        viewTier: 'micro',
-        energy: null,
-        acts: [],
-        currentActId: null,
-        beatsLocked: 0,
-        beatThreshold: 3,
-        timerEndAt: null,
-        timerPausedRemaining: null,
-        showDate: new Date().toISOString().slice(0, 10),
-        showStartedAt: null,
-        verdict: null,
-        beatCheckPending: false,
-        celebrationActive: false,
-      }
-    }))
-  })
-  await page.reload()
-  await page.waitForTimeout(3000)
-  console.log('   Capturing pill in no_show (should show fallback, not empty)...')
-  await page.screenshot({ path: 'e2e/screenshots/evidence-131-pill-no-show.png' })
+  // 7. Back to expanded
+  await bw.evaluate(win => win.setSize(560, 680))
+  await page.waitForTimeout(1000)
 
   console.log('\nAll evidence screenshots captured!')
+  console.log(`Screenshots saved to: ${ssDir}/`)
   await app.close().catch(() => {})
 }
 
