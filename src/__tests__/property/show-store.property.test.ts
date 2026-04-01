@@ -93,11 +93,15 @@ const commands: (() => ActorCommand)[] = [
     run: () => showActor.send({ type: 'ENTER_WRITERS_ROOM' }),
   }),
 
-  // SET_LINEUP
+  // SET_LINEUP (navigate to conversation substate first)
   () => ({
     name: 'setLineup',
     precondition: () => phase() === 'writers_room',
-    run: () => showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup }),
+    run: () => {
+      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
+      showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+    },
   }),
 
   // START_SHOW
@@ -389,6 +393,8 @@ describe('Layer 2: Property-Based Actor Tests (fast-check)', () => {
     expect(phase()).toBe('writers_room')
 
     showActor.send({ type: 'SET_ENERGY', level: 'high' })
+    showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+    showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
     showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
     expect(ctx().acts.length).toBe(3)
 
