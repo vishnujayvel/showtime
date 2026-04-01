@@ -18,24 +18,90 @@ import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, V
 // ─── State Persistence ───
 
 const PERSIST_KEY = 'showtime-show-state'
+/** Increment when machine shape changes to invalidate old persisted state. */
+export const PERSIST_VERSION = 1
 const TRANSIENT_KEYS = new Set(['beatCheckPending', 'celebrationActive'])
+
+/** Valid top-level phase states in the show machine. */
+const VALID_PHASES = new Set([
+  'no_show', 'cold_open', 'writers_room', 'going_live',
+  'live', 'intermission', 'director', 'strike',
+])
+/** Valid animation region states. */
+const VALID_ANIMATIONS = new Set(['idle', 'cold_open', 'going_live'])
+
+/** Valid nested substates for phases that have child states. */
+const VALID_SUBSTATES: Record<string, Set<string>> = {
+  writers_room: new Set(['energy', 'plan', 'conversation', 'lineup_ready']),
+  live: new Set(['act_active', 'beat_check', 'celebrating']),
+  intermission: new Set(['resting', 'breathing_pause']),
+}
+
+/**
+ * Check that a persisted stateValue has keys matching the current machine.
+ * The machine is parallel with `phase` and `animation` regions.
+ * Also validates nested substates to prevent resolveState() from throwing
+ * on stale/removed substates after schema changes.
+ */
+function isValidStateValue(stateValue: unknown): boolean {
+  if (typeof stateValue !== 'object' || stateValue === null) return false
+  const sv = stateValue as Record<string, unknown>
+  if (!('phase' in sv) || !('animation' in sv)) return false
+  // Validate animation region
+  if (typeof sv.animation !== 'string' || !VALID_ANIMATIONS.has(sv.animation)) return false
+  // Validate phase region (can be string or nested object like { live: 'act_active' })
+  const phase = sv.phase
+  if (typeof phase === 'string') return VALID_PHASES.has(phase)
+  if (typeof phase === 'object' && phase !== null) {
+    const phaseKey = Object.keys(phase)[0]
+    if (!VALID_PHASES.has(phaseKey)) return false
+    // Validate nested substate if the phase has defined substates
+    const validSubs = VALID_SUBSTATES[phaseKey]
+    if (validSubs) {
+      const subValue = (phase as Record<string, unknown>)[phaseKey]
+      if (typeof subValue !== 'string' || !validSubs.has(subValue)) return false
+    }
+    return true
+  }
+  return false
+}
 
 function getPersistedSnapshot() {
   try {
     const raw = localStorage.getItem(PERSIST_KEY)
     if (!raw) return undefined
-    const { stateValue, context } = JSON.parse(raw)
-    // Only hydrate if same day
+    const { stateValue, context, version } = JSON.parse(raw)
+
+    // Reject if schema version doesn't match
+    if (version !== PERSIST_VERSION) {
+      console.warn('[showtime] Persisted state version mismatch:', version, '!==', PERSIST_VERSION)
+      localStorage.removeItem(PERSIST_KEY)
+      return undefined
+    }
+
+    // Only hydrate if same day (both use UTC for consistency with showMachine.today())
     const today = new Date().toISOString().slice(0, 10)
     if (context.showDate !== today) {
       localStorage.removeItem(PERSIST_KEY)
       return undefined
     }
+
+    // Validate stateValue keys exist in the current machine
+    if (!isValidStateValue(stateValue)) {
+      console.warn('[showtime] Persisted state value does not match machine:', JSON.stringify(stateValue))
+      // Fall back to no_show but preserve context (acts, energy, etc.)
+      return showMachine.resolveState({
+        value: { phase: 'no_show', animation: 'idle' },
+        context: { ...createInitialContext(), ...context },
+      })
+    }
+
     return showMachine.resolveState({
       value: stateValue,
       context: { ...createInitialContext(), ...context },
     })
-  } catch {
+  } catch (err) {
+    console.warn('[showtime] Failed to restore persisted state:', err)
     return undefined
   }
 }
@@ -47,7 +113,7 @@ function persistState(stateValue: unknown, ctx: ShowMachineContext) {
     )
     localStorage.setItem(
       PERSIST_KEY,
-      JSON.stringify({ stateValue, context: persisted, savedAt: Date.now() })
+      JSON.stringify({ stateValue, context: persisted, version: PERSIST_VERSION, savedAt: Date.now() })
     )
   } catch { /* ignore storage errors */ }
 }
