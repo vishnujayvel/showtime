@@ -446,9 +446,19 @@ export const showMachine = setup({
         writers_room: {
           initial: 'energy',
           on: {
-            SET_ENERGY: { actions: 'assignEnergy' },
-            SET_LINEUP: { actions: 'assignLineup' },
-            SET_WRITERS_ROOM_STEP: { actions: 'assignWritersRoomStep' },
+            // SET_ENERGY, SET_LINEUP, SET_WRITERS_ROOM_STEP removed from parent level.
+            // XState v5 event bubbling: when a substate guard rejects an event, it bubbles
+            // to the parent. Unguarded parent handlers bypassed sequential flow enforcement.
+            // These events are now handled only in their respective substates.
+            //
+            // WritersRoomView compatibility: The view sends SET_ENERGY from an always-visible
+            // energy chip. SET_ENERGY is only accepted in the 'energy' substate; if the user
+            // changes energy after progressing past step 1, the event is silently dropped by
+            // XState (no transition match). This is intentional — energy selection is part of
+            // the sequential flow. The view also auto-sets energy='medium' via useEffect on
+            // mount, which fires while still in the 'energy' substate. SET_LINEUP is sent
+            // when Claude's response is parsed (always from 'conversation' substate).
+            // TRIGGER_GOING_LIVE is on the parent level and works from any substate.
             // Lineup editing during writer's room
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
@@ -470,6 +480,7 @@ export const showMachine = setup({
           states: {
             energy: {
               on: {
+                SET_ENERGY: { actions: 'assignEnergy' },
                 // Only allow energy → plan (sequential flow, no skipping to conversation)
                 SET_WRITERS_ROOM_STEP: [
                   { target: 'plan', guard: ({ event }) => event.step === 'plan', actions: 'assignWritersRoomStep' },
@@ -545,22 +556,9 @@ export const showMachine = setup({
               actions: ['clearBeatState', 'startBreathingPauseContext'],
             },
             EXTEND_ACT: { actions: 'extendActContext' },
-            // These work from any live substate for backward compat
-            LOCK_BEAT: {
-              target: '.celebrating',
-              actions: 'lockBeatContext',
-            },
-            SKIP_BEAT: [
-              {
-                target: '.act_active',
-                guard: 'hasNextAct',
-                actions: ['skipBeatContext', 'autoStartNextAct'],
-              },
-              {
-                target: 'strike',
-                actions: ['skipBeatContext', 'strikeContext'],
-              },
-            ],
+            // LOCK_BEAT/SKIP_BEAT removed from live parent — only handled in beat_check/celebrating
+            // substates. Parent-level handlers accepted these from act_active, bypassing beat_check flow.
+            // COMPLETE_ACT also moved to act_active only (PR #149).
             // Lineup editing during live
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
