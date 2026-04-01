@@ -302,7 +302,7 @@ export type ShowPhase = 'no_show' | 'writers_room' | 'live' | 'intermission' | '
 export type EnergyLevel = 'high' | 'medium' | 'low' | 'recovery'
 export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
 export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
-export type WritersRoomStep = 'energy' | 'plan' | 'conversation'
+export type WritersRoomStep = 'energy' | 'plan' | 'conversation' | 'lineup_ready'
 export type ViewTier = 'micro' | 'compact' | 'dashboard' | 'expanded'
 export type ViewMode = 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'
 
