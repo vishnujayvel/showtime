@@ -80,7 +80,7 @@ export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
 
   // Pre-warm Claude subprocess for faster Writer's Room startup
   useEffect(() => {
-    window.clui.prewarmSubprocess()
+    window.showtime.prewarmSubprocess()
   }, [])
 
   const handleResumeShow = useCallback(() => {

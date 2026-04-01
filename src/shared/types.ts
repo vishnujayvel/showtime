@@ -313,11 +313,6 @@ export function nextViewTier(current: ViewTier): ViewTier {
   return VIEW_TIER_ORDER[(idx + 1) % VIEW_TIER_ORDER.length]
 }
 
-export function prevViewTier(current: ViewTier): ViewTier {
-  const idx = VIEW_TIER_ORDER.indexOf(current)
-  return VIEW_TIER_ORDER[(idx - 1 + VIEW_TIER_ORDER.length) % VIEW_TIER_ORDER.length]
-}
-
 export function expandTier(current: ViewTier): ViewTier {
   const idx = VIEW_TIER_ORDER.indexOf(current)
   return idx < VIEW_TIER_ORDER.length - 1 ? VIEW_TIER_ORDER[idx + 1] : current
@@ -416,45 +411,45 @@ export interface TrayShowState {
 
 export const IPC = {
   // Request-response (renderer → main)
-  START: 'clui:start',
-  CREATE_TAB: 'clui:create-tab',
-  PROMPT: 'clui:prompt',
-  CANCEL: 'clui:cancel',
-  STOP_TAB: 'clui:stop-tab',
-  RETRY: 'clui:retry',
-  STATUS: 'clui:status',
-  TAB_HEALTH: 'clui:tab-health',
-  CLOSE_TAB: 'clui:close-tab',
-  RESPOND_PERMISSION: 'clui:respond-permission',
-  INIT_SESSION: 'clui:init-session',
-  RESET_TAB_SESSION: 'clui:reset-tab-session',
+  START: 'showtime:start',
+  CREATE_TAB: 'showtime:create-tab',
+  PROMPT: 'showtime:prompt',
+  CANCEL: 'showtime:cancel',
+  STOP_TAB: 'showtime:stop-tab',
+  RETRY: 'showtime:retry',
+  STATUS: 'showtime:status',
+  TAB_HEALTH: 'showtime:tab-health',
+  CLOSE_TAB: 'showtime:close-tab',
+  RESPOND_PERMISSION: 'showtime:respond-permission',
+  INIT_SESSION: 'showtime:init-session',
+  RESET_TAB_SESSION: 'showtime:reset-tab-session',
 
   // One-way events (main → renderer)
-  TEXT_CHUNK: 'clui:text-chunk',
-  TOOL_CALL: 'clui:tool-call',
-  TOOL_CALL_UPDATE: 'clui:tool-call-update',
-  TOOL_CALL_COMPLETE: 'clui:tool-call-complete',
-  TASK_UPDATE: 'clui:task-update',
-  TASK_COMPLETE: 'clui:task-complete',
-  SESSION_DEAD: 'clui:session-dead',
-  SESSION_INIT: 'clui:session-init',
-  ERROR: 'clui:error',
-  RATE_LIMIT: 'clui:rate-limit',
+  TEXT_CHUNK: 'showtime:text-chunk',
+  TOOL_CALL: 'showtime:tool-call',
+  TOOL_CALL_UPDATE: 'showtime:tool-call-update',
+  TOOL_CALL_COMPLETE: 'showtime:tool-call-complete',
+  TASK_UPDATE: 'showtime:task-update',
+  TASK_COMPLETE: 'showtime:task-complete',
+  SESSION_DEAD: 'showtime:session-dead',
+  SESSION_INIT: 'showtime:session-init',
+  ERROR: 'showtime:error',
+  RATE_LIMIT: 'showtime:rate-limit',
 
   // Window management
-  HIDE_WINDOW: 'clui:hide-window',
-  WINDOW_SHOWN: 'clui:window-shown',
-  IS_VISIBLE: 'clui:is-visible',
+  HIDE_WINDOW: 'showtime:hide-window',
+  WINDOW_SHOWN: 'showtime:window-shown',
+  IS_VISIBLE: 'showtime:is-visible',
 
   // Skill provisioning (main → renderer)
-  SKILL_STATUS: 'clui:skill-status',
+  SKILL_STATUS: 'showtime:skill-status',
 
   // Theme
-  GET_THEME: 'clui:get-theme',
-  THEME_CHANGED: 'clui:theme-changed',
+  GET_THEME: 'showtime:get-theme',
+  THEME_CHANGED: 'showtime:theme-changed',
 
   // Permission mode
-  SET_PERMISSION_MODE: 'clui:set-permission-mode',
+  SET_PERMISSION_MODE: 'showtime:set-permission-mode',
 
   // Showtime notifications
   NOTIFY_ACT_COMPLETE: 'showtime:notify-act-complete',

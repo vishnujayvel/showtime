@@ -71,7 +71,7 @@ export function StrikeView({ onShowHistory }: StrikeViewProps) {
             ▼
           </button>
           <button
-            onClick={() => window.clui.quit()}
+            onClick={() => window.showtime.quit()}
             className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm no-drag"
             title="Quit Showtime"
             data-testid="strike-quit-btn"

@@ -86,7 +86,7 @@ export function DashboardView() {
           ▼
         </button>
         <button
-          onClick={() => window.clui.quit()}
+          onClick={() => window.showtime.quit()}
           className="px-1 py-0.5 text-txt-muted hover:text-onair transition-colors text-xs no-drag"
           title="Quit Showtime"
         >

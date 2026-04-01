@@ -50,7 +50,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
   const fetchDrift = useCallback(async () => {
     if (!isVisible) return
     try {
-      const d = await window.clui.getTimelineDrift(showDate)
+      const d = await window.showtime.getTimelineDrift(showDate)
       setDriftSeconds(d)
     } catch { /* ignore */ }
   }, [showDate, isVisible])

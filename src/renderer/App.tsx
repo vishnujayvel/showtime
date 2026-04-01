@@ -68,23 +68,23 @@ export default function App() {
 
   // ─── Listen for tray-triggered reset ───
   useEffect(() => {
-    if (!window.clui?.onResetShow) return
-    return window.clui.onResetShow(() => send({ type: 'RESET' }))
+    if (!window.showtime?.onResetShow) return
+    return window.showtime.onResetShow(() => send({ type: 'RESET' }))
   }, [send])
 
   // ─── Listen for settings open (Cmd+, or tray) ───
   useEffect(() => {
-    if (!window.clui?.onOpenSettings) return
-    return window.clui.onOpenSettings(() => setShowSettings(true))
+    if (!window.showtime?.onOpenSettings) return
+    return window.showtime.onOpenSettings(() => setShowSettings(true))
   }, [])
 
   // ─── Theme initialization ───
   useEffect(() => {
-    window.clui.getTheme().then(({ isDark }) => {
+    window.showtime.getTheme().then(({ isDark }) => {
       setSystemTheme(isDark)
     }).catch(() => {})
 
-    const unsub = window.clui.onThemeChange((isDark) => {
+    const unsub = window.showtime.onThemeChange((isDark) => {
       setSystemTheme(isDark)
     })
     return unsub
@@ -103,14 +103,14 @@ export default function App() {
         useSessionStore.setState((s) => ({
           tabs: s.tabs.map((t, i) => (i === 0 ? { ...t, workingDirectory: homeDir, hasChosenDirectory: false } : t)),
         }))
-        window.clui.createTab().then(({ tabId }) => {
+        window.showtime.createTab().then(({ tabId }) => {
           useSessionStore.setState((s) => ({
             tabs: s.tabs.map((t, i) => (i === 0 ? { ...t, id: tabId } : t)),
             activeTabId: tabId,
             tabReady: true,
           }))
           // Warm up immediately after tab is created — don't wait for Writer's Room
-          window.clui.initSession(tabId)
+          window.showtime.initSession(tabId)
         }).catch(() => {})
       }
     })
@@ -118,21 +118,21 @@ export default function App() {
 
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {
-    if (!window.clui?.setViewMode) return
+    if (!window.showtime?.setViewMode) return
 
     if (coldOpenActive || goingLiveActive) {
-      window.clui.setViewMode('full')
+      window.showtime.setViewMode('full')
       return
     }
 
     // History and Settings views are full-screen
     if (showHistory || showSettings) {
-      window.clui.setViewMode('full')
+      window.showtime.setViewMode('full')
       return
     }
 
     const mode = tierToViewMode(viewTier, phase)
-    window.clui.setViewMode(mode)
+    window.showtime.setViewMode(mode)
   }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory, showSettings])
 
   // ─── Force-expand on Beat Check ───

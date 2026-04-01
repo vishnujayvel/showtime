@@ -164,8 +164,8 @@ function buildSnapshot(ctx: ShowMachineContext, phase: string) {
   }
 }
 
-function tryClui(fn: () => void): void {
-  try { fn() } catch { /* ignore if clui not ready */ }
+function tryShowtime(fn: () => void): void {
+  try { fn() } catch { /* ignore if showtime API not ready */ }
 }
 
 // ─── Celebration Timer (moved from showStore) ───
@@ -204,12 +204,12 @@ showActor.subscribe((snapshot) => {
 
   // Phase change side effects
   if (phase !== previousPhase) {
-    tryClui(() => window.clui.logEvent('INFO', 'phase_change', { from: previousPhase, to: phase }))
+    tryShowtime(() => window.showtime.logEvent('INFO', 'phase_change', { from: previousPhase, to: phase }))
 
     // Record timeline events
     if (phase === 'live' && previousPhase !== 'live') {
       if (previousPhase === 'writers_room' || previousPhase === 'going_live') {
-        tryClui(() => window.clui.timelineRecord({
+        tryShowtime(() => window.showtime.timelineRecord({
           showId: ctx.showDate,
           actId: null,
           eventType: 'show_started',
@@ -222,7 +222,7 @@ showActor.subscribe((snapshot) => {
         }))
       }
       if (previousPhase === 'intermission') {
-        tryClui(() => window.clui.timelineRecord({
+        tryShowtime(() => window.showtime.timelineRecord({
           showId: ctx.showDate,
           actId: null,
           eventType: 'intermission_ended',
@@ -237,7 +237,7 @@ showActor.subscribe((snapshot) => {
     }
 
     if (phase === 'intermission') {
-      tryClui(() => window.clui.timelineRecord({
+      tryShowtime(() => window.showtime.timelineRecord({
         showId: ctx.showDate,
         actId: null,
         eventType: 'intermission_started',
@@ -251,7 +251,7 @@ showActor.subscribe((snapshot) => {
     }
 
     if (phase === 'strike') {
-      tryClui(() => window.clui.timelineRecord({
+      tryShowtime(() => window.showtime.timelineRecord({
         showId: ctx.showDate,
         actId: null,
         eventType: 'show_ended',
@@ -263,7 +263,7 @@ showActor.subscribe((snapshot) => {
         metadata: null,
       }))
       if (ctx.verdict) {
-        tryClui(() => window.clui.notifyVerdict(ctx.verdict!, VERDICT_MESSAGES[ctx.verdict!]))
+        tryShowtime(() => window.showtime.notifyVerdict(ctx.verdict!, VERDICT_MESSAGES[ctx.verdict!]))
       }
     }
 
@@ -274,8 +274,8 @@ showActor.subscribe((snapshot) => {
   if (ctx.beatCheckPending && !previousBeatCheckPending) {
     const completedAct = ctx.acts.find((a) => a.status === 'completed' && a.completedAt)
     if (completedAct) {
-      tryClui(() => window.clui.notifyActComplete(completedAct.name, completedAct.sketch))
-      tryClui(() => window.clui.notifyBeatCheck(completedAct.name))
+      tryShowtime(() => window.showtime.notifyActComplete(completedAct.name, completedAct.sketch))
+      tryShowtime(() => window.showtime.notifyBeatCheck(completedAct.name))
     }
   }
   previousBeatCheckPending = ctx.beatCheckPending
@@ -291,7 +291,7 @@ showActor.subscribe((snapshot) => {
     if (ctx.currentActId) {
       const act = ctx.acts.find((a) => a.id === ctx.currentActId)
       if (act?.startedAt) {
-        tryClui(() => window.clui.timelineRecord({
+        tryShowtime(() => window.showtime.timelineRecord({
           showId: ctx.showDate,
           actId: ctx.currentActId,
           eventType: 'act_started',
@@ -309,7 +309,7 @@ showActor.subscribe((snapshot) => {
 
   // Flush to SQLite on every state change during active phases
   if (phase === 'live' || phase === 'intermission' || phase === 'director' || phase === 'strike') {
-    tryClui(() => window.clui.dataFlush(snap))
+    tryShowtime(() => window.showtime.dataFlush(snap))
   }
 
   // Persistence: save actor state to localStorage on every change
