@@ -70,12 +70,16 @@ function getSubstate(actor: ReturnType<typeof createTestActor>): string | undefi
 
 function setupLive(actor: ReturnType<typeof createTestActor>) {
   actor.send({ type: 'ENTER_WRITERS_ROOM' })
+  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
   actor.send({ type: 'START_SHOW' })
 }
 
 function setupLiveSingleAct(actor: ReturnType<typeof createTestActor>) {
   actor.send({ type: 'ENTER_WRITERS_ROOM' })
+  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   actor.send({ type: 'SET_LINEUP', lineup: singleActLineup })
   actor.send({ type: 'START_SHOW' })
 }
@@ -120,6 +124,8 @@ describe('XState Bug Batch Wave 1', () => {
   describe('#141: going_live RESET + hasActs guard', () => {
     it('RESET from going_live transitions to no_show', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
       expect(getPhase(actor)).toBe('going_live')
@@ -139,6 +145,8 @@ describe('XState Bug Batch Wave 1', () => {
 
     it('TRIGGER_GOING_LIVE allowed with acts', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
       expect(getPhase(actor)).toBe('going_live')
