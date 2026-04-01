@@ -353,7 +353,7 @@ DURATION_TOO_LONG='```showtime-lineup
 ```'
 
 DURATION_AT_BOUNDS='```showtime-lineup
-{"acts": [{"name": "Min Act", "sketch": "Admin", "durationMinutes": 10}, {"name": "Max Act", "sketch": "Deep Work", "durationMinutes": 120}], "beatThreshold": 3, "openingNote": "Boundary test."}
+{"acts": [{"name": "Min Act", "sketch": "Admin", "durationMinutes": 15}, {"name": "Max Act", "sketch": "Deep Work", "durationMinutes": 120}], "beatThreshold": 3, "openingNote": "Boundary test."}
 ```'
 
 run_test "act-duration: 5 min act fails (too short)" \
@@ -366,7 +366,7 @@ run_test "act-duration: 180 min act fails (too long)" \
   "$(make_input "$DURATION_TOO_LONG")" \
   2 "OUT OF BOUNDS"
 
-run_test "act-duration: 10 and 120 min pass (boundary values)" \
+run_test "act-duration: 15 and 120 min pass (boundary values)" \
   "act-duration-bounds.sh" \
   "$(make_input "$DURATION_AT_BOUNDS")" \
   0
