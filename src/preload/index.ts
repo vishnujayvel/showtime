@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
-import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode, TrayShowState, CachedCalendarEvent } from '../shared/types'
-import type { ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry, MetricsSummary } from '../main/data/types'
+import type { RunOptions, NormalizedEvent, HealthReport, EnrichedError, ViewMode, TrayShowState, CachedCalendarEvent, ShowStateSnapshot, TimelineEventInput, ActDriftResult, ClaudeContextPayload, ShowHistoryEntry, ShowDetailEntry, MetricsSummary } from '../shared/types'
 
 export interface ShowtimeAPI {
   // ─── Request-response (renderer → main) ───
