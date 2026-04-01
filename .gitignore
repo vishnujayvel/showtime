@@ -50,8 +50,7 @@ playwright-report/
 # Loki autonomy framework runtime state
 .loki/
 
-# OpenSpec local changes (only openspec/specs/ is public)
-openspec/changes/
+# OpenSpec changes are tracked (proposals serve as documentation)
 
 # Temporary files
 *.tmp
