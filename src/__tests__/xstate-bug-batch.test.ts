@@ -327,7 +327,7 @@ describe('XState Bug Batch Wave 1', () => {
       // Go live, complete all acts to reach strike, then test
       setupLive(actor)
       // Complete all acts
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < sampleLineup.acts.length; i++) {
         const actId = getContext(actor).currentActId!
         actor.send({ type: 'COMPLETE_ACT', actId })
         actor.send({ type: 'SKIP_BEAT' })
