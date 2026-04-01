@@ -25,6 +25,13 @@ fi
 
 RESPONSE_LOWER=$(printf '%s' "$RESPONSE" | tr '[:upper:]' '[:lower:]')
 
+# Strip technical compound terms that contain forbidden words but aren't guilt language
+# e.g., "lazy-load", "lazy loading", "lazy evaluation", "late binding", "failure mode"
+RESPONSE_SANITIZED=$(printf '%s' "$RESPONSE_LOWER" \
+  | sed -E 's/lazy[- ](load|loading|evaluation|initialization|init)/__TECH__/g' \
+  | sed -E 's/late[- ](binding|bound)/__TECH__/g' \
+  | sed -E 's/failure[- ](mode|handling|recovery|injection)/__TECH__/g')
+
 WARNINGS=""
 
 # check_phrase <pattern> <display_name> <reframe>
@@ -33,7 +40,7 @@ check_phrase() {
   local pattern="$1"
   local display="$2"
   local reframe="$3"
-  if printf '%s' "$RESPONSE_LOWER" | grep -qE "$pattern"; then
+  if printf '%s' "$RESPONSE_SANITIZED" | grep -qE "$pattern"; then
     WARNINGS="${WARNINGS}\n  - \"${display}\" -> Reframe: ${reframe}"
   fi
 }
@@ -51,7 +58,8 @@ check_phrase '\bfailure\b'        'failure'        "That act got cut from tonigh
 check_phrase '\boverdue\b'        'overdue'        "The lineup shifted"
 check_phrase '\blate\b'           'late'           "The lineup shifted"
 check_phrase '\bunproductive\b'   'unproductive'   "What would make the next act feel good?"
-check_phrase '\blazy\b'           'lazy'           "The show adapts to the performer"
+# "lazy" but not technical terms: lazy-load, lazy-loading, lazy evaluation, lazy initialization
+check_phrase '\blazy\b' 'lazy' "The show adapts to the performer"
 check_phrase '\bprocrastinating\b' 'procrastinating' "The show adapts to the performer"
 check_phrase '\bdisappointed\b'   'disappointed'   "The show adapts to the performer"
 check_phrase '\bconcerning\b'     'concerning'     "The show adapts to the performer"
