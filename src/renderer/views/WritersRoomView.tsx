@@ -90,10 +90,12 @@ const ENERGY_OPTIONS: { level: EnergyLevel; emoji: string; label: string }[] = [
 export function WritersRoomView() {
   const energy = useShowContext((ctx) => ctx.energy)
   const acts = useShowContext((ctx) => ctx.acts)
+  const writersRoomStep = useShowContext((ctx) => ctx.writersRoomStep)
   const send = useShowSend()
   const setEnergy = useCallback((level: EnergyLevel) => send({ type: 'SET_ENERGY', level }), [send])
   const setLineup = useCallback((lineup: ShowLineup) => send({ type: 'SET_LINEUP', lineup }), [send])
   const triggerGoingLive = useCallback(() => send({ type: 'TRIGGER_GOING_LIVE' }), [send])
+  const refineLineup = useCallback(() => send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' }), [send])
   const calendarAvailable = useUIStore((s) => s.calendarAvailable)
   const calendarEnabled = useUIStore((s) => s.calendarEnabled)
   const setCalendarEnabled = useUIStore((s) => s.setCalendarEnabled)
@@ -387,8 +389,8 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Lineup preview — visible when acts have been parsed */}
-      {hasLineup && (
+      {/* Lineup preview — visible when acts parsed but not yet in lineup_ready */}
+      {hasLineup && writersRoomStep !== 'lineup_ready' && (
         <div className="px-6 py-3 border-t border-surface-hover shrink-0" data-testid="lineup-preview">
           <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted mb-2 block">
             LINEUP
@@ -408,55 +410,37 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
         </div>
       )}
 
-      {/* Footer: input + action buttons */}
-      <div className="px-6 py-4 border-t border-surface-hover shrink-0">
-        {/* Chat input */}
-        <div className="flex items-end gap-2">
-          <textarea
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              hasLineup
-                ? 'Tell the writers to change something...'
-                : 'What do you want to accomplish today?'
-            }
-            rows={1}
-            className="flex-1 resize-none rounded-lg bg-titlebar border border-surface-hover px-3 py-2.5 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50 disabled:opacity-50"
-            data-testid="chat-input"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!chatInput.trim()}
-            className={cn(
-              'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors shrink-0',
-              chatInput.trim()
-                ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
-                : 'bg-surface-hover text-txt-muted border border-surface-hover',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-            )}
-            data-testid="chat-send"
-          >
-            Send
-          </button>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-3 mt-3">
-          {/* BUILD MY LINEUP — visible when no lineup */}
-          {!hasLineup && (
+      {/* Lineup confirmation panel — distinct UX when in lineup_ready step */}
+      {hasLineup && writersRoomStep === 'lineup_ready' && (
+        <div className="px-6 py-4 border-t border-accent/20 bg-surface shrink-0" data-testid="lineup-confirmation">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-accent">
+              CONFIRM LINEUP
+            </span>
+            <span className="text-[10px] text-txt-muted">
+              {acts.length} act{acts.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto">
+            {[...acts].sort((a, b) => a.order - b.order).map((act, index) => (
+              <ActCard
+                key={act.id}
+                act={act}
+                variant="full"
+                actNumber={index + 1}
+                onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
+                onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-3 mt-4">
             <button
-              onClick={handleBuildLineup}
-              disabled={false}
-              className="flex-1 py-2.5 rounded-lg border-2 border-dashed border-accent/30 text-sm text-accent font-medium hover:border-accent/50 hover:bg-accent/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid="build-lineup-btn"
+              onClick={refineLineup}
+              className="px-4 py-2.5 rounded-lg border border-surface-hover text-sm text-txt-secondary hover:text-txt-primary hover:border-txt-muted transition-colors"
+              data-testid="refine-lineup-btn"
             >
-              BUILD MY LINEUP
+              Refine
             </button>
-          )}
-
-          {/* Finalize Lineup — visible when lineup exists */}
-          {hasLineup && (
             <Button
               variant="primary"
               className="flex-1"
@@ -464,13 +448,79 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
                 window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
                 triggerGoingLive()
               }}
-              data-testid="go-live-btn"
+              data-testid="confirm-go-live-btn"
             >
-              Finalize Lineup
+              Confirm & Go Live
             </Button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Footer: input + action buttons (hidden during lineup confirmation) */}
+      {writersRoomStep !== 'lineup_ready' && (
+        <div className="px-6 py-4 border-t border-surface-hover shrink-0">
+          {/* Chat input */}
+          <div className="flex items-end gap-2">
+            <textarea
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                hasLineup
+                  ? 'Tell the writers to change something...'
+                  : 'What do you want to accomplish today?'
+              }
+              rows={1}
+              className="flex-1 resize-none rounded-lg bg-titlebar border border-surface-hover px-3 py-2.5 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50 disabled:opacity-50"
+              data-testid="chat-input"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!chatInput.trim()}
+              className={cn(
+                'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors shrink-0',
+                chatInput.trim()
+                  ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
+                  : 'bg-surface-hover text-txt-muted border border-surface-hover',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+              data-testid="chat-send"
+            >
+              Send
+            </button>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 mt-3">
+            {/* BUILD MY LINEUP — visible when no lineup */}
+            {!hasLineup && (
+              <button
+                onClick={handleBuildLineup}
+                disabled={false}
+                className="flex-1 py-2.5 rounded-lg border-2 border-dashed border-accent/30 text-sm text-accent font-medium hover:border-accent/50 hover:bg-accent/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="build-lineup-btn"
+              >
+                BUILD MY LINEUP
+              </button>
+            )}
+
+            {/* Finalize Lineup — visible when lineup exists but not in confirmation step */}
+            {hasLineup && (
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  window.clui.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
+                  triggerGoingLive()
+                }}
+                data-testid="go-live-btn"
+              >
+                Finalize Lineup
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
