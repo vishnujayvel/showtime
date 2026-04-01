@@ -30,10 +30,10 @@ Showtime (Electron App, macOS only)
 │   ├── window management    ← NSPanel, always-on-top, content-tight sizing
 │   └── IPC handlers         ← KEEP: notification triggers, theme sync
 ├── Preload (contextBridge)
-│   └── window.clui API      ← KEEP: typed IPC bridge, strict process isolation
+│   └── window.showtime API      ← KEEP: typed IPC bridge, strict process isolation
 ├── Renderer (React 19)
 │   ├── views/               ← 12 views: DarkStudioView, WritersRoomView, PillView, CompactView, DashboardView, ExpandedView, StrikeView, SettingsView, HistoryView, OnboardingView, GoingLiveTransition, ColdOpenTransition
-│   ├── panels/              ← TimerPanel, LineupPanel, ChatPanel
+│   ├── panels/              ← TimerPanel, LineupPanel
 │   ├── components/          ← ActCard, BeatCheckModal, BeatCounter, DirectorMode, etc.
 │   ├── machines/            ← showMachine (XState v5), showActor (singleton), ShowMachineProvider (React)
 │   ├── stores/              ← uiStore (calendar/session UI state), sessionStore (Claude subprocess)
@@ -167,7 +167,7 @@ E2E tests must cover:
 
 ### 7. IPC Bridge — Strict Typing
 
-The renderer communicates with main ONLY through the typed `window.clui` API defined in `preload/index.ts`. Never import Node.js modules in the renderer.
+The renderer communicates with main ONLY through the typed `window.showtime` API defined in `preload/index.ts`. Never import Node.js modules in the renderer.
 
 ### 8. State Management — XState v5
 
