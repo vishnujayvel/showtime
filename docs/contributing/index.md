@@ -38,7 +38,7 @@ Playwright E2E tests launch the full Electron app. Run `npm run build` before `n
 |-------|-----------|
 | Shell | Electron 35 + electron-vite |
 | Renderer | React 19 + TypeScript |
-| State | Zustand |
+| State | XState v5 + Zustand |
 | Styling | Tailwind CSS v4 (CSS-first config) |
 | Components | shadcn/ui + Radix UI |
 | Animations | Framer Motion (spring physics) |
@@ -61,7 +61,8 @@ Showtime (Electron App)
     ├── panels/       TimerPanel, LineupPanel
     ├── components/   LineupCard, ChatMessage, ActCard,
     │                 BeatCheckModal, MiniRundownStrip, etc.
-    ├── stores/       showStore, sessionStore (Zustand)
+    ├── machines/     showMachine (XState v5), showActor, ShowMachineProvider
+    ├── stores/       showStore (Zustand bridge), uiStore, sessionStore
     ├── hooks/        useTimer, useClaudeEvents, etc.
     └── ui/           shadcn/ui components (Button, Dialog, Card)
 ```
@@ -88,7 +89,7 @@ import { ipcRenderer } from 'electron' // WRONG
 
 ### Renderer
 
-Standard React 19 app. Views map to show phases (Dark Studio, Writer's Room, ON AIR, Intermission, Strike). State lives in Zustand, mainly `showStore`.
+Standard React 19 app. Views map to show phases (Dark Studio, Writer's Room, ON AIR, Intermission, Strike). Phase state is managed by an XState v5 state machine (`showMachine`), with a backward-compatible Zustand bridge (`showStore`). Non-phase UI state lives in `uiStore`.
 
 ### Persistence
 

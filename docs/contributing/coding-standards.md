@@ -97,21 +97,42 @@ Showtime is a macOS-native Electron app. These window configuration rules are ma
 <div style={{ width: 560, WebkitAppRegion: 'drag' }}>
 ```
 
-## State Management — Zustand Only
+## State Management — XState for Phase Machines, Zustand for UI State
 
-All global state uses **Zustand**. Do not use React Context for state management.
+Show phase lifecycle is managed by an **XState v5** state machine. Non-phase UI state (calendar, Claude session) lives in **Zustand**. A backward-compatible Zustand bridge (`showStore`) delegates all phase actions to the XState actor.
 
-- `showStore` — The primary store. Manages show phase, acts, beats, energy level, and timer state.
+| Layer | File | Technology | Purpose |
+|-------|------|-----------|---------|
+| Machine | `machines/showMachine.ts` | XState v5 | Phase states, guards, transitions |
+| Actor | `machines/showActor.ts` | XState v5 | Singleton actor + side effects (SQLite, notifications) |
+| Provider | `machines/ShowMachineProvider.tsx` | React Context | Hooks: `useShowSelector`, `useShowPhase`, `useShowSend` |
+| Bridge | `stores/showStore.ts` | Zustand | Backward-compatible API via `sendAndSync()` |
+| UI State | `stores/uiStore.ts` | Zustand | Calendar, Claude session (not phase-managed) |
+
+**New code** should use the XState hooks from `ShowMachineProvider`:
 
 ```tsx
-import { useShowStore } from '@/stores/showStore'
+import { useShowSelector, useShowSend, showSelectors } from '@/machines/ShowMachineProvider'
 
 function MyComponent() {
-  const phase = useShowStore((s) => s.phase)
-  const acts = useShowStore((s) => s.acts)
-  // ...
+  const phase = useShowSelector(showSelectors.phase)
+  const acts = useShowSelector(showSelectors.acts)
+  const send = useShowSend()
+
+  send({ type: 'START_ACT', actId: '...' })
 }
 ```
+
+**Existing code** using `useShowStore` continues to work — the bridge delegates to XState internally:
+
+```tsx
+// Still works — bridge calls sendAndSync() under the hood
+import { useShowStore } from '@/stores/showStore'
+
+const phase = useShowStore((s) => s.phase)
+```
+
+See the [XState State Management guide](/contributing/xstate-state-management) for the full architecture.
 
 ## IPC Bridge — Strict Typing
 

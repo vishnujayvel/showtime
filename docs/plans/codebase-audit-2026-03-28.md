@@ -19,6 +19,10 @@ The codebase is in excellent shape architecturally (8/8 CLAUDE.md rules pass, ze
 | IPC type safety | PASS — typed window.clui bridge, zero raw ipcRenderer |
 | Zustand only | PASS — all stores Zustand, zero React Context |
 
+::: info Post-Audit Update (March 31, 2026)
+**Rule 8 was updated to "XState for State Machines + Zustand for UI State"** after this audit was completed. XState v5 now manages the show phase machine, with a backward-compatible Zustand bridge. The audit finding above was accurate at the time of writing but no longer reflects the current architecture. See [XState State Management](/contributing/xstate-state-management) for the current design.
+:::
+
 **Code Issues Found:**
 
 | Issue | Severity | Location | Fix |
