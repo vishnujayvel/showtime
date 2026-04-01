@@ -7,7 +7,7 @@ const MESSAGES = [
   { text: "Drafting tonight's lineup...", delay: 3000 },
 ]
 
-const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
+import { springDefault as springTransition } from '../constants/animations'
 
 interface ProgressiveLoaderProps {
   active: boolean

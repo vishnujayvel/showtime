@@ -44,7 +44,7 @@ export function useTraySync(): void {
           : [],
       }
 
-      window.clui.updateTrayState(state)
+      window.showtime.updateTrayState(state)
     }
 
     /** Lightweight timer-only update — no menu rebuild */
@@ -53,7 +53,7 @@ export function useTraySync(): void {
       const ctx = snapshot.context
       if (ctx.timerEndAt) {
         const seconds = Math.max(0, Math.ceil((ctx.timerEndAt - Date.now()) / 1000))
-        window.clui.updateTrayTimer(seconds)
+        window.showtime.updateTrayTimer(seconds)
       }
     }
 

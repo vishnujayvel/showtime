@@ -45,9 +45,9 @@ function stripMotionProps(props: any) {
   return rest
 }
 
-// ─── Set up window.clui mock ───
+// ─── Set up window.showtime mock ───
 beforeAll(() => {
-  ;(window as any).clui = {
+  ;(window as any).showtime = {
     quit: vi.fn(),
     setViewMode: vi.fn(),
     forceRepaint: vi.fn(),

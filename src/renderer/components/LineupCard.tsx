@@ -4,7 +4,7 @@ import { getCategoryClasses, SKETCH_CATEGORIES, type SketchCategory } from '../l
 import { cn } from '../lib/utils'
 import type { ShowLineup } from '../../shared/types'
 
-const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30 }
+import { springDefault as springTransition } from '../constants/animations'
 
 interface LineupAct {
   name: string

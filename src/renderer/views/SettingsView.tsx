@@ -9,7 +9,7 @@ interface SettingsViewProps {
   onBack: () => void
 }
 
-const springTransition = { type: 'spring' as const, stiffness: 200, damping: 25 }
+import { springGentle as springTransition } from '../constants/animations'
 
 export function SettingsView({ onBack }: SettingsViewProps) {
   const themeMode = useThemeStore((s) => s.themeMode)

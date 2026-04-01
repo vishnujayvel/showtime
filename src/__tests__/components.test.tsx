@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
 import { showActor, resetShowActor } from '../renderer/machines/showActor'
+import { getPhaseFromState } from '../renderer/machines/showMachine'
 import type { Act, ShowLineup, ShowVerdict as ShowVerdictType } from '../shared/types'
 
 // ─── Mock framer-motion to avoid animation issues in tests ───
@@ -65,39 +66,6 @@ function resetStore() {
 beforeEach(() => {
   resetStore()
   cleanup()
-})
-
-// ─── EnergySelector Tests ───
-
-describe('EnergySelector', () => {
-  let EnergySelector: any
-
-  beforeEach(async () => {
-    const mod = await import('../renderer/components/EnergySelector')
-    EnergySelector = mod.EnergySelector
-  })
-
-  it('renders all four energy options', () => {
-    render(<EnergySelector onSelect={() => {}} />)
-    expect(screen.getByText('High Energy')).toBeInTheDocument()
-    expect(screen.getByText('Medium Energy')).toBeInTheDocument()
-    expect(screen.getByText('Low Energy')).toBeInTheDocument()
-    expect(screen.getByText('Recovery Day')).toBeInTheDocument()
-  })
-
-  it('calls onSelect with correct level on click', () => {
-    const onSelect = vi.fn()
-    render(<EnergySelector onSelect={onSelect} />)
-    fireEvent.click(screen.getByText('High Energy'))
-    expect(onSelect).toHaveBeenCalledWith('high')
-  })
-
-  it('calls onSelect for different energy levels', () => {
-    const onSelect = vi.fn()
-    render(<EnergySelector onSelect={onSelect} />)
-    fireEvent.click(screen.getByText('Low Energy'))
-    expect(onSelect).toHaveBeenCalledWith('low')
-  })
 })
 
 // ─── BeatCheckModal Tests ───
@@ -265,5 +233,75 @@ describe('ShowVerdict', () => {
   it('shows correct message for SHOW_CALLED_EARLY', () => {
     render(<ShowVerdict verdict="SHOW_CALLED_EARLY" beatsLocked={0} beatThreshold={3} />)
     expect(screen.getByText(/Sometimes the show is short/)).toBeInTheDocument()
+  })
+})
+
+// ─── DirectorMode Tests ───
+
+describe('DirectorMode', () => {
+  let DirectorMode: any
+
+  beforeEach(async () => {
+    const mod = await import('../renderer/components/DirectorMode')
+    DirectorMode = mod.DirectorMode
+  })
+
+  function goToDirector() {
+    goLive()
+    showActor.send({ type: 'ENTER_DIRECTOR' })
+  }
+
+  it('renders the four compassionate options', () => {
+    goToDirector()
+    render(<DirectorMode />)
+    expect(screen.getByText('The Director is here.')).toBeInTheDocument()
+    expect(screen.getByText("What's the call?")).toBeInTheDocument()
+    expect(screen.getByText('Skip this act, move on')).toBeInTheDocument()
+    expect(screen.getByText('Call the show early')).toBeInTheDocument()
+    expect(screen.getByText('Take a longer break')).toBeInTheDocument()
+    expect(screen.getByText('Just a moment')).toBeInTheDocument()
+  })
+
+  it('renders reset show button', () => {
+    goToDirector()
+    render(<DirectorMode />)
+    expect(screen.getByText(/Reset .* show/)).toBeInTheDocument()
+  })
+
+  it('CALL_SHOW_EARLY transitions to strike', () => {
+    goToDirector()
+    render(<DirectorMode />)
+    fireEvent.click(screen.getByText('Call the show early'))
+    const snap = showActor.getSnapshot()
+    const phase = getPhaseFromState(snap.value as Record<string, unknown>)
+    expect(phase).toBe('strike')
+  })
+})
+
+// ─── RundownBar Tests ───
+
+describe('RundownBar', () => {
+  let RundownBar: any
+
+  beforeEach(async () => {
+    const mod = await import('../renderer/components/RundownBar')
+    RundownBar = mod.RundownBar
+  })
+
+  it('renders nothing when not live', () => {
+    const { container } = render(<RundownBar />)
+    expect(container.querySelector('[data-testid="rundown-bar"]')).toBeNull()
+  })
+
+  it('renders the rundown bar when live with acts', () => {
+    goLive()
+    render(<RundownBar />)
+    expect(screen.getByTestId('rundown-bar')).toBeInTheDocument()
+  })
+
+  it('renders in compact variant', () => {
+    goLive()
+    render(<RundownBar variant="compact" />)
+    expect(screen.getByTestId('rundown-bar')).toBeInTheDocument()
   })
 })

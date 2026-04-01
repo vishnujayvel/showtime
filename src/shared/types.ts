@@ -313,11 +313,6 @@ export function nextViewTier(current: ViewTier): ViewTier {
   return VIEW_TIER_ORDER[(idx + 1) % VIEW_TIER_ORDER.length]
 }
 
-export function prevViewTier(current: ViewTier): ViewTier {
-  const idx = VIEW_TIER_ORDER.indexOf(current)
-  return VIEW_TIER_ORDER[(idx - 1 + VIEW_TIER_ORDER.length) % VIEW_TIER_ORDER.length]
-}
-
 export function expandTier(current: ViewTier): ViewTier {
   const idx = VIEW_TIER_ORDER.indexOf(current)
   return idx < VIEW_TIER_ORDER.length - 1 ? VIEW_TIER_ORDER[idx + 1] : current
@@ -416,45 +411,50 @@ export interface TrayShowState {
 
 export const IPC = {
   // Request-response (renderer → main)
-  START: 'clui:start',
-  CREATE_TAB: 'clui:create-tab',
-  PROMPT: 'clui:prompt',
-  CANCEL: 'clui:cancel',
-  STOP_TAB: 'clui:stop-tab',
-  RETRY: 'clui:retry',
-  STATUS: 'clui:status',
-  TAB_HEALTH: 'clui:tab-health',
-  CLOSE_TAB: 'clui:close-tab',
-  RESPOND_PERMISSION: 'clui:respond-permission',
-  INIT_SESSION: 'clui:init-session',
-  RESET_TAB_SESSION: 'clui:reset-tab-session',
+  START: 'showtime:start',
+  CREATE_TAB: 'showtime:create-tab',
+  PROMPT: 'showtime:prompt',
+  CANCEL: 'showtime:cancel',
+  STOP_TAB: 'showtime:stop-tab',
+  RETRY: 'showtime:retry',
+  STATUS: 'showtime:status',
+  TAB_HEALTH: 'showtime:tab-health',
+  CLOSE_TAB: 'showtime:close-tab',
+  RESPOND_PERMISSION: 'showtime:respond-permission',
+  INIT_SESSION: 'showtime:init-session',
+  RESET_TAB_SESSION: 'showtime:reset-tab-session',
+
+  // Aggregated events (main → renderer, via ControlPlane)
+  NORMALIZED_EVENT: 'showtime:normalized-event',
+  TAB_STATUS_CHANGE: 'showtime:tab-status-change',
+  ENRICHED_ERROR: 'showtime:enriched-error',
 
   // One-way events (main → renderer)
-  TEXT_CHUNK: 'clui:text-chunk',
-  TOOL_CALL: 'clui:tool-call',
-  TOOL_CALL_UPDATE: 'clui:tool-call-update',
-  TOOL_CALL_COMPLETE: 'clui:tool-call-complete',
-  TASK_UPDATE: 'clui:task-update',
-  TASK_COMPLETE: 'clui:task-complete',
-  SESSION_DEAD: 'clui:session-dead',
-  SESSION_INIT: 'clui:session-init',
-  ERROR: 'clui:error',
-  RATE_LIMIT: 'clui:rate-limit',
+  TEXT_CHUNK: 'showtime:text-chunk',
+  TOOL_CALL: 'showtime:tool-call',
+  TOOL_CALL_UPDATE: 'showtime:tool-call-update',
+  TOOL_CALL_COMPLETE: 'showtime:tool-call-complete',
+  TASK_UPDATE: 'showtime:task-update',
+  TASK_COMPLETE: 'showtime:task-complete',
+  SESSION_DEAD: 'showtime:session-dead',
+  SESSION_INIT: 'showtime:session-init',
+  ERROR: 'showtime:error',
+  RATE_LIMIT: 'showtime:rate-limit',
 
   // Window management
-  HIDE_WINDOW: 'clui:hide-window',
-  WINDOW_SHOWN: 'clui:window-shown',
-  IS_VISIBLE: 'clui:is-visible',
+  HIDE_WINDOW: 'showtime:hide-window',
+  WINDOW_SHOWN: 'showtime:window-shown',
+  IS_VISIBLE: 'showtime:is-visible',
 
   // Skill provisioning (main → renderer)
-  SKILL_STATUS: 'clui:skill-status',
+  SKILL_STATUS: 'showtime:skill-status',
 
   // Theme
-  GET_THEME: 'clui:get-theme',
-  THEME_CHANGED: 'clui:theme-changed',
+  GET_THEME: 'showtime:get-theme',
+  THEME_CHANGED: 'showtime:theme-changed',
 
   // Permission mode
-  SET_PERMISSION_MODE: 'clui:set-permission-mode',
+  SET_PERMISSION_MODE: 'showtime:set-permission-mode',
 
   // Showtime notifications
   NOTIFY_ACT_COMPLETE: 'showtime:notify-act-complete',
@@ -509,3 +509,97 @@ export const IPC = {
   LOG_EVENT: 'showtime:log-event',
 
 } as const
+
+// ─── Data Persistence Types (shared across main/preload/renderer) ───
+
+/** Snapshot of show state sent from renderer to main for persistence */
+export interface ShowStateSnapshot {
+  showId: string
+  phase: string
+  energy?: string | null
+  verdict?: string | null
+  beatsLocked?: number
+  beatThreshold?: number
+  startedAt?: number | null
+  endedAt?: number | null
+  planText?: string | null
+  acts?: ActSnapshot[]
+}
+
+export interface ActSnapshot {
+  id: string
+  name: string
+  sketch: string
+  category?: string | null
+  plannedDurationMs: number
+  actualDurationMs?: number | null
+  sortOrder: number
+  status: string
+  beatLocked?: number
+  plannedStartAt?: number | null
+  actualStartAt?: number | null
+  actualEndAt?: number | null
+}
+
+export interface TimelineEventInput {
+  showId: string
+  actId?: string | null
+  eventType: string
+  plannedStart?: number | null
+  plannedEnd?: number | null
+  actualStart?: number | null
+  actualEnd?: number | null
+  driftSeconds?: number | null
+  metadata?: Record<string, unknown> | null
+}
+
+export interface ClaudeContextPayload {
+  showId: string
+  energy?: string | null
+  planText?: string | null
+  lineupJson?: string | null
+  sessionId?: string | null
+}
+
+export interface ActDriftResult {
+  actId: string | null
+  actName: string | null
+  driftSeconds: number
+  plannedMs: number
+  actualMs: number
+}
+
+export interface ShowHistoryEntry {
+  showId: string
+  phase: string
+  energy: string | null
+  verdict: string | null
+  beatsLocked: number
+  beatThreshold: number
+  startedAt: number | null
+  endedAt: number | null
+  actCount: number
+  completedActCount: number
+}
+
+export interface MetricsSummary {
+  avg: number
+  p95: number
+  min: number
+  max: number
+  count: number
+}
+
+export interface ShowDetailEntry {
+  showId: string
+  phase: string
+  energy: string | null
+  verdict: string | null
+  beatsLocked: number
+  beatThreshold: number
+  startedAt: number | null
+  endedAt: number | null
+  planText: string | null
+  lineupJson: string | null
+  acts: ActSnapshot[]
+}

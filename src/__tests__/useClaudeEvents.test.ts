@@ -21,7 +21,7 @@ const unsubError = vi.fn()
 const unsubSkill = vi.fn()
 
 function installMocks() {
-  Object.assign(window.clui, {
+  Object.assign(window.showtime, {
     onEvent: vi.fn((cb: EventCallback) => {
       capturedOnEvent = cb
       return unsubEvent
@@ -104,10 +104,10 @@ describe('useClaudeEvents', () => {
     const { useClaudeEvents } = await import('../renderer/hooks/useClaudeEvents')
     renderHook(() => useClaudeEvents())
 
-    expect(window.clui.onEvent).toHaveBeenCalledOnce()
-    expect(window.clui.onTabStatusChange).toHaveBeenCalledOnce()
-    expect(window.clui.onError).toHaveBeenCalledOnce()
-    expect(window.clui.onSkillStatus).toHaveBeenCalledOnce()
+    expect(window.showtime.onEvent).toHaveBeenCalledOnce()
+    expect(window.showtime.onTabStatusChange).toHaveBeenCalledOnce()
+    expect(window.showtime.onError).toHaveBeenCalledOnce()
+    expect(window.showtime.onSkillStatus).toHaveBeenCalledOnce()
   })
 
   it('unsubscribes from all channels on unmount', async () => {

@@ -50,7 +50,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
   const fetchDrift = useCallback(async () => {
     if (!isVisible) return
     try {
-      const d = await window.clui.getTimelineDrift(showDate)
+      const d = await window.showtime.getTimelineDrift(showDate)
       setDriftSeconds(d)
     } catch { /* ignore */ }
   }, [showDate, isVisible])
@@ -108,6 +108,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
               className={`relative h-full ${barStatus === 'upcoming' ? 'opacity-40' : ''} ${
                 barStatus === 'active' ? 'onair-glow' : ''
               }`}
+              // dynamic: act segment width is proportional to its duration
               style={{ width: `${widthPercent}%` }}
             >
               {/* Base color fill */}
@@ -129,6 +130,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
               {barStatus === 'completed' && overrunPercent > 0 && (
                 <div
                   className="absolute inset-y-0 right-0 overrun-hatching"
+                  // dynamic: overrun hatching width computed from actual vs planned duration
                   style={{ width: `${overrunPercent}%` }}
                 />
               )}
@@ -143,6 +145,7 @@ export function RundownBar({ variant = 'full' }: RundownBarProps) {
         {phase !== 'strike' && (
           <motion.div
             className="absolute top-0 bottom-0 w-0.5 bg-onair shadow-sm z-10"
+            // dynamic: NOW marker position tracks elapsed time on the timeline
             style={{ left: `${nowPercent}%` }}
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
