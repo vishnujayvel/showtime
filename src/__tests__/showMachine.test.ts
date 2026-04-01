@@ -892,11 +892,14 @@ describe('showMachine', () => {
       expect(getContext(actor).currentActId).not.toBeNull() // current act unaffected
     })
 
-    it('REMOVE_ACT on current act clears current', () => {
+    it('REMOVE_ACT on current act auto-starts next act', () => {
       const currentActId = getContext(actor).currentActId!
+      const secondActId = getContext(actor).acts[1].id
       actor.send({ type: 'REMOVE_ACT', actId: currentActId })
-      expect(getContext(actor).currentActId).toBeNull()
-      expect(getContext(actor).timerEndAt).toBeNull()
+      // PR #149: removing the current act auto-starts the next upcoming act
+      expect(getContext(actor).currentActId).toBe(secondActId)
+      expect(getContext(actor).timerEndAt).not.toBeNull()
+      expect(getContext(actor).acts).toHaveLength(2)
     })
 
     it('REORDER_ACT during live', () => {
