@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting a bug! A screenshot or screen recording is **mandatory** — bugs without visual evidence will not be worked on.
+        Thanks for reporting a bug! A screenshot or screen recording is **strongly recommended** — bugs with visual evidence get prioritized and fixed faster.
 
   - type: textarea
     id: description
@@ -22,11 +22,12 @@ body:
     attributes:
       label: Screenshot or screen recording
       description: |
-        Drag and drop a screenshot or video here. This field is **required**.
+        Drag and drop a screenshot or video here. **Strongly recommended** — bugs with screenshots get fixed faster.
         For Showtime bugs, use Cmd+Shift+4 to capture the window.
+        If you can't include one now, describe what you saw visually and add a screenshot later.
       placeholder: "Drag image here or paste from clipboard"
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: steps
