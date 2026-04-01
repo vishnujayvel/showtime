@@ -347,6 +347,10 @@ export interface Act {
   startedAt?: number
   completedAt?: number
   order: number
+  /** Wall-clock time from calendar — null means flexible (can shift with drift) */
+  pinnedStartAt?: number | null
+  /** Source calendar event ID — null means user-generated */
+  calendarEventId?: string | null
 }
 
 export interface ShowLineup {
@@ -355,6 +359,10 @@ export interface ShowLineup {
     sketch: string
     durationMinutes: number
     reason?: string
+    /** Wall-clock pinned start time (epoch ms) — from calendar events */
+    pinnedStartAt?: number | null
+    /** Source calendar event ID */
+    calendarEventId?: string | null
   }>
   beatThreshold: number
   openingNote: string

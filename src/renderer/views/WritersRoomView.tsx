@@ -6,6 +6,7 @@ import { tryParseLineup } from '../lib/lineup-parser'
 import { buildRefinementPrompt } from '../lib/refinement-prompt'
 import { tryParseCalendarEvents } from '../lib/calendar-parser'
 import { ChatMessage } from '../components/ChatMessage'
+import { ActCard } from '../components/ActCard'
 import { CalendarToggle } from '../components/CalendarToggle'
 import { ProgressiveLoader } from '../components/ProgressiveLoader'
 import { Button } from '../ui/button'
@@ -297,6 +298,27 @@ ${calendarInstruction}The user hasn't told you what they want to work on yet. As
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Lineup preview — visible when acts have been parsed */}
+      {hasLineup && (
+        <div className="px-6 py-3 border-t border-surface-hover shrink-0" data-testid="lineup-preview">
+          <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted mb-2 block">
+            LINEUP
+          </span>
+          <div className="flex flex-col gap-2">
+            {[...acts].sort((a, b) => a.order - b.order).map((act, index) => (
+              <ActCard
+                key={act.id}
+                act={act}
+                variant="full"
+                actNumber={index + 1}
+                onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
+                onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Footer: input + action buttons */}
       <div className="px-6 py-4 border-t border-surface-hover shrink-0">
