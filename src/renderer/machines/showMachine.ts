@@ -450,6 +450,15 @@ export const showMachine = setup({
             // XState v5 event bubbling: when a substate guard rejects an event, it bubbles
             // to the parent. Unguarded parent handlers bypassed sequential flow enforcement.
             // These events are now handled only in their respective substates.
+            //
+            // WritersRoomView compatibility: The view sends SET_ENERGY from an always-visible
+            // energy chip. SET_ENERGY is only accepted in the 'energy' substate; if the user
+            // changes energy after progressing past step 1, the event is silently dropped by
+            // XState (no transition match). This is intentional — energy selection is part of
+            // the sequential flow. The view also auto-sets energy='medium' via useEffect on
+            // mount, which fires while still in the 'energy' substate. SET_LINEUP is sent
+            // when Claude's response is parsed (always from 'conversation' substate).
+            // TRIGGER_GOING_LIVE is on the parent level and works from any substate.
             // Lineup editing during writer's room
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
