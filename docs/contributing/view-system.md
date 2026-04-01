@@ -46,7 +46,7 @@ Transitions are full-screen animated sequences between phases:
 | `ColdOpenTransition` | Dark Studio → Writer's Room | Stage lights warming up |
 | `GoingLiveTransition` | Writer's Room → ON AIR | "Live from your desk!" countdown |
 
-Transitions take priority in the render order. While active, `coldOpenActive` or `goingLiveActive` is true in `showStore`.
+Transitions take priority in the render order. While active, `coldOpenActive` or `goingLiveActive` is true in the XState machine (read via `useColdOpenActive()` or `useGoingLiveActive()` from `ShowMachineProvider`).
 
 ## View Tier State Machine
 
