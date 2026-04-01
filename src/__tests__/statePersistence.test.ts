@@ -27,6 +27,12 @@ const VALID_PHASES = new Set([
 ])
 const VALID_ANIMATIONS = new Set(['idle', 'cold_open', 'going_live'])
 
+const VALID_SUBSTATES: Record<string, Set<string>> = {
+  writers_room: new Set(['energy', 'plan', 'conversation', 'lineup_ready']),
+  live: new Set(['act_active', 'beat_check', 'celebrating']),
+  intermission: new Set(['resting', 'breathing_pause']),
+}
+
 // ─── Helpers (reimplemented to test independently of module-level side effects) ───
 
 function isValidStateValue(stateValue: unknown): boolean {
@@ -38,7 +44,13 @@ function isValidStateValue(stateValue: unknown): boolean {
   if (typeof phase === 'string') return VALID_PHASES.has(phase)
   if (typeof phase === 'object' && phase !== null) {
     const phaseKey = Object.keys(phase)[0]
-    return VALID_PHASES.has(phaseKey)
+    if (!VALID_PHASES.has(phaseKey)) return false
+    const validSubs = VALID_SUBSTATES[phaseKey]
+    if (validSubs) {
+      const subValue = (phase as Record<string, unknown>)[phaseKey]
+      if (typeof subValue !== 'string' || !validSubs.has(subValue)) return false
+    }
+    return true
   }
   return false
 }
@@ -437,6 +449,40 @@ describe('state persistence', () => {
       expect(result).toBeDefined()
       const actor2 = createTestActor(result)
       expect(getPhase(actor2)).toBe('live')
+
+      actor.stop()
+      actor2.stop()
+    })
+
+    it('falls back to no_show when nested substate is invalid (schema-change regression)', () => {
+      const actor = createTestActor()
+      actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_ENERGY', level: 'high' })
+      actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+
+      const snap = actor.getSnapshot()
+      const persisted = Object.fromEntries(
+        Object.entries(snap.context).filter(([k]) => !TRANSIENT_KEYS.has(k))
+      )
+      // Simulate a stale nested substate that was removed in a schema change
+      localStorage.setItem(
+        PERSIST_KEY,
+        JSON.stringify({
+          stateValue: { phase: { live: 'removed_substate' }, animation: 'idle' },
+          context: persisted,
+          version: PERSIST_VERSION,
+          savedAt: Date.now(),
+        })
+      )
+
+      // Should NOT crash — should gracefully fall back to no_show
+      const result = getPersistedSnapshot()
+      expect(result).toBeDefined()
+      const actor2 = createTestActor(result)
+      expect(getPhase(actor2)).toBe('no_show')
+      // Context (energy, acts) should be preserved
+      expect(actor2.getSnapshot().context.energy).toBe('high')
+      expect(actor2.getSnapshot().context.acts).toHaveLength(3)
 
       actor.stop()
       actor2.stop()
