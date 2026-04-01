@@ -1,0 +1,28 @@
+name: Feature Request / Enhancement
+description: Suggest a new feature or improvement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like?
+      description: Describe the feature or improvement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: Mockup or screenshot (optional)
+      description: If you have a visual idea, drop an image here.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Why is this useful?
+      description: What problem does this solve? How does it fit the SNL Day Framework?
+    validations:
+      required: false
