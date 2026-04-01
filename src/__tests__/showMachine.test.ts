@@ -812,36 +812,35 @@ describe('showMachine', () => {
 
     it('path 2: hasNextAct (no paused timer) — starts next act', () => {
       setupLive(actor)
-      // Complete current act, skip beat → now on act 2
+      // Complete act 1, skip beat → now on act 2
       const act1 = getContext(actor).currentActId!
       actor.send({ type: 'COMPLETE_ACT', actId: act1 })
       actor.send({ type: 'SKIP_BEAT' })
 
-      // Enter intermission — timer is running for act 2
-      actor.send({ type: 'ENTER_INTERMISSION' })
+      // Complete act 2 → beat_check (timer cleared by completeActContext)
+      const act2 = getContext(actor).currentActId!
+      actor.send({ type: 'COMPLETE_ACT', actId: act2 })
 
-      // Simulate: clear paused timer to test path 2 specifically
-      // We need to reach intermission with no paused timer but with next acts
-      // Actually, ENTER_INTERMISSION always pauses timer if running. So path 2
-      // is reached when there's no timer but remaining acts exist.
-      // This happens when current act was already completed (timer null).
+      // Enter intermission from beat_check. timerEndAt is already null
+      // (cleared by completeActContext), so enterIntermissionContext sets
+      // timerPausedRemaining = null. Act 3 is still upcoming → hasNextAct is true.
+      actor.send({ type: 'ENTER_INTERMISSION' })
       expect(getPhase(actor)).toBe('intermission')
+      expect(getContext(actor).timerPausedRemaining).toBeNull()
+      expect(getContext(actor).acts.some((a) => a.status === 'upcoming')).toBe(true)
+
+      // EXIT_INTERMISSION: hasPausedTimer=false, hasNextAct=true → path 2
+      actor.send({ type: 'EXIT_INTERMISSION' })
+      expect(getPhase(actor)).toBe('live')
+      // Path 2 starts the next upcoming act (act 3)
+      const act3 = getContext(actor).currentActId!
+      expect(act3).not.toBe(act1)
+      expect(act3).not.toBe(act2)
+      expect(getContext(actor).timerEndAt).not.toBeNull()
     })
 
     it('path 3: neither guard — goes to strike', () => {
-      setupLive(actor)
-      // Complete all 3 acts with beat skips
-      for (let i = 0; i < 3; i++) {
-        const actId = getContext(actor).currentActId!
-        actor.send({ type: 'COMPLETE_ACT', actId })
-        // After last act + skip beat we go to strike, so enter intermission before that
-        if (i < 2) {
-          actor.send({ type: 'SKIP_BEAT' })
-        }
-      }
-      // In beat_check after last act. Skip beat goes to strike.
-      // We need a different approach: enter intermission with no upcoming acts and no paused timer.
-      // Reset and set up a scenario with 1 act, complete it, enter director → intermission
+      // Set up a 1-act show so there's no next act after completing it
       actor = createTestActor()
       const oneActLineup: ShowLineup = {
         acts: [{ name: 'Solo', sketch: 'Solo', durationMinutes: 30 }],
@@ -853,13 +852,23 @@ describe('showMachine', () => {
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: oneActLineup })
       actor.send({ type: 'START_SHOW' })
+
+      // Complete the only act → beat_check (timer cleared)
       const actId = getContext(actor).currentActId!
       actor.send({ type: 'COMPLETE_ACT', actId })
-      actor.send({ type: 'SKIP_BEAT' })
-      // After last act + skip beat with no next → strike
-      // Can't test path 3 from here since SKIP_BEAT already sends to strike.
-      // Path 3 would happen if intermission was entered with no acts remaining and no timer.
+      expect(getContext(actor).timerEndAt).toBeNull()
+
+      // Enter intermission from beat_check. No timer → timerPausedRemaining stays null.
+      // Only act is completed → no upcoming acts.
+      actor.send({ type: 'ENTER_INTERMISSION' })
+      expect(getPhase(actor)).toBe('intermission')
+      expect(getContext(actor).timerPausedRemaining).toBeNull()
+      expect(getContext(actor).acts.every((a) => a.status !== 'upcoming')).toBe(true)
+
+      // EXIT_INTERMISSION: hasPausedTimer=false, hasNextAct=false → path 3 (strike)
+      actor.send({ type: 'EXIT_INTERMISSION' })
       expect(getPhase(actor)).toBe('strike')
+      expect(getContext(actor).verdict).toBeDefined()
     })
   })
 

@@ -162,6 +162,7 @@ describe('state persistence', () => {
     it('restores live phase with active act', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_ENERGY', level: 'high' })
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
@@ -186,6 +187,7 @@ describe('state persistence', () => {
     it('restores intermission phase', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_ENERGY', level: 'medium' })
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
