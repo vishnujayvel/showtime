@@ -14,10 +14,11 @@ function formatTime(ms: number): string {
   return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-/** Compute projected start/end times for each act based on show start and cumulative durations. */
+/** Compute projected start/end times for each act based on show start and cumulative durations.
+ *  Pinned acts (from calendar) keep their original pinnedStartAt time regardless of drift. */
 function computeProjectedTimes(acts: Act[], showStartedAt: number | null) {
-  if (!showStartedAt) return new Map<string, { start: number; end: number; planned: number; plannedEnd: number }>()
-  const map = new Map<string, { start: number; end: number; planned: number; plannedEnd: number }>()
+  if (!showStartedAt) return new Map<string, { start: number; end: number; planned: number; plannedEnd: number; pinned: boolean }>()
+  const map = new Map<string, { start: number; end: number; planned: number; plannedEnd: number; pinned: boolean }>()
 
   let cursor = showStartedAt
   let plannedCursor = showStartedAt
@@ -26,6 +27,7 @@ function computeProjectedTimes(acts: Act[], showStartedAt: number | null) {
     const plannedMs = act.durationMinutes * 60 * 1000
     const plannedStart = plannedCursor
     const plannedEnd = plannedCursor + plannedMs
+    const isPinned = act.pinnedStartAt != null
 
     if (act.status === 'completed' || act.status === 'skipped') {
       const actualMs = act.startedAt && act.completedAt ? act.completedAt - act.startedAt : plannedMs
@@ -34,24 +36,30 @@ function computeProjectedTimes(acts: Act[], showStartedAt: number | null) {
         end: act.completedAt ?? cursor + actualMs,
         planned: plannedStart,
         plannedEnd,
+        pinned: isPinned,
       })
       cursor = act.completedAt ?? cursor + actualMs
     } else if (act.status === 'active') {
+      const start = isPinned ? act.pinnedStartAt! : (act.startedAt ?? cursor)
       map.set(act.id, {
-        start: act.startedAt ?? cursor,
-        end: cursor + plannedMs,
+        start,
+        end: start + plannedMs,
         planned: plannedStart,
         plannedEnd,
+        pinned: isPinned,
       })
-      cursor = (act.startedAt ?? cursor) + plannedMs
+      cursor = start + plannedMs
     } else {
+      // Upcoming: pinned acts use their fixed time, flexible acts flow from cursor
+      const start = isPinned ? act.pinnedStartAt! : cursor
       map.set(act.id, {
-        start: cursor,
-        end: cursor + plannedMs,
+        start,
+        end: start + plannedMs,
         planned: plannedStart,
         plannedEnd,
+        pinned: isPinned,
       })
-      cursor += plannedMs
+      cursor = start + plannedMs
     }
     plannedCursor += plannedMs
   }
@@ -147,6 +155,7 @@ function SidebarLineupPanel() {
             timeLabel={timeLabel}
             timeDrifted={drifted}
             plannedTimeLabel={drifted && times ? formatTime(times.planned) : undefined}
+            pinned={times?.pinned}
             onReorder={canReorder ? (direction) => send({ type: 'REORDER_ACT', actId: act.id, direction }) : undefined}
             onRemove={canRemove ? () => send({ type: 'REMOVE_ACT', actId: act.id }) : undefined}
           />
