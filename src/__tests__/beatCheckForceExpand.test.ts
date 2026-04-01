@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useShowStore } from '../renderer/stores/showStore'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
+import { getPhaseFromState } from '../renderer/machines/showMachine'
 import type { ShowLineup, ViewTier } from '../shared/types'
 
 /**
@@ -10,30 +11,18 @@ import type { ShowLineup, ViewTier } from '../shared/types'
  * or 'compact', it force-expands to 'dashboard' so the user can see the
  * BeatCheckModal.
  *
- * We test the logic at the store level by simulating the same condition check
- * that App.tsx performs, plus verifying the store transitions that feed it.
+ * We test the logic at the actor level by simulating the same condition check
+ * that App.tsx performs, plus verifying the actor transitions that feed it.
  */
 
-// Helper to reset store between tests
-function resetStore() {
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    celebrationActive: false,
-    coldOpenActive: false,
-    goingLiveActive: false,
-  })
+/** Helper to get current phase from the actor */
+function phase() {
+  return getPhaseFromState(showActor.getSnapshot().value as Record<string, unknown>)
+}
+
+/** Helper to get actor context */
+function ctx() {
+  return showActor.getSnapshot().context
 }
 
 const sampleLineup: ShowLineup = {
@@ -46,6 +35,14 @@ const sampleLineup: ShowLineup = {
   openingNote: 'Test lineup',
 }
 
+/** Navigate actor to live phase */
+function goLive() {
+  showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+  showActor.send({ type: 'SET_ENERGY', level: 'high' })
+  showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+  showActor.send({ type: 'START_SHOW' })
+}
+
 /**
  * Mirrors the App.tsx useEffect logic:
  *   if (beatCheckPending && (viewTier === 'micro' || viewTier === 'compact')) {
@@ -53,15 +50,15 @@ const sampleLineup: ShowLineup = {
  *   }
  */
 function applyForceExpandLogic() {
-  const state = useShowStore.getState()
-  if (state.beatCheckPending && (state.viewTier === 'micro' || state.viewTier === 'compact')) {
-    state.setViewTier('dashboard')
+  const c = ctx()
+  if (c.beatCheckPending && (c.viewTier === 'micro' || c.viewTier === 'compact')) {
+    showActor.send({ type: 'SET_VIEW_TIER', tier: 'dashboard' })
   }
 }
 
 describe('beatCheckPending force-expand logic', () => {
   beforeEach(() => {
-    resetStore()
+    resetShowActor()
     vi.clearAllMocks()
   })
 
@@ -69,20 +66,18 @@ describe('beatCheckPending force-expand logic', () => {
 
   describe('completeAct sets beatCheckPending', () => {
     it('sets beatCheckPending to true when act completes', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      const actId = useShowStore.getState().currentActId!
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
+      const actId = ctx().currentActId!
+      expect(ctx().beatCheckPending).toBe(false)
 
-      useShowStore.getState().completeAct(actId)
-      expect(useShowStore.getState().beatCheckPending).toBe(true)
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
     })
 
     it('startShow sets viewTier to micro (pill)', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      expect(useShowStore.getState().viewTier).toBe('micro')
+      goLive()
+      expect(ctx().viewTier).toBe('micro')
     })
   })
 
@@ -90,18 +85,17 @@ describe('beatCheckPending force-expand logic', () => {
 
   describe('force-expand from micro', () => {
     it('expands from micro to dashboard when beatCheckPending is true', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
       // startShow sets viewTier to 'micro'
-      expect(useShowStore.getState().viewTier).toBe('micro')
+      expect(ctx().viewTier).toBe('micro')
 
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
-      expect(useShowStore.getState().beatCheckPending).toBe(true)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
 
       applyForceExpandLogic()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      expect(ctx().viewTier).toBe('dashboard')
     })
   })
 
@@ -109,18 +103,17 @@ describe('beatCheckPending force-expand logic', () => {
 
   describe('force-expand from compact', () => {
     it('expands from compact to dashboard when beatCheckPending is true', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
       // Manually set to compact (user might have cycled to compact view)
-      useShowStore.getState().setViewTier('compact')
-      expect(useShowStore.getState().viewTier).toBe('compact')
+      showActor.send({ type: 'SET_VIEW_TIER', tier: 'compact' })
+      expect(ctx().viewTier).toBe('compact')
 
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
 
       applyForceExpandLogic()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      expect(ctx().viewTier).toBe('dashboard')
     })
   })
 
@@ -130,15 +123,14 @@ describe('beatCheckPending force-expand logic', () => {
     it.each<ViewTier>(['dashboard', 'expanded'])(
       'does not change viewTier when already at "%s"',
       (tier) => {
-        useShowStore.getState().setLineup(sampleLineup)
-        useShowStore.getState().startShow()
+        goLive()
 
-        useShowStore.getState().setViewTier(tier)
-        const actId = useShowStore.getState().currentActId!
-        useShowStore.getState().completeAct(actId)
+        showActor.send({ type: 'SET_VIEW_TIER', tier })
+        const actId = ctx().currentActId!
+        showActor.send({ type: 'COMPLETE_ACT', actId })
 
         applyForceExpandLogic()
-        expect(useShowStore.getState().viewTier).toBe(tier)
+        expect(ctx().viewTier).toBe(tier)
       },
     )
   })
@@ -149,11 +141,11 @@ describe('beatCheckPending force-expand logic', () => {
     it.each<ViewTier>(['micro', 'compact'])(
       'does not expand from "%s" when beatCheckPending is false',
       (tier) => {
-        useShowStore.getState().setViewTier(tier)
-        expect(useShowStore.getState().beatCheckPending).toBe(false)
+        showActor.send({ type: 'SET_VIEW_TIER', tier })
+        expect(ctx().beatCheckPending).toBe(false)
 
         applyForceExpandLogic()
-        expect(useShowStore.getState().viewTier).toBe(tier)
+        expect(ctx().viewTier).toBe(tier)
       },
     )
   })
@@ -170,49 +162,47 @@ describe('beatCheckPending force-expand logic', () => {
     })
 
     it('completes full cycle: act complete → expand → lock beat → next act starts', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
       // 1. Act is live, pill view
-      expect(useShowStore.getState().viewTier).toBe('micro')
-      expect(useShowStore.getState().phase).toBe('live')
+      expect(ctx().viewTier).toBe('micro')
+      expect(phase()).toBe('live')
 
       // 2. Complete act — triggers beatCheckPending
-      const firstActId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(firstActId)
-      expect(useShowStore.getState().beatCheckPending).toBe(true)
+      const firstActId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId: firstActId })
+      expect(ctx().beatCheckPending).toBe(true)
 
       // 3. Force-expand fires (simulating the useEffect)
       applyForceExpandLogic()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      expect(ctx().viewTier).toBe('dashboard')
 
       // 4. User locks a beat
-      useShowStore.getState().lockBeat()
-      expect(useShowStore.getState().beatsLocked).toBe(1)
-      expect(useShowStore.getState().celebrationActive).toBe(true)
+      showActor.send({ type: 'LOCK_BEAT' })
+      expect(ctx().beatsLocked).toBe(1)
+      expect(ctx().celebrationActive).toBe(true)
 
       // 5. Celebration completes, next act starts
       vi.advanceTimersByTime(1800)
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
-      expect(useShowStore.getState().celebrationActive).toBe(false)
-      expect(useShowStore.getState().acts[1].status).toBe('active')
+      expect(ctx().beatCheckPending).toBe(false)
+      expect(ctx().celebrationActive).toBe(false)
+      expect(ctx().acts[1].status).toBe('active')
     })
 
     it('completes full cycle with skip beat instead of lock', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      const firstActId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(firstActId)
+      const firstActId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId: firstActId })
 
       applyForceExpandLogic()
-      expect(useShowStore.getState().viewTier).toBe('dashboard')
+      expect(ctx().viewTier).toBe('dashboard')
 
       // User skips beat — should clear beatCheckPending and start next act
-      useShowStore.getState().skipBeat()
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
-      expect(useShowStore.getState().beatsLocked).toBe(0)
-      expect(useShowStore.getState().acts[1].status).toBe('active')
+      showActor.send({ type: 'SKIP_BEAT' })
+      expect(ctx().beatCheckPending).toBe(false)
+      expect(ctx().beatsLocked).toBe(0)
+      expect(ctx().acts[1].status).toBe('active')
     })
   })
 
@@ -228,62 +218,65 @@ describe('beatCheckPending force-expand logic', () => {
     })
 
     it('no-ops if beatCheckPending is cleared before force-expand logic runs', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
-      expect(useShowStore.getState().viewTier).toBe('micro')
+      goLive()
+      expect(ctx().viewTier).toBe('micro')
 
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
 
       // beatCheckPending is true, but user skips beat before the useEffect fires
-      useShowStore.getState().skipBeat()
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
+      showActor.send({ type: 'SKIP_BEAT' })
+      expect(ctx().beatCheckPending).toBe(false)
 
       // Force-expand logic should not change viewTier since beatCheckPending is cleared
       applyForceExpandLogic()
       // viewTier stays at micro since skipBeat does not change it
-      expect(useShowStore.getState().viewTier).toBe('micro')
+      expect(ctx().viewTier).toBe('micro')
     })
 
     it('resetShow clears beatCheckPending so force-expand does not fire', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      const actId = useShowStore.getState().currentActId!
-      useShowStore.getState().completeAct(actId)
-      expect(useShowStore.getState().beatCheckPending).toBe(true)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
 
-      useShowStore.getState().resetShow()
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
+      showActor.send({ type: 'RESET' })
+      expect(ctx().beatCheckPending).toBe(false)
 
       applyForceExpandLogic()
       // After reset, viewTier is 'expanded' (initial state) and beatCheckPending is false
-      expect(useShowStore.getState().viewTier).toBe('expanded')
+      expect(ctx().viewTier).toBe('expanded')
     })
 
     it('strikeTheStage clears beatCheckPending and sets expanded', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      // Manually set beatCheckPending (simulating a race where strike happens during beat check)
-      useShowStore.setState({ beatCheckPending: true })
-      useShowStore.getState().strikeTheStage()
+      // Complete act to set beatCheckPending=true (enters beat_check substate)
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
 
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-      expect(useShowStore.getState().phase).toBe('strike')
+      showActor.send({ type: 'STRIKE' })
+
+      expect(ctx().beatCheckPending).toBe(false)
+      expect(ctx().viewTier).toBe('expanded')
+      expect(phase()).toBe('strike')
     })
 
     it('callShowEarly clears beatCheckPending and sets expanded', () => {
-      useShowStore.getState().setLineup(sampleLineup)
-      useShowStore.getState().startShow()
+      goLive()
 
-      useShowStore.setState({ beatCheckPending: true })
-      useShowStore.getState().callShowEarly()
+      // Complete act to set beatCheckPending=true
+      const actId = ctx().currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      expect(ctx().beatCheckPending).toBe(true)
 
-      expect(useShowStore.getState().beatCheckPending).toBe(false)
-      expect(useShowStore.getState().viewTier).toBe('expanded')
-      expect(useShowStore.getState().phase).toBe('strike')
+      showActor.send({ type: 'CALL_SHOW_EARLY' })
+
+      expect(ctx().beatCheckPending).toBe(false)
+      expect(ctx().viewTier).toBe('expanded')
+      expect(phase()).toBe('strike')
     })
   })
 })

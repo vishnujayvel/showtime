@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { tryParseCalendarEvents } from '../renderer/lib/calendar-parser'
-import { useShowStore } from '../renderer/stores/showStore'
+import { useUIStore } from '../renderer/stores/uiStore'
 
 describe('tryParseCalendarEvents', () => {
   it('parses valid JSON array of events', () => {
@@ -87,13 +87,13 @@ Let me know if you need anything else.`
   })
 })
 
-describe('showStore calendar state', () => {
+describe('uiStore calendar state', () => {
   beforeEach(() => {
-    useShowStore.getState().resetShow()
+    useUIStore.getState().clearCalendarCache()
   })
 
   it('initializes with idle fetch status and empty events', () => {
-    const state = useShowStore.getState()
+    const state = useUIStore.getState()
     expect(state.calendarFetchStatus).toBe('idle')
     expect(state.calendarEvents).toEqual([])
     expect(state.calendarFetchedAt).toBeNull()
@@ -103,52 +103,38 @@ describe('showStore calendar state', () => {
     const events = [
       { title: 'Meeting', start: '10:00', end: '11:00', allDay: false },
     ]
-    useShowStore.getState().setCalendarEvents(events)
+    useUIStore.getState().setCalendarEvents(events)
 
-    const state = useShowStore.getState()
+    const state = useUIStore.getState()
     expect(state.calendarEvents).toEqual(events)
     expect(state.calendarFetchStatus).toBe('ready')
     expect(state.calendarFetchedAt).toBeGreaterThan(0)
   })
 
   it('setCalendarEvents with empty array sets status to ready', () => {
-    useShowStore.getState().setCalendarEvents([])
+    useUIStore.getState().setCalendarEvents([])
 
-    const state = useShowStore.getState()
+    const state = useUIStore.getState()
     expect(state.calendarEvents).toEqual([])
     expect(state.calendarFetchStatus).toBe('ready')
   })
 
   it('setCalendarFetchStatus updates status', () => {
-    useShowStore.getState().setCalendarFetchStatus('fetching')
-    expect(useShowStore.getState().calendarFetchStatus).toBe('fetching')
+    useUIStore.getState().setCalendarFetchStatus('fetching')
+    expect(useUIStore.getState().calendarFetchStatus).toBe('fetching')
 
-    useShowStore.getState().setCalendarFetchStatus('unavailable')
-    expect(useShowStore.getState().calendarFetchStatus).toBe('unavailable')
+    useUIStore.getState().setCalendarFetchStatus('unavailable')
+    expect(useUIStore.getState().calendarFetchStatus).toBe('unavailable')
   })
 
   it('clearCalendarCache resets all calendar state', () => {
-    useShowStore.getState().setCalendarEvents([
+    useUIStore.getState().setCalendarEvents([
       { title: 'Meeting', start: '10:00', end: '11:00', allDay: false },
     ])
 
-    useShowStore.getState().clearCalendarCache()
+    useUIStore.getState().clearCalendarCache()
 
-    const state = useShowStore.getState()
-    expect(state.calendarEvents).toEqual([])
-    expect(state.calendarFetchStatus).toBe('idle')
-    expect(state.calendarFetchedAt).toBeNull()
-  })
-
-  it('resetShow clears calendar state', () => {
-    useShowStore.getState().setCalendarEvents([
-      { title: 'Meeting', start: '10:00', end: '11:00', allDay: false },
-    ])
-    useShowStore.getState().setCalendarFetchStatus('ready')
-
-    useShowStore.getState().resetShow()
-
-    const state = useShowStore.getState()
+    const state = useUIStore.getState()
     expect(state.calendarEvents).toEqual([])
     expect(state.calendarFetchStatus).toBe('idle')
     expect(state.calendarFetchedAt).toBeNull()

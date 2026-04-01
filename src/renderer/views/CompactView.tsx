@@ -1,5 +1,7 @@
+import { useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
+import { expandTier, collapseTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
@@ -16,12 +18,14 @@ function formatStartTime(timestamp: number): string {
 }
 
 export function CompactView() {
-  const phase = useShowStore((s) => s.phase)
-  const verdict = useShowStore((s) => s.verdict)
-  const currentAct = useShowStore(selectCurrentAct)
-  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
-  const expandViewTier = useShowStore((s) => s.expandViewTier)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
+  const phase = useShowPhase()
+  const verdict = useShowContext((ctx) => ctx.verdict)
+  const currentAct = useShowSelector(showSelectors.currentAct)
+  const viewTier = useShowContext((ctx) => ctx.viewTier)
+  const send = useShowSend()
+  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
+  const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
   const { minutes, seconds, isRunning } = useTimer()
 
   const isUrgent = minutes < 5 && isRunning

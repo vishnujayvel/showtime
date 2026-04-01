@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useThemeStore, type ThemeMode } from '../theme'
-import { useShowStore } from '../stores/showStore'
+import { useShowSend } from '../machines/ShowMachineProvider'
+import { useUIStore } from '../stores/uiStore'
 import { Button } from '../ui/button'
 
 interface SettingsViewProps {
@@ -15,10 +16,11 @@ export function SettingsView({ onBack }: SettingsViewProps) {
   const setThemeMode = useThemeStore((s) => s.setThemeMode)
   const soundEnabled = useThemeStore((s) => s.soundEnabled)
   const setSoundEnabled = useThemeStore((s) => s.setSoundEnabled)
-  const resetShow = useShowStore((s) => s.resetShow)
-  const calendarAvailable = useShowStore((s) => s.calendarAvailable)
-  const calendarEnabled = useShowStore((s) => s.calendarEnabled)
-  const setCalendarEnabled = useShowStore((s) => s.setCalendarEnabled)
+  const send = useShowSend()
+  const resetShow = useCallback(() => send({ type: 'RESET' }), [send])
+  const calendarAvailable = useUIStore((s) => s.calendarAvailable)
+  const calendarEnabled = useUIStore((s) => s.calendarEnabled)
+  const setCalendarEnabled = useUIStore((s) => s.setCalendarEnabled)
 
   const [confirmReset, setConfirmReset] = useState(false)
 

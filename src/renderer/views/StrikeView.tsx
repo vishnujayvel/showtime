@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useEffect, useMemo, useCallback } from 'react'
+import { useShowContext, useShowSend } from '../machines/ShowMachineProvider'
+import type { ViewTier } from '../../shared/types'
 import { ShowVerdict } from '../components/ShowVerdict'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { BeatCounter } from '../components/BeatCounter'
@@ -22,14 +23,15 @@ interface StrikeViewProps {
 }
 
 export function StrikeView({ onShowHistory }: StrikeViewProps) {
-  const verdict = useShowStore((s) => s.verdict)
-  const acts = useShowStore((s) => s.acts)
-  const beatsLocked = useShowStore((s) => s.beatsLocked)
-  const beatThreshold = useShowStore((s) => s.beatThreshold)
-  const resetShow = useShowStore((s) => s.resetShow)
-  const setViewTier = useShowStore((s) => s.setViewTier)
-  const enterWritersRoom = useShowStore((s) => s.enterWritersRoom)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
+  const verdict = useShowContext((ctx) => ctx.verdict)
+  const acts = useShowContext((ctx) => ctx.acts)
+  const beatsLocked = useShowContext((ctx) => ctx.beatsLocked)
+  const beatThreshold = useShowContext((ctx) => ctx.beatThreshold)
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
+  const send = useShowSend()
+  const resetShow = useCallback(() => send({ type: 'RESET' }), [send])
+  const setViewTier = useCallback((tier: ViewTier) => send({ type: 'SET_VIEW_TIER', tier }), [send])
+  const enterWritersRoom = useCallback(() => send({ type: 'ENTER_WRITERS_ROOM' }), [send])
 
   // Compute derived data inline to avoid selector referential instability
   const completedActs = useMemo(() => acts.filter((a) => a.status === 'completed'), [acts])

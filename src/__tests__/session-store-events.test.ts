@@ -8,10 +8,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 // ─── Mocks (must be hoisted before imports) ───
 
-vi.mock('../renderer/stores/showStore', () => {
+vi.mock('../renderer/stores/uiStore', () => {
   const setCalendarAvailable = vi.fn()
   return {
-    useShowStore: Object.assign(
+    useUIStore: Object.assign(
       vi.fn((selector: any) => selector({ setCalendarAvailable })),
       {
         getState: vi.fn(() => ({
@@ -32,7 +32,7 @@ vi.mock('../renderer/theme', () => ({
 vi.mock('../../resources/notification.mp3', () => ({ default: '' }))
 
 import { useSessionStore } from '../renderer/stores/sessionStore'
-import { useShowStore } from '../renderer/stores/showStore'
+import { useUIStore } from '../renderer/stores/uiStore'
 import type { NormalizedEvent, EnrichedError } from '../shared/types'
 
 // ─── Helpers ───
@@ -121,7 +121,7 @@ describe('session_init', () => {
     }
     dispatch(initWithCalendar)
 
-    const { setCalendarAvailable } = (useShowStore as any).getState()
+    const { setCalendarAvailable } = (useUIStore as any).getState()
     expect(setCalendarAvailable).toHaveBeenCalledWith(true)
   })
 

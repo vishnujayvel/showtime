@@ -1,17 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
 import { ClapperboardBadge } from './ClapperboardBadge'
 import { Button } from '../ui/button'
 import { playAudioCue } from '../hooks/useAudio'
 
 export function BeatCheckModal() {
-  const beatCheckPending = useShowStore((s) => s.beatCheckPending)
-  const celebrationActive = useShowStore((s) => s.celebrationActive)
-  const lockBeat = useShowStore((s) => s.lockBeat)
-  const skipBeat = useShowStore((s) => s.skipBeat)
-  const acts = useShowStore((s) => s.acts)
-  const currentAct = useShowStore(selectCurrentAct)
+  const beatCheckPending = useShowContext((ctx) => ctx.beatCheckPending)
+  const celebrationActive = useShowContext((ctx) => ctx.celebrationActive)
+  const send = useShowSend()
+  const acts = useShowContext((ctx) => ctx.acts)
+  const currentAct = useShowSelector(showSelectors.currentAct)
 
   // Play beat-check audio when modal appears
   const prevPending = useRef(false)
@@ -31,7 +30,7 @@ export function BeatCheckModal() {
 
   const handleLockBeat = () => {
     playAudioCue('beat-locked')
-    lockBeat()
+    send({ type: 'LOCK_BEAT' })
   }
 
   return (
@@ -74,7 +73,7 @@ export function BeatCheckModal() {
 
               <span
                 className="text-sm text-txt-muted hover:text-txt-secondary cursor-pointer mt-4"
-                onClick={skipBeat}
+                onClick={() => send({ type: 'SKIP_BEAT' })}
               >
                 Not this time
               </span>

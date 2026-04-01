@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
-import { useShowStore } from '../renderer/stores/showStore'
+import { resetShowActor } from '../renderer/machines/showActor'
 
 // ─── Mock framer-motion ───
 vi.mock('framer-motion', () => ({
@@ -22,30 +22,8 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
-function resetStore() {
-  useShowStore.setState({
-    phase: 'writers_room',
-    energy: 'medium',
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
-}
-
 beforeEach(() => {
-  resetStore()
+  resetShowActor()
   cleanup()
 })
 
