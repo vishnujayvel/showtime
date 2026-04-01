@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
-import { useShowStore } from '../renderer/stores/showStore'
-import type { Act, ShowVerdict as ShowVerdictType } from '../shared/types'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
+import type { Act, ShowLineup, ShowVerdict as ShowVerdictType } from '../shared/types'
 
 // ─── Mock framer-motion to avoid animation issues in tests ───
 vi.mock('framer-motion', () => ({
@@ -26,27 +26,38 @@ function stripMotionProps(props: any) {
   return rest
 }
 
+/** Navigate actor to live phase with optional lineup config */
+function goLive(options?: {
+  acts?: Array<{ name: string; sketch: string; durationMinutes: number }>
+  beatThreshold?: number
+}) {
+  const lineup: ShowLineup = {
+    acts: options?.acts ?? [{ name: 'Test', sketch: 'Deep Work', durationMinutes: 30 }],
+    beatThreshold: options?.beatThreshold ?? 3,
+    openingNote: 'Test',
+  }
+  showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+  showActor.send({ type: 'SET_ENERGY', level: 'high' })
+  showActor.send({ type: 'SET_LINEUP', lineup })
+  showActor.send({ type: 'START_SHOW' })
+}
+
+/** Navigate to beat_check: live with act completed, beatCheckPending=true */
+function goToBeatCheck(options?: Parameters<typeof goLive>[0]) {
+  goLive(options)
+  const actId = showActor.getSnapshot().context.currentActId!
+  showActor.send({ type: 'COMPLETE_ACT', actId })
+}
+
+/** Navigate to celebrating: live with beat locked, celebrationActive=true */
+function goToCelebrating(options?: Parameters<typeof goLive>[0]) {
+  goToBeatCheck(options)
+  showActor.send({ type: 'LOCK_BEAT' })
+}
+
 // Reset store between tests
 function resetStore() {
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
+  resetShowActor()
 }
 
 beforeEach(() => {
@@ -98,50 +109,32 @@ describe('BeatCheckModal', () => {
   })
 
   it('does not render when beatCheckPending is false', () => {
-    useShowStore.setState({ beatCheckPending: false })
+    // Default state: beatCheckPending is false
     const { container } = render(<BeatCheckModal />)
     expect(container.textContent).toBe('')
   })
 
   it('renders modal when beatCheckPending is true', () => {
-    useShowStore.setState({
-      beatCheckPending: true,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
-      currentActId: 'a1',
-    })
+    goToBeatCheck()
     render(<BeatCheckModal />)
     expect(screen.getByText(/Did you have a moment of presence/)).toBeInTheDocument()
     expect(screen.getByText('Not this time')).toBeInTheDocument()
   })
 
   it('calls lockBeat when lock button clicked', () => {
-    useShowStore.setState({
-      beatCheckPending: true,
-      celebrationActive: false,
-      beatsLocked: 0,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
-      currentActId: 'a1',
-      phase: 'live',
-    })
+    goToBeatCheck()
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText(/Lock the Beat/))
-    expect(useShowStore.getState().beatsLocked).toBe(1)
-    expect(useShowStore.getState().celebrationActive).toBe(true)
+    expect(showActor.getSnapshot().context.beatsLocked).toBe(1)
+    expect(showActor.getSnapshot().context.celebrationActive).toBe(true)
   })
 
   it('calls skipBeat when "Not this time" clicked', () => {
-    useShowStore.setState({
-      beatCheckPending: true,
-      celebrationActive: false,
-      beatsLocked: 0,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: false, order: 0 }],
-      currentActId: 'a1',
-      phase: 'live',
-    })
+    goToBeatCheck()
     render(<BeatCheckModal />)
     fireEvent.click(screen.getByText('Not this time'))
-    expect(useShowStore.getState().beatsLocked).toBe(0)
-    expect(useShowStore.getState().beatCheckPending).toBe(false)
+    expect(showActor.getSnapshot().context.beatsLocked).toBe(0)
+    expect(showActor.getSnapshot().context.beatCheckPending).toBe(false)
   })
 })
 
@@ -218,41 +211,20 @@ describe('BeatCheckModal — celebration display', () => {
   })
 
   it('shows celebration text when celebrationActive is true', () => {
-    useShowStore.setState({
-      beatCheckPending: true,
-      celebrationActive: true,
-      beatsLocked: 1,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
-      currentActId: 'a1',
-      phase: 'live',
-    })
+    goToCelebrating()
     render(<BeatCheckModal />)
     expect(screen.getByText('That moment was real.')).toBeInTheDocument()
   })
 
   it('hides lock/skip buttons during celebration', () => {
-    useShowStore.setState({
-      beatCheckPending: true,
-      celebrationActive: true,
-      beatsLocked: 1,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
-      currentActId: 'a1',
-      phase: 'live',
-    })
+    goToCelebrating()
     render(<BeatCheckModal />)
     expect(screen.queryByText(/Lock the Beat/)).not.toBeInTheDocument()
     expect(screen.queryByText('Not this time')).not.toBeInTheDocument()
   })
 
   it('celebration text has animate-beat-ignite class', () => {
-    useShowStore.setState({
-      beatCheckPending: true,
-      celebrationActive: true,
-      beatsLocked: 1,
-      acts: [{ id: 'a1', name: 'Test', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0 }],
-      currentActId: 'a1',
-      phase: 'live',
-    })
+    goToCelebrating()
     render(<BeatCheckModal />)
     const celebrationEl = screen.getByText('That moment was real.')
     expect(celebrationEl.className).toContain('animate-beat-ignite')

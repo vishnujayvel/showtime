@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useShowPhase, useShowContext } from '../machines/ShowMachineProvider'
 import { getCategoryClasses } from '../lib/category-colors'
 
 export function MiniRundownStrip() {
-  const phase = useShowStore((s) => s.phase)
-  const acts = useShowStore((s) => s.acts)
-  const currentActId = useShowStore((s) => s.currentActId)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
+  const phase = useShowPhase()
+  const acts = useShowContext((ctx) => ctx.acts)
+  const currentActId = useShowContext((ctx) => ctx.currentActId)
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
 
   const [nowPercent, setNowPercent] = useState(0)
 

@@ -1,4 +1,4 @@
-import { useShowStore } from '../stores/showStore'
+import { useShowContext } from '../machines/ShowMachineProvider'
 import { cn } from '../lib/utils'
 
 interface BeatCounterProps {
@@ -21,8 +21,8 @@ export function BeatCounter({
   dimmed = false,
   justIgnitedIndex = null,
 }: BeatCounterProps) {
-  const beatsLocked = useShowStore((s) => s.beatsLocked)
-  const beatThreshold = useShowStore((s) => s.beatThreshold)
+  const beatsLocked = useShowContext((ctx) => ctx.beatsLocked)
+  const beatThreshold = useShowContext((ctx) => ctx.beatThreshold)
 
   const stars = Array.from({ length: beatThreshold }, (_, i) => i < beatsLocked)
 

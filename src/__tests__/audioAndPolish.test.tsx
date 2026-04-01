@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
-import { useShowStore } from '../renderer/stores/showStore'
+import { showActor, resetShowActor } from '../renderer/machines/showActor'
 
 // ─── Mock framer-motion ───
 vi.mock('framer-motion', () => ({
@@ -49,28 +49,24 @@ beforeAll(() => {
   }
 })
 
+/** Navigate actor to live phase with optional lineup config */
+function goLive(options?: {
+  acts?: Array<{ name: string; sketch: string; durationMinutes: number }>
+  beatThreshold?: number
+}) {
+  const lineup = {
+    acts: options?.acts ?? [{ name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 }],
+    beatThreshold: options?.beatThreshold ?? 3,
+    openingNote: 'Test',
+  }
+  showActor.send({ type: 'ENTER_WRITERS_ROOM' })
+  showActor.send({ type: 'SET_ENERGY', level: 'high' })
+  showActor.send({ type: 'SET_LINEUP', lineup })
+  showActor.send({ type: 'START_SHOW' })
+}
+
 function resetStore() {
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    showStartedAt: null,
-    verdict: null,
-    viewTier: 'expanded',
-    beatCheckPending: false,
-    celebrationActive: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
+  resetShowActor()
 }
 
 beforeEach(() => {
@@ -123,13 +119,8 @@ describe('PillView drag zones', () => {
   })
 
   it('renders drag zone and click zone when live', () => {
-    useShowStore.setState({
-      phase: 'live',
-      acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 30 * 60 * 1000,
-      viewTier: 'micro',
-    })
+    goLive({ acts: [{ name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 }] })
+    // START_SHOW sets viewTier to 'micro'
     const { container } = render(<PillView />)
     const dragZone = container.querySelector('.drag-region')
     const noDragZone = container.querySelector('.no-drag')
@@ -138,20 +129,14 @@ describe('PillView drag zones', () => {
   })
 
   it('click zone triggers expandViewTier', () => {
-    const expandSpy = vi.fn()
-    useShowStore.setState({
-      phase: 'live',
-      acts: [{ id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 30 * 60 * 1000,
-      viewTier: 'micro',
-      expandViewTier: expandSpy,
-    })
+    goLive({ acts: [{ name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 }] })
+    // START_SHOW sets viewTier to 'micro'
     const { container } = render(<PillView />)
     const noDragZone = container.querySelector('.no-drag')
     expect(noDragZone).toBeInTheDocument()
     fireEvent.click(noDragZone!)
-    expect(expandSpy).toHaveBeenCalled()
+    // After expand, viewTier should no longer be 'micro'
+    expect(showActor.getSnapshot().context.viewTier).not.toBe('micro')
   })
 })
 
@@ -166,15 +151,9 @@ describe('StrikeView celebration', () => {
   })
 
   it('renders celebration buttons', () => {
-    useShowStore.setState({
-      phase: 'strike',
-      verdict: 'SOLID_SHOW' as any,
-      acts: [{ id: 'a1', name: 'Work', sketch: 'Deep Work', durationMinutes: 30, status: 'completed', beatLocked: true, order: 0, startedAt: Date.now() - 30 * 60 * 1000, completedAt: Date.now() }],
-      beatsLocked: 1,
-      beatThreshold: 3,
-      showStartedAt: Date.now() - 60 * 60 * 1000,
-      viewTier: 'expanded',
-    })
+    // Navigate to strike: goLive → STRIKE
+    goLive({ acts: [{ name: 'Work', sketch: 'Deep Work', durationMinutes: 30 }], beatThreshold: 3 })
+    showActor.send({ type: 'STRIKE' })
     render(<StrikeView />)
     expect(screen.getByTestId('encore-btn')).toBeInTheDocument()
     expect(screen.getByTestId('plan-tomorrow-btn')).toBeInTheDocument()
@@ -182,33 +161,41 @@ describe('StrikeView celebration', () => {
   })
 
   it('shows show duration stat', () => {
-    useShowStore.setState({
-      phase: 'strike',
-      verdict: 'SOLID_SHOW' as any,
-      acts: [],
-      beatsLocked: 0,
-      beatThreshold: 3,
-      showStartedAt: Date.now() - 2 * 60 * 60 * 1000,
-      viewTier: 'expanded',
-    })
+    vi.useFakeTimers()
+    const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000
+    vi.setSystemTime(twoHoursAgo)
+    goLive({ acts: [{ name: 'Work', sketch: 'Deep Work', durationMinutes: 30 }] })
+    vi.setSystemTime(twoHoursAgo + 2 * 60 * 60 * 1000)
+    showActor.send({ type: 'STRIKE' })
     render(<StrikeView />)
     const duration = screen.getByTestId('show-duration')
     expect(duration).toBeInTheDocument()
     expect(duration.textContent).toContain('2h')
+    vi.useRealTimers()
   })
 
   it('shows standing ovation for DAY_WON', () => {
-    useShowStore.setState({
-      phase: 'strike',
-      verdict: 'DAY_WON' as any,
-      acts: [],
-      beatsLocked: 3,
+    vi.useFakeTimers()
+    // 3 acts, beatThreshold=3, lock all beats for DAY_WON
+    goLive({
+      acts: [
+        { name: 'Act 1', sketch: 'Deep Work', durationMinutes: 30 },
+        { name: 'Act 2', sketch: 'Exercise', durationMinutes: 25 },
+        { name: 'Act 3', sketch: 'Admin', durationMinutes: 20 },
+      ],
       beatThreshold: 3,
-      showStartedAt: Date.now() - 60 * 60 * 1000,
-      viewTier: 'expanded',
     })
+    // Complete and lock beat for each act
+    for (let i = 0; i < 3; i++) {
+      const actId = showActor.getSnapshot().context.currentActId!
+      showActor.send({ type: 'COMPLETE_ACT', actId })
+      showActor.send({ type: 'LOCK_BEAT' })
+      vi.advanceTimersByTime(1800) // CELEBRATION_DONE fires
+    }
+    // Now in strike with DAY_WON
     render(<StrikeView />)
     expect(screen.getByText('Standing ovation.')).toBeInTheDocument()
+    vi.useRealTimers()
   })
 })
 
@@ -217,14 +204,8 @@ describe('StrikeView celebration', () => {
 describe('Temporal context', () => {
   it('ExpandedView shows date label', async () => {
     const { ExpandedView } = await import('../renderer/views/ExpandedView')
-    useShowStore.setState({
-      phase: 'live',
-      acts: [{ id: 'a1', name: 'Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 30 * 60 * 1000,
-      showStartedAt: Date.now(),
-      viewTier: 'expanded',
-    })
+    goLive({ acts: [{ name: 'Work', sketch: 'Deep Work', durationMinutes: 30 }] })
+    showActor.send({ type: 'SET_VIEW_TIER', tier: 'expanded' })
     render(<ExpandedView />)
     const dateLabel = screen.getByTestId('date-label')
     expect(dateLabel).toBeInTheDocument()
@@ -234,14 +215,8 @@ describe('Temporal context', () => {
 
   it('ExpandedView shows started-at time', async () => {
     const { ExpandedView } = await import('../renderer/views/ExpandedView')
-    useShowStore.setState({
-      phase: 'live',
-      acts: [{ id: 'a1', name: 'Work', sketch: 'Deep Work', durationMinutes: 30, status: 'active', beatLocked: false, order: 0, startedAt: Date.now() }],
-      currentActId: 'a1',
-      timerEndAt: Date.now() + 30 * 60 * 1000,
-      showStartedAt: Date.now(),
-      viewTier: 'expanded',
-    })
+    goLive({ acts: [{ name: 'Work', sketch: 'Deep Work', durationMinutes: 30 }] })
+    showActor.send({ type: 'SET_VIEW_TIER', tier: 'expanded' })
     render(<ExpandedView />)
     const startedAt = screen.getByTestId('started-at')
     expect(startedAt).toBeInTheDocument()

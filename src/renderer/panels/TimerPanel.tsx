@@ -1,4 +1,4 @@
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
 import { useTimer } from '../hooks/useTimer'
 import { ClapperboardBadge } from '../components/ClapperboardBadge'
 import { Button } from '../ui/button'
@@ -6,12 +6,10 @@ import { Progress } from '../ui/progress'
 import { getCategoryClasses } from '../lib/category-colors'
 
 export function TimerPanel() {
-  const currentAct = useShowStore(selectCurrentAct)
-  const acts = useShowStore((s) => s.acts)
-  const completeAct = useShowStore((s) => s.completeAct)
-  const extendAct = useShowStore((s) => s.extendAct)
-  const enterIntermission = useShowStore((s) => s.enterIntermission)
-  const currentActId = useShowStore((s) => s.currentActId)
+  const currentAct = useShowSelector(showSelectors.currentAct)
+  const acts = useShowContext((ctx) => ctx.acts)
+  const currentActId = useShowContext((ctx) => ctx.currentActId)
+  const send = useShowSend()
   const { minutes, seconds, isRunning, progress } = useTimer()
 
   if (!currentAct) {
@@ -54,14 +52,14 @@ export function TimerPanel() {
       </div>
 
       <div className="flex items-center gap-3 mt-8">
-        <Button variant="neutral" size="sm" onClick={() => extendAct(15)}>
+        <Button variant="neutral" size="sm" onClick={() => send({ type: 'EXTEND_ACT', minutes: 15 })}>
           +15m
         </Button>
-        <Button variant="accent" size="sm" onClick={() => completeAct(currentActId!)}>
+        <Button variant="accent" size="sm" onClick={() => send({ type: 'COMPLETE_ACT', actId: currentActId! })}>
           End Act
         </Button>
         <button
-          onClick={enterIntermission}
+          onClick={() => send({ type: 'ENTER_INTERMISSION' })}
           className="px-4 py-2 rounded-lg bg-purple-500/10 text-purple-400 text-sm font-medium border border-purple-500/20 hover:bg-purple-500/15 transition-colors"
         >
           Rest

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { TabStatus, NormalizedEvent, EnrichedError, Message, TabState } from '../../shared/types'
 import { useThemeStore } from '../theme'
-import { useShowStore } from './showStore'
+import { useUIStore } from './uiStore'
 // @ts-expect-error Vite handles mp3 imports at build time
 import notificationSrc from '../../../resources/notification.mp3'
 
@@ -272,11 +272,11 @@ export const useSessionStore = create<State>((set, get) => ({
                 t.toLowerCase().includes('calendar')
               )
               if (hasCalendar) {
-                useShowStore.getState().setCalendarAvailable(true)
+                useUIStore.getState().setCalendarAvailable(true)
                 localStorage.setItem('showtime-gcal-connected', 'true')
               } else {
                 localStorage.removeItem('showtime-gcal-connected')
-                useShowStore.getState().setCalendarAvailable(false)
+                useUIStore.getState().setCalendarAvailable(false)
               }
             }
             if (!event.isWarmup) {

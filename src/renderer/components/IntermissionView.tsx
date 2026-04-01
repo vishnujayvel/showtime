@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore } from '../stores/showStore'
+import { useShowSend } from '../machines/ShowMachineProvider'
 import { Button } from '../ui/button'
 import { BeatCounter } from './BeatCounter'
 import { playAudioCue } from '../hooks/useAudio'
@@ -14,7 +14,7 @@ const AFFIRMATIONS = [
 ]
 
 export function IntermissionView() {
-  const exitIntermission = useShowStore((s) => s.exitIntermission)
+  const send = useShowSend()
   const [affirmation] = useState(
     () => AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]
   )
@@ -47,7 +47,7 @@ export function IntermissionView() {
         <BeatCounter dimmed={true} showLabel={true} />
       </div>
 
-      <Button variant="accent" onClick={exitIntermission}>
+      <Button variant="accent" onClick={() => send({ type: 'EXIT_INTERMISSION' })}>
         Back to the show
       </Button>
     </motion.div>

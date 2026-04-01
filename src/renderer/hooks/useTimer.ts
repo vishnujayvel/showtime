@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useShowContext, useShowSend } from '../machines/ShowMachineProvider'
 import { playAudioCue } from './useAudio'
 
 interface TimerState {
@@ -12,10 +12,10 @@ interface TimerState {
 }
 
 export function useTimer(): TimerState {
-  const timerEndAt = useShowStore((s) => s.timerEndAt)
-  const currentActId = useShowStore((s) => s.currentActId)
-  const acts = useShowStore((s) => s.acts)
-  const completeAct = useShowStore((s) => s.completeAct)
+  const timerEndAt = useShowContext((ctx) => ctx.timerEndAt)
+  const currentActId = useShowContext((ctx) => ctx.currentActId)
+  const acts = useShowContext((ctx) => ctx.acts)
+  const send = useShowSend()
 
   const currentAct = acts.find((a) => a.id === currentActId)
   const totalDurationMs = currentAct ? currentAct.durationMinutes * 60 * 1000 : 0
@@ -53,12 +53,12 @@ export function useTimer(): TimerState {
 
       if (r <= 0 && currentActId) {
         clearInterval(interval)
-        completeAct(currentActId)
+        send({ type: 'COMPLETE_ACT', actId: currentActId })
       }
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [timerEndAt, currentActId, calcRemaining, completeAct])
+  }, [timerEndAt, currentActId, calcRemaining, send])
 
   const totalSeconds = Math.ceil(remaining / 1000)
   const minutes = Math.floor(totalSeconds / 60)

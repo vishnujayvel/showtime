@@ -2,17 +2,17 @@
  * Layer 1: XState State Machine Model Tests
  *
  * Uses @xstate/graph getSimplePaths() to auto-generate ALL valid state paths,
- * then drives the real Zustand showStore through each path verifying:
+ * then drives the real XState showActor through each path verifying:
  * - Phase matches after each transition
- * - Store invariants hold at every step
+ * - Actor invariants hold at every step
  * - View tier is appropriate for the phase
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { getSimplePaths } from '@xstate/graph'
-import { createActor } from 'xstate'
+import { showActor, resetShowActor } from '../../renderer/machines/showActor'
+import { getPhaseFromState } from '../../renderer/machines/showMachine'
 import { showMachine } from './show-machine'
 import type { ShowMachineEvent } from './show-machine'
-import { useShowStore } from '../../renderer/stores/showStore'
 import type { ShowLineup, ShowPhase, ViewTier } from '../../shared/types'
 
 // ─── Helpers ───
@@ -26,129 +26,113 @@ const sampleLineup: ShowLineup = {
   openingNote: 'Test lineup',
 }
 
-function resetStore() {
-  useShowStore.setState({
-    phase: 'no_show',
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    claudeSessionId: null,
-    showDate: new Date().toISOString().slice(0, 10),
-    verdict: null,
-    viewTier: 'expanded' as ViewTier,
-    beatCheckPending: false,
-    celebrationActive: false,
-    coldOpenActive: false,
-    goingLiveActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-  })
+/** Helper to get current phase from the actor */
+function phase(): ShowPhase {
+  return getPhaseFromState(showActor.getSnapshot().value as Record<string, unknown>)
 }
 
-/** Apply a machine event to the real Zustand store */
-function applyEvent(event: ShowMachineEvent): void {
-  const store = useShowStore.getState()
+/** Helper to get actor context */
+function ctx() {
+  return showActor.getSnapshot().context
+}
 
+/** Apply a machine event to the real XState actor */
+function applyEvent(event: ShowMachineEvent): void {
   switch (event.type) {
     case 'ENTER_WRITERS_ROOM':
-      store.enterWritersRoom()
+      showActor.send({ type: 'ENTER_WRITERS_ROOM' })
       break
 
     case 'SET_LINEUP':
-      store.setLineup(sampleLineup)
+      showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       break
 
     case 'START_SHOW': {
       // Ensure lineup is set before starting
-      const s = useShowStore.getState()
-      if (s.acts.length === 0) {
-        s.setLineup(sampleLineup)
+      if (ctx().acts.length === 0) {
+        showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       }
-      useShowStore.getState().startShow()
+      showActor.send({ type: 'START_SHOW' })
       break
     }
 
     case 'COMPLETE_ACT': {
-      const s = useShowStore.getState()
-      if (s.currentActId) {
-        s.completeAct(s.currentActId)
+      const actId = ctx().currentActId
+      if (actId) {
+        showActor.send({ type: 'COMPLETE_ACT', actId })
         // Skip beat (don't wait for celebration timeout)
-        useShowStore.getState().skipBeat()
+        showActor.send({ type: 'SKIP_BEAT' })
       }
       break
     }
 
     case 'ENTER_INTERMISSION':
-      store.enterIntermission()
+      showActor.send({ type: 'ENTER_INTERMISSION' })
       break
 
     case 'EXIT_INTERMISSION':
-      store.exitIntermission()
+      showActor.send({ type: 'EXIT_INTERMISSION' })
       break
 
     case 'ENTER_DIRECTOR':
-      store.enterDirector()
+      showActor.send({ type: 'ENTER_DIRECTOR' })
       break
 
     case 'EXIT_DIRECTOR':
-      store.exitDirector()
+      showActor.send({ type: 'EXIT_DIRECTOR' })
       break
 
     case 'CALL_EARLY':
-      store.callShowEarly()
+      showActor.send({ type: 'CALL_SHOW_EARLY' })
       break
 
     case 'SKIP_TO_NEXT':
-      store.skipToNextAct()
+      showActor.send({ type: 'SKIP_TO_NEXT' })
       break
 
     case 'STRIKE':
-      store.strikeTheStage()
+      showActor.send({ type: 'STRIKE' })
       break
 
     case 'RESET':
-      store.resetShow()
+      showActor.send({ type: 'RESET' })
       break
   }
 }
 
-/** Verify store invariants that must hold at every state */
+/** Verify actor invariants that must hold at every state */
 function assertInvariants() {
-  const s = useShowStore.getState()
+  const p = phase()
+  const c = ctx()
   const validPhases: ShowPhase[] = ['no_show', 'writers_room', 'live', 'intermission', 'director', 'strike']
   const validTiers: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
 
   // Phase is always valid
-  expect(validPhases).toContain(s.phase)
+  expect(validPhases).toContain(p)
 
   // ViewTier is always valid
-  expect(validTiers).toContain(s.viewTier)
+  expect(validTiers).toContain(c.viewTier)
 
   // Beats invariant
-  expect(s.beatsLocked).toBeGreaterThanOrEqual(0)
-  expect(s.beatsLocked).toBeLessThanOrEqual(s.beatThreshold)
+  expect(c.beatsLocked).toBeGreaterThanOrEqual(0)
+  expect(c.beatsLocked).toBeLessThanOrEqual(c.beatThreshold)
 
   // Acts array is never null/undefined
-  expect(Array.isArray(s.acts)).toBe(true)
+  expect(Array.isArray(c.acts)).toBe(true)
 
   // If live, at most one act is active
-  if (s.phase === 'live') {
-    const activeActs = s.acts.filter((a) => a.status === 'active')
+  if (p === 'live') {
+    const activeActs = c.acts.filter((a) => a.status === 'active')
     expect(activeActs.length).toBeLessThanOrEqual(1)
   }
 
   // showStartedAt is set when not in no_show (unless we just reset)
-  if (s.phase === 'live' || s.phase === 'intermission' || s.phase === 'director') {
-    expect(s.showStartedAt).not.toBeNull()
+  if (p === 'live' || p === 'intermission' || p === 'director') {
+    expect(c.showStartedAt).not.toBeNull()
   }
 }
 
-// Map XState state value to expected Zustand phase
+// Map XState state value to expected phase
 function xstateToPhase(stateValue: string): ShowPhase {
   return stateValue as ShowPhase
 }
@@ -157,7 +141,7 @@ function xstateToPhase(stateValue: string): ShowPhase {
 
 describe('Layer 1: XState State Machine Path Tests', () => {
   beforeEach(() => {
-    resetStore()
+    resetShowActor()
     vi.useFakeTimers()
   })
 
@@ -180,7 +164,7 @@ describe('Layer 1: XState State Machine Path Tests', () => {
       : JSON.stringify(path.state.value)
 
     it(`reaches ${stateValue} via [${path.steps.map((s) => s.event.type).join(' → ')}]`, () => {
-      resetStore()
+      resetShowActor()
 
       for (const step of path.steps) {
         applyEvent(step.event as ShowMachineEvent)
@@ -188,10 +172,10 @@ describe('Layer 1: XState State Machine Path Tests', () => {
       }
 
       // Final state should match (some transitions may cause auto-advance)
-      const finalPhase = useShowStore.getState().phase
+      const finalPhase = phase()
       const expectedPhase = xstateToPhase(stateValue)
 
-      // For paths ending in 'live', the store might auto-advance to strike
+      // For paths ending in 'live', the actor might auto-advance to strike
       // if all acts are completed. Accept both.
       if (expectedPhase === 'live') {
         expect(['live', 'strike']).toContain(finalPhase)
@@ -206,33 +190,30 @@ describe('Layer 1: XState State Machine Path Tests', () => {
   describe('transition invariants', () => {
     it('no_show → writers_room sets phase and writersRoomStep', () => {
       applyEvent({ type: 'ENTER_WRITERS_ROOM' })
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('writers_room')
-      expect(s.writersRoomStep).toBe('energy')
-      expect(s.writersRoomEnteredAt).not.toBeNull()
+      expect(phase()).toBe('writers_room')
+      expect(ctx().writersRoomStep).toBe('energy')
+      expect(ctx().writersRoomEnteredAt).not.toBeNull()
     })
 
     it('writers_room → live sets first act as active', () => {
       applyEvent({ type: 'ENTER_WRITERS_ROOM' })
       applyEvent({ type: 'START_SHOW' })
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('live')
-      expect(s.currentActId).not.toBeNull()
-      expect(s.acts.filter((a) => a.status === 'active')).toHaveLength(1)
-      expect(s.showStartedAt).not.toBeNull()
+      expect(phase()).toBe('live')
+      expect(ctx().currentActId).not.toBeNull()
+      expect(ctx().acts.filter((a) => a.status === 'active')).toHaveLength(1)
+      expect(ctx().showStartedAt).not.toBeNull()
     })
 
     it('live → intermission preserves timer remaining', () => {
       applyEvent({ type: 'ENTER_WRITERS_ROOM' })
       applyEvent({ type: 'START_SHOW' })
-      const timerBefore = useShowStore.getState().timerEndAt
+      const timerBefore = ctx().timerEndAt
       expect(timerBefore).not.toBeNull()
 
       applyEvent({ type: 'ENTER_INTERMISSION' })
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('intermission')
-      expect(s.timerEndAt).toBeNull()
-      expect(s.timerPausedRemaining).not.toBeNull()
+      expect(phase()).toBe('intermission')
+      expect(ctx().timerEndAt).toBeNull()
+      expect(ctx().timerPausedRemaining).not.toBeNull()
     })
 
     it('intermission → live restores timer', () => {
@@ -240,14 +221,13 @@ describe('Layer 1: XState State Machine Path Tests', () => {
       applyEvent({ type: 'START_SHOW' })
       applyEvent({ type: 'ENTER_INTERMISSION' })
 
-      const remaining = useShowStore.getState().timerPausedRemaining
+      const remaining = ctx().timerPausedRemaining
       expect(remaining).not.toBeNull()
 
       applyEvent({ type: 'EXIT_INTERMISSION' })
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('live')
-      expect(s.timerEndAt).not.toBeNull()
-      expect(s.timerPausedRemaining).toBeNull()
+      expect(phase()).toBe('live')
+      expect(ctx().timerEndAt).not.toBeNull()
+      expect(ctx().timerPausedRemaining).toBeNull()
     })
 
     it('director → callEarly goes to strike with SHOW_CALLED_EARLY verdict', () => {
@@ -256,24 +236,22 @@ describe('Layer 1: XState State Machine Path Tests', () => {
       applyEvent({ type: 'ENTER_DIRECTOR' })
       applyEvent({ type: 'CALL_EARLY' })
 
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('strike')
-      expect(s.verdict).toBe('SHOW_CALLED_EARLY')
+      expect(phase()).toBe('strike')
+      expect(ctx().verdict).toBe('SHOW_CALLED_EARLY')
     })
 
     it('strike → reset returns to no_show with clean state', () => {
       applyEvent({ type: 'ENTER_WRITERS_ROOM' })
       applyEvent({ type: 'START_SHOW' })
       applyEvent({ type: 'STRIKE' })
-      expect(useShowStore.getState().phase).toBe('strike')
+      expect(phase()).toBe('strike')
 
       applyEvent({ type: 'RESET' })
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('no_show')
-      expect(s.acts).toHaveLength(0)
-      expect(s.verdict).toBeNull()
-      expect(s.currentActId).toBeNull()
-      expect(s.timerEndAt).toBeNull()
+      expect(phase()).toBe('no_show')
+      expect(ctx().acts).toHaveLength(0)
+      expect(ctx().verdict).toBeNull()
+      expect(ctx().currentActId).toBeNull()
+      expect(ctx().timerEndAt).toBeNull()
     })
 
     it('completing all acts triggers strike with appropriate verdict', () => {
@@ -285,9 +263,8 @@ describe('Layer 1: XState State Machine Path Tests', () => {
       // Complete second act (last one)
       applyEvent({ type: 'COMPLETE_ACT' })
 
-      const s = useShowStore.getState()
-      expect(s.phase).toBe('strike')
-      expect(s.verdict).not.toBeNull()
+      expect(phase()).toBe('strike')
+      expect(ctx().verdict).not.toBeNull()
     })
   })
 })

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useShowStore } from '../stores/showStore'
+import { useShowContext, useShowPhase, useShowSend } from '../machines/ShowMachineProvider'
 import { ActCard } from '../components/ActCard'
 import { motion } from 'framer-motion'
 import type { Act } from '../../shared/types'
@@ -59,9 +59,8 @@ function computeProjectedTimes(acts: Act[], showStartedAt: number | null) {
 }
 
 function FullLineupPanel() {
-  const acts = useShowStore((s) => s.acts)
-  const reorderAct = useShowStore((s) => s.reorderAct)
-  const removeAct = useShowStore((s) => s.removeAct)
+  const acts = useShowContext((ctx) => ctx.acts)
+  const send = useShowSend()
 
   const sorted = [...acts].sort((a, b) => a.order - b.order)
 
@@ -83,8 +82,8 @@ function FullLineupPanel() {
             act={act}
             variant="full"
             actNumber={index + 1}
-            onReorder={(direction) => reorderAct(act.id, direction)}
-            onRemove={() => removeAct(act.id)}
+            onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
+            onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
           />
         </motion.div>
       ))}
@@ -93,12 +92,10 @@ function FullLineupPanel() {
 }
 
 function SidebarLineupPanel() {
-  const acts = useShowStore((s) => s.acts)
-  const phase = useShowStore((s) => s.phase)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
-  const reorderAct = useShowStore((s) => s.reorderAct)
-  const removeAct = useShowStore((s) => s.removeAct)
-  const addAct = useShowStore((s) => s.addAct)
+  const acts = useShowContext((ctx) => ctx.acts)
+  const phase = useShowPhase()
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
+  const send = useShowSend()
 
   const [encoreOpen, setEncoreOpen] = useState(false)
   const [encoreName, setEncoreName] = useState('')
@@ -111,7 +108,7 @@ function SidebarLineupPanel() {
 
   const handleEncoreSubmit = () => {
     if (!encoreName.trim()) return
-    addAct(encoreName.trim(), encoreSketch.trim() || encoreName.trim(), parseInt(encoreDuration) || 15)
+    send({ type: 'ADD_ACT', name: encoreName.trim(), sketch: encoreSketch.trim() || encoreName.trim(), durationMinutes: parseInt(encoreDuration) || 15 })
     setEncoreName('')
     setEncoreSketch('')
     setEncoreDuration('15')
@@ -150,8 +147,8 @@ function SidebarLineupPanel() {
             timeLabel={timeLabel}
             timeDrifted={drifted}
             plannedTimeLabel={drifted && times ? formatTime(times.planned) : undefined}
-            onReorder={canReorder ? (direction) => reorderAct(act.id, direction) : undefined}
-            onRemove={canRemove ? () => removeAct(act.id) : undefined}
+            onReorder={canReorder ? (direction) => send({ type: 'REORDER_ACT', actId: act.id, direction }) : undefined}
+            onRemove={canRemove ? () => send({ type: 'REMOVE_ACT', actId: act.id }) : undefined}
           />
         )
       })}

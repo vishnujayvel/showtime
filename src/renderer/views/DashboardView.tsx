@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { useShowStore, selectCurrentAct } from '../stores/showStore'
+import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
+import { expandTier, collapseTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
@@ -21,13 +22,15 @@ function formatStartTime(timestamp: number): string {
 }
 
 export function DashboardView() {
-  const phase = useShowStore((s) => s.phase)
-  const acts = useShowStore((s) => s.acts)
-  const currentAct = useShowStore(selectCurrentAct)
-  const collapseViewTier = useShowStore((s) => s.collapseViewTier)
-  const expandViewTier = useShowStore((s) => s.expandViewTier)
-  const enterDirector = useShowStore((s) => s.enterDirector)
-  const showStartedAt = useShowStore((s) => s.showStartedAt)
+  const phase = useShowPhase()
+  const acts = useShowContext((ctx) => ctx.acts)
+  const currentAct = useShowSelector(showSelectors.currentAct)
+  const viewTier = useShowContext((ctx) => ctx.viewTier)
+  const send = useShowSend()
+  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
+  const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
+  const enterDirector = useCallback(() => send({ type: 'ENTER_DIRECTOR' }), [send])
+  const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
   const { minutes, seconds, isRunning, progress } = useTimer()
 
   const dateLabel = useMemo(formatDateLabel, [])
