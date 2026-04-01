@@ -126,6 +126,7 @@ export function DashboardView() {
             <div className="w-full max-w-[280px] h-1 bg-surface-hover rounded-full mt-2 overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all"
+                // dynamic: progress bar width is computed from act timer state
                 style={{ width: `${Math.round(progress * 100)}%` }}
               />
             </div>
