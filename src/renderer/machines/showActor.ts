@@ -30,9 +30,18 @@ const VALID_PHASES = new Set([
 /** Valid animation region states. */
 const VALID_ANIMATIONS = new Set(['idle', 'cold_open', 'going_live'])
 
+/** Valid nested substates for phases that have child states. */
+const VALID_SUBSTATES: Record<string, Set<string>> = {
+  writers_room: new Set(['energy', 'plan', 'conversation', 'lineup_ready']),
+  live: new Set(['act_active', 'beat_check', 'celebrating']),
+  intermission: new Set(['resting', 'breathing_pause']),
+}
+
 /**
  * Check that a persisted stateValue has keys matching the current machine.
  * The machine is parallel with `phase` and `animation` regions.
+ * Also validates nested substates to prevent resolveState() from throwing
+ * on stale/removed substates after schema changes.
  */
 function isValidStateValue(stateValue: unknown): boolean {
   if (typeof stateValue !== 'object' || stateValue === null) return false
@@ -45,7 +54,14 @@ function isValidStateValue(stateValue: unknown): boolean {
   if (typeof phase === 'string') return VALID_PHASES.has(phase)
   if (typeof phase === 'object' && phase !== null) {
     const phaseKey = Object.keys(phase)[0]
-    return VALID_PHASES.has(phaseKey)
+    if (!VALID_PHASES.has(phaseKey)) return false
+    // Validate nested substate if the phase has defined substates
+    const validSubs = VALID_SUBSTATES[phaseKey]
+    if (validSubs) {
+      const subValue = (phase as Record<string, unknown>)[phaseKey]
+      if (typeof subValue !== 'string' || !validSubs.has(subValue)) return false
+    }
+    return true
   }
   return false
 }
