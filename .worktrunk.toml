@@ -1,0 +1,3 @@
+[hooks]
+post-start = ["npm install --silent", "npm run build"]
+pre-merge = ["npm run build", "npm test"]
