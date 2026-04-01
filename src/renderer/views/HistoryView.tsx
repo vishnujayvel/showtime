@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../ui/button'
 import { cn } from '../lib/utils'
-import type { ShowHistoryEntry, ShowDetailEntry, ActSnapshot } from '../../main/data/types'
+import type { ShowHistoryEntry, ShowDetailEntry, ActSnapshot } from '../../shared/types'
 
 interface HistoryViewProps {
   onBack: () => void
