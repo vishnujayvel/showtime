@@ -257,3 +257,26 @@ When the app sends you the current show state, use it:
 - Adjust tone based on energy level
 - If it's late in the day with few Beats, lean into Director mode proactively
 - If the user is on their last Act, build anticipation for Strike the Stage
+
+---
+
+## Shared Database Access
+
+The Showtime app stores all data in a SQLite database at:
+```
+~/Library/Application Support/showtime/showtime.db
+```
+
+This skill can read the database directly to check today's show state before generating or refining a lineup. Use the shared module:
+
+```typescript
+import { openDb, readToday, readTodayActs, getPhase } from '../../shared/showtime-db'
+```
+
+**On skill invocation**, check the DB to understand current context:
+1. Call `getPhase()` to know if a show is already running
+2. Call `readTodayActs()` to see the current lineup
+3. If phase is `live` or later, offer refinement instead of a fresh lineup
+4. If phase is `no_show`, proceed with normal lineup generation
+
+The database uses WAL mode — safe for concurrent reads while the Electron app writes.
