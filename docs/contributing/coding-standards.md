@@ -97,21 +97,27 @@ Showtime is a macOS-native Electron app. These window configuration rules are ma
 <div style={{ width: 560, WebkitAppRegion: 'drag' }}>
 ```
 
-## State Management — Zustand Only
+## State Management — XState + Zustand
 
-All global state uses **Zustand**. Do not use React Context for state management.
-
-- `showStore` — The primary store. Manages show phase, acts, beats, energy level, and timer state.
+Show phase state uses **XState v5**. The singleton `showActor` manages phases, acts, beats, energy, timer, and verdict. Non-phase UI state (calendar, chat sessions) uses **Zustand**.
 
 ```tsx
-import { useShowStore } from '@/stores/showStore'
+// Phase state — always use XState hooks
+import { useShowPhase, useShowContext, useShowSend } from '../machines/ShowMachineProvider'
 
 function MyComponent() {
-  const phase = useShowStore((s) => s.phase)
-  const acts = useShowStore((s) => s.acts)
+  const phase = useShowPhase()
+  const acts = useShowContext(ctx => ctx.acts)
+  const send = useShowSend()
   // ...
 }
+
+// Non-phase UI state — Zustand stores
+import { useUIStore } from '../stores/uiStore'
+const calendarEvents = useUIStore(s => s.calendarEvents)
 ```
+
+**Do NOT use Zustand for phase state.** All show lifecycle transitions go through the XState machine.
 
 ## IPC Bridge — Strict Typing
 

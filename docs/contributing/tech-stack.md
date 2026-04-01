@@ -12,7 +12,8 @@ Showtime is an **AI-native macOS desktop app** — built with Claude Code as a f
 | **Styling** | Tailwind CSS v4 (CSS-first) | ^4.2.1 |
 | **Components** | shadcn/ui + Radix UI | latest |
 | **Animation** | Framer Motion (spring physics) | ^12.35.1 |
-| **State** | Zustand | ^5.0.0 |
+| **State (phase)** | XState v5 | ^5.0.0 |
+| **State (UI)** | Zustand | ^5.0.0 |
 | **Database** | SQLite via better-sqlite3 + Drizzle ORM | ^12.8.0 / ^0.45.1 |
 | **AI Runtime** | Claude Code subprocess (node-pty) | CLI v2.1+ |
 | **Unit Tests** | Vitest + Testing Library | ^4.1.0 |
@@ -157,14 +158,50 @@ Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightF
 
 ## State Management
 
-### Zustand (^5.0.0)
+### XState v5 — Show Phase Machine
 
-Two stores, no React Context for state:
+All show phase state is managed by an **XState v5 state machine**. The singleton `showActor` is the sole source of truth for phases, acts, beats, energy, timer, and verdict.
+
+| File | Purpose |
+|------|---------|
+| `machines/showMachine.ts` | XState v5 machine definition — 6 top-level phases, nested substates, guarded transitions |
+| `machines/showActor.ts` | Singleton actor instance + side effects (localStorage persistence, SQLite sync, notifications) |
+| `machines/ShowMachineProvider.tsx` | React context + hooks for reading state and dispatching events |
+
+**How to read phase state in components:**
+
+```tsx
+import { useShowPhase, useShowContext, useShowSend } from '../machines/ShowMachineProvider'
+
+const phase = useShowPhase()
+const acts = useShowContext(ctx => ctx.acts)
+const send = useShowSend()
+send({ type: 'START_SHOW' })
+```
+
+**Available hooks:** `useShowPhase`, `useShowContext`, `useShowSend`, `useShowSelector`, `useShowActor`, `useWritersRoomStep`, `useColdOpenActive`, `useGoingLiveActive`
+
+#### State Persistence
+
+The show actor persists state to **localStorage** (key: `showtime-show-state`) on every state change. On app startup, `showActor.ts` hydrates from localStorage if the saved show is from today. Transient keys (`beatCheckPending`, `celebrationActive`) are excluded from persistence.
+
+During active phases (live, intermission, director, strike), the actor also syncs to **SQLite** via `window.clui.dataFlush()` for durable cross-session persistence.
+
+### Zustand — Non-Phase UI State
+
+Zustand stores handle state that is **not** part of the show phase lifecycle:
 
 | Store | Purpose |
 |-------|---------|
-| `showStore` | Show phase machine, acts, beats, energy, timer, verdict, lineup |
-| `sessionStore` | Claude Code tab sessions, streaming state, error tracking |
+| `uiStore` | Calendar metadata, calendar events, Claude session ID |
+| `sessionStore` | Claude Code tab sessions, streaming state, chat messages |
+
+```tsx
+import { useUIStore } from '../stores/uiStore'
+const calendarEvents = useUIStore(s => s.calendarEvents)
+```
+
+**Do NOT use Zustand for phase state.** All show phases, acts, beats, timers, and transitions go through the XState machine.
 
 ---
 
@@ -292,7 +329,7 @@ These are enforced by CLAUDE.md, CodeRabbit, and pre-commit hooks:
 
 1. **No inline styles** — 100% Tailwind utility classes
 2. **Spring physics only** — No linear CSS transitions or Framer Motion durations
-3. **Zustand only** — No React Context for state management
+3. **XState for phase state** — All show lifecycle state goes through the XState machine; Zustand handles only non-phase UI state (calendar, chat sessions)
 4. **Typed IPC** — All channels via `IPC` enum, all payloads typed in `shared/types.ts`
 5. **E2E coverage** — Every feature must have Playwright tests
 6. **macOS native feel** — `frame: false`, no vibrancy, CSS backgrounds, content-tight sizing
