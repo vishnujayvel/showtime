@@ -1,0 +1,90 @@
+name: Bug Report
+description: Report a bug — screenshot is required
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! A screenshot or screen recording is **mandatory** — bugs without visual evidence will not be worked on.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly. What did you see vs what you expected?
+      placeholder: "When I minimize to pill view during a live act, the pill renders empty..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot or screen recording
+      description: |
+        Drag and drop a screenshot or video here. This field is **required**.
+        For Showtime bugs, use Cmd+Shift+4 to capture the window.
+      placeholder: "Drag image here or paste from clipboard"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What were you doing when it happened?
+      placeholder: |
+        1. Started a show with 5 acts
+        2. Minimized to pill view during Act 3
+        3. Pill shows empty — no act name or timer
+    validations:
+      required: false
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Which phase were you in?
+      options:
+        - Dark Studio (no show)
+        - Writer's Room
+        - Cold Open / Going Live
+        - Live (ON AIR)
+        - Intermission
+        - Director Mode
+        - Strike
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: view
+    attributes:
+      label: Which view?
+      options:
+        - Pill (minimized)
+        - Compact
+        - Dashboard
+        - Expanded
+        - Not sure
+    validations:
+      required: false
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      options:
+        - Every time
+        - Often (more than half the time)
+        - Sometimes
+        - Rarely (happened once or twice)
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else? Error messages, what you tried, etc.
+    validations:
+      required: false
