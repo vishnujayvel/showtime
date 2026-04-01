@@ -387,6 +387,8 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'high' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const snap = actor.getSnapshot()
@@ -448,6 +450,8 @@ describe('state persistence', () => {
     it('accepts valid nested state values', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       actor.send({ type: 'START_SHOW' })
 
@@ -470,6 +474,8 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'high' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
+      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const snap = actor.getSnapshot()
