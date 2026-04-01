@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 # Hook: act-duration-bounds
 # Event: Stop (after assistant response)
-# Validates each act's durationMinutes is between 10 and 120 (inclusive).
+# Validates each act's durationMinutes is between 15 and 120 (inclusive).
+#
+# SKILL.md recommends 45-90 min acts as the sweet spot, but this hook uses a
+# deliberately lenient range (15-120) as a guardrail, not strict enforcement:
+#   - 15 min minimum: allows short acts on low-energy/recovery days
+#   - 120 min maximum: prevents marathon acts that defeat the time-boxing model
+# The Director (Claude) should still aim for 45-90 min per SKILL.md guidance.
 
 set -euo pipefail
 
@@ -41,14 +47,14 @@ for i in $(seq 0 $((ACTS_COUNT - 1))); do
     continue  # Let validate-lineup.sh handle missing fields
   fi
 
-  OUT_OF_BOUNDS=$(jq -n --argjson d "$DURATION" 'if $d < 10 or $d > 120 then "yes" else "no" end' | tr -d '"')
+  OUT_OF_BOUNDS=$(jq -n --argjson d "$DURATION" 'if $d < 15 or $d > 120 then "yes" else "no" end' | tr -d '"')
   if [ "$OUT_OF_BOUNDS" = "yes" ]; then
-    WARNINGS="${WARNINGS}\n  - \"${ACT_NAME}\": ${DURATION} min (must be 10-120)"
+    WARNINGS="${WARNINGS}\n  - \"${ACT_NAME}\": ${DURATION} min (must be 15-120)"
   fi
 done
 
 if [ -n "$WARNINGS" ]; then
-  printf "⚠️ ACT DURATION OUT OF BOUNDS:${WARNINGS}\n\nEach act should be between 10 and 120 minutes. Please adjust.\n" >&2
+  printf "⚠️ ACT DURATION OUT OF BOUNDS:${WARNINGS}\n\nEach act should be between 15 and 120 minutes. Recommended: 45-90 min per SKILL.md.\n" >&2
   exit 2
 fi
 
