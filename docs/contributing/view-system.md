@@ -63,7 +63,7 @@ Users switch tiers by:
 
 ## Window Sizing
 
-The main process resizes the `BrowserWindow` to match the active view. `App.tsx` calls `window.clui.setViewMode(mode)` whenever phase, tier, or overlay state changes.
+The main process resizes the `BrowserWindow` to match the active view. `App.tsx` calls `window.showtime.setViewMode(mode)` whenever phase, tier, or overlay state changes.
 
 ```ts
 function tierToViewMode(tier: ViewTier, phase: ShowPhase): ViewMode {

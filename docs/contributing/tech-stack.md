@@ -12,7 +12,8 @@ Showtime is an **AI-native macOS desktop app** — built with Claude Code as a f
 | **Styling** | Tailwind CSS v4 (CSS-first) | ^4.2.1 |
 | **Components** | shadcn/ui + Radix UI | latest |
 | **Animation** | Framer Motion (spring physics) | ^12.35.1 |
-| **State** | Zustand | ^5.0.0 |
+| **State (phase)** | XState v5 | ^5.0.0 |
+| **State (UI)** | Zustand | ^5.0.0 |
 | **Database** | SQLite via better-sqlite3 + Drizzle ORM | ^12.8.0 / ^0.45.1 |
 | **AI Runtime** | Claude Code subprocess (node-pty) | CLI v2.1+ |
 | **Unit Tests** | Vitest + Testing Library | ^4.1.0 |
@@ -96,7 +97,7 @@ new BrowserWindow({
 All renderer ↔ main communication goes through a typed `contextBridge` API:
 
 ```
-Renderer → window.clui.prompt() → ipcRenderer.invoke(IPC.PROMPT) → Main
+Renderer → window.showtime.prompt() → ipcRenderer.invoke(IPC.PROMPT) → Main
 Main → ipcMain.handle(IPC.PROMPT) → ControlPlane → Claude subprocess
 ```
 
@@ -157,14 +158,35 @@ Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightF
 
 ## State Management
 
-### Zustand (^5.0.0)
+### XState v5 — Show Phase Machine
 
-Two stores, no React Context for state:
+The **sole source of truth** for all show phase state is an XState v5 state machine (`showMachine`). A singleton `showActor` manages side effects (SQLite sync, notifications, celebration timeout). Components access state via React context hooks from `ShowMachineProvider`.
+
+| Module | Purpose |
+|--------|---------|
+| `showMachine.ts` | XState v5 machine: 6 top-level phases, nested substates, guarded transitions |
+| `showActor.ts` | Singleton actor instance + side effects |
+| `ShowMachineProvider.tsx` | React context + hooks (`useShowPhase`, `useShowContext`, `useShowSend`) |
+
+```tsx
+// Reading phase state in components
+import { useShowPhase, useShowContext, useShowSend } from '../machines/ShowMachineProvider'
+const phase = useShowPhase()
+const acts = useShowContext(ctx => ctx.acts)
+const send = useShowSend()
+send({ type: 'START_SHOW' })
+```
+
+### Zustand — Non-Phase UI State
+
+Zustand is used only for UI state that does not belong to the show phase lifecycle:
 
 | Store | Purpose |
 |-------|---------|
-| `showStore` | Show phase machine, acts, beats, energy, timer, verdict, lineup |
+| `uiStore` | Calendar cache, Claude session ID, view preferences |
 | `sessionStore` | Claude Code tab sessions, streaming state, error tracking |
+
+**Do NOT use Zustand for phase state.** All show phases, acts, beats, timers, and transitions go through the XState machine.
 
 ---
 
@@ -206,7 +228,7 @@ npm run test:watch # Watch mode
 - **@testing-library/jest-dom** (^6.9.1) — DOM assertion matchers
 - **fast-check** (^4.6.0) — Property-based testing for state machine invariants
 
-Test setup mocks the entire `window.clui` preload API so hooks and stores can be tested in isolation.
+Test setup mocks the entire `window.showtime` preload API so hooks and stores can be tested in isolation.
 
 ### E2E Tests — Playwright (^1.58.2)
 
@@ -292,7 +314,7 @@ These are enforced by CLAUDE.md, CodeRabbit, and pre-commit hooks:
 
 1. **No inline styles** — 100% Tailwind utility classes
 2. **Spring physics only** — No linear CSS transitions or Framer Motion durations
-3. **Zustand only** — No React Context for state management
+3. **XState for phase state** — Show lifecycle in XState v5 machine; Zustand for non-phase UI state only
 4. **Typed IPC** — All channels via `IPC` enum, all payloads typed in `shared/types.ts`
 5. **E2E coverage** — Every feature must have Playwright tests
 6. **macOS native feel** — `frame: false`, no vibrancy, CSS backgrounds, content-tight sizing

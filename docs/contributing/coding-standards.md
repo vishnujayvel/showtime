@@ -115,7 +115,7 @@ function MyComponent() {
 
 ## IPC Bridge — Strict Typing
 
-The renderer process communicates with the main process **only** through the typed `window.clui` API, defined in `preload/index.ts` via Electron's `contextBridge`.
+The renderer process communicates with the main process **only** through the typed `window.showtime` API, defined in `preload/index.ts` via Electron's `contextBridge`.
 
 - Never import `electron`, `ipcRenderer`, or any Node.js module in renderer code.
 - All IPC methods are typed end-to-end.
@@ -123,7 +123,7 @@ The renderer process communicates with the main process **only** through the typ
 
 ```tsx
 // RIGHT — use the typed bridge
-const data = await window.clui.getData()
+const data = await window.showtime.getData()
 
 // WRONG — direct Node.js imports in renderer
 import { ipcRenderer } from 'electron'

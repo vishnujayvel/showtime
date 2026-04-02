@@ -38,7 +38,8 @@ Playwright E2E tests launch the full Electron app. Run `npm run build` before `n
 |-------|-----------|
 | Shell | Electron 35 + electron-vite |
 | Renderer | React 19 + TypeScript |
-| State | Zustand |
+| State (phase) | XState v5 |
+| State (UI) | Zustand |
 | Styling | Tailwind CSS v4 (CSS-first config) |
 | Components | shadcn/ui + Radix UI |
 | Animations | Framer Motion (spring physics) |
@@ -55,13 +56,14 @@ Showtime (Electron App)
 │   ├── window management (NSPanel, always-on-top)
 │   └── IPC handlers
 ├── Preload (contextBridge)
-│   └── window.clui API (typed IPC bridge)
+│   └── window.showtime API (typed IPC bridge)
 └── Renderer (React 19)
     ├── views/        12 views — see View System docs
     ├── panels/       TimerPanel, LineupPanel
     ├── components/   LineupCard, ChatMessage, ActCard,
     │                 BeatCheckModal, MiniRundownStrip, etc.
-    ├── stores/       showStore, sessionStore (Zustand)
+    ├── machines/     showMachine, showActor (XState v5)
+    ├── stores/       uiStore, sessionStore (Zustand)
     ├── hooks/        useTimer, useClaudeEvents, etc.
     └── ui/           shadcn/ui components (Button, Dialog, Card)
 ```
@@ -72,7 +74,7 @@ Owns window management and system integration. Creates frameless, transparent `B
 
 ### Preload / IPC Bridge
 
-The renderer talks to main **only** through the typed `window.clui` API in `preload/index.ts`. Hard boundary:
+The renderer talks to main **only** through the typed `window.showtime` API in `preload/index.ts`. Hard boundary:
 
 - The preload script uses Electron's `contextBridge` to expose a strict, typed interface.
 - The renderer never imports Node.js modules directly.
@@ -80,7 +82,7 @@ The renderer talks to main **only** through the typed `window.clui` API in `prel
 
 ```ts
 // Renderer code — always go through the bridge
-window.clui.someMethod(args)
+window.showtime.someMethod(args)
 
 // Never do this in renderer code
 import { ipcRenderer } from 'electron' // WRONG
@@ -88,7 +90,7 @@ import { ipcRenderer } from 'electron' // WRONG
 
 ### Renderer
 
-Standard React 19 app. Views map to show phases (Dark Studio, Writer's Room, ON AIR, Intermission, Strike). State lives in Zustand, mainly `showStore`.
+Standard React 19 app. Views map to show phases (Dark Studio, Writer's Room, ON AIR, Intermission, Strike). Phase state lives in the XState v5 `showMachine`; non-phase UI state uses Zustand (`uiStore`, `sessionStore`).
 
 ### Persistence
 

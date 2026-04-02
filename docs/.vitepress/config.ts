@@ -23,6 +23,7 @@ export default defineConfig({
       { text: 'Concepts', link: '/concepts/show-phases' },
       { text: 'App Tour', link: '/app-tour/' },
       { text: 'Contributing', link: '/contributing/' },
+      { text: 'ADRs', link: '/adrs/' },
     ],
 
     sidebar: {
@@ -72,6 +73,14 @@ export default defineConfig({
             { text: 'Chat-First Writer\'s Room', link: '/contributing/chat-first-writers-room' },
             { text: 'E2E Testing & Cassettes', link: '/contributing/e2e-testing-cassettes' },
             { text: 'Tech Stack', link: '/contributing/tech-stack' },
+          ],
+        },
+      ],
+      '/adrs/': [
+        {
+          text: 'Architecture Decision Records',
+          items: [
+            { text: 'ADR-001: Skill-as-Control-Plane', link: '/adrs/001-skill-as-control-plane' },
           ],
         },
       ],
