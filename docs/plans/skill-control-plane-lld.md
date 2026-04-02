@@ -2,7 +2,7 @@
 
 **Issue:** #156
 **Date:** 2026-04-01
-**Status:** Design — revision 3 (addressing review rounds 1 + 2)
+**Status:** APPROVED — revision 3 final. Ready for implementation pending 3 hard blockers.
 
 ## 1. Problem
 
@@ -90,7 +90,7 @@ function buildShowtimeSystemPrompt(): string {
   }
 
   if (!skillContent) {
-    console.warn('[RunManager] showtime-director SKILL.md not found at any candidate path, using minimal prompt')
+    console.warn('[RunManager] showtime SKILL.md not found at any candidate path, using minimal prompt')
   }
 
   return skillContent
@@ -112,7 +112,8 @@ const getShowtimeSystemPrompt = process.env.NODE_ENV === 'development'
 |----------|------|---------|-----|
 | `preWarm()` | 158 | `CLUI_SYSTEM_HINT` | `getShowtimeSystemPrompt()` |
 | `startRun()` | 332 | `CLUI_SYSTEM_HINT` | `getShowtimeSystemPrompt()` |
-| VCR replay path | (if exists) | `CLUI_SYSTEM_HINT` | `getShowtimeSystemPrompt()` |
+
+> **Note:** VCR replay uses recorded cassette data and does not reference the system prompt constant. No change needed there.
 
 **Critical note (from review C2):** The `preWarm()` method spawns a subprocess BEFORE any user interaction. If this subprocess is claimed by `startRun()` via `getWarmProcess()`, it already has the system prompt baked in from spawn time. Updating all three sites ensures both pre-warmed and fresh subprocesses get the correct identity.
 
@@ -246,16 +247,20 @@ Falls back to `uiHints` only if all three fail. Logs a warning.
 **Implementation:** `handleBuildLineup()` already knows it's a lineup request — no metadata flag needed. Set `maxTurns` directly on the options passed to `sendMessage()`.
 
 ```typescript
-// In sessionStore.ts — add maxTurns to sendMessage signature:
-sendMessage: (prompt: string, projectPath?: string, displayText?: string, maxTurns?: number) => void
+// In sessionStore.ts — use options bag instead of positional params:
+sendMessage: (prompt: string, options?: {
+  projectPath?: string
+  displayText?: string
+  maxTurns?: number
+}) => void
 
-// In handleBuildLineup() — pass maxTurns:
-sendMessage(prompt, undefined, displayText, 1)
+// In handleBuildLineup() — pass maxTurns via options:
+sendMessage(prompt, { displayText, maxTurns: 1 })
 
 // In sessionStore's sendMessage implementation — forward to RunOptions:
 const runOptions: RunOptions = {
   prompt,
-  ...(maxTurns ? { maxTurns } : {}),
+  ...(options?.maxTurns ? { maxTurns: options.maxTurns } : {}),
 }
 ```
 
@@ -329,4 +334,4 @@ No migration needed. Transparent to users:
 |-----|------|----------|----------|--------|
 | 1 | 2026-04-01 | superpowers:code-reviewer | C1 (process.cwd), C2 (preWarm), I1 (refinement-prompt), I2 (token budget), I3 (tools), S1 (hot-reload), S2 (resume compounding) | All addressed in rev 2 |
 | 2 | 2026-04-01 | superpowers:code-reviewer | C1 (metadata flag no IPC path), I1 (skill path wrong), I2 (max-turns vs clarifying Qs), S1 (regex fragile), S2 (resume blocker) | All addressed in rev 3 |
-| 3 | 2026-04-01 | pending | — | Awaiting re-review |
+| 3 | 2026-04-01 | superpowers:code-reviewer | I1 (VCR site count), I2 (sendMessage signature), I3 (warning text). No design problems. | **APPROVED** — text fixes applied |
