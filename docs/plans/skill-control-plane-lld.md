@@ -2,7 +2,7 @@
 
 **Issue:** #156
 **Date:** 2026-04-01
-**Status:** Design — revision 2 (addressing code review C1, C2, I1, I2, I3, S1, S2)
+**Status:** Design — revision 3 (addressing review rounds 1 + 2)
 
 ## 1. Problem
 
@@ -57,9 +57,13 @@ function buildShowtimeSystemPrompt(): string {
     '  You are a day-planning companion.',
   ].join('\n')
 
-  // Resolution order: installed skill → dev source → bundled fallback
+  // Resolution order: installed skill → __dirname-relative → dev cwd fallback
+  // NOTE: The skill directory name is 'showtime' (matching src/skills/showtime/),
+  // NOT 'showtime-director' (the YAML frontmatter name field).
+  // Prerequisite: add 'showtime' to src/main/skills/manifest.ts so ensureSkills()
+  // installs it to ~/.claude/skills/showtime/ at app startup.
   const candidates = [
-    join(homedir(), '.claude/skills/showtime-director/SKILL.md'),
+    join(homedir(), '.claude/skills/showtime/SKILL.md'),
     join(__dirname, '../../skills/showtime/SKILL.md'),
     join(process.cwd(), 'src/skills/showtime/SKILL.md'),
   ]
@@ -72,8 +76,9 @@ function buildShowtimeSystemPrompt(): string {
         // Strip YAML frontmatter
         skillContent = raw.replace(/^---[\s\S]*?---\n/, '')
         // Strip Database Integration section (not runnable in subprocess)
+        // End-of-string alternative handles case where section is last in file
         skillContent = skillContent.replace(
-          /## Database Integration[\s\S]*?(?=\n## )/,
+          /## Database Integration[\s\S]*?(?=\n## |$)/,
           ''
         )
         log(`Loaded skill from: ${candidate}`)
@@ -200,7 +205,7 @@ showMachine transitions conversation → lineup_ready
 ### 5.1 SKILL.md not found (review C1 addressed)
 **When:** Production build where installed skill path differs from dev path
 **Handling:** `buildShowtimeSystemPrompt()` tries three candidate paths in priority order:
-1. `~/.claude/skills/showtime-director/SKILL.md` (installed by skill installer)
+1. `~/.claude/skills/showtime/SKILL.md` (installed by skill installer via manifest)
 2. `__dirname`-relative (works in dev and packaged builds)
 3. `process.cwd()`-relative (last resort for dev)
 Falls back to `uiHints` only if all three fail. Logs a warning.
@@ -236,17 +241,27 @@ Falls back to `uiHints` only if all three fail. Logs a warning.
 ### 5.8 Tool use during lineup generation (review I3 addressed)
 **When:** Claude has tool access (Read, Bash, WebSearch) during lineup generation
 **Risk:** Claude may "research" before generating a lineup, adding latency. May try to read SKILL.md from disk. May trigger tool_use blocks that complicate parsing.
-**Fix:** For lineup generation requests, pass `--max-turns 1`. This limits Claude to a single response turn with no tool use. The ControlPlane can detect lineup requests by checking if the prompt was sent via `handleBuildLineup()` (add a metadata flag to the IPC message).
-**Implementation:**
-```typescript
-// WritersRoomView sends a flag with the IPC message
-sendMessage(prompt, { isLineupRequest: true }, displayText)
+**Fix:** For lineup generation requests, pass `maxTurns: 1` directly in the `RunOptions` from `handleBuildLineup()`. This limits Claude to a single response turn with no tool use.
 
-// ControlPlane passes maxTurns when the flag is set
-if (options.metadata?.isLineupRequest) {
-  runOptions.maxTurns = 1
+**Implementation:** `handleBuildLineup()` already knows it's a lineup request — no metadata flag needed. Set `maxTurns` directly on the options passed to `sendMessage()`.
+
+```typescript
+// In sessionStore.ts — add maxTurns to sendMessage signature:
+sendMessage: (prompt: string, projectPath?: string, displayText?: string, maxTurns?: number) => void
+
+// In handleBuildLineup() — pass maxTurns:
+sendMessage(prompt, undefined, displayText, 1)
+
+// In sessionStore's sendMessage implementation — forward to RunOptions:
+const runOptions: RunOptions = {
+  prompt,
+  ...(maxTurns ? { maxTurns } : {}),
 }
 ```
+
+**Critical dependency (from review I2):** `--max-turns 1` is safe for lineup generation ONLY because calendar data is pre-fetched and embedded directly in the prompt text (WritersRoomView lines 210-218). If calendar integration changes to use MCP tools at generation time, `maxTurns` must be removed.
+
+**Exclusion:** Refinement requests (sent via `handleSend()` with `buildRefinementPrompt()`) MUST NOT have `maxTurns: 1`. Refinement goes through normal `sendMessage()` without the maxTurns parameter, allowing multi-turn tool use if needed.
 
 ### 5.9 Pre-warmed process identity (review C2 addressed)
 **When:** First message after app launch uses the pre-warmed subprocess
@@ -286,12 +301,14 @@ if (options.metadata?.isLineupRequest) {
 | File | Change | Est. Lines |
 |------|--------|------------|
 | `src/main/claude/run-manager.ts` | Replace CLUI_SYSTEM_HINT with buildShowtimeSystemPrompt(), update preWarm + startRun + VCR | ~50 |
-| `src/renderer/views/WritersRoomView.tsx` | Simplify handleBuildLineup() — clean user intent only | ~25 |
-| `src/renderer/lib/refinement-prompt.ts` | Remove role-play prefix, send user intent + current state | ~15 |
+| `src/main/skills/manifest.ts` | Add `showtime` to skill manifest so ensureSkills() installs it | ~5 |
+| `src/renderer/views/WritersRoomView.tsx` | Simplify handleBuildLineup() — clean user intent, pass maxTurns: 1 | ~25 |
+| `src/renderer/lib/refinement-prompt.ts` | Remove role-play prefix, send user intent + current state (NO maxTurns) | ~15 |
+| `src/renderer/stores/sessionStore.ts` | Add optional maxTurns param to sendMessage, forward to RunOptions | ~10 |
 | `src/skills/showtime/SKILL.md` | Annotate Database Integration section as CLI-only | ~5 |
 | `src/__tests__/systemPrompt.test.ts` | New: test buildShowtimeSystemPrompt() | ~60 |
 
-**Total: ~155 lines changed, 0 new dependencies.**
+**Total: ~170 lines changed, 0 new dependencies.**
 
 ## 8. Migration
 
@@ -300,15 +317,16 @@ No migration needed. Transparent to users:
 - Same output format (`showtime-lineup` JSON)
 - Same XState machine transitions
 
-## 9. Open Questions (must resolve before implementation)
+## 9. Hard Blockers (must resolve before implementation)
 
 - [ ] **Token count:** Run SKILL.md through tokenizer — is it 2000 or 3500?
-- [ ] **Resume compounding:** Does `--append-system-prompt` on `--resume` compound or replace?
-- [ ] **Electron packaging:** Verify `~/.claude/skills/showtime-director/SKILL.md` exists after `ensureSkills()` runs at app startup
+- [ ] **Resume compounding:** Does `--append-system-prompt` on `--resume` compound or replace? This MUST be tested before implementation — if it compounds, the implementation changes (skip `--append-system-prompt` on resume calls). See experiment plan in 5.7.
+- [ ] **Skill manifest:** Add `showtime` to `src/main/skills/manifest.ts` and verify `~/.claude/skills/showtime/SKILL.md` exists after `ensureSkills()` runs
 
 ## 10. Review History
 
 | Rev | Date | Reviewer | Findings | Status |
 |-----|------|----------|----------|--------|
 | 1 | 2026-04-01 | superpowers:code-reviewer | C1 (process.cwd), C2 (preWarm), I1 (refinement-prompt), I2 (token budget), I3 (tools), S1 (hot-reload), S2 (resume compounding) | All addressed in rev 2 |
-| 2 | 2026-04-01 | pending | — | Awaiting re-review |
+| 2 | 2026-04-01 | superpowers:code-reviewer | C1 (metadata flag no IPC path), I1 (skill path wrong), I2 (max-turns vs clarifying Qs), S1 (regex fragile), S2 (resume blocker) | All addressed in rev 3 |
+| 3 | 2026-04-01 | pending | — | Awaiting re-review |
