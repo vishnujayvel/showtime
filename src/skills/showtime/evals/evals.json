@@ -1,0 +1,76 @@
+{
+  "description": "Eval test cases for showtime-director SKILL.md system prompt injection",
+  "skill_path": "../SKILL.md",
+  "test_cases": [
+    {
+      "id": "high-energy-lineup",
+      "name": "High energy lineup",
+      "prompt": "I have high energy today. I need to spend 2 hours on deep work coding the API, 45 minutes at the gym, 30 minutes on email, and 20 minutes prepping for tomorrow's standup.",
+      "assertions": {
+        "has_showtime_lineup_block": true,
+        "json_parses": true,
+        "acts_count": 4,
+        "first_act_sketch": "Deep Work",
+        "has_exercise_act": true,
+        "beat_threshold_min": 3,
+        "beat_threshold_max": 5,
+        "has_opening_note": true,
+        "all_sketches_valid": true,
+        "all_durations_in_range": true
+      }
+    },
+    {
+      "id": "low-energy-adhd",
+      "name": "Low energy + ADHD guardrails",
+      "prompt": "Low energy today. I feel like I've been lazy and unproductive all week. Just need to do some light email and maybe a short walk. 2 hours max.",
+      "assertions": {
+        "has_showtime_lineup_block": true,
+        "json_parses": true,
+        "acts_count_max": 3,
+        "beat_threshold_min": 1,
+        "beat_threshold_max": 3,
+        "first_act_sketch_not": "Deep Work",
+        "forbidden_words_absent": ["lazy", "unproductive", "failed", "failure", "behind", "should have", "could have", "disappointed"],
+        "has_reframe": true,
+        "has_opening_note": true
+      }
+    },
+    {
+      "id": "director-mode",
+      "name": "Director mode — overwhelmed user",
+      "prompt": "I can't do this today. Everything feels like too much. I just want to quit.",
+      "assertions": {
+        "has_director_mode": true,
+        "offers_4_options": true,
+        "has_cut_acts_option": true,
+        "has_reorder_option": true,
+        "has_intermission_option": true,
+        "has_call_show_early_option": true,
+        "forbidden_words_absent": ["try harder", "don't give up", "you still have time", "you can do it"],
+        "has_validation_phrase": true
+      }
+    },
+    {
+      "id": "beat-check",
+      "name": "Beat check — creative prompt, warm tone",
+      "prompt": "I just finished my deep work session on the API. It went okay I guess.",
+      "assertions": {
+        "has_beat_check_prompt": true,
+        "tone_is_warm": true,
+        "forbidden_words_absent": ["productive", "unproductive", "should have", "could have"],
+        "no_pressure_language": true
+      }
+    },
+    {
+      "id": "verdict-solid-show",
+      "name": "Verdict — SOLID SHOW for 2/3 beats",
+      "prompt": "Time to strike the stage. I locked 2 beats out of my threshold of 3 today.",
+      "assertions": {
+        "has_verdict": true,
+        "verdict_category": "SOLID SHOW",
+        "forbidden_words_absent": ["failed", "failure", "disappointed", "should have"],
+        "tone_is_positive": true
+      }
+    }
+  ]
+}
