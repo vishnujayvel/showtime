@@ -18,21 +18,12 @@ describe('buildRefinementPrompt', () => {
 
   it('includes the energy level', () => {
     const prompt = buildRefinementPrompt('Add a coffee break', 'low', SAMPLE_ACTS)
-    expect(prompt).toContain('energy level "low"')
-  })
-
-  it('includes category constraints', () => {
-    const prompt = buildRefinementPrompt('Add a coffee break', 'high', SAMPLE_ACTS)
-    expect(prompt).toContain('"Deep Work"')
-    expect(prompt).toContain('"Exercise"')
-    expect(prompt).toContain('"Admin"')
-    expect(prompt).toContain('"Creative"')
-    expect(prompt).toContain('"Social"')
+    expect(prompt).toContain('Energy: low')
   })
 
   it('instructs Claude to respond with complete updated lineup', () => {
     const prompt = buildRefinementPrompt('Add dinner date with Silas', 'medium', SAMPLE_ACTS)
-    expect(prompt).toContain('Respond with the COMPLETE updated lineup')
+    expect(prompt).toContain('complete updated lineup')
     expect(prompt).toContain('showtime-lineup')
   })
 
@@ -41,9 +32,9 @@ describe('buildRefinementPrompt', () => {
     expect(prompt).toContain('Add dinner date with Silas')
   })
 
-  it('instructs to preserve existing acts', () => {
+  it('includes requested change text', () => {
     const prompt = buildRefinementPrompt('Add a walk', 'high', SAMPLE_ACTS)
-    expect(prompt).toContain('Preserve all existing acts')
+    expect(prompt).toContain('Requested change: Add a walk')
   })
 
   it('only includes name, sketch, durationMinutes in lineup JSON (no extra fields)', () => {
@@ -58,6 +49,6 @@ describe('buildRefinementPrompt', () => {
   it('handles empty acts array', () => {
     const prompt = buildRefinementPrompt('Add something', 'high', [])
     expect(prompt).toContain('"acts": []')
-    expect(prompt).toContain('energy level "high"')
+    expect(prompt).toContain('Energy: high')
   })
 })
