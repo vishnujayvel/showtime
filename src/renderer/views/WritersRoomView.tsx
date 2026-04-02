@@ -197,7 +197,7 @@ export function WritersRoomView() {
       window.showtime.logEvent('INFO', 'claude.refinement_sent', {
         messageText: trimmed.slice(0, 100),
       })
-      sendMessage(prompt, undefined, trimmed)
+      sendMessage(prompt, { displayText: trimmed })
     } else {
       sendMessage(trimmed)
     }
@@ -207,15 +207,8 @@ export function WritersRoomView() {
   const handleBuildLineup = () => {
     lineupStartRef.current = Date.now()
 
-    const calendarInstruction = calendarEnabled && calendarEvents.length > 0
-      ? `Here are today's calendar events (already fetched):
-${JSON.stringify(calendarEvents, null, 2)}
-Incorporate these as acts in the lineup. Use event title as act name, event duration for planned duration.
-Categorize: meetings/1:1s → "Admin", focus blocks → "Deep Work", gym → "Exercise", creative → "Creative", social → "Social", therapy/doctor/self-care → "Personal".
-Add "(from calendar)" to the sketch field for calendar-sourced acts.
-Fill remaining time with tasks from the user's text input.
-
-`
+    const calendarContext = calendarEnabled && calendarEvents.length > 0
+      ? `\nToday's calendar events:\n${JSON.stringify(calendarEvents, null, 2)}\n`
       : ''
 
     // Gather recent user messages as context for the lineup
@@ -229,29 +222,13 @@ Fill remaining time with tasks from the user's text input.
     const hasUserContext = recentUserMessages.trim().length > 0
 
     const prompt = hasUserContext
-      ? `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy ?? 'medium'}" and wants to plan their day.
-${calendarInstruction}Based on the conversation so far, create a show lineup.
+      ? `Plan my day. Energy: ${energy ?? 'medium'}.${calendarContext}\nHere's what I want to work on:\n${recentUserMessages}`
+      : `I want to plan my day. Energy: ${energy ?? 'medium'}.${calendarContext}\nWhat should I work on?`
 
-Respond with a \`\`\`showtime-lineup JSON block in this exact format:
-\`\`\`showtime-lineup
-{
-  "acts": [
-    { "name": "Task name", "sketch": "Deep Work", "durationMinutes": 45 }
-  ],
-  "beatThreshold": 3,
-  "openingNote": "A brief encouraging note"
-}
-\`\`\`
-
-Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social", "Personal"
-Energy "${energy ?? 'medium'}" means: low=shorter acts, fewer total. medium=balanced. high=longer acts, more ambitious.
-
-Context from conversation:
-${recentUserMessages}`
-      : `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy ?? 'medium'}" and wants to plan their day.
-${calendarInstruction}The user hasn't told you what they want to work on yet. Ask them what's on their plate today before creating a lineup. Be brief and encouraging — one or two sentences max. Do NOT generate a lineup yet.`
-
-    sendMessage(prompt, undefined, hasUserContext ? '✨ Build my lineup' : '✨ What should we work on?')
+    sendMessage(prompt, {
+      displayText: hasUserContext ? '✨ Build my lineup' : '✨ What should we work on?',
+      maxTurns: hasUserContext ? 1 : undefined,
+    })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

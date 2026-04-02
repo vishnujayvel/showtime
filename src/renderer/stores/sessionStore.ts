@@ -39,7 +39,7 @@ interface State {
   createTab: () => Promise<string>
   toggleExpanded: () => void
   addSystemMessage: (content: string) => void
-  sendMessage: (prompt: string, projectPath?: string, displayText?: string) => void
+  sendMessage: (prompt: string, options?: { projectPath?: string; displayText?: string; maxTurns?: number }) => void
   respondPermission: (tabId: string, questionId: string, optionId: string) => void
   handleNormalizedEvent: (tabId: string, event: NormalizedEvent) => void
   handleStatusChange: (tabId: string, newStatus: string, oldStatus: string) => void
@@ -172,7 +172,10 @@ export const useSessionStore = create<State>((set, get) => ({
     }))
   },
 
-  sendMessage: (prompt, projectPath, displayText) => {
+  sendMessage: (prompt, options) => {
+    const projectPath = options?.projectPath
+    const displayText = options?.displayText
+    const maxTurns = options?.maxTurns
     const { activeTabId, tabs, staticInfo, tabReady } = get()
     if (!tabReady) {
       window.showtime.logEvent('WARN', 'sendMessage.dropped', { reason: 'tab not ready yet', activeTabId })
@@ -236,6 +239,7 @@ export const useSessionStore = create<State>((set, get) => ({
       sessionId: tab.claudeSessionId || undefined,
       model: preferredModel || 'claude-sonnet-4-6',
       addDirs: tab.additionalDirs.length > 0 ? tab.additionalDirs : undefined,
+      ...(maxTurns ? { maxTurns } : {}),
     }).catch((err: Error) => {
       get().handleError(activeTabId, {
         message: err.message,
