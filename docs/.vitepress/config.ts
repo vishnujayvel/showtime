@@ -18,7 +18,8 @@ export default defineConfig({
     logo: '/favicon.ico',
 
     nav: [
-      { text: 'Guide', link: '/getting-started/' },
+      { text: 'Getting Started', link: '/getting-started/' },
+      { text: 'Guide', link: '/guide/writers-room' },
       { text: 'Framework', link: '/framework/' },
       { text: 'Concepts', link: '/concepts/show-phases' },
       { text: 'App Tour', link: '/app-tour/' },
@@ -33,6 +34,16 @@ export default defineConfig({
             { text: 'Install & First Show', link: '/getting-started/' },
             { text: 'Energy Levels', link: '/getting-started/energy-levels' },
             { text: 'Keyboard Shortcuts', link: '/getting-started/keyboard-shortcuts' },
+          ],
+        },
+      ],
+      '/guide/': [
+        {
+          text: 'User Guide',
+          items: [
+            { text: 'The Writer\'s Room', link: '/guide/writers-room' },
+            { text: 'The Live Show', link: '/guide/live-show' },
+            { text: 'Settings', link: '/guide/settings' },
           ],
         },
       ],
