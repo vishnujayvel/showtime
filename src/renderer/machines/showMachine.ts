@@ -72,6 +72,7 @@ export type ShowMachineEvent =
   | { type: 'REORDER_ACT'; actId: string; direction: 'up' | 'down' }
   | { type: 'REMOVE_ACT'; actId: string }
   | { type: 'ADD_ACT'; name: string; sketch: string; durationMinutes: number }
+  | { type: 'UPDATE_ACT'; actId: string; name?: string; durationMinutes?: number }
   // View tier
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
   // Auto-resume from DB
@@ -419,6 +420,21 @@ export const showMachine = setup({
       }
     }),
 
+    updateActContext: assign(({ context, event }) => {
+      if (event.type !== 'UPDATE_ACT') return {}
+      return {
+        acts: context.acts.map((a) =>
+          a.id === event.actId
+            ? {
+                ...a,
+                ...(event.name !== undefined ? { name: event.name } : {}),
+                ...(event.durationMinutes !== undefined ? { durationMinutes: event.durationMinutes } : {}),
+              }
+            : a
+        ),
+      }
+    }),
+
     restoreShowContext: assign(({ event }) => {
       if (event.type !== 'RESTORE_SHOW') return {}
       return { ...event.context }
@@ -524,6 +540,7 @@ export const showMachine = setup({
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
+            UPDATE_ACT: { actions: 'updateActContext' },
             START_SHOW: {
               target: 'live',
               guard: 'hasConfirmedLineup',
@@ -622,6 +639,7 @@ export const showMachine = setup({
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
+            UPDATE_ACT: { actions: 'updateActContext' },
             RESET: {
               target: 'no_show',
               actions: 'resetContext',

@@ -383,6 +383,8 @@ export function WritersRoomView() {
                 actNumber={index + 1}
                 onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
                 onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
+                onUpdateName={(name) => send({ type: 'UPDATE_ACT', actId: act.id, name })}
+                onUpdateDuration={(durationMinutes) => send({ type: 'UPDATE_ACT', actId: act.id, durationMinutes })}
               />
             ))}
           </div>
@@ -409,10 +411,46 @@ export function WritersRoomView() {
                 actNumber={index + 1}
                 onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
                 onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
+                onUpdateName={(name) => send({ type: 'UPDATE_ACT', actId: act.id, name })}
+                onUpdateDuration={(durationMinutes) => send({ type: 'UPDATE_ACT', actId: act.id, durationMinutes })}
               />
             ))}
+            {/* Add Act button */}
+            <button
+              onClick={() => send({ type: 'ADD_ACT', name: 'New Act', sketch: 'deep-work', durationMinutes: 25 })}
+              className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-surface-hover text-xs text-txt-muted hover:text-txt-secondary hover:border-txt-muted transition-colors"
+              data-testid="add-act-btn"
+            >
+              + Add Act
+            </button>
           </div>
-          <div className="flex items-center gap-3 mt-4">
+          {/* Chat input for Claude refinement in lineup_ready */}
+          <div className="flex items-end gap-2 mt-3">
+            <textarea
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Tell the writers to change something..."
+              rows={1}
+              className="flex-1 resize-none rounded-lg bg-titlebar border border-surface-hover px-3 py-2 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50"
+              data-testid="lineup-chat-input"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!chatInput.trim()}
+              className={cn(
+                'rounded-lg px-3 py-2 text-sm font-medium transition-colors shrink-0',
+                chatInput.trim()
+                  ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
+                  : 'bg-surface-hover text-txt-muted border border-surface-hover',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+              data-testid="lineup-chat-send"
+            >
+              Send
+            </button>
+          </div>
+          <div className="flex items-center gap-3 mt-3">
             <button
               onClick={refineLineup}
               className="px-4 py-2.5 rounded-lg border border-surface-hover text-sm text-txt-secondary hover:text-txt-primary hover:border-txt-muted transition-colors"
