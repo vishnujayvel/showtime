@@ -46,6 +46,7 @@ export interface ShowtimeAPI {
   onToggleExpanded(callback: () => void): () => void
   onResetShow(callback: () => void): () => void
   onOpenSettings(callback: () => void): () => void
+  onTimerDisplayToggle(callback: () => void): () => void
 
   // ─── Showtime data persistence ───
   dataHydrate(): Promise<ShowStateSnapshot | null>
@@ -183,6 +184,12 @@ const api: ShowtimeAPI = {
     const handler = () => callback()
     ipcRenderer.on(IPC.OPEN_SETTINGS, handler)
     return () => ipcRenderer.removeListener(IPC.OPEN_SETTINGS, handler)
+  },
+
+  onTimerDisplayToggle: (callback) => {
+    const handler = () => callback()
+    ipcRenderer.on(IPC.TIMER_DISPLAY_TOGGLE, handler)
+    return () => ipcRenderer.removeListener(IPC.TIMER_DISPLAY_TOGGLE, handler)
   },
 
   // ─── Showtime data persistence ───

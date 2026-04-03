@@ -14,6 +14,7 @@ import {
   showSelectors,
 } from './machines/ShowMachineProvider'
 import { hydrateFromDB } from './machines/showActor'
+import { useUIStore } from './stores/uiStore'
 import { useThemeStore } from './theme'
 import { DarkStudioView } from './views/DarkStudioView'
 import { WritersRoomView } from './views/WritersRoomView'
@@ -59,6 +60,8 @@ export default function App() {
   const beatCheckPending = useShowContext((ctx) => ctx.beatCheckPending)
   const send = useShowSend()
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
+  const timerDisplay = useUIStore((s) => s.timerDisplay)
+  const toggleTimerDisplay = useUIStore((s) => s.toggleTimerDisplay)
 
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return localStorage.getItem('showtime-onboarding-complete') !== 'true'
@@ -116,6 +119,12 @@ export default function App() {
       }
     })
   }, [])
+
+  // ─── Listen for timer display toggle from tray menu ───
+  useEffect(() => {
+    if (!window.showtime?.onTimerDisplayToggle) return
+    return window.showtime.onTimerDisplayToggle(() => toggleTimerDisplay())
+  }, [toggleTimerDisplay])
 
   // ─── Auto-resume from DB on startup ───
   useEffect(() => {
@@ -210,9 +219,12 @@ export default function App() {
     }
 
     // Live/intermission/director — tier-based routing
+    // When menu bar timer is active, skip pill and show compact instead
     switch (viewTier) {
       case 'micro':
-        return <PillView key="pill" />
+        return timerDisplay === 'menubar'
+          ? <CompactView key="compact" />
+          : <PillView key="pill" />
       case 'compact':
         return <CompactView key="compact" />
       case 'dashboard':
