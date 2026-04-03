@@ -133,8 +133,6 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'high' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const snap = actor.getSnapshot()
@@ -163,9 +161,8 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'high' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
 
       const snap = actor.getSnapshot()
@@ -188,9 +185,8 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'medium' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
       actor.send({ type: 'ENTER_INTERMISSION' })
 
@@ -244,9 +240,8 @@ describe('state persistence', () => {
     it('does not persist beatCheckPending or celebrationActive', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
 
       // Complete the first act to trigger beatCheckPending
@@ -277,9 +272,8 @@ describe('state persistence', () => {
     it('clears localStorage when actor resets to no_show', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
 
       const snap = actor.getSnapshot()
@@ -387,8 +381,6 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'high' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const snap = actor.getSnapshot()
@@ -450,9 +442,8 @@ describe('state persistence', () => {
     it('accepts valid nested state values', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
 
       const snap = actor.getSnapshot()
@@ -474,8 +465,6 @@ describe('state persistence', () => {
       const actor = createTestActor()
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       actor.send({ type: 'SET_ENERGY', level: 'high' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const snap = actor.getSnapshot()

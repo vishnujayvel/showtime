@@ -91,9 +91,11 @@ export function WritersRoomView() {
   const energy = useShowContext((ctx) => ctx.energy)
   const acts = useShowContext((ctx) => ctx.acts)
   const writersRoomStep = useShowContext((ctx) => ctx.writersRoomStep)
+  const lineupStatus = useShowContext((ctx) => ctx.lineupStatus)
   const send = useShowSend()
   const setEnergy = useCallback((level: EnergyLevel) => send({ type: 'SET_ENERGY', level }), [send])
   const setLineup = useCallback((lineup: ShowLineup) => send({ type: 'SET_LINEUP', lineup }), [send])
+  const finalizeLineup = useCallback(() => send({ type: 'FINALIZE_LINEUP' }), [send])
   const triggerGoingLive = useCallback(() => send({ type: 'TRIGGER_GOING_LIVE' }), [send])
   const refineLineup = useCallback(() => send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' }), [send])
   const calendarAvailable = useUIStore((s) => s.calendarAvailable)
@@ -418,17 +420,31 @@ export function WritersRoomView() {
             >
               Refine
             </button>
-            <Button
-              variant="primary"
-              className="flex-1"
-              onClick={() => {
-                window.showtime.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
-                triggerGoingLive()
-              }}
-              data-testid="confirm-go-live-btn"
-            >
-              Confirm & Go Live
-            </Button>
+            {lineupStatus === 'confirmed' ? (
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  window.showtime.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
+                  triggerGoingLive()
+                }}
+                data-testid="confirm-go-live-btn"
+              >
+                Confirm & Go Live
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  window.showtime.logEvent('INFO', 'finalize_lineup_clicked', { actCount: acts.length })
+                  finalizeLineup()
+                }}
+                data-testid="finalize-lineup-btn"
+              >
+                Finalize Lineup
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -487,10 +503,10 @@ export function WritersRoomView() {
                 variant="primary"
                 className="flex-1"
                 onClick={() => {
-                  window.showtime.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
-                  triggerGoingLive()
+                  window.showtime.logEvent('INFO', 'finalize_lineup_clicked', { actCount: acts.length })
+                  finalizeLineup()
                 }}
-                data-testid="go-live-btn"
+                data-testid="finalize-lineup-btn"
               >
                 Finalize Lineup
               </Button>

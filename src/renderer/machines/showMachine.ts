@@ -36,6 +36,7 @@ export interface ShowMachineContext {
   writersRoomStep: WritersRoomStep
   writersRoomEnteredAt: number | null
   breathingPauseEndAt: number | null
+  lineupStatus: 'draft' | 'confirmed'
 }
 
 // ─── Events ───
@@ -45,6 +46,7 @@ export type ShowMachineEvent =
   | { type: 'SET_ENERGY'; level: EnergyLevel }
   | { type: 'SET_WRITERS_ROOM_STEP'; step: WritersRoomStep }
   | { type: 'SET_LINEUP'; lineup: ShowLineup }
+  | { type: 'FINALIZE_LINEUP' }
   | { type: 'START_SHOW' }
   | { type: 'TRIGGER_COLD_OPEN' }
   | { type: 'COMPLETE_COLD_OPEN' }
@@ -121,6 +123,7 @@ export function createInitialContext(): ShowMachineContext {
     writersRoomStep: 'energy',
     writersRoomEnteredAt: null,
     breathingPauseEndAt: null,
+    lineupStatus: 'draft',
   }
 }
 
@@ -136,6 +139,7 @@ export const showMachine = setup({
     hasCurrentAct: ({ context }) => context.currentActId !== null,
     hasNextAct: ({ context }) => findNextUpcoming(context.acts) !== undefined,
     noNextAct: ({ context }) => findNextUpcoming(context.acts) === undefined,
+    hasConfirmedLineup: ({ context }) => context.acts.length > 0 && context.lineupStatus === 'confirmed',
     hasTimerRunning: ({ context }) => context.timerEndAt !== null,
     hasPausedTimer: ({ context }) =>
       context.timerPausedRemaining !== null &&
@@ -166,7 +170,12 @@ export const showMachine = setup({
       return {
         acts,
         beatThreshold: event.lineup.beatThreshold,
+        lineupStatus: 'draft' as const,
       }
+    }),
+
+    finalizeLineupContext: assign({
+      lineupStatus: 'confirmed' as const,
     }),
 
     assignWritersRoomStep: assign({
@@ -406,11 +415,27 @@ export const showMachine = setup({
         timerPausedRemaining: null,
       }
     }),
+
+    logDroppedEvent: ({ event, self }) => {
+      const snap = self.getSnapshot()
+      if (typeof window !== 'undefined' && window.showtime?.logEvent) {
+        window.showtime.logEvent('WARN', 'xstate.event_dropped', {
+          event: event.type,
+          state: JSON.stringify(snap.value),
+        })
+      }
+      if (import.meta.env.DEV) {
+        console.error(`[showMachine] DROPPED: "${event.type}" in state "${JSON.stringify(snap.value)}"`)
+      }
+    },
   },
 }).createMachine({
   id: 'show',
   type: 'parallel',
   context: createInitialContext(),
+  on: {
+    '*': { actions: 'logDroppedEvent' },
+  },
   states: {
     // ─── Main Phase Region ───
     phase: {
@@ -446,31 +471,27 @@ export const showMachine = setup({
         writers_room: {
           initial: 'energy',
           on: {
-            // SET_ENERGY, SET_LINEUP, SET_WRITERS_ROOM_STEP removed from parent level.
-            // XState v5 event bubbling: when a substate guard rejects an event, it bubbles
-            // to the parent. Unguarded parent handlers bypassed sequential flow enforcement.
-            // These events are now handled only in their respective substates.
-            //
-            // WritersRoomView compatibility: The view sends SET_ENERGY from an always-visible
-            // energy chip. SET_ENERGY is only accepted in the 'energy' substate; if the user
-            // changes energy after progressing past step 1, the event is silently dropped by
-            // XState (no transition match). This is intentional — energy selection is part of
-            // the sequential flow. The view also auto-sets energy='medium' via useEffect on
-            // mount, which fires while still in the 'energy' substate. SET_LINEUP is sent
-            // when Claude's response is parsed (always from 'conversation' substate).
-            // TRIGGER_GOING_LIVE is on the parent level and works from any substate.
+            // SET_LINEUP at parent level: accepted from any substate (energy, plan,
+            // conversation, lineup_ready). The chat-first flow parses lineups before
+            // reaching the conversation substate — parent-level handler fixes #160.
+            SET_LINEUP: { target: '.lineup_ready', actions: 'assignLineup' },
+            FINALIZE_LINEUP: {
+              target: '.lineup_ready',
+              guard: 'hasActs',
+              actions: 'finalizeLineupContext',
+            },
             // Lineup editing during writer's room
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
             START_SHOW: {
               target: 'live',
-              guard: 'hasActs',
+              guard: 'hasConfirmedLineup',
               actions: 'startShowContext',
             },
             TRIGGER_GOING_LIVE: {
               target: 'going_live',
-              guard: 'hasActs',
+              guard: 'hasConfirmedLineup',
             },
             RESET: {
               target: 'no_show',
@@ -497,7 +518,6 @@ export const showMachine = setup({
             },
             conversation: {
               on: {
-                SET_LINEUP: { target: 'lineup_ready', actions: 'assignLineup' },
                 SET_WRITERS_ROOM_STEP: [
                   { target: 'energy', guard: ({ event }) => event.step === 'energy', actions: 'assignWritersRoomStep' },
                   { target: 'plan', guard: ({ event }) => event.step === 'plan', actions: 'assignWritersRoomStep' },
@@ -512,7 +532,6 @@ export const showMachine = setup({
                   { target: 'energy', guard: ({ event }) => event.step === 'energy', actions: 'assignWritersRoomStep' },
                 ],
                 SET_ENERGY: { actions: 'assignEnergy' },
-                SET_LINEUP: { actions: 'assignLineup' },
               },
             },
           },

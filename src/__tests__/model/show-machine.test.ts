@@ -44,18 +44,17 @@ function applyEvent(event: ShowMachineEvent): void {
       break
 
     case 'SET_LINEUP':
-      // Navigate to conversation substate before setting lineup
-      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
+      // SET_LINEUP accepted from any writers_room substate (parent-level handler)
       showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       break
 
     case 'START_SHOW': {
-      // Ensure lineup is set before starting (navigate substates first)
+      // Ensure lineup is set and finalized before starting
       if (ctx().acts.length === 0) {
-        showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-        showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
         showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      }
+      if (ctx().lineupStatus !== 'confirmed') {
+        showActor.send({ type: 'FINALIZE_LINEUP' })
       }
       showActor.send({ type: 'START_SHOW' })
       break

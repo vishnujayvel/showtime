@@ -28,9 +28,8 @@ function goLiveWithActs(overrides?: {
   }
   showActor.send({ type: 'ENTER_WRITERS_ROOM' })
   showActor.send({ type: 'SET_ENERGY', level: 'high' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   showActor.send({ type: 'SET_LINEUP', lineup })
+  showActor.send({ type: 'FINALIZE_LINEUP' })
   showActor.send({ type: 'START_SHOW' })
 }
 
@@ -188,13 +187,12 @@ describe('useTraySync', () => {
     // Transition to live with a timer
     act(() => {
       showActor.send({ type: 'SET_ENERGY', level: 'high' })
-      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       showActor.send({ type: 'SET_LINEUP', lineup: {
         acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 10 }],
         beatThreshold: 1,
         openingNote: '',
       }})
+      showActor.send({ type: 'FINALIZE_LINEUP' })
       showActor.send({ type: 'START_SHOW' })
     })
 

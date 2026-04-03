@@ -53,9 +53,8 @@ function getContext(actor: ReturnType<typeof createTestActor>): ShowMachineConte
 
 function setupLive(actor: ReturnType<typeof createTestActor>) {
   actor.send({ type: 'ENTER_WRITERS_ROOM' })
-  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+  actor.send({ type: 'FINALIZE_LINEUP' })
   actor.send({ type: 'START_SHOW' })
 }
 
@@ -102,14 +101,13 @@ describe('showMachine', () => {
       actor.send({ type: 'SET_ENERGY', level: 'high' })
       expect(getContext(actor).energy).toBe('high')
 
-      // Navigate through writers_room substates
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
-
-      // Set lineup (only works from conversation substate)
+      // Set lineup (accepted from any writers_room substate at parent level)
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       expect(getContext(actor).acts).toHaveLength(3)
       expect(getContext(actor).beatThreshold).toBe(3)
+
+      // Finalize lineup (required before START_SHOW)
+      actor.send({ type: 'FINALIZE_LINEUP' })
 
       // writers_room → live
       actor.send({ type: 'START_SHOW' })
@@ -161,9 +159,8 @@ describe('showMachine', () => {
       expect(step).toBe('conversation')
     })
 
-    it('conversation → lineup_ready on SET_LINEUP', () => {
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
+    it('SET_LINEUP from any substate → lineup_ready', () => {
+      // SET_LINEUP is now at parent level, accepted from any substate
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
       expect(step).toBe('lineup_ready')
@@ -192,20 +189,26 @@ describe('showMachine', () => {
       expect(getPhase(actor)).toBe('writers_room')
     })
 
-    it('START_SHOW allowed with acts', () => {
+    it('START_SHOW allowed with confirmed lineup', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
       expect(getPhase(actor)).toBe('live')
     })
 
+    it('START_SHOW blocked without confirmed lineup (draft)', () => {
+      actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      // lineup is draft, not confirmed
+      actor.send({ type: 'START_SHOW' })
+      expect(getPhase(actor)).toBe('writers_room')
+    })
+
     it('EXIT_DIRECTOR blocked without current act', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
 
       // Complete all acts to clear currentActId
@@ -242,9 +245,8 @@ describe('showMachine', () => {
   describe('going live animation', () => {
     it('writers_room → going_live → live', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
       expect(getPhase(actor)).toBe('going_live')
 
@@ -462,8 +464,6 @@ describe('showMachine', () => {
   describe('lineup editing', () => {
     beforeEach(() => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
     })
 
@@ -623,9 +623,8 @@ describe('showMachine', () => {
 
     it('startShow sets viewTier to micro', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
       expect(getContext(actor).viewTier).toBe('micro')
     })
@@ -641,9 +640,8 @@ describe('showMachine', () => {
       expect(getContext(actor).viewTier).toBe('expanded')
 
       // intermission
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
       actor.send({ type: 'ENTER_INTERMISSION' })
       actor.send({ type: 'SET_VIEW_TIER', tier: 'micro' })
@@ -730,19 +728,18 @@ describe('showMachine', () => {
       expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('energy')
     })
 
-    it('SET_LINEUP is a no-op from energy substate', () => {
+    it('SET_LINEUP works from energy substate (parent-level handler)', () => {
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
-      // Before fix: parent handler would assign lineup without transitioning
-      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('energy')
-      // Lineup should NOT be assigned from energy state
-      expect(getContext(actor).acts).toHaveLength(0)
+      // SET_LINEUP is now at parent level, accepted from any substate
+      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('lineup_ready')
+      expect(getContext(actor).acts).toHaveLength(3)
     })
 
-    it('SET_LINEUP is a no-op from plan substate', () => {
+    it('SET_LINEUP works from plan substate (parent-level handler)', () => {
       actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
-      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('plan')
-      expect(getContext(actor).acts).toHaveLength(0)
+      expect(getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)).toBe('lineup_ready')
+      expect(getContext(actor).acts).toHaveLength(3)
     })
 
     it('SET_LINEUP works from conversation → lineup_ready', () => {
@@ -848,9 +845,8 @@ describe('showMachine', () => {
         openingNote: 'One act',
       }
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: oneActLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
 
       // Complete the only act → beat_check (timer cleared)
@@ -937,9 +933,8 @@ describe('showMachine', () => {
         beatThreshold: 1,
         openingNote: 'One act',
       }
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: oneActLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'START_SHOW' })
       actor.send({ type: 'ENTER_DIRECTOR' })
       actor.send({ type: 'SKIP_TO_NEXT' })

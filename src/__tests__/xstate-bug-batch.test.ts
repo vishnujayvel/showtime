@@ -70,17 +70,15 @@ function getSubstate(actor: ReturnType<typeof createTestActor>): string | undefi
 
 function setupLive(actor: ReturnType<typeof createTestActor>) {
   actor.send({ type: 'ENTER_WRITERS_ROOM' })
-  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+  actor.send({ type: 'FINALIZE_LINEUP' })
   actor.send({ type: 'START_SHOW' })
 }
 
 function setupLiveSingleAct(actor: ReturnType<typeof createTestActor>) {
   actor.send({ type: 'ENTER_WRITERS_ROOM' })
-  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   actor.send({ type: 'SET_LINEUP', lineup: singleActLineup })
+  actor.send({ type: 'FINALIZE_LINEUP' })
   actor.send({ type: 'START_SHOW' })
 }
 
@@ -124,9 +122,8 @@ describe('XState Bug Batch Wave 1', () => {
   describe('#141: going_live RESET + hasActs guard', () => {
     it('RESET from going_live transitions to no_show', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
       expect(getPhase(actor)).toBe('going_live')
 
@@ -135,7 +132,7 @@ describe('XState Bug Batch Wave 1', () => {
       expect(getContext(actor).acts).toHaveLength(0)
     })
 
-    it('TRIGGER_GOING_LIVE blocked without acts (hasActs guard)', () => {
+    it('TRIGGER_GOING_LIVE blocked without acts (hasConfirmedLineup guard)', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
       // No lineup set — no acts
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
@@ -143,11 +140,18 @@ describe('XState Bug Batch Wave 1', () => {
       expect(getPhase(actor)).toBe('writers_room')
     })
 
-    it('TRIGGER_GOING_LIVE allowed with acts', () => {
+    it('TRIGGER_GOING_LIVE blocked with draft lineup (not confirmed)', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      // lineup is draft, not confirmed
+      actor.send({ type: 'TRIGGER_GOING_LIVE' })
+      expect(getPhase(actor)).toBe('writers_room')
+    })
+
+    it('TRIGGER_GOING_LIVE allowed with confirmed lineup', () => {
+      actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
       expect(getPhase(actor)).toBe('going_live')
     })
@@ -158,8 +162,6 @@ describe('XState Bug Batch Wave 1', () => {
   describe('#139: lineup_ready backward navigation', () => {
     beforeEach(() => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
       const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
       expect(step).toBe('lineup_ready')
@@ -359,10 +361,8 @@ describe('XState Bug Batch Wave 1', () => {
   // ─── #146: Lineup confirmation UX (machine-side) ───
 
   describe('#146: lineup_ready step for confirmation UX', () => {
-    it('SET_LINEUP from conversation transitions to lineup_ready substep', () => {
+    it('SET_LINEUP from any substate transitions to lineup_ready substep', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
@@ -372,8 +372,6 @@ describe('XState Bug Batch Wave 1', () => {
 
     it('Refine button: SET_WRITERS_ROOM_STEP from lineup_ready → conversation', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       // Simulates clicking the "Refine" button
@@ -386,9 +384,8 @@ describe('XState Bug Batch Wave 1', () => {
 
     it('TRIGGER_GOING_LIVE from lineup_ready works (Confirm & Go Live)', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
 
       // From lineup_ready, trigger going live
       actor.send({ type: 'TRIGGER_GOING_LIVE' })
@@ -397,8 +394,6 @@ describe('XState Bug Batch Wave 1', () => {
 
     it('reorder acts in lineup_ready works', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const acts = getContext(actor).acts
@@ -409,8 +404,6 @@ describe('XState Bug Batch Wave 1', () => {
 
     it('remove acts in lineup_ready works', () => {
       actor.send({ type: 'ENTER_WRITERS_ROOM' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-      actor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
       actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 
       const acts = getContext(actor).acts
