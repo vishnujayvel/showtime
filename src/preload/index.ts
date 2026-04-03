@@ -21,6 +21,7 @@ export interface ShowtimeAPI {
 
   // ─── App lifecycle ───
   quit(): void
+  openExternal(url: string): void
 
   // ─── Window management ───
   isVisible(): Promise<boolean>
@@ -106,6 +107,7 @@ const api: ShowtimeAPI = {
 
   // ─── App lifecycle ───
   quit: () => ipcRenderer.send(IPC.APP_QUIT),
+  openExternal: (url: string) => ipcRenderer.send(IPC.OPEN_EXTERNAL, url),
 
   // ─── Window management ───
   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),

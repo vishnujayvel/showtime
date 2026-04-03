@@ -1,4 +1,4 @@
-import { app, ipcMain, Notification, nativeTheme } from 'electron'
+import { app, ipcMain, Notification, nativeTheme, shell } from 'electron'
 import { getMainWindow, getSyncEngine, log, broadcast, controlPlane } from '../state'
 import { applyViewMode, forceRepaint, isValidViewMode } from '../window'
 import { DataService } from '../data/DataService'
@@ -19,6 +19,13 @@ export function registerShowtimeIpc(): void {
     // Hide window first to avoid black flash during quit
     getMainWindow()?.hide()
     setTimeout(() => app.quit(), 100)
+  })
+
+  ipcMain.on(IPC.OPEN_EXTERNAL, (_event, url: string) => {
+    // Only allow https URLs to prevent security issues
+    if (typeof url === 'string' && url.startsWith('https://')) {
+      shell.openExternal(url)
+    }
   })
 
   ipcMain.handle(IPC.IS_VISIBLE, () => {

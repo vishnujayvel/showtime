@@ -30,6 +30,7 @@ import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 import { HelpDialog } from './components/HelpDialog'
+import { HelpButton } from './components/HelpButton'
 import type { ViewTier, ViewMode, ShowPhase } from '../shared/types'
 
 // Map viewTier + phase to the IPC view mode that determines window size
@@ -237,14 +238,12 @@ export default function App() {
 
   return (
     <div data-testid="showtime-app" className="w-full h-full relative bg-transparent flex flex-col">
-      {/* Help button — visible on DarkStudio when onboarding was completed */}
-      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && !showHistory && (
-        <button
-          onClick={handleHelpClick}
-          className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"
-        >
-          ?
-        </button>
+      {/* Help button — visible on every view except onboarding, transitions, pill, and compact */}
+      {!showOnboarding && !coldOpenActive && !goingLiveActive && !showHistory && isExpanded && viewTier !== 'micro' && viewTier !== 'compact' && (
+        <HelpButton
+          phase={showSettings ? 'settings' : phase}
+          className="absolute right-3 top-3.5"
+        />
       )}
       <AnimatePresence mode="wait">
         {renderView()}
