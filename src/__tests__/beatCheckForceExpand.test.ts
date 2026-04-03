@@ -39,9 +39,8 @@ const sampleLineup: ShowLineup = {
 function goLive() {
   showActor.send({ type: 'ENTER_WRITERS_ROOM' })
   showActor.send({ type: 'SET_ENERGY', level: 'high' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+  showActor.send({ type: 'FINALIZE_LINEUP' })
   showActor.send({ type: 'START_SHOW' })
 }
 
