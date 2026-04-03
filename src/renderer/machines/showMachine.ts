@@ -171,6 +171,7 @@ export const showMachine = setup({
         acts,
         beatThreshold: event.lineup.beatThreshold,
         lineupStatus: 'draft' as const,
+        writersRoomStep: 'lineup_ready' as WritersRoomStep,
       }
     }),
 
