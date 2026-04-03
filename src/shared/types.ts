@@ -508,6 +508,9 @@ export const IPC = {
   // Subprocess pre-warm
   PREWARM_SUBPROCESS: 'showtime:prewarm-subprocess',
 
+  // NDJSON file-based metrics (renderer → main)
+  EMIT_METRIC: 'showtime:emit-metric',
+
   // App lifecycle
   APP_QUIT: 'app:quit',
 

@@ -71,6 +71,9 @@ export interface ShowtimeAPI {
   // ─── Subprocess pre-warm ───
   prewarmSubprocess(): void
 
+  // ─── NDJSON file-based metrics ───
+  emitMetric(metric: string, value: number, tags?: Record<string, string>): void
+
   // ─── Showtime tray state ───
   updateTrayState(state: TrayShowState): void
   updateTrayTimer(seconds: number): void
@@ -155,6 +158,9 @@ const api: ShowtimeAPI = {
 
   // ─── Subprocess pre-warm ───
   prewarmSubprocess: () => ipcRenderer.send(IPC.PREWARM_SUBPROCESS),
+
+  // ─── NDJSON file-based metrics ───
+  emitMetric: (metric: string, value: number, tags?: Record<string, string>) => ipcRenderer.send(IPC.EMIT_METRIC, metric, value, tags),
 
   // ─── Showtime tray state ───
   updateTrayState: (state: TrayShowState) => ipcRenderer.send(IPC.TRAY_STATE_UPDATE, state),

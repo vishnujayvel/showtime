@@ -78,10 +78,7 @@ export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
   const todayShow = useMemo(getTodayPersistedShow, [])
   const greeting = useMemo(() => getTemporalGreeting(!!todayShow), [todayShow])
 
-  // Pre-warm Claude subprocess for faster Writer's Room startup
-  useEffect(() => {
-    window.showtime.prewarmSubprocess()
-  }, [])
+  // Subprocess prewarm deferred to WritersRoomView mount for faster bootstrap
 
   const handleResumeShow = useCallback(() => {
     // ENTER_WRITERS_ROOM will hydrate from localStorage (showActor already does this)
