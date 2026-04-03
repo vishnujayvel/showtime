@@ -167,14 +167,16 @@ export function createTray(
   tray.setContextMenu(Menu.buildFromTemplate(idleMenu))
   ;(global as any).__trayMenuLabels = menuLabels(idleMenu)
 
-  // Track last known act name for timer-only updates when window is hidden
+  // Track last known state for menu rebuilds on visibility changes
   let lastActName: string | null = null
+  let lastTrayState: TrayShowState | null = null
 
   // Listen for show state updates from renderer
   const trayStateHandler = (_event: Electron.IpcMainEvent, state: TrayShowState) => {
     if (!tray || tray.isDestroyed()) return
 
     lastActName = state.currentActName
+    lastTrayState = state
     const windowHidden = !getMainWindow()?.isVisible()
 
     let menu: Electron.MenuItemConstructorOptions[]
@@ -267,10 +269,33 @@ export function createTray(
 
   ipcMain.on(IPC.TRAY_TIMER_UPDATE, trayTimerHandler)
 
+  // Rebuild context menu when window is minimized to tray so menu labels update
+  // (e.g., "Show as Floating Pill / Menu Bar" → "Show Floating Pill")
+  const minimizeHandler = () => {
+    if (!tray || tray.isDestroyed() || !lastTrayState) return
+    // Window was just hidden — rebuild menu with windowHidden = true
+    const state = lastTrayState
+    let menu: Electron.MenuItemConstructorOptions[]
+    switch (state.phase) {
+      case 'live':
+      case 'director':
+        menu = buildLiveMenu(state, showWindow, true)
+        break
+      default:
+        // Non-live phases don't have window-sensitive menu labels, skip rebuild
+        return
+    }
+    tray.setContextMenu(Menu.buildFromTemplate(menu))
+    ;(global as any).__trayMenuLabels = menuLabels(menu)
+  }
+
+  ipcMain.on(IPC.MINIMIZE_TO_TRAY, minimizeHandler)
+
   // Clean up IPC listeners when tray is destroyed (app quit)
   app.on('before-quit', () => {
     ipcMain.removeListener(IPC.TRAY_STATE_UPDATE, trayStateHandler)
     ipcMain.removeListener(IPC.TRAY_TIMER_UPDATE, trayTimerHandler)
+    ipcMain.removeListener(IPC.MINIMIZE_TO_TRAY, minimizeHandler)
   })
 
   return tray
