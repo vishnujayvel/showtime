@@ -453,6 +453,10 @@ export const showMachine = setup({
               actions: 'enterWritersRoom',
             },
             TRIGGER_COLD_OPEN: 'cold_open',
+            // RESET in no_show is intentionally a no-op — already reset.
+            // Without this, the wildcard handler logs 524 false-positive drops
+            // from test beforeEach blocks and app startup safety resets.
+            RESET: {},
           },
         },
 
