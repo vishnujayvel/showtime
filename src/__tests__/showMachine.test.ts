@@ -1100,4 +1100,147 @@ describe('showMachine', () => {
       expect(getPhase(actor)).toBe('intermission')
     })
   })
+
+  // ─── Mid-Show Lineup Edit ───
+
+  describe('mid-show lineup edit (EDIT_LINEUP / CONFIRM_LINEUP_EDIT)', () => {
+    beforeEach(() => {
+      actor = createTestActor()
+      setupLive(actor)
+      expect(getPhase(actor)).toBe('live')
+    })
+
+    it('EDIT_LINEUP from live transitions to writers_room.conversation', () => {
+      actor.send({ type: 'EDIT_LINEUP' })
+      expect(getPhase(actor)).toBe('writers_room')
+      const snap = actor.getSnapshot()
+      const phaseValue = (snap.value as { phase: Record<string, string> }).phase
+      expect(phaseValue).toEqual({ writers_room: 'conversation' })
+    })
+
+    it('EDIT_LINEUP pauses the timer and sets editingMidShow', () => {
+      const ctxBefore = getContext(actor)
+      expect(ctxBefore.timerEndAt).not.toBeNull()
+      expect(ctxBefore.editingMidShow).toBe(false)
+
+      actor.send({ type: 'EDIT_LINEUP' })
+
+      const ctx = getContext(actor)
+      expect(ctx.timerEndAt).toBeNull()
+      expect(ctx.timerPausedRemaining).toBeGreaterThan(0)
+      expect(ctx.editingMidShow).toBe(true)
+      expect(ctx.writersRoomStep).toBe('conversation')
+    })
+
+    it('EDIT_LINEUP preserves acts and currentActId', () => {
+      const ctxBefore = getContext(actor)
+      const actsBefore = ctxBefore.acts
+      const currentActIdBefore = ctxBefore.currentActId
+
+      actor.send({ type: 'EDIT_LINEUP' })
+
+      const ctx = getContext(actor)
+      expect(ctx.acts).toEqual(actsBefore)
+      expect(ctx.currentActId).toBe(currentActIdBefore)
+    })
+
+    it('EDIT_LINEUP from director transitions to writers_room.conversation', () => {
+      actor.send({ type: 'ENTER_DIRECTOR' })
+      expect(getPhase(actor)).toBe('director')
+
+      actor.send({ type: 'EDIT_LINEUP' })
+      expect(getPhase(actor)).toBe('writers_room')
+      const ctx = getContext(actor)
+      expect(ctx.editingMidShow).toBe(true)
+    })
+
+    it('CONFIRM_LINEUP_EDIT returns to live.act_active', () => {
+      actor.send({ type: 'EDIT_LINEUP' })
+      expect(getPhase(actor)).toBe('writers_room')
+
+      const ctx = getContext(actor)
+      actor.send({ type: 'CONFIRM_LINEUP_EDIT', acts: ctx.acts })
+
+      expect(getPhase(actor)).toBe('live')
+    })
+
+    it('CONFIRM_LINEUP_EDIT resumes timer and clears editingMidShow', () => {
+      actor.send({ type: 'EDIT_LINEUP' })
+      const pausedCtx = getContext(actor)
+      expect(pausedCtx.timerPausedRemaining).toBeGreaterThan(0)
+
+      actor.send({ type: 'CONFIRM_LINEUP_EDIT', acts: pausedCtx.acts })
+
+      const ctx = getContext(actor)
+      expect(ctx.timerEndAt).toBeGreaterThan(0)
+      expect(ctx.timerPausedRemaining).toBeNull()
+      expect(ctx.editingMidShow).toBe(false)
+      expect(ctx.lineupStatus).toBe('confirmed')
+    })
+
+    it('CONFIRM_LINEUP_EDIT preserves completed acts and replaces upcoming', () => {
+      // Complete the first act
+      const firstActId = getContext(actor).currentActId!
+      actor.send({ type: 'COMPLETE_ACT', actId: firstActId })
+      actor.send({ type: 'SKIP_BEAT' })
+      // Now in act_active with second act
+      expect(getPhase(actor)).toBe('live')
+
+      actor.send({ type: 'EDIT_LINEUP' })
+      const ctx = getContext(actor)
+      const completedActs = ctx.acts.filter((a) => a.status === 'completed')
+      expect(completedActs.length).toBe(1)
+
+      // Create new upcoming acts for the edit
+      const newUpcoming: Act[] = [{
+        id: 'new-act-1',
+        name: 'New Task',
+        sketch: 'new-task',
+        durationMinutes: 20,
+        status: 'upcoming',
+        beatLocked: false,
+        order: 0,
+      }]
+
+      actor.send({ type: 'CONFIRM_LINEUP_EDIT', acts: newUpcoming })
+
+      const finalCtx = getContext(actor)
+      // Should have: 1 completed + 1 active + 1 new upcoming
+      const completed = finalCtx.acts.filter((a) => a.status === 'completed')
+      const active = finalCtx.acts.filter((a) => a.status === 'active')
+      const upcoming = finalCtx.acts.filter((a) => a.status === 'upcoming')
+      expect(completed.length).toBe(1)
+      expect(active.length).toBe(1)
+      expect(upcoming.length).toBe(1)
+      expect(upcoming[0].name).toBe('New Task')
+    })
+
+    it('editingMidShow is false in initial context', () => {
+      const freshActor = createTestActor()
+      expect(getContext(freshActor).editingMidShow).toBe(false)
+    })
+
+    it('CONFIRM_LINEUP_EDIT is rejected when not in editingMidShow mode', () => {
+      // In writers_room from fresh start (not mid-show edit)
+      const freshActor = createTestActor()
+      freshActor.send({ type: 'ENTER_WRITERS_ROOM' })
+      freshActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      freshActor.send({ type: 'FINALIZE_LINEUP' })
+      freshActor.send({ type: 'START_SHOW' })
+
+      // Go to writers_room via EDIT_LINEUP, then back to live
+      freshActor.send({ type: 'EDIT_LINEUP' })
+      freshActor.send({ type: 'CONFIRM_LINEUP_EDIT', acts: getContext(freshActor).acts })
+      expect(getPhase(freshActor)).toBe('live')
+      expect(getContext(freshActor).editingMidShow).toBe(false)
+
+      // Now try CONFIRM_LINEUP_EDIT from writers_room without editingMidShow
+      const freshActor2 = createTestActor()
+      freshActor2.send({ type: 'ENTER_WRITERS_ROOM' })
+      freshActor2.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      // CONFIRM_LINEUP_EDIT should be dropped — not in edit mode
+      freshActor2.send({ type: 'CONFIRM_LINEUP_EDIT', acts: [] })
+      expect(getPhase(freshActor2)).toBe('writers_room')
+    })
+  })
 })
