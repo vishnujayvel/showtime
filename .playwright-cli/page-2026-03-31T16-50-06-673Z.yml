@@ -1,0 +1,116 @@
+- generic [ref=e1]:
+  - 'button "Google Account: Vishnu Jayavel (vishnuj81093@gmail.com)" [ref=e11] [cursor=pointer]':
+    - img [ref=e13]
+    - img [ref=e19]
+  - main [ref=e21]:
+    - generic:
+      - button "Main menu" [ref=e34] [cursor=pointer]:
+        - img [ref=e35]: menu
+      - button "New chat" [disabled] [ref=e39]:
+        - generic [ref=e41]: Gemini
+    - generic [ref=e43]:
+      - button "Temporary chat" [ref=e46] [cursor=pointer]:
+        - img [ref=e49]
+      - generic [ref=e54]:
+        - button "PRO" [disabled]:
+          - generic: PRO
+    - generic [ref=e26]:
+      - navigation [ref=e55]:
+        - generic [ref=e59]:
+          - group [ref=e60]:
+            - link "New chat" [ref=e62] [cursor=pointer]:
+              - /url: /app
+              - img [ref=e65]: edit_square
+          - group [ref=e68]:
+            - button "Settings & help" [ref=e70] [cursor=pointer]:
+              - img [ref=e73]: settings_2
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - heading "Conversation with Gemini" [level=1] [ref=e80]
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - generic [ref=e92]: Hi Vishnu
+              - heading "What can we get done?" [level=1] [ref=e99]
+            - generic [ref=e107]:
+              - button "For you, button, tap to use tool" [ref=e109] [cursor=pointer]:
+                - generic [ref=e110]: For you
+              - button "🖼️ Create image, button, tap to use tool" [ref=e112] [cursor=pointer]:
+                - generic [ref=e113]: 🖼️ Create image
+              - button "🎸 Create music, button, tap to use tool" [ref=e115] [cursor=pointer]:
+                - generic [ref=e116]: 🎸 Create music
+              - button "Write anything, button, tap to use tool" [ref=e118] [cursor=pointer]:
+                - generic [ref=e119]: Write anything
+              - button "Help me learn, button, tap to use tool" [ref=e121] [cursor=pointer]:
+                - generic [ref=e122]: Help me learn
+              - button "Boost my day, button, tap to use tool" [ref=e124] [cursor=pointer]:
+                - generic [ref=e125]: Boost my day
+        - generic [ref=e142]:
+          - group [ref=e143]:
+            - generic [ref=e146]:
+              - textbox "Enter a prompt for Gemini" [active] [ref=e321]:
+                - paragraph [ref=e322]: Research best practices, frameworks, and tools for systematically discovering, documenting, and maintaining ALL customer journeys in a product — including the edge-case journeys that teams typically miss and that surface as bugs in production. I also need a framework for logging all product decisions in a spec or living document that agents can review and maintain over time, so that state transitions and gaps discovered along the way don't get lost.
+                - paragraph [ref=e323]
+                - paragraph [ref=e324]: "My context:"
+                - paragraph [ref=e325]
+                - paragraph [ref=e326]: I'm building Showtime, an ADHD-friendly macOS day planner. It has multiple interfaces (an Electron GUI app and a Claude Code CLI skill) that share state. The app has 6 main phases a user moves through (Dark Studio → Writer's Room → Live → Intermission → Director Mode → Strike), with sub-states within each phase, and the user can enter/exit these in various orders depending on what they're doing.
+                - paragraph [ref=e327]
+                - paragraph [ref=e328]: "Our problem: we keep finding bugs that are really missing journeys — paths through the product we didn't think about during planning. Examples:"
+                - paragraph [ref=e329]: "- User opens the CLI skill in the afternoon when a show is already halfway through in the GUI app — what should happen?"
+                - paragraph [ref=e330]: "- User is in Intermission, all remaining acts are done, and they try to exit Intermission — the code falls through to an unexpected state"
+                - paragraph [ref=e331]: "- User closes the app during Writer's Room and reopens it 4 hours later — should it resume or start fresh?"
+                - paragraph [ref=e332]: "- Timer expires while the app is in Director Mode — what takes priority?"
+                - paragraph [ref=e333]
+                - paragraph [ref=e334]: These aren't code bugs — they're product gaps. Journeys we never specified because we didn't think of them. The fix always involves going back to figure out what SHOULD happen here before writing code.
+                - paragraph [ref=e335]
+                - paragraph [ref=e336]: "What I'm looking for:"
+                - paragraph [ref=e337]
+                - paragraph [ref=e338]: "1. Journey discovery frameworks — How do product teams systematically enumerate ALL possible customer journeys, including edge cases and error paths? Techniques like: event storming, customer journey mapping, state explosion testing, scenario workshops, what-if analysis, pre-mortems. What's the modern best practice for ensuring you've covered the paths users will actually take (not just the happy path)?"
+                - paragraph [ref=e339]
+                - paragraph [ref=e340]: "2. Gap detection methods — How do teams find the journeys they MISSED? Techniques for finding holes in product specs before users do. Things like: model-based testing that auto-discovers untested paths, property-based testing that generates random user sequences, chaos journey testing, adversarial user simulation. Are there AI tools that can read a product spec and identify missing edge cases?"
+                - paragraph [ref=e341]
+                - paragraph [ref=e342]: "3. Journey documentation formats — Once you've discovered all the journeys, how do you document them in a way that's: (a) easy for AI coding agents to consume, (b) version-controlled alongside code, (c) maintained as a living document, not a throwaway artifact? Formats like: Given/When/Then scenarios, user story maps, customer journey maps as code, event catalogs. What format works best for stateful apps with multiple phases?"
+                - paragraph [ref=e343]
+                - paragraph [ref=e344]: 4. Tools that generate journeys from code — Are there tools that can analyze an existing codebase (like our Zustand store with 650+ lines of state transitions) and reverse-engineer all possible journeys? Static analysis tools, state exploration tools, model checkers that enumerate all reachable states and transitions? Especially for React/TypeScript/Electron apps.
+                - paragraph [ref=e345]
+                - paragraph [ref=e346]: "5. Preventing journey gaps in ongoing development — When adding new features, how do teams ensure they don't introduce new gaps? Techniques like: mandatory journey review checklists, state transition matrices that must be updated, property-based tests that catch new unreachable states. How do companies like Stripe, Shopify, or Figma prevent payment flow or collaboration flow gaps?"
+                - paragraph [ref=e347]
+                - paragraph [ref=e348]: "6. Real-world war stories — Examples from companies where missing journeys caused significant bugs. How they discovered the gap, how they fixed the process to prevent it from happening again. Especially interested in: (a) stateful apps (chat, collaboration, workflow tools), (b) apps with multiple entry points (GUI + CLI + API), (c) apps with time-dependent state (timers, sessions, reconnection)."
+                - paragraph [ref=e349]
+                - paragraph [ref=e350]: 7. Integration with spec-driven development — I use OpenSpec + Loki Mode (autonomous AI agent execution) for development. How can journey discovery and gap detection be integrated into a spec-driven workflow? Can AI agents be prompted to automatically identify missing journeys when given a product spec? Are there OpenSpec, Kiro, or Spec Kit extensions for journey coverage analysis?
+                - paragraph [ref=e351]
+                - paragraph [ref=e352]: 8. The journey registry concept — Is there a best practice for maintaining a single, canonical registry of all known customer journeys that evolves with the product? Something analogous to a database migration system but for customer journeys — where adding a new feature requires explicitly declaring what new journeys it creates and what existing journeys it modifies? How do teams keep this from becoming stale?
+                - paragraph [ref=e353]
+                - paragraph [ref=e354]: "9. A living framework for product decisions and state transitions — I need a way to log all product decisions — every state transition, every edge case resolution, every what should happen when X answer — in a format that: (a) AI agents can review before implementing changes, (b) accumulates over time rather than being rewritten per feature, (c) surfaces gaps proactively (you added a new phase but haven't specified what happens when the timer is running and the user enters it), (d) integrates with spec-driven development tools like OpenSpec so that when a new change is proposed, the framework can check whether all existing journeys are still covered. Essentially: how do teams build and maintain a decision log + journey coverage matrix that grows with the product and acts as the source of truth for what should the product do in every situation?"
+                - paragraph [ref=e355]
+                - paragraph [ref=e356]: Please include links to blog posts, frameworks, tools, GitHub repos, conference talks, and real examples. Prioritize practical, implementable approaches over theoretical frameworks. I want something my AI agents can use to find gaps before users do.
+              - generic [ref=e153]:
+                - button "Open upload file menu" [ref=e158] [cursor=pointer]:
+                  - img [ref=e159]: add_2
+                - generic [ref=e164]:
+                  - button "Tools" [ref=e357] [cursor=pointer]:
+                    - img [ref=e359]: page_info
+                  - button "Deselect Deep research" [ref=e362]:
+                    - img [ref=e363]: travel_explore
+                    - generic [ref=e364]: Deep research
+                    - img [ref=e365]: close
+              - button "Expand input to Fullscreen" [ref=e229] [cursor=pointer]:
+                - img [ref=e230]: expand_content
+              - generic [ref=e172]:
+                - button "Open mode picker" [ref=e175]:
+                  - generic [ref=e177]:
+                    - generic [ref=e178]: Pro
+                    - img [ref=e179]: keyboard_arrow_down
+                - generic [ref=e182]:
+                  - text: mic
+                  - button "Send message" [ref=e234] [cursor=pointer]:
+                    - img [ref=e235]: send
+              - generic [ref=e370]:
+                - button "Sources, Google Search selected" [ref=e372]:
+                  - generic [ref=e374]:
+                    - generic [ref=e378]: Sources
+                    - img [ref=e379]: keyboard_arrow_down
+                - button [ref=e383]:
+                  - generic [ref=e385]:
+                    - img [ref=e387]: upload
+                    - generic [ref=e388]: Files
+          - paragraph [ref=e192]

@@ -1,0 +1,147 @@
+- generic [ref=e3]:
+  - link "Skip to content" [ref=e4] [cursor=pointer]:
+    - /url: "#VPContent"
+  - banner:
+    - generic:
+      - generic:
+        - generic:
+          - link "Showtime" [ref=e6] [cursor=pointer]:
+            - /url: /showtime/
+            - generic [ref=e7]: Showtime
+          - generic [ref=e8]:
+            - button "Search" [ref=e11] [cursor=pointer]:
+              - generic [ref=e14]: Search
+              - generic [ref=e15]:
+                - generic [ref=e16]: ⌘
+                - generic [ref=e17]: K
+            - navigation "Main Navigation" [ref=e18]:
+              - generic [ref=e19]: Main Navigation
+              - link "Guide" [ref=e20] [cursor=pointer]:
+                - /url: /showtime/getting-started/
+                - generic [ref=e21]: Guide
+              - link "Framework" [ref=e22] [cursor=pointer]:
+                - /url: /showtime/framework/
+                - generic [ref=e23]: Framework
+              - link "Concepts" [ref=e24] [cursor=pointer]:
+                - /url: /showtime/concepts/show-phases.html
+                - generic [ref=e25]: Concepts
+              - link "App Tour" [ref=e26] [cursor=pointer]:
+                - /url: /showtime/app-tour/
+                - generic [ref=e27]: App Tour
+              - link "Contributing" [ref=e28] [cursor=pointer]:
+                - /url: /showtime/contributing/
+                - generic [ref=e29]: Contributing
+            - switch "Switch to dark theme" [ref=e31] [cursor=pointer]
+            - link "github" [ref=e37] [cursor=pointer]:
+              - /url: https://github.com/vishnujayvel/showtime
+  - generic [ref=e41]:
+    - navigation "On this page" [ref=e47]:
+      - generic [ref=e48]:
+        - heading "On this page" [level=2] [ref=e50]
+        - list [ref=e51]:
+          - listitem [ref=e52]:
+            - link "1. Dark Studio" [ref=e53] [cursor=pointer]:
+              - /url: "#_1-dark-studio"
+          - listitem [ref=e54]:
+            - link "2. Writer's Room" [ref=e55] [cursor=pointer]:
+              - /url: "#_2-writer-s-room"
+          - listitem [ref=e56]:
+            - link "3. Going Live" [ref=e57] [cursor=pointer]:
+              - /url: "#_3-going-live"
+          - listitem [ref=e58]:
+            - link "4. ON AIR" [ref=e59] [cursor=pointer]:
+              - /url: "#_4-on-air"
+          - listitem [ref=e60]:
+            - link "5. Intermission" [ref=e61] [cursor=pointer]:
+              - /url: "#_5-intermission"
+          - listitem [ref=e62]:
+            - link "6. Strike the Stage" [ref=e63] [cursor=pointer]:
+              - /url: "#_6-strike-the-stage"
+          - listitem [ref=e64]:
+            - link "Settings" [ref=e65] [cursor=pointer]:
+              - /url: "#settings"
+          - listitem [ref=e66]:
+            - link "History" [ref=e67] [cursor=pointer]:
+              - /url: "#history"
+    - generic [ref=e70]:
+      - main [ref=e71]:
+        - generic [ref=e73]:
+          - heading "App Tour Permalink to \"App Tour\"" [level=1] [ref=e74]:
+            - text: App Tour
+            - link "Permalink to \"App Tour\"" [ref=e75] [cursor=pointer]:
+              - /url: "#app-tour"
+              - text: "#"
+          - paragraph [ref=e76]: Your day is a live show. Here's every phase you'll walk through.
+          - separator [ref=e77]
+          - heading "1. Dark Studio Permalink to \"1. Dark Studio\"" [level=2] [ref=e78]:
+            - text: 1. Dark Studio
+            - link "Permalink to \"1. Dark Studio\"" [ref=e79] [cursor=pointer]:
+              - /url: "#_1-dark-studio"
+              - text: "#"
+          - paragraph [ref=e80]: The empty stage. Your show hasn't been written yet. This is where every day begins — a clean slate, no backlog, no guilt.
+          - img "Dark Studio — the empty stage" [ref=e81]
+          - separator [ref=e82]
+          - heading "2. Writer's Room Permalink to \"2. Writer's Room\"" [level=2] [ref=e83]:
+            - text: 2. Writer's Room
+            - link "Permalink to \"2. Writer's Room\"" [ref=e84] [cursor=pointer]:
+              - /url: "#_2-writer-s-room"
+              - text: "#"
+          - paragraph [ref=e85]: You're the Head Writer. Check in with your energy, tell Claude what's on your mind, and shape it into tonight's lineup. The clock is ticking — 20 minutes max, because planning can become its own form of procrastination.
+          - img "Writer's Room — plan your show" [ref=e86]
+          - paragraph [ref=e87]: "Chat with Claude to build your lineup:"
+          - img "Chat input — tell Claude your plan" [ref=e88]
+          - separator [ref=e89]
+          - heading "3. Going Live Permalink to \"3. Going Live\"" [level=2] [ref=e90]:
+            - text: 3. Going Live
+            - link "Permalink to \"3. Going Live\"" [ref=e91] [cursor=pointer]:
+              - /url: "#_3-going-live"
+              - text: "#"
+          - paragraph [ref=e92]: The transition moment. The lineup is locked. 3... 2... 1... You're on air.
+          - img "Going Live — the countdown" [ref=e93]
+          - separator [ref=e94]
+          - heading "4. ON AIR Permalink to \"4. ON AIR\"" [level=2] [ref=e95]:
+            - text: 4. ON AIR
+            - link "Permalink to \"4. ON AIR\"" [ref=e96] [cursor=pointer]:
+              - /url: "#_4-on-air"
+              - text: "#"
+          - paragraph [ref=e97]:
+            - text: "This is the main event. Your Acts run on timers. The ON AIR light pulses red. Beat Checks appear to ask:"
+            - emphasis [ref=e98]: are you present right now?
+          - img "ON AIR — expanded view with timer" [ref=e99]
+          - paragraph [ref=e100]: "Beat Check — lock a moment of presence:"
+          - img "Beat Check modal" [ref=e101]
+          - separator [ref=e102]
+          - heading "5. Intermission Permalink to \"5. Intermission\"" [level=2] [ref=e103]:
+            - text: 5. Intermission
+            - link "Permalink to \"5. Intermission\"" [ref=e104] [cursor=pointer]:
+              - /url: "#_5-intermission"
+              - text: "#"
+          - paragraph [ref=e105]: Rest costs zero. Always has been. Take a break between Acts.
+          - img "Intermission — we'll be right back" [ref=e106]
+          - separator [ref=e107]
+          - heading "6. Strike the Stage Permalink to \"6. Strike the Stage\"" [level=2] [ref=e108]:
+            - text: 6. Strike the Stage
+            - link "Permalink to \"6. Strike the Stage\"" [ref=e109] [cursor=pointer]:
+              - /url: "#_6-strike-the-stage"
+              - text: "#"
+          - paragraph [ref=e110]: The show is over. The verdict is delivered. The credits roll. Tomorrow the stage is empty again.
+          - img "Strike — DAY WON verdict" [ref=e111]
+          - separator [ref=e112]
+          - heading "Settings Permalink to \"Settings\"" [level=2] [ref=e113]:
+            - text: Settings
+            - link "Permalink to \"Settings\"" [ref=e114] [cursor=pointer]:
+              - /url: "#settings"
+              - text: "#"
+          - paragraph [ref=e115]: Toggle themes, configure preferences.
+          - img "Settings view" [ref=e116]
+          - separator [ref=e117]
+          - heading "History Permalink to \"History\"" [level=2] [ref=e118]:
+            - text: History
+            - link "Permalink to \"History\"" [ref=e119] [cursor=pointer]:
+              - /url: "#history"
+              - text: "#"
+          - paragraph [ref=e120]: Browse past shows. See what worked, what got cut, how your Beats landed.
+          - img "History — past show entry" [ref=e121]
+      - contentinfo
+  - contentinfo [ref=e122]:
+    - paragraph [ref=e124]: Your day is a Show. Rest costs zero.

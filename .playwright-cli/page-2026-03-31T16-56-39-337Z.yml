@@ -1,0 +1,1461 @@
+- generic [active] [ref=e1]:
+  - 'button "Google Account: Vishnu Jayavel (vishnuj81093@gmail.com)" [ref=e11] [cursor=pointer]':
+    - img [ref=e13]
+    - img [ref=e19]
+  - main [ref=e21]:
+    - generic:
+      - button "Main menu" [ref=e34] [cursor=pointer]:
+        - img [ref=e35]: menu
+      - button "New chat" [ref=e39] [cursor=pointer]:
+        - generic [ref=e41]: Gemini
+    - generic [ref=e23]:
+      - generic [ref=e487]: Product Journey Gap Discovery Framework
+      - generic [ref=e43]:
+        - button "Share conversation" [ref=e489] [cursor=pointer]:
+          - img [ref=e490]: share
+        - button "Open menu for conversation actions." [ref=e392] [cursor=pointer]:
+          - img [ref=e393]: more_vert
+    - generic [ref=e26]:
+      - navigation [ref=e55]:
+        - generic [ref=e59]:
+          - group [ref=e60]:
+            - link "New chat" [ref=e62] [cursor=pointer]:
+              - /url: /app
+              - img [ref=e65]: edit_square
+          - group [ref=e68]:
+            - button "Settings & help" [ref=e70] [cursor=pointer]:
+              - img [ref=e73]: settings_2
+      - generic [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - heading "Conversation with Gemini" [level=1] [ref=e80]
+            - generic [ref=e82]:
+              - generic [ref=e396]:
+                - generic [ref=e401]:
+                  - button "Copy prompt" [ref=e403] [cursor=pointer]:
+                    - img [ref=e404]: content_copy
+                  - generic [ref=e409]:
+                    - heading [level=2] [ref=e410]:
+                      - generic [ref=e411]: You said
+                      - paragraph [ref=e412]: Research best practices, frameworks, and tools for systematically discovering, documenting, and maintaining ALL customer journeys in a product — including the edge-case journeys that teams typically miss and that surface as bugs in production. I also need a framework for logging all product decisions in a spec or living document that agents can review and maintain over time, so that state transitions and gaps discovered along the way don't get lost.
+                      - paragraph [ref=e413]
+                      - paragraph [ref=e414]: "My context:"
+                      - paragraph [ref=e415]
+                      - paragraph [ref=e416]: I'm building Showtime, an ADHD-friendly macOS day planner. It has multiple interfaces (an Electron GUI app and a Claude Code CLI skill) that share state. The app has 6 main phases a user moves through (Dark Studio → Writer's Room → Live → Intermission → Director Mode → Strike), with sub-states within each phase, and the user can enter/exit these in various orders depending on what they're doing.
+                      - paragraph [ref=e417]
+                      - paragraph [ref=e418]: "Our problem: we keep finding bugs that are really missing journeys — paths through the product we didn't think about during planning. Examples:"
+                      - paragraph [ref=e419]: "- User opens the CLI skill in the afternoon when a show is already halfway through in the GUI app — what should happen?"
+                      - paragraph [ref=e420]: "- User is in Intermission, all remaining acts are done, and they try to exit Intermission — the code falls through to an unexpected state"
+                      - paragraph [ref=e421]: "- User closes the app during Writer's Room and reopens it 4 hours later — should it resume or start fresh?"
+                      - paragraph [ref=e422]: "- Timer expires while the app is in Director Mode — what takes priority?"
+                      - paragraph [ref=e423]
+                      - paragraph [ref=e424]: These aren't code bugs — they're product gaps. Journeys we never specified because we didn't think of them. The fix always involves going back to figure out what SHOULD happen here before writing code.
+                      - paragraph [ref=e425]
+                      - paragraph [ref=e426]: "What I'm looking for:"
+                      - paragraph [ref=e427]
+                      - paragraph [ref=e428]: "1. Journey discovery frameworks — How do product teams systematically enumerate ALL possible customer journeys, including edge cases and error paths? Techniques like: event storming, customer journey mapping, state explosion testing, scenario workshops, what-if analysis, pre-mortems. What's the modern best practice for ensuring you've covered the paths users will actually take (not just the happy path)?"
+                      - paragraph [ref=e429]
+                      - paragraph [ref=e430]: "2. Gap detection methods — How do teams find the journeys they MISSED? Techniques for finding holes in product specs before users do. Things like: model-based testing that auto-discovers untested paths, property-based testing that generates random user sequences, chaos journey testing, adversarial user simulation. Are there AI tools that can read a product spec and identify missing edge cases?"
+                      - paragraph [ref=e431]
+                      - paragraph [ref=e432]: "3. Journey documentation formats — Once you've discovered all the journeys, how do you document them in a way that's: (a) easy for AI coding agents to consume, (b) version-controlled alongside code, (c) maintained as a living document, not a throwaway artifact? Formats like: Given/When/Then scenarios, user story maps, customer journey maps as code, event catalogs. What format works best for stateful apps with multiple phases?"
+                      - paragraph [ref=e433]
+                      - paragraph [ref=e434]: 4. Tools that generate journeys from code — Are there tools that can analyze an existing codebase (like our Zustand store with 650+ lines of state transitions) and reverse-engineer all possible journeys? Static analysis tools, state exploration tools, model checkers that enumerate all reachable states and transitions? Especially for React/TypeScript/Electron apps.
+                      - paragraph [ref=e435]
+                      - paragraph [ref=e436]: "5. Preventing journey gaps in ongoing development — When adding new features, how do teams ensure they don't introduce new gaps? Techniques like: mandatory journey review checklists, state transition matrices that must be updated, property-based tests that catch new unreachable states. How do companies like Stripe, Shopify, or Figma prevent payment flow or collaboration flow gaps?"
+                      - paragraph [ref=e437]
+                      - paragraph [ref=e438]: "6. Real-world war stories — Examples from companies where missing journeys caused significant bugs. How they discovered the gap, how they fixed the process to prevent it from happening again. Especially interested in: (a) stateful apps (chat, collaboration, workflow tools), (b) apps with multiple entry points (GUI + CLI + API), (c) apps with time-dependent state (timers, sessions, reconnection)."
+                      - paragraph [ref=e439]
+                      - paragraph [ref=e440]: 7. Integration with spec-driven development — I use OpenSpec + Loki Mode (autonomous AI agent execution) for development. How can journey discovery and gap detection be integrated into a spec-driven workflow? Can AI agents be prompted to automatically identify missing journeys when given a product spec? Are there OpenSpec, Kiro, or Spec Kit extensions for journey coverage analysis?
+                      - paragraph [ref=e441]
+                      - paragraph [ref=e442]: 8. The journey registry concept — Is there a best practice for maintaining a single, canonical registry of all known customer journeys that evolves with the product? Something analogous to a database migration system but for customer journeys — where adding a new feature requires explicitly declaring what new journeys it creates and what existing journeys it modifies? How do teams keep this from becoming stale?
+                      - paragraph [ref=e443]
+                      - paragraph [ref=e444]: "9. A living framework for product decisions and state transitions — I need a way to log all product decisions — every state transition, every edge case resolution, every what should happen when X answer — in a format that: (a) AI agents can review before implementing changes, (b) accumulates over time rather than being rewritten per feature, (c) surfaces gaps proactively (you added a new phase but haven't specified what happens when the timer is running and the user enters it), (d) integrates with spec-driven development tools like OpenSpec so that when a new change is proposed, the framework can check whether all existing journeys are still covered. Essentially: how do teams build and maintain a decision log + journey coverage matrix that grows with the product and acts as the source of truth for what should the product do in every situation?"
+                      - paragraph [ref=e445]
+                      - paragraph [ref=e446]: Please include links to blog posts, frameworks, tools, GitHub repos, conference talks, and real examples. Prioritize practical, implementable approaches over theoretical frameworks. I want something my AI agents can use to find gaps before users do.
+                    - button "Expand" [ref=e447] [cursor=pointer]:
+                      - img [ref=e448]: expand_more
+                - generic [ref=e454]:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - button "Listen":
+                              - img: volume_up
+                        - menu
+                  - generic [ref=e455]:
+                    - generic [ref=e460]:
+                      - generic:
+                        - generic:
+                          - img
+                    - generic [ref=e462]:
+                      - button [ref=e469]:
+                        - generic [ref=e471]:
+                          - status:
+                            - generic: Show thinking
+                          - img [ref=e473]: expand_more
+                      - heading "Gemini said" [level=2] [ref=e476]
+                      - paragraph [ref=e568]:
+                        - text: Here's my plan to tackle that topic. Let me know if you need to make changes.
+                        - generic [ref=e572]:
+                          - heading "Product Journey Discovery and Decision Logging" [level=3] [ref=e573]
+                          - generic [ref=e574]:
+                            - generic [ref=e575]:
+                              - generic [ref=e576]:
+                                - img [ref=e577]: select_window_2
+                                - generic [ref=e578]: Research Websites
+                              - generic [ref=e579]:
+                                - generic [ref=e580]: (1) Explore journey discovery frameworks and gap detection methods, such as event storming, state explosion testing, model-based testing, and adversarial user simulation, to systematically enumerate all possible customer journeys. (2) Investigate journey documentation formats and the concept of a journey registry that are version-controlled, easy for AI coding agents to consume, and act as an evolving source of truth. (3) Find static analysis tools, state exploration tools, and model checkers capable of reverse-engineering user journeys and state transitions from existing React, TypeScript, Electron, and Zustand codebases. (4) Research development best practices used by top tech companies for preventing journey gaps, focusing on state transition matrices, property-based tests, and mandatory review checklists. (5) Find real-world case studies and post-mortems where missing journeys caused significant bugs, specifically looking for examples involving stateful applications, multiple interfaces, and time-dependent states. (6) Analyze the integration of journey discovery into spec-driven development workflows, including OpenSpec, Loki Mode, and Spec Kit, and how AI agents can automatically identify missing paths. (7) Synthesize a framework for maintaining a living product decision log that accumulates state transitions, proactively surfaces gaps, and allows AI agents to review edge-case resolutions before implementing changes. (8) Compile a list of practical resources, including links to blog posts, GitHub repositories, tools, and conference talks, that support the implementation of these frameworks.
+                                - button "More research plan details" [ref=e582] [cursor=pointer]:
+                                  - generic [ref=e583]: More
+                            - generic [ref=e587]:
+                              - img [ref=e588]: sort
+                              - generic [ref=e589]: Analyze Results
+                            - generic [ref=e592]:
+                              - img [ref=e593]: travel_explore
+                              - generic [ref=e594]: Create Report
+                          - generic [ref=e595]:
+                            - img [ref=e596]: schedule
+                            - generic [ref=e597]: Ready in a few mins
+                          - generic [ref=e598]:
+                            - button "Edit the research plan" [disabled]:
+                              - generic: Edit plan
+                            - button "Start research" [disabled]:
+                              - generic: Start research
+              - generic [ref=e599]:
+                - generic [ref=e604]:
+                  - button "Copy prompt" [ref=e606] [cursor=pointer]:
+                    - img [ref=e607]: content_copy
+                  - button "Edit" [ref=e611] [cursor=pointer]:
+                    - img [ref=e612]: edit
+                  - heading "You said Start research" [level=2] [ref=e617]:
+                    - generic [ref=e618]: You said
+                    - paragraph [ref=e619]: Start research
+                - generic [ref=e623]:
+                  - generic [ref=e624]:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - button "Listen":
+                              - img: volume_up
+                        - menu
+                    - generic [ref=e629]:
+                      - generic:
+                        - generic:
+                          - img
+                  - generic [ref=e632]:
+                    - heading "Gemini said" [level=2] [ref=e633]
+                    - paragraph [ref=e638]:
+                      - text: I'm on it. I'll let you know when your research is done. In the meantime, you can leave this chat.
+                      - generic [ref=e644] [cursor=pointer]:
+                        - generic [ref=e645]:
+                          - generic [ref=e710]:
+                            - generic:
+                              - img
+                          - img [ref=e648]: select_window_2
+                        - status [ref=e649]:
+                          - generic [ref=e650]: Product Journey Discovery and Decision Logging
+                          - generic [ref=e653]: Researching 189 websites...
+          - generic [ref=e142]:
+            - group [ref=e143]:
+              - generic [ref=e146]:
+                - textbox "Enter a prompt for Gemini" [ref=e321]:
+                  - text: What do you want to research?
+                  - paragraph [ref=e479]
+                - generic [ref=e153]:
+                  - button "Open upload file menu" [ref=e158] [cursor=pointer]:
+                    - img [ref=e159]: add_2
+                  - generic [ref=e164]:
+                    - text: page_info
+                    - button "Deselect Deep research" [ref=e362]:
+                      - img [ref=e363]: travel_explore
+                      - img [ref=e365]: close
+                - generic [ref=e172]:
+                  - button "Open mode picker" [ref=e175]:
+                    - generic [ref=e177]:
+                      - generic [ref=e178]: Pro
+                      - img [ref=e179]: keyboard_arrow_down
+                  - generic [ref=e182]:
+                    - text: mic
+                    - button "Stop response" [ref=e480] [cursor=pointer]:
+                      - text: send
+                      - img [ref=e655]: stop
+            - paragraph [ref=e483]: Gemini is AI and can make mistakes.
+        - generic [ref=e657]:
+          - generic [ref=e659]:
+            - generic [ref=e660]:
+              - img [ref=e661]: travel_explore
+              - heading "Product Journey Discovery and Decision Logging" [level=2] [ref=e662]
+              - separator [ref=e663]
+              - button "Show thinking" [ref=e664]:
+                - generic [ref=e665]: Show thinking
+                - img [ref=e666]: keyboard_arrow_down
+            - button "Close panel" [ref=e670] [cursor=pointer]:
+              - img [ref=e671]: close
+          - generic [ref=e675]:
+            - generic [ref=e711]:
+              - generic [ref=e712]:
+                - generic [ref=e713]:
+                  - img [ref=e715]: spark
+                  - separator [ref=e716]
+                - generic [ref=e717]:
+                  - generic [ref=e718]: Defining Product Gaps
+                  - generic [ref=e719]: I am framing this research around the distinction between logical code bugs and "product gaps"—unintended paths that arise from undefined state transitions. In complex systems with multiple interfaces and distinct phases, the core challenge is not just documenting the intended user flow, but systematically uncovering every possible sequence of events, especially those involving time-dependent state and cross-platform concurrency that often go unnoticed during initial planning.
+              - generic [ref=e720]:
+                - separator [ref=e722]
+                - generic [ref=e723]:
+                  - generic [ref=e724]: Dynamic Journey Documentation
+                  - generic [ref=e725]: I am investigating the concept of a Journey Registry as a canonical source of truth that evolves alongside the codebase. I've identified a major need for documentation formats that are version-controlled and easily consumable by AI agents. This ensures that every product decision—such as how to handle session resumes or conflicting timers—is archived and proactively referenced to prevent state transitions from falling through the cracks.
+              - generic [ref=e726]:
+                - separator [ref=e728]
+                - generic [ref=e729]:
+                  - generic [ref=e730]: Investigating State Frameworks
+                  - generic [ref=e731]: I am moving forward by synthesizing frameworks like event storming and property-based testing to see how they can be adapted for a spec-driven workflow. I will focus on finding tools that can analyze state management stores to visualize all reachable states and explore how industry leaders maintain living decision logs that keep their product logic consistent across GUI and CLI entry points.
+              - generic [ref=e732]:
+                - separator [ref=e735]
+                - generic [ref=e737]:
+                  - generic [ref=e738]: Researching websites...
+                  - generic [ref=e739]:
+                    - link "medium.com Systemic Edge Case Discovery and Classification in Software Development - Medium" [ref=e741] [cursor=pointer]:
+                      - /url: https://medium.com/@stanimirovv/systemic-edge-case-discovery-and-classification-in-software-development-50737a5e5c20
+                      - generic [ref=e742]: medium.com
+                      - generic [ref=e743]: Systemic Edge Case Discovery and Classification in Software Development - Medium
+                    - link "cmswire.com The Complete Guide to Customer Journey Mapping in 2025 - CMSWire" [ref=e745] [cursor=pointer]:
+                      - /url: https://www.cmswire.com/customer-experience/customer-journey-mapping-a-how-to-guide/
+                      - generic [ref=e746]: cmswire.com
+                      - generic [ref=e747]: The Complete Guide to Customer Journey Mapping in 2025 - CMSWire
+                    - link "theydo.com Tips for managing journeys with alternative paths - TheyDo" [ref=e749] [cursor=pointer]:
+                      - /url: https://www.theydo.com/best-practices/tips-for-managing-journeys-with-alternative-paths
+                      - generic [ref=e750]: theydo.com
+                      - generic [ref=e751]: Tips for managing journeys with alternative paths - TheyDo
+                    - link "genesys.com Building a customer journey framework for optimal engagement - Genesys" [ref=e753] [cursor=pointer]:
+                      - /url: https://www.genesys.com/blog/post/building-a-customer-journey-framework-for-optimal-engagement
+                      - generic [ref=e754]: genesys.com
+                      - generic [ref=e755]: Building a customer journey framework for optimal engagement - Genesys
+                    - 'link "flevy.com Cracking the Consulting Code: Top 10 Customer-centric Design (CCD) Frameworks" [ref=e757] [cursor=pointer]':
+                      - /url: https://flevy.com/blog/cracking-the-consulting-code-top-10-customer-centric-design-ccd-frameworks/
+                      - generic [ref=e758]: flevy.com
+                      - generic [ref=e759]: "Cracking the Consulting Code: Top 10 Customer-centric Design (CCD) Frameworks"
+                    - 'link "qt.io Understanding Model-Based Testing: Benefits, Challenges, and Use Cases - Qt" [ref=e761] [cursor=pointer]':
+                      - /url: https://www.qt.io/software-insights/understanding-model-based-testing-benefits-challenges-and-use-cases
+                      - generic [ref=e762]: qt.io
+                      - generic [ref=e763]: "Understanding Model-Based Testing: Benefits, Challenges, and Use Cases - Qt"
+                    - link "opentext.com What is Model-based Testing? - OpenText" [ref=e765] [cursor=pointer]:
+                      - /url: https://www.opentext.com/what-is/model-based-testing
+                      - generic [ref=e766]: opentext.com
+                      - generic [ref=e767]: What is Model-based Testing? - OpenText
+                    - link "testrigor.com What Are Edge Test Cases & How AI Helps - testRigor AI-Based Automated Testing Tool" [ref=e769] [cursor=pointer]:
+                      - /url: https://testrigor.com/blog/what-are-edge-test-cases/
+                      - generic [ref=e770]: testrigor.com
+                      - generic [ref=e771]: What Are Edge Test Cases & How AI Helps - testRigor AI-Based Automated Testing Tool
+                    - 'link "pwc.com Responsible AI and model testing: what you need to know - PwC" [ref=e773] [cursor=pointer]':
+                      - /url: https://www.pwc.com/us/en/tech-effect/ai-analytics/responsible-ai-model-testing.html
+                      - generic [ref=e774]: pwc.com
+                      - generic [ref=e775]: "Responsible AI and model testing: what you need to know - PwC"
+                    - 'link "medium.com Generating Edge Case Scenarios: AI''s Role in Expanding Test Coverage Beyond the Obvious | by V2Solutions Inc. | Medium" [ref=e777] [cursor=pointer]':
+                      - /url: https://medium.com/@v2solutions/generating-edge-case-scenarios-ais-role-in-expanding-test-coverage-beyond-the-obvious-f700e13f5df6
+                      - generic [ref=e778]: medium.com
+                      - generic [ref=e779]: "Generating Edge Case Scenarios: AI's Role in Expanding Test Coverage Beyond the Obvious | by V2Solutions Inc. | Medium"
+                    - link "learn.microsoft.com Conversational journeys overview - Dynamics 365 Customer Insights | Microsoft Learn" [ref=e781] [cursor=pointer]:
+                      - /url: https://learn.microsoft.com/en-us/dynamics365/customer-insights/journeys/conversational-journeys-overview
+                      - generic [ref=e782]: learn.microsoft.com
+                      - generic [ref=e783]: Conversational journeys overview - Dynamics 365 Customer Insights | Microsoft Learn
+                    - 'link "parloa.com AI Customer Journeys: Real-Time Adaptation & Orchestration - Parloa" [ref=e785] [cursor=pointer]':
+                      - /url: https://www.parloa.com/blog/customer-journey/
+                      - generic [ref=e786]: parloa.com
+                      - generic [ref=e787]: "AI Customer Journeys: Real-Time Adaptation & Orchestration - Parloa"
+                    - link "experienceleague.adobe.com AI Assistant for Adobe Customer Journey Analytics" [ref=e789] [cursor=pointer]:
+                      - /url: https://experienceleague.adobe.com/en/docs/analytics-platform/using/cja-overview/cja-b2c-overview/ai-assistant
+                      - generic [ref=e790]: experienceleague.adobe.com
+                      - generic [ref=e791]: AI Assistant for Adobe Customer Journey Analytics
+                    - link "c3.ai Documenting and Modernizing Legacy Codebases with C3 Generative AI" [ref=e793] [cursor=pointer]:
+                      - /url: https://c3.ai/blog/documenting-and-modernizing-legacy-codebases-with-c3-generative-ai/
+                      - generic [ref=e794]: c3.ai
+                      - generic [ref=e795]: Documenting and Modernizing Legacy Codebases with C3 Generative AI
+                    - 'link "zustand.docs.pmnd.rs Zustand: Introduction" [ref=e797] [cursor=pointer]':
+                      - /url: https://zustand.docs.pmnd.rs/
+                      - generic [ref=e798]: zustand.docs.pmnd.rs
+                      - generic [ref=e799]: "Zustand: Introduction"
+                    - 'link "github.com GitHub - pmndrs/zustand: Bear necessities for state management in React" [ref=e801] [cursor=pointer]':
+                      - /url: https://github.com/pmndrs/zustand
+                      - generic [ref=e802]: github.com
+                      - generic [ref=e803]: "GitHub - pmndrs/zustand: Bear necessities for state management in React"
+                    - 'link "beyondthecode.medium.com Zustand Middleware: The Architectural Core of Scalable State Management - Ram Krishnan" [ref=e805] [cursor=pointer]':
+                      - /url: https://beyondthecode.medium.com/zustand-middleware-the-architectural-core-of-scalable-state-management-d8d1053489ac
+                      - generic [ref=e806]: beyondthecode.medium.com
+                      - generic [ref=e807]: "Zustand Middleware: The Architectural Core of Scalable State Management - Ram Krishnan"
+                    - 'link "dev.to Zustand 101: Beginner''s Guide - DEV Community" [ref=e809] [cursor=pointer]':
+                      - /url: https://dev.to/im_10moin/zustand-101-beginners-guide-4h20
+                      - generic [ref=e810]: dev.to
+                      - generic [ref=e811]: "Zustand 101: Beginner's Guide - DEV Community"
+                    - link "brainhub.eu Zustand Architecture Patterns at Scale - Brainhub" [ref=e813] [cursor=pointer]:
+                      - /url: https://brainhub.eu/library/zustand-architecture-patterns-at-scale
+                      - generic [ref=e814]: brainhub.eu
+                      - generic [ref=e815]: Zustand Architecture Patterns at Scale - Brainhub
+                    - 'link "youtube.com Spec-Driven Development for AI Agents: I Tried OpenSpec and Others - YouTube" [ref=e817] [cursor=pointer]':
+                      - /url: https://www.youtube.com/watch?v=d3Glwdf_xA8
+                      - generic [ref=e818]: youtube.com
+                      - generic [ref=e819]: "Spec-Driven Development for AI Agents: I Tried OpenSpec and Others - YouTube"
+                    - 'link "reddit.com I recommend you to try OpenSpec : r/RooCode - Reddit" [ref=e821] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/RooCode/comments/1nsyrac/i_recommend_you_to_try_openspec/
+                      - generic [ref=e822]: reddit.com
+                      - generic [ref=e823]: "I recommend you to try OpenSpec : r/RooCode - Reddit"
+                    - 'link "medium.com Steering the Agentic Future: A Technical Deep Dive into BMAD, Spec Kit, and OpenSpec in the SDD Landscape | by Aparna Pradhan | Medium" [ref=e825] [cursor=pointer]':
+                      - /url: https://medium.com/@ap3617180/steering-the-agentic-future-a-technical-deep-dive-into-bmad-spec-kit-and-openspec-in-the-sdd-4f425f1f8d2b
+                      - generic [ref=e826]: medium.com
+                      - generic [ref=e827]: "Steering the Agentic Future: A Technical Deep Dive into BMAD, Spec Kit, and OpenSpec in the SDD Landscape | by Aparna Pradhan | Medium"
+                    - link "dev.to How to make AI follow your instructions more for free (OpenSpec) - DEV Community" [ref=e829] [cursor=pointer]:
+                      - /url: https://dev.to/webdeveloperhyper/how-to-make-ai-follow-your-instructions-more-for-free-openspec-2c85
+                      - generic [ref=e830]: dev.to
+                      - generic [ref=e831]: How to make AI follow your instructions more for free (OpenSpec) - DEV Community
+                    - 'link "materialplus.io Customer Journey Management: A Guide to Optimizing Customer Experiences - Material" [ref=e833] [cursor=pointer]':
+                      - /url: https://www.materialplus.io/perspectives/a-guide-to-customer-journey-management
+                      - generic [ref=e834]: materialplus.io
+                      - generic [ref=e835]: "Customer Journey Management: A Guide to Optimizing Customer Experiences - Material"
+                    - link "stripe.com Building a great product management organization - Stripe" [ref=e837] [cursor=pointer]:
+                      - /url: https://stripe.com/guides/atlas/building-a-great-pm-org
+                      - generic [ref=e838]: stripe.com
+                      - generic [ref=e839]: Building a great product management organization - Stripe
+                    - 'link "designmusketeer.com Stripe & Figma: How A Modern Billing Overhaul Is Powering - Design Musketeer LLC" [ref=e841] [cursor=pointer]':
+                      - /url: https://designmusketeer.com/technology/stripe-figma-billing-sas/
+                      - generic [ref=e842]: designmusketeer.com
+                      - generic [ref=e843]: "Stripe & Figma: How A Modern Billing Overhaul Is Powering - Design Musketeer LLC"
+                    - link "shopify.com Effective Tactics for Customer Journey Optimization - Shopify" [ref=e845] [cursor=pointer]:
+                      - /url: https://www.shopify.com/blog/customer-journey-optimization
+                      - generic [ref=e846]: shopify.com
+                      - generic [ref=e847]: Effective Tactics for Customer Journey Optimization - Shopify
+                    - link "stripe.com Figma case study - Stripe" [ref=e849] [cursor=pointer]:
+                      - /url: https://stripe.com/ie/customers/figma
+                      - generic [ref=e850]: stripe.com
+                      - generic [ref=e851]: Figma case study - Stripe
+                    - link "medium.com The Ultimate Product Requirements Template for Product Teams | by Nima Torabi - Medium" [ref=e853] [cursor=pointer]:
+                      - /url: https://medium.com/beyond-the-build/the-ultimate-product-requirements-template-for-product-teams-7d95edec6432
+                      - generic [ref=e854]: medium.com
+                      - generic [ref=e855]: The Ultimate Product Requirements Template for Product Teams | by Nima Torabi - Medium
+                    - link "hustlebadger.com DECIDE framework & template | Powerful Decision making model - Hustle Badger" [ref=e857] [cursor=pointer]:
+                      - /url: https://www.hustlebadger.com/what-do-product-teams-do/decide-framework/
+                      - generic [ref=e858]: hustlebadger.com
+                      - generic [ref=e859]: DECIDE framework & template | Powerful Decision making model - Hustle Badger
+                    - 'link "atlassian.com DACI: A Decision-Making Framework - Team Playbook - Atlassian" [ref=e861] [cursor=pointer]':
+                      - /url: https://www.atlassian.com/team-playbook/plays/daci
+                      - generic [ref=e862]: atlassian.com
+                      - generic [ref=e863]: "DACI: A Decision-Making Framework - Team Playbook - Atlassian"
+                    - 'link "project-management.com DACI Decision-Making Framework: Everything You Need to Know" [ref=e865] [cursor=pointer]':
+                      - /url: https://project-management.com/daci-model/
+                      - generic [ref=e866]: project-management.com
+                      - generic [ref=e867]: "DACI Decision-Making Framework: Everything You Need to Know"
+                    - link "atlassian.com How to create a product requirements document (PRD) - Atlassian" [ref=e869] [cursor=pointer]:
+                      - /url: https://www.atlassian.com/agile/product-management/requirements
+                      - generic [ref=e870]: atlassian.com
+                      - generic [ref=e871]: How to create a product requirements document (PRD) - Atlassian
+                    - link "picussecurity.com Adversarial Exposure Validation Tools - Picus Security" [ref=e873] [cursor=pointer]:
+                      - /url: https://www.picussecurity.com/resource/blog/adversarial-exposure-validation-tools
+                      - generic [ref=e874]: picussecurity.com
+                      - generic [ref=e875]: Adversarial Exposure Validation Tools - Picus Security
+                    - link "gartner.com Best Adversarial Exposure Validation Reviews 2026 | Gartner Peer Insights" [ref=e877] [cursor=pointer]:
+                      - /url: https://www.gartner.com/reviews/market/adversarial-exposure-validation
+                      - generic [ref=e878]: gartner.com
+                      - generic [ref=e879]: Best Adversarial Exposure Validation Reviews 2026 | Gartner Peer Insights
+                    - link "serverion.com Adversarial Robustness Testing Tools Compared - Serverion" [ref=e881] [cursor=pointer]:
+                      - /url: https://www.serverion.com/uncategorized/adversarial-robustness-testing-tools-compared/
+                      - generic [ref=e882]: serverion.com
+                      - generic [ref=e883]: Adversarial Robustness Testing Tools Compared - Serverion
+                    - link "terra.security Top 10 Adversarial Exposure Validation (AEV) Tools | Terra Security Blog" [ref=e885] [cursor=pointer]:
+                      - /url: https://www.terra.security/blog/top-adversarial-exposure-validation-aev-tools
+                      - generic [ref=e886]: terra.security
+                      - generic [ref=e887]: Top 10 Adversarial Exposure Validation (AEV) Tools | Terra Security Blog
+                    - link "fourcore.io Top 10 Awesome Open-Source Adversary Simulation Tools - FourCore ATTACK" [ref=e889] [cursor=pointer]:
+                      - /url: https://fourcore.io/blogs/top-10-open-source-adversary-emulation-tools
+                      - generic [ref=e890]: fourcore.io
+                      - generic [ref=e891]: Top 10 Awesome Open-Source Adversary Simulation Tools - FourCore ATTACK
+              - generic [ref=e892]:
+                - generic [ref=e893]:
+                  - img [ref=e895]: spark
+                  - separator [ref=e896]
+                - generic [ref=e897]:
+                  - generic [ref=e898]: Aligning Intent with Execution
+                  - generic [ref=e899]: I am synthesizing how Spec-Driven Development acts as a critical guardrail for autonomous agents, ensuring they remain aligned with predefined product logic throughout the coding process. I have discovered that modern frameworks are evolving beyond static requirements into "living" specifications that agents can actively query to resolve ambiguities. I've also identified a useful taxonomy for edge cases that distinguishes between user-driven navigation errors and infrastructure-based state drifts, which is particularly relevant for applications that must synchronize state between a graphical interface and a command-line tool.
+              - generic [ref=e900]:
+                - separator [ref=e902]
+                - generic [ref=e903]:
+                  - generic [ref=e904]: Bridging Mapping and Modeling
+                  - generic [ref=e905]: I am addressing the contradiction between the need for high-level customer journey maps and the technical necessity for rigorous state exploration. While traditional mapping often simplifies reality to find growth opportunities, I am finding that Model-Based Testing (MBT) provides a more robust bridge for stateful applications. This approach allows for the generation of thousands of test scenarios from a central behavioral model, effectively uncovering hidden "product gaps" where state transitions might otherwise fall through to an undefined or unexpected outcome.
+              - generic [ref=e906]:
+                - separator [ref=e908]
+                - generic [ref=e909]:
+                  - generic [ref=e910]: Stress-Testing State Transitions
+                  - generic [ref=e911]: I will now focus on identifying specific tools for visualizing complex state machines within TypeScript-based stores and exploring the concept of a "Journey Registry" that functions like a version-controlled migration system for product logic. I am also planning to investigate engineering case studies regarding cross-platform state synchronization to see how industry leaders use adversarial simulation to stress-test their logic against unexpected user sequences and time-dependent state changes.
+              - generic [ref=e912]:
+                - separator [ref=e915]
+                - generic [ref=e917]:
+                  - generic [ref=e918]: Researching websites...
+                  - generic [ref=e919]:
+                    - 'link "dev.to Modern State Management Libraries for React: A Comparative Guide - DEV Community" [ref=e921] [cursor=pointer]':
+                      - /url: https://dev.to/kafrontdev/modern-state-management-libraries-for-react-a-comparative-guide-17kf
+                      - generic [ref=e922]: dev.to
+                      - generic [ref=e923]: "Modern State Management Libraries for React: A Comparative Guide - DEV Community"
+                    - 'link "makersden.io State Management Trends in React 2025: When to Use Zustand, Jotai, XState, or Something Else - Makers'' Den" [ref=e925] [cursor=pointer]':
+                      - /url: https://makersden.io/blog/react-state-management-in-2025
+                      - generic [ref=e926]: makersden.io
+                      - generic [ref=e927]: "State Management Trends in React 2025: When to Use Zustand, Jotai, XState, or Something Else - Makers' Den"
+                    - 'link "developerway.com React State Management in 2025: What You Actually Need - Developer Way" [ref=e929] [cursor=pointer]':
+                      - /url: https://www.developerway.com/posts/react-state-management-2025
+                      - generic [ref=e930]: developerway.com
+                      - generic [ref=e931]: "React State Management in 2025: What You Actually Need - Developer Way"
+                    - 'link "reddit.com How should I review different state management libraries? : r/reactjs - Reddit" [ref=e933] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/reactjs/comments/1bekp5m/how_should_i_review_different_state_management/
+                      - generic [ref=e934]: reddit.com
+                      - generic [ref=e935]: "How should I review different state management libraries? : r/reactjs - Reddit"
+                    - 'link "builder.aws.com \"The Referee\": A Cloud Service Comparison Tool with AI-Accelerated Development Using Kiro | AWS Builder Center" [ref=e937] [cursor=pointer]':
+                      - /url: https://builder.aws.com/content/386i9qTOjp9938nRXgh1ib9kCqB/the-referee-a-cloud-service-comparison-tool-with-ai-accelerated-development-using-kiro
+                      - generic [ref=e938]: builder.aws.com
+                      - generic [ref=e939]: "\"The Referee\": A Cloud Service Comparison Tool with AI-Accelerated Development Using Kiro | AWS Builder Center"
+                    - link "news.ycombinator.com Delete tests | Hacker News" [ref=e941] [cursor=pointer]:
+                      - /url: https://news.ycombinator.com/item?id=45038074
+                      - generic [ref=e942]: news.ycombinator.com
+                      - generic [ref=e943]: Delete tests | Hacker News
+                    - link "medium.com Comprehensive Guide to Test-Driven Development (TDD) with React - Medium" [ref=e945] [cursor=pointer]:
+                      - /url: https://medium.com/@ndmangrule/comprehensive-guide-to-test-driven-development-tdd-with-react-ed7e0cdea9d9
+                      - generic [ref=e946]: medium.com
+                      - generic [ref=e947]: Comprehensive Guide to Test-Driven Development (TDD) with React - Medium
+                    - 'link "github.com dzharii/awesome-typescript: A collection of awesome TypeScript resources for client-side and server-side development. Write your awesome JavaScript in TypeScript - GitHub" [ref=e949] [cursor=pointer]':
+                      - /url: https://github.com/dzharii/awesome-typescript
+                      - generic [ref=e950]: github.com
+                      - generic [ref=e951]: "dzharii/awesome-typescript: A collection of awesome TypeScript resources for client-side and server-side development. Write your awesome JavaScript in TypeScript - GitHub"
+                    - link "bsky.app fast-check.dev - Bluesky" [ref=e953] [cursor=pointer]:
+                      - /url: https://bsky.app/profile/fast-check.dev
+                      - generic [ref=e954]: bsky.app
+                      - generic [ref=e955]: fast-check.dev - Bluesky
+                    - 'link "leadingagile.com Property Based Testing: Step by Step | LeadingAgile - LiminalArc" [ref=e957] [cursor=pointer]':
+                      - /url: https://www.leadingagile.com/2018/04/step-by-step-toward-property-based-testing/
+                      - generic [ref=e958]: leadingagile.com
+                      - generic [ref=e959]: "Property Based Testing: Step by Step | LeadingAgile - LiminalArc"
+                    - link "medium.com Introduction to Property-Based Testing | by Tushar_Trivedi - Medium" [ref=e961] [cursor=pointer]:
+                      - /url: https://medium.com/@tt3043701/introduction-to-property-based-testing-55a27aec1346
+                      - generic [ref=e962]: medium.com
+                      - generic [ref=e963]: Introduction to Property-Based Testing | by Tushar_Trivedi - Medium
+                    - link "ksaaskil.github.io Introduction to property-based testing" [ref=e965] [cursor=pointer]:
+                      - /url: https://ksaaskil.github.io/introduction-to-property-based-testing/
+                      - generic [ref=e966]: ksaaskil.github.io
+                      - generic [ref=e967]: Introduction to property-based testing
+                    - 'link "dzone.com Comprehensive Guide to Property-Based Testing in Go: Principles and Implementation" [ref=e969] [cursor=pointer]':
+                      - /url: https://dzone.com/articles/property-based-testing-guide-go
+                      - generic [ref=e970]: dzone.com
+                      - generic [ref=e971]: "Comprehensive Guide to Property-Based Testing in Go: Principles and Implementation"
+                    - link "dev.to Proper and Basic Property-Based Testing - DEV Community" [ref=e973] [cursor=pointer]:
+                      - /url: https://dev.to/zelenya/proper-and-basic-property-based-testing-3311
+                      - generic [ref=e974]: dev.to
+                      - generic [ref=e975]: Proper and Basic Property-Based Testing - DEV Community
+                    - 'link "ijsscfrtjournal.isrra.org The Challenge of Support Staff in Public Universities Nigeria - International Journal of Social Sciences: Current and Future Research Trends" [ref=e977] [cursor=pointer]':
+                      - /url: https://ijsscfrtjournal.isrra.org/Social_Science_Journal/article/download/1651/211/2002
+                      - generic [ref=e978]: ijsscfrtjournal.isrra.org
+                      - generic [ref=e979]: "The Challenge of Support Staff in Public Universities Nigeria - International Journal of Social Sciences: Current and Future Research Trends"
+                    - link "thelearningjourneyebooks.com The Windows Concept Journey" [ref=e981] [cursor=pointer]:
+                      - /url: https://thelearningjourneyebooks.com/ebooks/TheWindowsConceptJourney_v6_March2025.pdf
+                      - generic [ref=e982]: thelearningjourneyebooks.com
+                      - generic [ref=e983]: The Windows Concept Journey
+                    - link "secamb.nhs.uk South East Coast Ambulance Service NHS Foundation Trust Trust Board Meeting to be held in public" [ref=e985] [cursor=pointer]:
+                      - /url: https://www.secamb.nhs.uk/wp-content/uploads/2023/04/Board-Papers-6-April-2023.pdf
+                      - generic [ref=e986]: secamb.nhs.uk
+                      - generic [ref=e987]: South East Coast Ambulance Service NHS Foundation Trust Trust Board Meeting to be held in public
+                    - link "st-andrews.ac.uk ELIR 2020 Advance Information Set | University of St Andrews" [ref=e989] [cursor=pointer]:
+                      - /url: https://www.st-andrews.ac.uk/assets/university/education/documents/academic-monitoring/elir/elir-advance-information-set-2020.pdf
+                      - generic [ref=e990]: st-andrews.ac.uk
+                      - generic [ref=e991]: ELIR 2020 Advance Information Set | University of St Andrews
+                    - 'link "monday.com Decision Log: Build a System for Better Decision Tracking [2026] - Monday.com" [ref=e993] [cursor=pointer]':
+                      - /url: https://monday.com/blog/project-management/decision-log/
+                      - generic [ref=e994]: monday.com
+                      - generic [ref=e995]: "Decision Log: Build a System for Better Decision Tracking [2026] - Monday.com"
+                    - link "augmentcode.com How to Write Living Specs for AI Agent Development | Augment Code" [ref=e997] [cursor=pointer]:
+                      - /url: https://www.augmentcode.com/guides/living-specs-for-ai-agent-development
+                      - generic [ref=e998]: augmentcode.com
+                      - generic [ref=e999]: How to Write Living Specs for AI Agent Development | Augment Code
+                    - link "dev.to The Missing Link Between AI Agents and the Code They Modify - DEV Community" [ref=e1001] [cursor=pointer]:
+                      - /url: https://dev.to/jimutt/the-missing-link-between-ai-agents-and-the-code-they-modify-kke
+                      - generic [ref=e1002]: dev.to
+                      - generic [ref=e1003]: The Missing Link Between AI Agents and the Code They Modify - DEV Community
+                    - 'link "docs.aws.amazon.com AWS Prescriptive Guidance: Using architectural decision records to streamline technical decision-making for a software development project - AWS Documentation" [ref=e1005] [cursor=pointer]':
+                      - /url: https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/architectural-decision-records/architectural-decision-records.pdf
+                      - generic [ref=e1006]: docs.aws.amazon.com
+                      - generic [ref=e1007]: "AWS Prescriptive Guidance: Using architectural decision records to streamline technical decision-making for a software development project - AWS Documentation"
+                    - link "codesync.global A Beginner's Guide to TLA+ Exploring State Machines & Proving Correctness | Jeff Weiss | Code BEAM V" [ref=e1009] [cursor=pointer]:
+                      - /url: https://codesync.global/media/a-beginner-s-guide-to-tla-exploring-state-machines-proving-correctness-jeff-weiss-code-beam-v/
+                      - generic [ref=e1010]: codesync.global
+                      - generic [ref=e1011]: A Beginner's Guide to TLA+ Exploring State Machines & Proving Correctness | Jeff Weiss | Code BEAM V
+                    - 'link "reddit.com Gut check: TLA+ = state machine simulation + combinatorial generative testing? - Reddit" [ref=e1013] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/tlaplus/comments/ag5ong/gut_check_tla_state_machine_simulation/
+                      - generic [ref=e1014]: reddit.com
+                      - generic [ref=e1015]: "Gut check: TLA+ = state machine simulation + combinatorial generative testing? - Reddit"
+                    - link "hillelwayne.com Composing TLA+ Specifications with State Machines - Hillel Wayne" [ref=e1017] [cursor=pointer]:
+                      - /url: https://www.hillelwayne.com/post/composing-tla/
+                      - generic [ref=e1018]: hillelwayne.com
+                      - generic [ref=e1019]: Composing TLA+ Specifications with State Machines - Hillel Wayne
+                    - link "proofassistants.stackexchange.com Proof Checking for State Machines Similar to TLA+ - Proof Assistants Stack Exchange" [ref=e1021] [cursor=pointer]:
+                      - /url: https://proofassistants.stackexchange.com/questions/4207/proof-checking-for-state-machines-similar-to-tla
+                      - generic [ref=e1022]: proofassistants.stackexchange.com
+                      - generic [ref=e1023]: Proof Checking for State Machines Similar to TLA+ - Proof Assistants Stack Exchange
+                    - link "css-tricks.com Model-Based Testing in React with State Machines - CSS-Tricks" [ref=e1025] [cursor=pointer]:
+                      - /url: https://css-tricks.com/model-based-testing-in-react-with-state-machines/
+                      - generic [ref=e1026]: css-tricks.com
+                      - generic [ref=e1027]: Model-Based Testing in React with State Machines - CSS-Tricks
+              - generic [ref=e1028]:
+                - generic [ref=e1029]:
+                  - img [ref=e1031]: spark
+                  - separator [ref=e1032]
+                - generic [ref=e1033]:
+                  - generic [ref=e1034]: Categorizing Edge Case Origins
+                  - generic [ref=e1035]: "I've refined my understanding of edge cases by categorizing them into distinct origins: user-driven errors, developer-driven logic gaps, and environmental factors like concurrency or latency. This shift in thinking moves beyond treating gaps as simple coding errors and instead views them as systemic misalignments between product intent and technical execution. I am particularly intrigued by the emerging practice of using a 'Decision Log' annotated directly within the codebase—using specific identifiers like decision markers—to create a traceable, persistent link between a high-level product choice and the actual state transitions it governs."
+              - generic [ref=e1036]:
+                - separator [ref=e1038]
+                - generic [ref=e1039]:
+                  - generic [ref=e1040]: Navigating the Map vs. Reality Paradox
+                  - generic [ref=e1041]: "I am currently reconciling a major contradiction in product design: traditional journey mapping often prioritizes a simplified 'happy path' to drive engagement, while robust product engineering requires exhaustive state exploration that can feel overwhelming. To resolve this, I am synthesizing a hybrid approach where high-level personas guide the 'intent' of the journey, but model-based testing handles the 'state explosion.' By using generative models to simulate thousands of random user sequences, I can uncover those 'missing journeys'—such as a user switching between a command-line tool and a graphical interface midway through a time-sensitive phase—that manual brainstorming would likely overlook."
+              - generic [ref=e1042]:
+                - separator [ref=e1044]
+                - generic [ref=e1045]:
+                  - generic [ref=e1046]: Benchmarking State Exploration Tools
+                  - generic [ref=e1047]: I am now pivoting to evaluate specific implementations of 'Living Specs' that act as a source of truth for autonomous agents during the development lifecycle. I plan to dive deeper into how modern frameworks leverage property-based testing to automatically detect unreachable states or logic gaps in complex data stores. Additionally, I will investigate techniques for retrofitting existing state logic into a canonical registry, ensuring that every transition is documented in a version-controlled format that prevents future features from introducing conflicting or undefined behaviors.
+              - generic [ref=e1048]:
+                - separator [ref=e1051]
+                - generic [ref=e1053]:
+                  - generic [ref=e1054]: Researching websites...
+                  - generic [ref=e1055]:
+                    - link "agents.md AGENTS.md" [ref=e1057] [cursor=pointer]:
+                      - /url: https://agents.md/
+                      - generic [ref=e1058]: agents.md
+                      - generic [ref=e1059]: AGENTS.md
+                    - link "developers.openai.com Custom instructions with AGENTS.md – Codex | OpenAI Developers" [ref=e1061] [cursor=pointer]:
+                      - /url: https://developers.openai.com/codex/guides/agents-md
+                      - generic [ref=e1062]: developers.openai.com
+                      - generic [ref=e1063]: Custom instructions with AGENTS.md – Codex | OpenAI Developers
+                    - 'link "github.com GitHub - agentsmd/agents.md: AGENTS.md — a simple, open format for guiding coding agents" [ref=e1065] [cursor=pointer]':
+                      - /url: https://github.com/agentsmd/agents.md
+                      - generic [ref=e1066]: github.com
+                      - generic [ref=e1067]: "GitHub - agentsmd/agents.md: AGENTS.md — a simple, open format for guiding coding agents"
+                    - link "addyosmani.com How to write a good spec for AI agents - Addy Osmani" [ref=e1069] [cursor=pointer]:
+                      - /url: https://addyosmani.com/blog/good-spec/
+                      - generic [ref=e1070]: addyosmani.com
+                      - generic [ref=e1071]: How to write a good spec for AI agents - Addy Osmani
+                    - link "medium.com The Complete Guide to AI Agent Memory Files (CLAUDE.md, AGENTS.md, and Beyond)" [ref=e1073] [cursor=pointer]:
+                      - /url: https://medium.com/data-science-collective/the-complete-guide-to-ai-agent-memory-files-claude-md-agents-md-and-beyond-49ea0df5c5a9
+                      - generic [ref=e1074]: medium.com
+                      - generic [ref=e1075]: The Complete Guide to AI Agent Memory Files (CLAUDE.md, AGENTS.md, and Beyond)
+                    - 'link "arxiv.org FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv" [ref=e1077] [cursor=pointer]':
+                      - /url: https://arxiv.org/html/2603.16513v1
+                      - generic [ref=e1078]: arxiv.org
+                      - generic [ref=e1079]: "FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv"
+                    - link "pmc.ncbi.nlm.nih.gov Momentum, volume and investor sentiment study for u.s. technology sector stocks—A hidden markov model based principal component analysis - PMC" [ref=e1081] [cursor=pointer]:
+                      - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC12419650/
+                      - generic [ref=e1082]: pmc.ncbi.nlm.nih.gov
+                      - generic [ref=e1083]: Momentum, volume and investor sentiment study for u.s. technology sector stocks—A hidden markov model based principal component analysis - PMC
+                    - link "engineering.purdue.edu Space Traffic Management - Purdue Engineering" [ref=e1085] [cursor=pointer]:
+                      - /url: https://engineering.purdue.edu/SID/_downloads/ed6a3390f1c74393b0b3f327e8d15fd7/STM_script_Fall2023.pdf
+                      - generic [ref=e1086]: engineering.purdue.edu
+                      - generic [ref=e1087]: Space Traffic Management - Purdue Engineering
+                    - link "arc.aiaa.org Implementation of a Map Relative Localization System for Planetary Landing | Journal of Guidance, Control, and Dynamics - Aerospace Research Central" [ref=e1089] [cursor=pointer]:
+                      - /url: https://arc.aiaa.org/doi/10.2514/1.G006780
+                      - generic [ref=e1090]: arc.aiaa.org
+                      - generic [ref=e1091]: Implementation of a Map Relative Localization System for Planetary Landing | Journal of Guidance, Control, and Dynamics - Aerospace Research Central
+                    - link "redbooks.ibm.com A Clear Case for IBM Rational ClearCase and ClearQuest UCM - IBM Redbooks" [ref=e1093] [cursor=pointer]:
+                      - /url: https://www.redbooks.ibm.com/redbooks/pdfs/sg246399.pdf
+                      - generic [ref=e1094]: redbooks.ibm.com
+                      - generic [ref=e1095]: A Clear Case for IBM Rational ClearCase and ClearQuest UCM - IBM Redbooks
+                    - link "inspeerity.com How We Use Event Storming to Understand Your Business Processes Before Coding" [ref=e1097] [cursor=pointer]:
+                      - /url: https://inspeerity.com/blog/event-storming-workshop/
+                      - generic [ref=e1098]: inspeerity.com
+                      - generic [ref=e1099]: How We Use Event Storming to Understand Your Business Processes Before Coding
+                    - 'link "nexocode.com Event Storming Workshop: A Game-Changer for Mapping Complex Business Domains" [ref=e1101] [cursor=pointer]':
+                      - /url: https://nexocode.com/blog/posts/event-storming-workshop-mapping-business-domains/
+                      - generic [ref=e1102]: nexocode.com
+                      - generic [ref=e1103]: "Event Storming Workshop: A Game-Changer for Mapping Complex Business Domains"
+                    - link "miro.com FREE Event Storming Template | Miro 2026" [ref=e1105] [cursor=pointer]:
+                      - /url: https://miro.com/templates/event-storming/
+                      - generic [ref=e1106]: miro.com
+                      - generic [ref=e1107]: FREE Event Storming Template | Miro 2026
+                    - link "medium.com Event Storming — The Storm That Cleans Up The Mess! | by Samar Benamar | Medium" [ref=e1109] [cursor=pointer]:
+                      - /url: https://medium.com/@samar.benamar/event-storming-the-storm-that-cleans-up-the-mess-b2bb578db7c
+                      - generic [ref=e1110]: medium.com
+                      - generic [ref=e1111]: Event Storming — The Storm That Cleans Up The Mess! | by Samar Benamar | Medium
+                    - 'link "builder.aws.com \"The Referee\": A Cloud Service Comparison Tool with AI ..." [ref=e1113] [cursor=pointer]':
+                      - /url: https://builder.aws.com/content/386i9qTOjp9938nRXgh1ib9kCqB/the-referee-a-cloud-service-comparison-tool-with-ai-accelerated-development-using-kiro
+                      - generic [ref=e1114]: builder.aws.com
+                      - generic [ref=e1115]: "\"The Referee\": A Cloud Service Comparison Tool with AI ..."
+                    - link "augmentcode.com How to Write Living Specs for AI Agent Development | Augment Code" [ref=e1117] [cursor=pointer]:
+                      - /url: https://www.augmentcode.com/guides/living-specs-for-ai-agent-development
+                      - generic [ref=e1118]: augmentcode.com
+                      - generic [ref=e1119]: How to Write Living Specs for AI Agent Development | Augment Code
+                    - 'link "github.com Fission-AI/OpenSpec: Spec-driven development (SDD) for ... - GitHub" [ref=e1121] [cursor=pointer]':
+                      - /url: https://github.com/Fission-AI/OpenSpec
+                      - generic [ref=e1122]: github.com
+                      - generic [ref=e1123]: "Fission-AI/OpenSpec: Spec-driven development (SDD) for ... - GitHub"
+                    - link "dev.to The Missing Link Between AI Agents and the Code They Modify ..." [ref=e1125] [cursor=pointer]:
+                      - /url: https://dev.to/jimutt/the-missing-link-between-ai-agents-and-the-code-they-modify-kke
+                      - generic [ref=e1126]: dev.to
+                      - generic [ref=e1127]: The Missing Link Between AI Agents and the Code They Modify ...
+              - generic [ref=e1128]:
+                - generic [ref=e1129]:
+                  - img [ref=e1131]: spark
+                  - separator [ref=e1132]
+                - generic [ref=e1133]:
+                  - generic [ref=e1134]: Codifying Product Decisions
+                  - generic [ref=e1135]: I am finding that the most effective way to prevent logic gaps is to embed product decisions directly into the codebase using structured annotations. By linking specific code transitions to an append-only log of 'decision markers,' I can create a persistent, searchable context that explains the 'why' behind every state shift. This approach ensures that when I or another agent modifies a feature, we aren't just looking at the current code, but also the historical reasoning that prevents previously resolved edge cases from resurfacing as new bugs.
+              - generic [ref=e1136]:
+                - separator [ref=e1138]
+                - generic [ref=e1139]:
+                  - generic [ref=e1140]: Verifying Scenario Coherence
+                  - generic [ref=e1141]: I have identified a shift from static documentation toward 'behavior contracts' that I can programmatically verify for completeness and coherence. Instead of just listing paths, I'm exploring how specialized verification commands can proactively scan a specification to find undefined outcomes or 'dangling' states. This resolves the contradiction between high-level intent and low-level execution by forcing a mathematical check on whether every possible trigger—such as a timer expiring during a specific phase—has a defined and safe landing spot.
+              - generic [ref=e1142]:
+                - separator [ref=e1144]
+                - generic [ref=e1145]:
+                  - generic [ref=e1146]: Simulating Adversarial Journeys
+                  - generic [ref=e1147]: I am now moving to analyze how adversarial simulation and property-based testing can be applied to state-heavy stores to uncover the 'missing journeys' that manual testing often ignores. My next focus is to evaluate tools that can visualize state machine transitions within modern reactive frameworks and to gather real-world engineering accounts of synchronizing state between graphical and command-line interfaces. I want to see how industry leaders maintain a 'canonical registry' of journeys that acts as a migration system for product logic as the application evolves.
+              - generic [ref=e1148]:
+                - separator [ref=e1151]
+                - generic [ref=e1153]:
+                  - generic [ref=e1154]: Researching websites...
+                  - generic [ref=e1155]:
+                    - link "docs.openreplay.com Tracking state changes with the Zustand plugin - OpenReplay Documentation" [ref=e1157] [cursor=pointer]:
+                      - /url: https://docs.openreplay.com/en/tutorials/zustand/
+                      - generic [ref=e1158]: docs.openreplay.com
+                      - generic [ref=e1159]: Tracking state changes with the Zustand plugin - OpenReplay Documentation
+                    - 'link "reddit.com Tools to visualise my state flow : r/react - Reddit" [ref=e1161] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/react/comments/1iafcdt/tools_to_visualise_my_state_flow/
+                      - generic [ref=e1162]: reddit.com
+                      - generic [ref=e1163]: "Tools to visualise my state flow : r/react - Reddit"
+                    - link "reddit.com Built an interactive SVG-based graph editor in React (Zustand + TypeScript) - Reddit" [ref=e1165] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/reactjs/comments/1qunbef/built_an_interactive_svgbased_graph_editor_in/
+                      - generic [ref=e1166]: reddit.com
+                      - generic [ref=e1167]: Built an interactive SVG-based graph editor in React (Zustand + TypeScript) - Reddit
+                    - 'link "github.com GitHub - pmndrs/zustand: Bear necessities for state management in React" [ref=e1169] [cursor=pointer]':
+                      - /url: https://github.com/pmndrs/zustand
+                      - generic [ref=e1170]: github.com
+                      - generic [ref=e1171]: "GitHub - pmndrs/zustand: Bear necessities for state management in React"
+                    - link "medium.com The New Zustand Dev Tool. Boost your app development with the… | by Nancy Huang | Medium" [ref=e1173] [cursor=pointer]:
+                      - /url: https://medium.com/@itsnancyhuang/the-new-zustand-dev-tool-15613144b585
+                      - generic [ref=e1174]: medium.com
+                      - generic [ref=e1175]: The New Zustand Dev Tool. Boost your app development with the… | by Nancy Huang | Medium
+                    - link "swc.rwth-aachen.de Design and Implementation of a Recommender System for Secure System Designs" [ref=e1177] [cursor=pointer]:
+                      - /url: https://swc.rwth-aachen.de/docs/bachelor-master-theses/2024-015-MT_Treppmann/2025-01-09%20MT%20Patrick%20Treppmann%20-%20Thesis%20Report.pdf
+                      - generic [ref=e1178]: swc.rwth-aachen.de
+                      - generic [ref=e1179]: Design and Implementation of a Recommender System for Secure System Designs
+                    - link "kluedo.ub.rptu.de Heap-based reasoning about asynchronous programs - kluedo" [ref=e1181] [cursor=pointer]:
+                      - /url: https://kluedo.ub.rptu.de/files/5291/main.pdf
+                      - generic [ref=e1182]: kluedo.ub.rptu.de
+                      - generic [ref=e1183]: Heap-based reasoning about asynchronous programs - kluedo
+                    - 'link "reddit.com 4B models are consistently overlooked. Runs Locally and Crushes It. Reasoning for UI, Mobile, Software and Frontend design. : r/LocalLLaMA - Reddit" [ref=e1185] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/LocalLLaMA/comments/1mcr64f/4b_models_are_consistently_overlooked_runs/
+                      - generic [ref=e1186]: reddit.com
+                      - generic [ref=e1187]: "4B models are consistently overlooked. Runs Locally and Crushes It. Reasoning for UI, Mobile, Software and Frontend design. : r/LocalLLaMA - Reddit"
+                    - link "atcupps.github.io ANDREW CUPPS" [ref=e1189] [cursor=pointer]:
+                      - /url: https://atcupps.github.io/
+                      - generic [ref=e1190]: atcupps.github.io
+                      - generic [ref=e1191]: ANDREW CUPPS
+                    - link "researchgate.net Diagnosing Learners' Problem-Solving Strategies Using Learning Environments with Algorithmic Problems in Secondary Education - ResearchGate" [ref=e1193] [cursor=pointer]:
+                      - /url: https://www.researchgate.net/publication/220094461_Diagnosing_Learners'_Problem-Solving_Strategies_Using_Learning_Environments_with_Algorithmic_Problems_in_Secondary_Education
+                      - generic [ref=e1194]: researchgate.net
+                      - generic [ref=e1195]: Diagnosing Learners' Problem-Solving Strategies Using Learning Environments with Algorithmic Problems in Secondary Education - ResearchGate
+                    - link "github.com viktorbezdek/awesome-github-projects" [ref=e1197] [cursor=pointer]:
+                      - /url: https://github.com/viktorbezdek/awesome-github-projects
+                      - generic [ref=e1198]: github.com
+                      - generic [ref=e1199]: viktorbezdek/awesome-github-projects
+                    - link "jeremydmiller.com Software Design – The Shade Tree Developer" [ref=e1201] [cursor=pointer]:
+                      - /url: https://jeremydmiller.com/category/software-design/
+                      - generic [ref=e1202]: jeremydmiller.com
+                      - generic [ref=e1203]: Software Design – The Shade Tree Developer
+                    - link "reddit.com What are the biggest 'traps' when porting a mature C++ codebase to Rust? - Reddit" [ref=e1205] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/rust/comments/1p2jw4f/what_are_the_biggest_traps_when_porting_a_mature/
+                      - generic [ref=e1206]: reddit.com
+                      - generic [ref=e1207]: What are the biggest 'traps' when porting a mature C++ codebase to Rust? - Reddit
+                    - link "news.ycombinator.com I just feel so discouraged reading this somehow. I used to have this hard-to-get... | Hacker News" [ref=e1209] [cursor=pointer]:
+                      - /url: https://news.ycombinator.com/item?id=45512098
+                      - generic [ref=e1210]: news.ycombinator.com
+                      - generic [ref=e1211]: I just feel so discouraged reading this somehow. I used to have this hard-to-get... | Hacker News
+                    - 'link "theholyjava.wordpress.com Book Review & Digest: Release It! Design and Deploy Production-Ready Software" [ref=e1213] [cursor=pointer]':
+                      - /url: https://theholyjava.wordpress.com/2015/07/22/book-review-digest-release-it-design-and-deploy-production-ready-software/
+                      - generic [ref=e1214]: theholyjava.wordpress.com
+                      - generic [ref=e1215]: "Book Review & Digest: Release It! Design and Deploy Production-Ready Software"
+                    - 'link "arxiv.org FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv" [ref=e1217] [cursor=pointer]':
+                      - /url: https://arxiv.org/html/2603.16513v2
+                      - generic [ref=e1218]: arxiv.org
+                      - generic [ref=e1219]: "FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv"
+                    - link "vldb.org Real-time Workload Pattern Analysis for Large-scale Cloud Databases - VLDB Endowment" [ref=e1221] [cursor=pointer]:
+                      - /url: https://www.vldb.org/pvldb/vol16/p3689-chen.pdf
+                      - generic [ref=e1222]: vldb.org
+                      - generic [ref=e1223]: Real-time Workload Pattern Analysis for Large-scale Cloud Databases - VLDB Endowment
+                    - link "pmc.ncbi.nlm.nih.gov Using Dynamic Multi-Task Non-Negative Matrix Factorization to Detect the Evolution of User Preferences in Collaborative Filtering - PMC" [ref=e1225] [cursor=pointer]:
+                      - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC4535854/
+                      - generic [ref=e1226]: pmc.ncbi.nlm.nih.gov
+                      - generic [ref=e1227]: Using Dynamic Multi-Task Non-Negative Matrix Factorization to Detect the Evolution of User Preferences in Collaborative Filtering - PMC
+                    - link "dspace.mit.edu Signature redacted - DSpace@MIT" [ref=e1229] [cursor=pointer]:
+                      - /url: http://dspace.mit.edu/bitstream/handle/1721.1/105018/959551440-MIT.pdf?sequence=1
+                      - generic [ref=e1230]: dspace.mit.edu
+                      - generic [ref=e1231]: Signature redacted - DSpace@MIT
+              - generic [ref=e1232]:
+                - generic [ref=e1233]:
+                  - img [ref=e1235]: spark
+                  - separator [ref=e1236]
+                - generic [ref=e1237]:
+                  - generic [ref=e1238]: Hardening the Decision Core
+                  - generic [ref=e1239]: I've uncovered a specialized methodology called Decision-Linked Development that uses unique markers to create an immutable link between a product choice and the code that implements it. By integrating these logs with context-aware standards like AGENTS.md, I can provide a persistent source of truth that prevents previously solved edge cases from being overwritten. This is particularly effective for systems where logic must remain consistent across distinct access points, as it ensures the historical reasoning behind a transition is never lost during rapid iteration.
+              - generic [ref=e1240]:
+                - separator [ref=e1242]
+                - generic [ref=e1243]:
+                  - generic [ref=e1244]: Verifying State Completeness
+                  - generic [ref=e1245]: I am bridging the gap between high-level specs and low-level state management by exploring property-based testing tools that can automatically generate random user sequences. This helps me find those rare "missing journeys" that occur when a user interrupts a process or switches interfaces unexpectedly. I'm also looking into how state transition matrices can be used as a functional registry to verify that every combination of application phase and external trigger has a validated landing state, effectively turning potential crashes into graceful, defined handovers.
+              - generic [ref=e1246]:
+                - separator [ref=e1248]
+                - generic [ref=e1249]:
+                  - generic [ref=e1250]: Mapping the State Frontier
+                  - generic [ref=e1251]: I am moving to investigate how to extract visual state machines directly from existing logic to provide a clear overview of all reachable paths. I will also dive into specific autonomous tools that can perform journey coverage analysis and seek out real-world accounts of managing state consistency across multiple platforms. This will help me establish a robust framework for documenting transitions that evolves alongside the codebase like a database migration system.
+              - generic [ref=e1252]:
+                - separator [ref=e1255]
+                - generic [ref=e1257]:
+                  - generic [ref=e1258]: Researching websites...
+                  - generic [ref=e1259]:
+                    - link "dacharycarey.com Agent skill mega repo woes - Dachary Carey" [ref=e1261] [cursor=pointer]:
+                      - /url: https://dacharycarey.com/2026/03/13/agent-skill-mega-repo-woes/
+                      - generic [ref=e1262]: dacharycarey.com
+                      - generic [ref=e1263]: Agent skill mega repo woes - Dachary Carey
+                    - link "mcpmarket.com Browse All Agent Skills - Page 2089 - MCP Market" [ref=e1265] [cursor=pointer]:
+                      - /url: https://mcpmarket.com/tools/skills/all?page=2089
+                      - generic [ref=e1266]: mcpmarket.com
+                      - generic [ref=e1267]: Browse All Agent Skills - Page 2089 - MCP Market
+                    - link "mcpmarket.com Productivity & Workflow Agent Skills - Page 263 - MCP Market" [ref=e1269] [cursor=pointer]:
+                      - /url: https://mcpmarket.com/tools/skills/categories/productivity-workflow?page=263
+                      - generic [ref=e1270]: mcpmarket.com
+                      - generic [ref=e1271]: Productivity & Workflow Agent Skills - Page 263 - MCP Market
+                    - link "github.com Fission-AI OpenSpec · Discussions - GitHub" [ref=e1273] [cursor=pointer]:
+                      - /url: https://github.com/Fission-AI/OpenSpec/discussions
+                      - generic [ref=e1274]: github.com
+                      - generic [ref=e1275]: Fission-AI OpenSpec · Discussions - GitHub
+                    - link "github.com loki-mode/skills/00-index.md at main - GitHub" [ref=e1277] [cursor=pointer]:
+                      - /url: https://github.com/asklokesh/loki-mode/blob/main/skills/00-index.md
+                      - generic [ref=e1278]: github.com
+                      - generic [ref=e1279]: loki-mode/skills/00-index.md at main - GitHub
+                    - link "docs.yoctoproject.org 3 Common Tasks — The Yocto Project ® 4.1 documentation" [ref=e1281] [cursor=pointer]:
+                      - /url: https://docs.yoctoproject.org/4.1/dev-manual/common-tasks.html
+                      - generic [ref=e1282]: docs.yoctoproject.org
+                      - generic [ref=e1283]: 3 Common Tasks — The Yocto Project ® 4.1 documentation
+                    - link "news.ycombinator.com Several core problems with Rust | Hacker News" [ref=e1285] [cursor=pointer]:
+                      - /url: https://news.ycombinator.com/item?id=46027709
+                      - generic [ref=e1286]: news.ycombinator.com
+                      - generic [ref=e1287]: Several core problems with Rust | Hacker News
+                    - 'link "apps.dtic.mil FlashLight: A Dynamic Detector of Shared State, Race Conditions, and Locking Models in Concurrent Java Programs - DTIC" [ref=e1289] [cursor=pointer]':
+                      - /url: https://apps.dtic.mil/sti/tr/pdf/ADA447092.pdf
+                      - generic [ref=e1290]: apps.dtic.mil
+                      - generic [ref=e1291]: "FlashLight: A Dynamic Detector of Shared State, Race Conditions, and Locking Models in Concurrent Java Programs - DTIC"
+                    - link "reddit.com What are the scenarios where \"Rewrite it in Rust\" didn't meet your expectations or couldn't be successfully implemented? - Reddit" [ref=e1293] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/rust/comments/1457x29/what_are_the_scenarios_where_rewrite_it_in_rust/
+                      - generic [ref=e1294]: reddit.com
+                      - generic [ref=e1295]: What are the scenarios where "Rewrite it in Rust" didn't meet your expectations or couldn't be successfully implemented? - Reddit
+              - generic [ref=e1296]:
+                - generic [ref=e1297]:
+                  - img [ref=e1299]: spark
+                  - separator [ref=e1300]
+                - generic [ref=e1301]:
+                  - generic [ref=e1302]: Mapping the Anatomy of State Failures
+                  - generic [ref=e1303]: "I am categorizing the origins of product gaps into four distinct layers: user-driven navigation errors, developer-driven logic omissions, infrastructure-induced latency, and complex concurrency between interfaces. By synthesizing how modern platforms use natural language processing to parse requirements, I’ve found that we can predict where logic might fail before development begins. This systemic approach allows me to move beyond treating missing journeys as simple bugs and instead view them as predictable misalignments between product intent and technical state transitions."
+              - generic [ref=e1304]:
+                - separator [ref=e1306]
+                - generic [ref=e1307]:
+                  - generic [ref=e1308]: Bridging Narrative Mapping and Technical Modeling
+                  - generic [ref=e1309]: I am resolving the contradiction between high-level user journey mapping, which often oversimplifies reality, and the technical necessity for exhaustive state coverage. While traditional maps focus on engagement, I am finding that Model-Based Testing provides a superior bridge for stateful applications by auto-generating thousands of test sequences from a behavioral model. This effectively solves the 'state explosion' problem, ensuring that sequences—such as a user switching between a command-line tool and a graphical interface midway through a time-sensitive phase—are programmatically verified rather than manually brainstormed.
+              - generic [ref=e1310]:
+                - separator [ref=e1312]
+                - generic [ref=e1313]:
+                  - generic [ref=e1314]: Automating State Visualization and Traceability
+                  - generic [ref=e1315]: I am now thinking through how to implement a structured spec-driven loop that keeps documentation in sync with rapid iterations. I intend to evaluate specialized tools for reverse-engineering visual state machines directly from existing reactive stores to provide a clear overview of all reachable paths and hidden dead ends. My next focus is to integrate these insights into a canonical 'decision registry'—an append-only log that functions like a migration system for product logic—ensuring that the historical reasoning behind every transition remains accessible and verifiable for future autonomous updates.
+              - generic [ref=e1316]:
+                - separator [ref=e1319]
+                - generic [ref=e1321]:
+                  - generic [ref=e1322]: Researching websites...
+                  - generic [ref=e1323]:
+                    - link "medium.com Systemic Edge Case Discovery and Classification in Software Development - Medium" [ref=e1325] [cursor=pointer]:
+                      - /url: https://medium.com/@stanimirovv/systemic-edge-case-discovery-and-classification-in-software-development-50737a5e5c20
+                      - generic [ref=e1326]: medium.com
+                      - generic [ref=e1327]: Systemic Edge Case Discovery and Classification in Software Development - Medium
+                    - link "figr.design 20 Edge Case Examples in Software That Break Products - Figr" [ref=e1329] [cursor=pointer]:
+                      - /url: https://figr.design/blog/edge-case-examples-software
+                      - generic [ref=e1330]: figr.design
+                      - generic [ref=e1331]: 20 Edge Case Examples in Software That Break Products - Figr
+                    - link "virtuosoqa.com Edge Case Testing Explained – What to Test & How to Do It - Virtuoso QA" [ref=e1333] [cursor=pointer]:
+                      - /url: https://www.virtuosoqa.com/post/edge-case-testing
+                      - generic [ref=e1334]: virtuosoqa.com
+                      - generic [ref=e1335]: Edge Case Testing Explained – What to Test & How to Do It - Virtuoso QA
+                    - link "applause.com Customer Journey Testing FAQs Answered - Applause" [ref=e1337] [cursor=pointer]:
+                      - /url: https://www.applause.com/blog/customer-journey-testing-faqs-answered/
+                      - generic [ref=e1338]: applause.com
+                      - generic [ref=e1339]: Customer Journey Testing FAQs Answered - Applause
+                    - link "csgi.com Finding and Fixing Broken Customer Experiences with Journey Analytics - CSG" [ref=e1341] [cursor=pointer]:
+                      - /url: https://www.csgi.com/insights/fixing-broken-customer-experiences-with-journey-analytics/
+                      - generic [ref=e1342]: csgi.com
+                      - generic [ref=e1343]: Finding and Fixing Broken Customer Experiences with Journey Analytics - CSG
+                    - link "github.com Home · asklokesh/loki-mode Wiki - GitHub" [ref=e1345] [cursor=pointer]:
+                      - /url: https://github.com/asklokesh/loki-mode/wiki
+                      - generic [ref=e1346]: github.com
+                      - generic [ref=e1347]: Home · asklokesh/loki-mode Wiki - GitHub
+                    - 'link "github.com GitHub - asklokesh/loki-mode: Multi-agent provider agnostic Autonomous system & framework that WORKS..!" [ref=e1349] [cursor=pointer]':
+                      - /url: https://github.com/asklokesh/loki-mode
+                      - generic [ref=e1350]: github.com
+                      - generic [ref=e1351]: "GitHub - asklokesh/loki-mode: Multi-agent provider agnostic Autonomous system & framework that WORKS..!"
+                    - link "mcpmarket.com Loki Mode Claude Code Skill - Autonomous Startup System - MCP Market" [ref=e1353] [cursor=pointer]:
+                      - /url: https://mcpmarket.com/tools/skills/loki-mode-autonomous-startup-architect
+                      - generic [ref=e1354]: mcpmarket.com
+                      - generic [ref=e1355]: Loki Mode Claude Code Skill - Autonomous Startup System - MCP Market
+                    - link "reddit.com I built a Claude Code skill that spawns 37 AI agents to autonomously build your startup from a PRD - Reddit" [ref=e1357] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/ClaudeAI/comments/1pw8yoh/i_built_a_claude_code_skill_that_spawns_37_ai/
+                      - generic [ref=e1358]: reddit.com
+                      - generic [ref=e1359]: I built a Claude Code skill that spawns 37 AI agents to autonomously build your startup from a PRD - Reddit
+                    - link "sourceforge.net Loki Mode download | SourceForge.net" [ref=e1361] [cursor=pointer]:
+                      - /url: https://sourceforge.net/projects/loki-mode.mirror/
+                      - generic [ref=e1362]: sourceforge.net
+                      - generic [ref=e1363]: Loki Mode download | SourceForge.net
+                    - link "thelearningjourneyebooks.com The Windows Concept Journey" [ref=e1365] [cursor=pointer]:
+                      - /url: https://thelearningjourneyebooks.com/ebooks/TheWindowsConceptJourney_v6_March2025.pdf
+                      - generic [ref=e1366]: thelearningjourneyebooks.com
+                      - generic [ref=e1367]: The Windows Concept Journey
+                    - link "st-andrews.ac.uk ELIR 2020 Advance Information Set | University of St Andrews" [ref=e1369] [cursor=pointer]:
+                      - /url: https://www.st-andrews.ac.uk/assets/university/education/documents/academic-monitoring/elir/elir-advance-information-set-2020.pdf
+                      - generic [ref=e1370]: st-andrews.ac.uk
+                      - generic [ref=e1371]: ELIR 2020 Advance Information Set | University of St Andrews
+                    - link "secamb.nhs.uk South East Coast Ambulance Service NHS Foundation Trust Trust Board Meeting to be held in public" [ref=e1373] [cursor=pointer]:
+                      - /url: https://www.secamb.nhs.uk/wp-content/uploads/2023/04/Board-Papers-6-April-2023.pdf
+                      - generic [ref=e1374]: secamb.nhs.uk
+                      - generic [ref=e1375]: South East Coast Ambulance Service NHS Foundation Trust Trust Board Meeting to be held in public
+                    - 'link "jimmyutterstrom.com Decision-Linked Development: Giving AI agents the context they need to modify your code" [ref=e1377] [cursor=pointer]':
+                      - /url: https://jimmyutterstrom.com/blog/2026/03/25/decision-linked-development/
+                      - generic [ref=e1378]: jimmyutterstrom.com
+                      - generic [ref=e1379]: "Decision-Linked Development: Giving AI agents the context they need to modify your code"
+                    - 'link "arxiv.org FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv" [ref=e1381] [cursor=pointer]':
+                      - /url: https://arxiv.org/html/2603.16513v1
+                      - generic [ref=e1382]: arxiv.org
+                      - generic [ref=e1383]: "FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv"
+                    - 'link "amazon.science Solomonic learning: Large language models and the art of induction - Amazon Science" [ref=e1385] [cursor=pointer]':
+                      - /url: https://www.amazon.science/blog/solomonic-learning-large-language-models-and-the-art-of-induction
+                      - generic [ref=e1386]: amazon.science
+                      - generic [ref=e1387]: "Solomonic learning: Large language models and the art of induction - Amazon Science"
+                    - 'link "all.cs.umass.edu Learning Representation and Control in Markov Decision Processes: New Frontiers Contents" [ref=e1389] [cursor=pointer]':
+                      - /url: https://all.cs.umass.edu/pubs/2009/mahadevan_09.pdf
+                      - generic [ref=e1390]: all.cs.umass.edu
+                      - generic [ref=e1391]: "Learning Representation and Control in Markov Decision Processes: New Frontiers Contents"
+                    - link "pmc.ncbi.nlm.nih.gov Using Dynamic Multi-Task Non-Negative Matrix Factorization to Detect the Evolution of User Preferences in Collaborative Filtering - PMC" [ref=e1393] [cursor=pointer]:
+                      - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC4535854/
+                      - generic [ref=e1394]: pmc.ncbi.nlm.nih.gov
+                      - generic [ref=e1395]: Using Dynamic Multi-Task Non-Negative Matrix Factorization to Detect the Evolution of User Preferences in Collaborative Filtering - PMC
+                    - link "dspace.mit.edu Signature redacted - DSpace@MIT" [ref=e1397] [cursor=pointer]:
+                      - /url: http://dspace.mit.edu/bitstream/handle/1721.1/105018/959551440-MIT.pdf?sequence=1
+                      - generic [ref=e1398]: dspace.mit.edu
+                      - generic [ref=e1399]: Signature redacted - DSpace@MIT
+                    - 'link "qt.io Understanding Model-Based Testing: Benefits, Challenges, and Use Cases - Qt" [ref=e1401] [cursor=pointer]':
+                      - /url: https://www.qt.io/software-insights/understanding-model-based-testing-benefits-challenges-and-use-cases
+                      - generic [ref=e1402]: qt.io
+                      - generic [ref=e1403]: "Understanding Model-Based Testing: Benefits, Challenges, and Use Cases - Qt"
+                    - 'link "keysight.com Software Testing Tools: Top Picks and an AI Test Automation Guide | Keysight Blogs" [ref=e1405] [cursor=pointer]':
+                      - /url: https://www.keysight.com/blogs/en/tech/software-testing/enterprise-testing-tools-ai
+                      - generic [ref=e1406]: keysight.com
+                      - generic [ref=e1407]: "Software Testing Tools: Top Picks and an AI Test Automation Guide | Keysight Blogs"
+                    - link "accelq.com 10 Best AI Testing Tools in 2026 (Compared & Reviewed) - ACCELQ" [ref=e1409] [cursor=pointer]:
+                      - /url: https://www.accelq.com/blog/ai-testing-tools/
+                      - generic [ref=e1410]: accelq.com
+                      - generic [ref=e1411]: 10 Best AI Testing Tools in 2026 (Compared & Reviewed) - ACCELQ
+                    - link "usetusk.ai Top 11 AI Tools Helping Developers with Software Testing (2025) - Tusk" [ref=e1413] [cursor=pointer]:
+                      - /url: https://www.usetusk.ai/resources/ai-tools-software-testing-developers
+                      - generic [ref=e1414]: usetusk.ai
+                      - generic [ref=e1415]: Top 11 AI Tools Helping Developers with Software Testing (2025) - Tusk
+                    - link "getxray.app Smarter Test Coverage with AI Test Model Generation in Xray Enterprise" [ref=e1417] [cursor=pointer]:
+                      - /url: https://www.getxray.app/blog/smarter-test-coverage-ai-test-model-generation-xray-enterprise
+                      - generic [ref=e1418]: getxray.app
+                      - generic [ref=e1419]: Smarter Test Coverage with AI Test Model Generation in Xray Enterprise
+                    - link "testmuai.com 29 Node.js Best Practices for Test Automation [2026] - LambdaTest" [ref=e1421] [cursor=pointer]:
+                      - /url: https://www.testmuai.com/blog/nodejs-best-practices/
+                      - generic [ref=e1422]: testmuai.com
+                      - generic [ref=e1423]: 29 Node.js Best Practices for Test Automation [2026] - LambdaTest
+                    - 'link "github.com goldbergyoni/javascript-testing-best-practices: Comprehensive and exhaustive JavaScript & Node.js testing best practices (August 2025) - GitHub" [ref=e1425] [cursor=pointer]':
+                      - /url: https://github.com/goldbergyoni/javascript-testing-best-practices
+                      - generic [ref=e1426]: github.com
+                      - generic [ref=e1427]: "goldbergyoni/javascript-testing-best-practices: Comprehensive and exhaustive JavaScript & Node.js testing best practices (August 2025) - GitHub"
+                    - link "bsky.app fast-check.dev - Bluesky" [ref=e1429] [cursor=pointer]:
+                      - /url: https://bsky.app/profile/fast-check.dev
+                      - generic [ref=e1430]: bsky.app
+                      - generic [ref=e1431]: fast-check.dev - Bluesky
+                    - link "mohitkarekar.com The Ship of Theseus Effect in Software Engineering - Mohit Karekar" [ref=e1433] [cursor=pointer]:
+                      - /url: https://mohitkarekar.com/posts/2026/ship-of-theseus-in-software-engineering/
+                      - generic [ref=e1434]: mohitkarekar.com
+                      - generic [ref=e1435]: The Ship of Theseus Effect in Software Engineering - Mohit Karekar
+                    - link "reddit.com Is there a problem with having too much unit tests in your PRs? - Reddit" [ref=e1437] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/ExperiencedDevs/comments/1krkzew/is_there_a_problem_with_having_too_much_unit/
+                      - generic [ref=e1438]: reddit.com
+                      - generic [ref=e1439]: Is there a problem with having too much unit tests in your PRs? - Reddit
+              - generic [ref=e1440]:
+                - generic [ref=e1441]:
+                  - img [ref=e1443]: spark
+                  - separator [ref=e1444]
+                - generic [ref=e1445]:
+                  - generic [ref=e1446]: Navigating Decision Accountability
+                  - generic [ref=e1447]: I am thinking through how structured frameworks like DACI—assigning roles for Drivers, Approvers, Contributors, and the Informed—can be applied to product state transitions. This ensures that every logical path through the application is not just documented but has a clear chain of accountability. I’ve discovered that integrating these roles into a living specification prevents the common issue of autonomous agents drifting from instructions, as every state change is tied back to a specific decision marker and a validated source of truth.
+              - generic [ref=e1448]:
+                - separator [ref=e1450]
+                - generic [ref=e1451]:
+                  - generic [ref=e1452]: Orchestrating Agentic Journey Adaptation
+                  - generic [ref=e1453]: I am synthesizing how modern journeys are shifting from static, linear paths to real-time intent sensing. By interpreting behavioral signals—such as friction in a session or unexpected interface swaps—agentic systems can now dynamically adjust the next step within defined safety parameters. This resolves the contradiction between simplified journey maps and the complexity of real-world use, allowing the application to maintain context and state even when a user switches between a command-line tool and a graphical interface mid-process.
+              - generic [ref=e1454]:
+                - separator [ref=e1456]
+                - generic [ref=e1457]:
+                  - generic [ref=e1458]: Synchronizing Code Analysis with Product Logic
+                  - generic [ref=e1459]: I will now focus on evaluating state-exploration middleware that captures metadata and action snapshots to make complex transitions visible and traceable. I'm planning to implement a structured workflow of proposing, applying, and archiving specifications to maintain a rigorous link between high-level intent and the actual codebase. My next goal is to investigate how to extract visual state machines from reactive stores to verify that every new feature respects the existing journey registry without creating unreachable states.
+              - generic [ref=e1460]:
+                - separator [ref=e1463]
+                - generic [ref=e1465]:
+                  - generic [ref=e1466]: Researching websites...
+                  - generic [ref=e1467]:
+                    - link "mcpmarket.com Browse All Agent Skills - Page 2497 - MCP Market" [ref=e1469] [cursor=pointer]:
+                      - /url: https://mcpmarket.com/tools/skills/all?page=2497
+                      - generic [ref=e1470]: mcpmarket.com
+                      - generic [ref=e1471]: Browse All Agent Skills - Page 2497 - MCP Market
+                    - link "dev.to The Missing Link Between AI Agents and the Code They Modify - DEV Community" [ref=e1473] [cursor=pointer]:
+                      - /url: https://dev.to/jimutt/the-missing-link-between-ai-agents-and-the-code-they-modify-kke
+                      - generic [ref=e1474]: dev.to
+                      - generic [ref=e1475]: The Missing Link Between AI Agents and the Code They Modify - DEV Community
+                    - 'link "arxiv.org FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv" [ref=e1477] [cursor=pointer]':
+                      - /url: https://arxiv.org/html/2603.16513v1
+                      - generic [ref=e1478]: arxiv.org
+                      - generic [ref=e1479]: "FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv"
+                    - 'link "mdpi.com LF-SSM: Lightweight HiPPO-Free State Space Model for Real-Time UAV Tracking - MDPI" [ref=e1481] [cursor=pointer]':
+                      - /url: https://www.mdpi.com/2504-446X/10/2/102
+                      - generic [ref=e1482]: mdpi.com
+                      - generic [ref=e1483]: "LF-SSM: Lightweight HiPPO-Free State Space Model for Real-Time UAV Tracking - MDPI"
+                    - link "pmc.ncbi.nlm.nih.gov Momentum, volume and investor sentiment study for u.s. technology sector stocks—A hidden markov model based principal component analysis - PMC" [ref=e1485] [cursor=pointer]:
+                      - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC12419650/
+                      - generic [ref=e1486]: pmc.ncbi.nlm.nih.gov
+                      - generic [ref=e1487]: Momentum, volume and investor sentiment study for u.s. technology sector stocks—A hidden markov model based principal component analysis - PMC
+                    - link "hammer.purdue.edu OUT-OF-DISTRIBUTION REPRESENTATION LEARNING FOR NETWORK SYSTEM FORECASTING - Purdue University Graduate School" [ref=e1489] [cursor=pointer]:
+                      - /url: https://hammer.purdue.edu/articles/thesis/Out_of_Distribution_Representation_Learning_for_Network_System_Forecasting/22589401/1/files/40104469.pdf
+                      - generic [ref=e1490]: hammer.purdue.edu
+                      - generic [ref=e1491]: OUT-OF-DISTRIBUTION REPRESENTATION LEARNING FOR NETWORK SYSTEM FORECASTING - Purdue University Graduate School
+                    - link "asmedigitalcollection.asme.org Finite-State Automata-Based Representation of Device States for Function Modeling of Multimodal Devices - ASME Digital Collection" [ref=e1493] [cursor=pointer]:
+                      - /url: https://asmedigitalcollection.asme.org/computingengineering/article/22/1/011008/1109210/Finite-State-Automata-Based-Representation-of
+                      - generic [ref=e1494]: asmedigitalcollection.asme.org
+                      - generic [ref=e1495]: Finite-State Automata-Based Representation of Device States for Function Modeling of Multimodal Devices - ASME Digital Collection
+                    - link "css-tricks.com Model-Based Testing in React with State Machines - CSS-Tricks" [ref=e1497] [cursor=pointer]:
+                      - /url: https://css-tricks.com/model-based-testing-in-react-with-state-machines/
+                      - generic [ref=e1498]: css-tricks.com
+                      - generic [ref=e1499]: Model-Based Testing in React with State Machines - CSS-Tricks
+                    - link "zustand.docs.pmnd.rs Testing - Zustand" [ref=e1501] [cursor=pointer]:
+                      - /url: https://zustand.docs.pmnd.rs/learn/guides/testing
+                      - generic [ref=e1502]: zustand.docs.pmnd.rs
+                      - generic [ref=e1503]: Testing - Zustand
+                    - 'link "github.com GitHub - pmndrs/zustand: Bear necessities for state management in React" [ref=e1505] [cursor=pointer]':
+                      - /url: https://github.com/pmndrs/zustand
+                      - generic [ref=e1506]: github.com
+                      - generic [ref=e1507]: "GitHub - pmndrs/zustand: Bear necessities for state management in React"
+                    - link "medium.com An Essential Zustand Test Recipe. Intro | by Trevor Smith - Medium" [ref=e1509] [cursor=pointer]:
+                      - /url: https://medium.com/@tts2p4/an-essential-zustand-test-recipe-43e5892d75cb
+                      - generic [ref=e1510]: medium.com
+                      - generic [ref=e1511]: An Essential Zustand Test Recipe. Intro | by Trevor Smith - Medium
+                    - link "erikras.com Model Based E2E Testing with State Machines - erikras.com" [ref=e1513] [cursor=pointer]:
+                      - /url: https://erikras.com/blog/model-based-e2e-testing
+                      - generic [ref=e1514]: erikras.com
+                      - generic [ref=e1515]: Model Based E2E Testing with State Machines - erikras.com
+                    - 'link "github.com goldbergyoni/javascript-testing-best-practices: Comprehensive and exhaustive JavaScript & Node.js testing best practices (August 2025) - GitHub" [ref=e1517] [cursor=pointer]':
+                      - /url: https://github.com/goldbergyoni/javascript-testing-best-practices
+                      - generic [ref=e1518]: github.com
+                      - generic [ref=e1519]: "goldbergyoni/javascript-testing-best-practices: Comprehensive and exhaustive JavaScript & Node.js testing best practices (August 2025) - GitHub"
+                    - link "bsky.app fast-check.dev - Bluesky" [ref=e1521] [cursor=pointer]:
+                      - /url: https://bsky.app/profile/fast-check.dev
+                      - generic [ref=e1522]: bsky.app
+                      - generic [ref=e1523]: fast-check.dev - Bluesky
+                    - link "codecentric.de Introduction to Property-based Testing using ScalaCheck - codecentric AG" [ref=e1525] [cursor=pointer]:
+                      - /url: https://www.codecentric.de/en/knowledge-hub/blog/introduction-to-property-based-testing-using-scalacheck-2
+                      - generic [ref=e1526]: codecentric.de
+                      - generic [ref=e1527]: Introduction to Property-based Testing using ScalaCheck - codecentric AG
+                    - link "yonigoldberg.medium.com 20 ways to become a better Node.js developer in 2020 | by Yoni Goldberg | Medium" [ref=e1529] [cursor=pointer]:
+                      - /url: https://yonigoldberg.medium.com/20-ways-to-become-a-better-node-js-developer-in-2020-d6bd73fcf424
+                      - generic [ref=e1530]: yonigoldberg.medium.com
+                      - generic [ref=e1531]: 20 ways to become a better Node.js developer in 2020 | by Yoni Goldberg | Medium
+                    - link "github.com NaNofuzz is a fast and easy-to-use automatic test suite generator for TypeScript that runs inside VS Code - GitHub" [ref=e1533] [cursor=pointer]:
+                      - /url: https://github.com/nanofuzz/nanofuzz
+                      - generic [ref=e1534]: github.com
+                      - generic [ref=e1535]: NaNofuzz is a fast and easy-to-use automatic test suite generator for TypeScript that runs inside VS Code - GitHub
+                    - link "belitsoft.com Dot NET Automated Testing - Belitsoft. Software Development Company" [ref=e1537] [cursor=pointer]:
+                      - /url: https://belitsoft.com/dot-net-automated-testing
+                      - generic [ref=e1538]: belitsoft.com
+                      - generic [ref=e1539]: Dot NET Automated Testing - Belitsoft. Software Development Company
+                    - link "belitsoft.com Software Testing in Financial Services | Belitsoft" [ref=e1541] [cursor=pointer]:
+                      - /url: https://belitsoft.com/software-testing-financial-services
+                      - generic [ref=e1542]: belitsoft.com
+                      - generic [ref=e1543]: Software Testing in Financial Services | Belitsoft
+                    - link "freelancer.co.nz Freelance website testing jobs anguilla Jobs, Employment" [ref=e1545] [cursor=pointer]:
+                      - /url: https://www.freelancer.co.nz/job-search/freelance-website-testing-jobs-anguilla/3/
+                      - generic [ref=e1546]: freelancer.co.nz
+                      - generic [ref=e1547]: Freelance website testing jobs anguilla Jobs, Employment
+              - generic [ref=e1548]:
+                - generic [ref=e1549]:
+                  - img [ref=e1551]: spark
+                  - separator [ref=e1552]
+                - generic [ref=e1553]:
+                  - generic [ref=e1554]: Granular Edge Case Taxonomy
+                  - generic [ref=e1555]: "I have evolved my classification of system failures by adopting a refined taxonomy that categorizes gaps into six distinct drivers: user behavior, logical omissions, infrastructure latency, concurrency conflicts, data anomalies, and compliance logic. This allows for a more systemic probing of vulnerabilities, particularly in scenarios where a command-line interface and a graphical application must synchronize shared state. I am also synthesizing how sentiment analysis can serve as a real-time signal to detect user frustration, allowing the application to dynamically adapt journeys when transitions don't go as expected."
+              - generic [ref=e1556]:
+                - separator [ref=e1558]
+                - generic [ref=e1559]:
+                  - generic [ref=e1560]: Targeted Journey Mapping
+                  - generic [ref=e1561]: I am addressing the tension between the need for exhaustive state modeling and the practical limitations of mapping every possible permutation. I've discovered that a superior approach involves prioritizing the mapping of high-occurrence journeys first and then systematically branching into alternative routes using specific personas. This resolves the complexity of a 'state explosion' by ensuring that only the most impactful edge cases are defined and documented, creating a manageable source of truth that aligns high-level product goals with low-level technical transitions.
+              - generic [ref=e1562]:
+                - separator [ref=e1564]
+                - generic [ref=e1565]:
+                  - generic [ref=e1566]: Next Steps for Verification
+                  - generic [ref=e1567]: I am now focusing on evaluating specialized middleware that captures action metadata and snapshots to provide full visibility into reactive store transitions. I plan to explore how automated simulation tools can stress-test these journeys against adversarial user sequences and environmental disruptions. My next objective is to synthesize these methods into a canonical decision registry that archives the reasoning behind every state shift, ensuring that future feature development respects existing logic and prevents the recurrence of previously resolved product gaps.
+              - generic [ref=e1568]:
+                - separator [ref=e1571]
+                - generic [ref=e1573]:
+                  - generic [ref=e1574]: Researching websites...
+                  - generic [ref=e1575]:
+                    - link "medium.com Systemic Edge Case Discovery and Classification in Software Development - Medium" [ref=e1577] [cursor=pointer]:
+                      - /url: https://medium.com/@stanimirovv/systemic-edge-case-discovery-and-classification-in-software-development-50737a5e5c20
+                      - generic [ref=e1578]: medium.com
+                      - generic [ref=e1579]: Systemic Edge Case Discovery and Classification in Software Development - Medium
+                    - link "figr.design 20 Edge Case Examples in Software That Break Products - Figr" [ref=e1581] [cursor=pointer]:
+                      - /url: https://figr.design/blog/edge-case-examples-software
+                      - generic [ref=e1582]: figr.design
+                      - generic [ref=e1583]: 20 Edge Case Examples in Software That Break Products - Figr
+                    - link "virtuosoqa.com Edge Case Testing Explained – What to Test & How to Do It - Virtuoso QA" [ref=e1585] [cursor=pointer]:
+                      - /url: https://www.virtuosoqa.com/post/edge-case-testing
+                      - generic [ref=e1586]: virtuosoqa.com
+                      - generic [ref=e1587]: Edge Case Testing Explained – What to Test & How to Do It - Virtuoso QA
+                    - link "applause.com Customer Journey Testing FAQs Answered - Applause" [ref=e1589] [cursor=pointer]:
+                      - /url: https://www.applause.com/blog/customer-journey-testing-faqs-answered/
+                      - generic [ref=e1590]: applause.com
+                      - generic [ref=e1591]: Customer Journey Testing FAQs Answered - Applause
+                    - link "csgi.com Finding and Fixing Broken Customer Experiences with Journey Analytics - CSG" [ref=e1593] [cursor=pointer]:
+                      - /url: https://www.csgi.com/insights/fixing-broken-customer-experiences-with-journey-analytics/
+                      - generic [ref=e1594]: csgi.com
+                      - generic [ref=e1595]: Finding and Fixing Broken Customer Experiences with Journey Analytics - CSG
+                    - link "mcpmarket.com Browse All Agent Skills - Page 2497 - MCP Market" [ref=e1597] [cursor=pointer]:
+                      - /url: https://mcpmarket.com/tools/skills/all?page=2497
+                      - generic [ref=e1598]: mcpmarket.com
+                      - generic [ref=e1599]: Browse All Agent Skills - Page 2497 - MCP Market
+                    - link "github.com Fission-AI OpenSpec · Discussions - GitHub" [ref=e1601] [cursor=pointer]:
+                      - /url: https://github.com/Fission-AI/OpenSpec/discussions
+                      - generic [ref=e1602]: github.com
+                      - generic [ref=e1603]: Fission-AI OpenSpec · Discussions - GitHub
+                    - link "engineering.prezi.com We Tried Spec-Driven Development So You Don't Have To - Prezi Engineering" [ref=e1605] [cursor=pointer]:
+                      - /url: https://engineering.prezi.com/we-tried-spec-driven-development-so-you-dont-have-to-56d52231c19e
+                      - generic [ref=e1606]: engineering.prezi.com
+                      - generic [ref=e1607]: We Tried Spec-Driven Development So You Don't Have To - Prezi Engineering
+                    - link "jeromevdl.medium.com Spec-driven development, Back to the Future?! - Jérôme Van Der Linden - Medium" [ref=e1609] [cursor=pointer]:
+                      - /url: https://jeromevdl.medium.com/spec-driven-development-back-to-the-future-d71fde8d47cf
+                      - generic [ref=e1610]: jeromevdl.medium.com
+                      - generic [ref=e1611]: Spec-driven development, Back to the Future?! - Jérôme Van Der Linden - Medium
+                    - 'link "coditude.com Master Spec-Driven Development: The End of \"Prompt & Pray\" - Coditude" [ref=e1613] [cursor=pointer]':
+                      - /url: https://www.coditude.com/insights/master-spec-driven-development-the-end-of-prompt-pray/
+                      - generic [ref=e1614]: coditude.com
+                      - generic [ref=e1615]: "Master Spec-Driven Development: The End of \"Prompt & Pray\" - Coditude"
+                    - 'link "epam.com Inside Spec-Driven Development: What GitHub''s Spec Kit Makes Possible for AI-assisted Engineering - EPAM" [ref=e1617] [cursor=pointer]':
+                      - /url: https://www.epam.com/insights/ai/blogs/inside-spec-driven-development-what-githubspec-kit-makes-possible-for-ai-engineering
+                      - generic [ref=e1618]: epam.com
+                      - generic [ref=e1619]: "Inside Spec-Driven Development: What GitHub's Spec Kit Makes Possible for AI-assisted Engineering - EPAM"
+                    - link "reddit.com Spec-driven development is underhyped! Here's how you build better with Cursor! - Reddit" [ref=e1621] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/cursor/comments/1nomd8t/specdriven_development_is_underhyped_heres_how/
+                      - generic [ref=e1622]: reddit.com
+                      - generic [ref=e1623]: Spec-driven development is underhyped! Here's how you build better with Cursor! - Reddit
+                    - 'link "jimmyutterstrom.com Decision-Linked Development: Giving AI agents the context they need to modify your code" [ref=e1625] [cursor=pointer]':
+                      - /url: https://jimmyutterstrom.com/blog/2026/03/25/decision-linked-development/
+                      - generic [ref=e1626]: jimmyutterstrom.com
+                      - generic [ref=e1627]: "Decision-Linked Development: Giving AI agents the context they need to modify your code"
+                    - 'link "arxiv.org FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv" [ref=e1629] [cursor=pointer]':
+                      - /url: https://arxiv.org/html/2603.16513v2
+                      - generic [ref=e1630]: arxiv.org
+                      - generic [ref=e1631]: "FEAT: A Linear-Complexity Foundation Model for Extremely Large Structured Data - arXiv"
+                    - link "vldb.org Real-time Workload Pattern Analysis for Large-scale Cloud Databases - VLDB Endowment" [ref=e1633] [cursor=pointer]:
+                      - /url: https://www.vldb.org/pvldb/vol16/p3689-chen.pdf
+                      - generic [ref=e1634]: vldb.org
+                      - generic [ref=e1635]: Real-time Workload Pattern Analysis for Large-scale Cloud Databases - VLDB Endowment
+                    - link "pmc.ncbi.nlm.nih.gov Using Dynamic Multi-Task Non-Negative Matrix Factorization to Detect the Evolution of User Preferences in Collaborative Filtering - PMC" [ref=e1637] [cursor=pointer]:
+                      - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC4535854/
+                      - generic [ref=e1638]: pmc.ncbi.nlm.nih.gov
+                      - generic [ref=e1639]: Using Dynamic Multi-Task Non-Negative Matrix Factorization to Detect the Evolution of User Preferences in Collaborative Filtering - PMC
+                    - link "pnas.org Dynamic sensor selection for biomarker discovery - PNAS" [ref=e1641] [cursor=pointer]:
+                      - /url: https://www.pnas.org/doi/10.1073/pnas.2501324122
+                      - generic [ref=e1642]: pnas.org
+                      - generic [ref=e1643]: Dynamic sensor selection for biomarker discovery - PNAS
+                    - link "dspace.mit.edu Signature redacted - DSpace@MIT" [ref=e1645] [cursor=pointer]:
+                      - /url: http://dspace.mit.edu/bitstream/handle/1721.1/105018/959551440-MIT.pdf?sequence=1
+                      - generic [ref=e1646]: dspace.mit.edu
+                      - generic [ref=e1647]: Signature redacted - DSpace@MIT
+                    - link "react-community-tools-practices-cheatsheet.netlify.app XState - React Common Tools and Practices" [ref=e1649] [cursor=pointer]:
+                      - /url: https://react-community-tools-practices-cheatsheet.netlify.app/state-management/xstate
+                      - generic [ref=e1650]: react-community-tools-practices-cheatsheet.netlify.app
+                      - generic [ref=e1651]: XState - React Common Tools and Practices
+                    - link "www8.cs.fau.de VerSyKo - Theoretical Computer Science" [ref=e1653] [cursor=pointer]:
+                      - /url: https://www8.cs.fau.de/ext/milius/publications/versyko-report.pdf
+                      - generic [ref=e1654]: www8.cs.fau.de
+                      - generic [ref=e1655]: VerSyKo - Theoretical Computer Science
+                    - link "concerningquality.com Compiling a Test Suite | Concerning Quality" [ref=e1657] [cursor=pointer]:
+                      - /url: https://concerningquality.com/test-compilation/
+                      - generic [ref=e1658]: concerningquality.com
+                      - generic [ref=e1659]: Compiling a Test Suite | Concerning Quality
+                    - 'link "jster.net JSter #162: Libraries, and more" [ref=e1661] [cursor=pointer]':
+                      - /url: https://jster.net/blog/jster-162/
+                      - generic [ref=e1662]: jster.net
+                      - generic [ref=e1663]: "JSter #162: Libraries, and more"
+                    - 'link "dev.to This Week In React #95: onRecoverableError, Next.js, Remix, ReactNode, Fabric, Flipper, Expo, React-Runner, State Of JS... - DEV Community" [ref=e1665] [cursor=pointer]':
+                      - /url: https://dev.to/sebastienlorber/this-week-in-react-95-onrecoverableerror-nextjs-remix-reactnode-fabric-flipper-expo-react-runner-state-of-js-2ncd
+                      - generic [ref=e1666]: dev.to
+                      - generic [ref=e1667]: "This Week In React #95: onRecoverableError, Next.js, Remix, ReactNode, Fabric, Flipper, Expo, React-Runner, State Of JS... - DEV Community"
+                    - 'link "github.com goldbergyoni/javascript-testing-best-practices: Comprehensive and exhaustive JavaScript & Node.js testing best practices (August 2025) - GitHub" [ref=e1669] [cursor=pointer]':
+                      - /url: https://github.com/goldbergyoni/javascript-testing-best-practices
+                      - generic [ref=e1670]: github.com
+                      - generic [ref=e1671]: "goldbergyoni/javascript-testing-best-practices: Comprehensive and exhaustive JavaScript & Node.js testing best practices (August 2025) - GitHub"
+                    - link "bsky.app fast-check.dev - Bluesky" [ref=e1673] [cursor=pointer]:
+                      - /url: https://bsky.app/profile/fast-check.dev
+                      - generic [ref=e1674]: bsky.app
+                      - generic [ref=e1675]: fast-check.dev - Bluesky
+                    - link "codecentric.de Introduction to Property-based Testing using ScalaCheck - codecentric AG" [ref=e1677] [cursor=pointer]:
+                      - /url: https://www.codecentric.de/en/knowledge-hub/blog/introduction-to-property-based-testing-using-scalacheck-2
+                      - generic [ref=e1678]: codecentric.de
+                      - generic [ref=e1679]: Introduction to Property-based Testing using ScalaCheck - codecentric AG
+                    - link "yonigoldberg.medium.com 20 ways to become a better Node.js developer in 2020 | by Yoni Goldberg | Medium" [ref=e1681] [cursor=pointer]:
+                      - /url: https://yonigoldberg.medium.com/20-ways-to-become-a-better-node-js-developer-in-2020-d6bd73fcf424
+                      - generic [ref=e1682]: yonigoldberg.medium.com
+                      - generic [ref=e1683]: 20 ways to become a better Node.js developer in 2020 | by Yoni Goldberg | Medium
+                    - link "github.com NaNofuzz is a fast and easy-to-use automatic test suite generator for TypeScript that runs inside VS Code - GitHub" [ref=e1685] [cursor=pointer]:
+                      - /url: https://github.com/nanofuzz/nanofuzz
+                      - generic [ref=e1686]: github.com
+                      - generic [ref=e1687]: NaNofuzz is a fast and easy-to-use automatic test suite generator for TypeScript that runs inside VS Code - GitHub
+                    - link "belitsoft.com Dot NET Automated Testing - Belitsoft. Software Development Company" [ref=e1689] [cursor=pointer]:
+                      - /url: https://belitsoft.com/dot-net-automated-testing
+                      - generic [ref=e1690]: belitsoft.com
+                      - generic [ref=e1691]: Dot NET Automated Testing - Belitsoft. Software Development Company
+                    - link "belitsoft.com Software Testing in Financial Services | Belitsoft" [ref=e1693] [cursor=pointer]:
+                      - /url: https://belitsoft.com/software-testing-financial-services
+                      - generic [ref=e1694]: belitsoft.com
+                      - generic [ref=e1695]: Software Testing in Financial Services | Belitsoft
+                    - link "freelancer.co.nz Freelance website testing jobs anguilla Jobs, Employment" [ref=e1697] [cursor=pointer]:
+                      - /url: https://www.freelancer.co.nz/job-search/freelance-website-testing-jobs-anguilla/3/
+                      - generic [ref=e1698]: freelancer.co.nz
+                      - generic [ref=e1699]: Freelance website testing jobs anguilla Jobs, Employment
+              - generic [ref=e1700]:
+                - generic [ref=e1701]:
+                  - img [ref=e1703]: spark
+                  - separator [ref=e1704]
+                - generic [ref=e1705]:
+                  - generic [ref=e1706]: Synthesizing Real-Time Intent
+                  - generic [ref=e1707]: I am discovering how sentiment modeling and behavioral analytics can act as a real-time signal to distinguish between trivial outliers and critical edge cases. By observing emotional context and behavioral patterns during user interactions, I can identify where a journey breaks down before it results in a formal bug report. This allows me to validate which alternative routes are truly worth mapping, shifting the focus from exhaustive manual brainstorming to a data-driven prioritization of state transitions.
+              - generic [ref=e1708]:
+                - separator [ref=e1710]
+                - generic [ref=e1711]:
+                  - generic [ref=e1712]: Transitioning to Self-Healing Frameworks
+                  - generic [ref=e1713]: I’m resolving the contradiction between static documentation and the rapid evolution of digital interfaces by investigating self-healing test frameworks. I have found that these systems don't just find gaps; they use computer vision and natural language processing to automatically update their internal models when the application's structure changes. This moves the workflow from a linear path to a living, evolving cycle where the product requirements and the testing environment remain in constant, autonomous alignment.
+              - generic [ref=e1714]:
+                - separator [ref=e1716]
+                - generic [ref=e1717]:
+                  - generic [ref=e1718]: Visualizing the Logic Frontier
+                  - generic [ref=e1719]: I am now thinking through how to extract visual representations directly from complex reactive stores to expose hidden "dead ends" and unreachable states in the application logic. My next objective is to synthesize these visual maps with a registry that tracks logic changes over time, functioning like a version-controlled migration system. This will ensure that new features seamlessly integrate with existing phases without introducing conflicting behaviors across different interfaces and entry points.
+              - generic [ref=e1720]:
+                - separator [ref=e1723]
+                - generic [ref=e1725]:
+                  - generic [ref=e1726]: Researching websites...
+                  - generic [ref=e1727]:
+                    - link "medium.com Systemic Edge Case Discovery and Classification in Software Development - Medium" [ref=e1729] [cursor=pointer]:
+                      - /url: https://medium.com/@stanimirovv/systemic-edge-case-discovery-and-classification-in-software-development-50737a5e5c20
+                      - generic [ref=e1730]: medium.com
+                      - generic [ref=e1731]: Systemic Edge Case Discovery and Classification in Software Development - Medium
+                    - link "productschool.com The Definitive Guide to Product Discovery and Frameworks - Product School" [ref=e1733] [cursor=pointer]:
+                      - /url: https://productschool.com/blog/product-fundamentals/what-is-product-discovery
+                      - generic [ref=e1734]: productschool.com
+                      - generic [ref=e1735]: The Definitive Guide to Product Discovery and Frameworks - Product School
+                    - link "codewave.com 9 Most Effective Product Discovery Frameworks with Examples - Codewave" [ref=e1737] [cursor=pointer]:
+                      - /url: https://codewave.com/insights/product-discovery-framework-examples-techniques/
+                      - generic [ref=e1738]: codewave.com
+                      - generic [ref=e1739]: 9 Most Effective Product Discovery Frameworks with Examples - Codewave
+                    - 'link "mckinsey.com Customer experience: - McKinsey" [ref=e1741] [cursor=pointer]':
+                      - /url: https://www.mckinsey.com/~/media/McKinsey/Industries/Public%20and%20Social%20Sector/Our%20Insights/Customer%20Experience/Creating%20value%20through%20transforming%20customer%20journeys.pdf
+                      - generic [ref=e1742]: mckinsey.com
+                      - generic [ref=e1743]: "Customer experience: - McKinsey"
+                    - link "genesys.com Building a customer journey framework for optimal engagement - Genesys" [ref=e1745] [cursor=pointer]:
+                      - /url: https://www.genesys.com/blog/post/building-a-customer-journey-framework-for-optimal-engagement
+                      - generic [ref=e1746]: genesys.com
+                      - generic [ref=e1747]: Building a customer journey framework for optimal engagement - Genesys
+                    - link "accelq.com 10 Best AI Testing Tools in 2026 (Compared & Reviewed) - ACCELQ" [ref=e1749] [cursor=pointer]:
+                      - /url: https://www.accelq.com/blog/ai-testing-tools/
+                      - generic [ref=e1750]: accelq.com
+                      - generic [ref=e1751]: 10 Best AI Testing Tools in 2026 (Compared & Reviewed) - ACCELQ
+                    - 'link "testgrid.io Generate Test Cases with AI: Empower Enterprise QA Teams with CoTester - TestGrid" [ref=e1753] [cursor=pointer]':
+                      - /url: https://testgrid.io/blog/ai-test-case-generation/
+                      - generic [ref=e1754]: testgrid.io
+                      - generic [ref=e1755]: "Generate Test Cases with AI: Empower Enterprise QA Teams with CoTester - TestGrid"
+                    - 'link "keysight.com Software Testing Tools: Top Picks and an AI Test Automation Guide | Keysight Blogs" [ref=e1757] [cursor=pointer]':
+                      - /url: https://www.keysight.com/blogs/en/tech/software-testing/enterprise-testing-tools-ai
+                      - generic [ref=e1758]: keysight.com
+                      - generic [ref=e1759]: "Software Testing Tools: Top Picks and an AI Test Automation Guide | Keysight Blogs"
+                    - link "usetusk.ai Top 11 AI Tools Helping Developers with Software Testing (2025) - Tusk" [ref=e1761] [cursor=pointer]:
+                      - /url: https://www.usetusk.ai/resources/ai-tools-software-testing-developers
+                      - generic [ref=e1762]: usetusk.ai
+                      - generic [ref=e1763]: Top 11 AI Tools Helping Developers with Software Testing (2025) - Tusk
+                    - 'link "medium.com Generating Edge Case Scenarios: AI''s Role in Expanding Test Coverage Beyond the Obvious | by V2Solutions Inc. | Medium" [ref=e1765] [cursor=pointer]':
+                      - /url: https://medium.com/@v2solutions/generating-edge-case-scenarios-ais-role-in-expanding-test-coverage-beyond-the-obvious-f700e13f5df6
+                      - generic [ref=e1766]: medium.com
+                      - generic [ref=e1767]: "Generating Edge Case Scenarios: AI's Role in Expanding Test Coverage Beyond the Obvious | by V2Solutions Inc. | Medium"
+                    - 'link "leadingagile.com Property Based Testing: Step by Step | LeadingAgile - LiminalArc" [ref=e1769] [cursor=pointer]':
+                      - /url: https://www.leadingagile.com/2018/04/step-by-step-toward-property-based-testing/
+                      - generic [ref=e1770]: leadingagile.com
+                      - generic [ref=e1771]: "Property Based Testing: Step by Step | LeadingAgile - LiminalArc"
+                    - link "medium.com Introduction to Property-Based Testing | by Tushar_Trivedi - Medium" [ref=e1773] [cursor=pointer]:
+                      - /url: https://medium.com/@tt3043701/introduction-to-property-based-testing-55a27aec1346
+                      - generic [ref=e1774]: medium.com
+                      - generic [ref=e1775]: Introduction to Property-Based Testing | by Tushar_Trivedi - Medium
+                    - link "ksaaskil.github.io Introduction to property-based testing" [ref=e1777] [cursor=pointer]:
+                      - /url: https://ksaaskil.github.io/introduction-to-property-based-testing/
+                      - generic [ref=e1778]: ksaaskil.github.io
+                      - generic [ref=e1779]: Introduction to property-based testing
+                    - 'link "dzone.com Comprehensive Guide to Property-Based Testing in Go: Principles and Implementation" [ref=e1781] [cursor=pointer]':
+                      - /url: https://dzone.com/articles/property-based-testing-guide-go
+                      - generic [ref=e1782]: dzone.com
+                      - generic [ref=e1783]: "Comprehensive Guide to Property-Based Testing in Go: Principles and Implementation"
+                    - link "dev.to Proper and Basic Property-Based Testing - DEV Community" [ref=e1785] [cursor=pointer]:
+                      - /url: https://dev.to/zelenya/proper-and-basic-property-based-testing-3311
+                      - generic [ref=e1786]: dev.to
+                      - generic [ref=e1787]: Proper and Basic Property-Based Testing - DEV Community
+                    - 'link "jimmyutterstrom.com Decision-Linked Development: Giving AI agents the context they need to modify your code" [ref=e1789] [cursor=pointer]':
+                      - /url: https://jimmyutterstrom.com/blog/2026/03/25/decision-linked-development/
+                      - generic [ref=e1790]: jimmyutterstrom.com
+                      - generic [ref=e1791]: "Decision-Linked Development: Giving AI agents the context they need to modify your code"
+                    - link "formulae.brew.sh homebrew-core - Homebrew Formulae" [ref=e1793] [cursor=pointer]:
+                      - /url: https://formulae.brew.sh/formula/
+                      - generic [ref=e1794]: formulae.brew.sh
+                      - generic [ref=e1795]: homebrew-core - Homebrew Formulae
+                    - 'link "github.com StrayDragon/awesome-stars: my stars list, thx for https://github.com/maguowei/starred · GitHub - GitHub" [ref=e1797] [cursor=pointer]':
+                      - /url: https://github.com/StrayDragon/awesome-stars
+                      - generic [ref=e1798]: github.com
+                      - generic [ref=e1799]: "StrayDragon/awesome-stars: my stars list, thx for https://github.com/maguowei/starred · GitHub - GitHub"
+                    - link "wangchujiang.com GitHub Repositories Ranking - Wang Chujiang (王楚江) 小弟调调" [ref=e1801] [cursor=pointer]:
+                      - /url: https://wangchujiang.com/github-rank/repos.html
+                      - generic [ref=e1802]: wangchujiang.com
+                      - generic [ref=e1803]: GitHub Repositories Ranking - Wang Chujiang (王楚江) 小弟调调
+                    - link "thelearningjourneyebooks.com The Windows Concept Journey" [ref=e1805] [cursor=pointer]:
+                      - /url: https://thelearningjourneyebooks.com/ebooks/TheWindowsConceptJourney_v6_March2025.pdf
+                      - generic [ref=e1806]: thelearningjourneyebooks.com
+                      - generic [ref=e1807]: The Windows Concept Journey
+                    - link "st-andrews.ac.uk ELIR 2020 Advance Information Set | University of St Andrews" [ref=e1809] [cursor=pointer]:
+                      - /url: https://www.st-andrews.ac.uk/assets/university/education/documents/academic-monitoring/elir/elir-advance-information-set-2020.pdf
+                      - generic [ref=e1810]: st-andrews.ac.uk
+                      - generic [ref=e1811]: ELIR 2020 Advance Information Set | University of St Andrews
+                    - link "secamb.nhs.uk South East Coast Ambulance Service NHS Foundation Trust Trust Board Meeting to be held in public" [ref=e1813] [cursor=pointer]:
+                      - /url: https://www.secamb.nhs.uk/wp-content/uploads/2023/04/Board-Papers-6-April-2023.pdf
+                      - generic [ref=e1814]: secamb.nhs.uk
+                      - generic [ref=e1815]: South East Coast Ambulance Service NHS Foundation Trust Trust Board Meeting to be held in public
+                    - link "fastercapital.com Introduction To State Transition Testing - FasterCapital" [ref=e1817] [cursor=pointer]:
+                      - /url: https://fastercapital.com/topics/introduction-to-state-transition-testing.html/1
+                      - generic [ref=e1818]: fastercapital.com
+                      - generic [ref=e1819]: Introduction To State Transition Testing - FasterCapital
+                    - link "pmc.ncbi.nlm.nih.gov Hidden Markov Models and Their Application for Predicting Failure Events - PMC" [ref=e1821] [cursor=pointer]:
+                      - /url: https://pmc.ncbi.nlm.nih.gov/articles/PMC7304047/
+                      - generic [ref=e1822]: pmc.ncbi.nlm.nih.gov
+                      - generic [ref=e1823]: Hidden Markov Models and Their Application for Predicting Failure Events - PMC
+                    - link "ncsi.com Identifying Important Scenario Events in AFSIM Using Simplified Platform States and State Transition Matrices - NCSI" [ref=e1825] [cursor=pointer]:
+                      - /url: https://www.ncsi.com/wp-content/uploads/2023/05/1330-2023DAFMS_DistA_OSU_David_Hillstrom_Presentation_PA_Final.pdf
+                      - generic [ref=e1826]: ncsi.com
+                      - generic [ref=e1827]: Identifying Important Scenario Events in AFSIM Using Simplified Platform States and State Transition Matrices - NCSI
+                    - link "dspace.mit.edu Signature redacted - DSpace@MIT" [ref=e1829] [cursor=pointer]:
+                      - /url: http://dspace.mit.edu/bitstream/handle/1721.1/105018/959551440-MIT.pdf?sequence=1
+                      - generic [ref=e1830]: dspace.mit.edu
+                      - generic [ref=e1831]: Signature redacted - DSpace@MIT
+                    - link "engineering.purdue.edu AUTOMATED PATCH POINT PLACEMENT CAPABILITY FOR HYBRID TRAJECTORY TARGETING A Dissertation Submitted to the Faculty of Purdue Uni" [ref=e1833] [cursor=pointer]:
+                      - /url: https://engineering.purdue.edu/people/kathleen.howell.1/Publications/Dissertations/2017_Spreen.pdf
+                      - generic [ref=e1834]: engineering.purdue.edu
+                      - generic [ref=e1835]: AUTOMATED PATCH POINT PLACEMENT CAPABILITY FOR HYBRID TRAJECTORY TARGETING A Dissertation Submitted to the Faculty of Purdue Uni
+                    - link "github.com GitHub - wzhudev/reverse-linear-sync-engine" [ref=e1837] [cursor=pointer]:
+                      - /url: https://github.com/wzhudev/reverse-linear-sync-engine
+                      - generic [ref=e1838]: github.com
+                      - generic [ref=e1839]: GitHub - wzhudev/reverse-linear-sync-engine
+                    - link "github.com xyflow/awesome-node-based-uis - GitHub" [ref=e1841] [cursor=pointer]:
+                      - /url: https://github.com/xyflow/awesome-node-based-uis
+                      - generic [ref=e1842]: github.com
+                      - generic [ref=e1843]: xyflow/awesome-node-based-uis - GitHub
+                    - link "blog.cloudflare.com How we rebuilt Next.js with AI in one week - The Cloudflare Blog" [ref=e1845] [cursor=pointer]:
+                      - /url: https://blog.cloudflare.com/vinext/
+                      - generic [ref=e1846]: blog.cloudflare.com
+                      - generic [ref=e1847]: How we rebuilt Next.js with AI in one week - The Cloudflare Blog
+                    - 'link "medium.com Fintech''s Multi-Platform Dilemma: Flutter or React Native? | by Galih Laras Prakoso" [ref=e1849] [cursor=pointer]':
+                      - /url: https://medium.com/@galihlprakoso/fintechs-multi-platform-dilemma-flutter-or-react-native-1a14d221b9f4
+                      - generic [ref=e1850]: medium.com
+                      - generic [ref=e1851]: "Fintech's Multi-Platform Dilemma: Flutter or React Native? | by Galih Laras Prakoso"
+                    - link "dev.to Discussion of Why Angular Will not Survive 2024 - DEV Community" [ref=e1853] [cursor=pointer]:
+                      - /url: https://dev.to/kalashin1/why-angular-will-not-survive-2024-2lj3/comments
+                      - generic [ref=e1854]: dev.to
+                      - generic [ref=e1855]: Discussion of Why Angular Will not Survive 2024 - DEV Community
+                    - 'link "designmusketeer.com Stripe & Figma: How A Modern Billing Overhaul Is Powering - Design Musketeer LLC" [ref=e1857] [cursor=pointer]':
+                      - /url: https://designmusketeer.com/technology/stripe-figma-billing-sas/
+                      - generic [ref=e1858]: designmusketeer.com
+                      - generic [ref=e1859]: "Stripe & Figma: How A Modern Billing Overhaul Is Powering - Design Musketeer LLC"
+                    - link "stripe.com Engineering - Stripe Blog" [ref=e1861] [cursor=pointer]:
+                      - /url: https://stripe.com/blog/engineering
+                      - generic [ref=e1862]: stripe.com
+                      - generic [ref=e1863]: Engineering - Stripe Blog
+                    - link "shopify.engineering 10 Tips for Building Resilient Payment Systems - Shopify Engineering" [ref=e1865] [cursor=pointer]:
+                      - /url: https://shopify.engineering/building-resilient-payment-systems
+                      - generic [ref=e1866]: shopify.engineering
+                      - generic [ref=e1867]: 10 Tips for Building Resilient Payment Systems - Shopify Engineering
+                    - link "blog.quastor.org Lessons from Big Tech on Building Resilient Payment Systems - Quastor" [ref=e1869] [cursor=pointer]:
+                      - /url: https://blog.quastor.org/p/lessons-big-tech-building-resilient-payment-systems
+                      - generic [ref=e1870]: blog.quastor.org
+                      - generic [ref=e1871]: Lessons from Big Tech on Building Resilient Payment Systems - Quastor
+              - generic [ref=e1872]:
+                - generic [ref=e1873]:
+                  - img [ref=e1875]: spark
+                  - separator [ref=e1876]
+                - generic [ref=e1877]:
+                  - generic [ref=e1878]: Exposing State Metadata
+                  - generic [ref=e1879]: I am investigating how specialized middleware can be integrated into reactive state stores to capture metadata and action snapshots in real time. By wrapping state transitions with descriptive metadata—such as explicit action naming and payload tracking—I can make complex logic visible and traceable through external developer tools. This approach allows me to monitor and even rewind mutations, providing a clear window into how the application moves between phases like 'Writer’s Room' and 'Director Mode,' ensuring that no state shift happens without a documented trail.
+              - generic [ref=e1880]:
+                - separator [ref=e1882]
+                - generic [ref=e1883]:
+                  - generic [ref=e1884]: Persona-Driven Branching
+                  - generic [ref=e1885]: I've identified a strategic method for managing the 'state explosion' problem by focusing first on the most common user paths and then systematically branching into alternative routes using specific personas. Instead of trying to map every mathematically possible sequence at once, I am thinking through how to use these personas to simulate different emotional contexts and goals. This allows me to prioritize the most impactful edge cases—like a user switching from a graphical interface to a command line mid-session—ensuring that the documentation remains actionable rather than becoming an overwhelming list of improbable paths.
+              - generic [ref=e1886]:
+                - separator [ref=e1888]
+                - generic [ref=e1889]:
+                  - generic [ref=e1890]: Automated Requirement Parsing
+                  - generic [ref=e1891]: I am synthesizing how natural language processing can be used to parse high-level requirement documents directly into thousands of test scenarios. By applying these models to existing product specs, I can automatically generate both standard and boundary conditions that human teams might overlook. This resolves the gap between high-level intent and technical execution by creating a continuous loop where the specification itself acts as the seed for adversarial testing, identifying potential logic failures before a single line of code is written.
+              - generic [ref=e1892]:
+                - separator [ref=e1894]
+                - generic [ref=e1895]:
+                  - generic [ref=e1896]: The Spec-Driven Lifecycle
+                  - generic [ref=e1897]: I am now moving to implement a structured lifecycle for managing product logic that follows a 'propose, apply, and archive' workflow. My next focus is to evaluate how to maintain this as a living history where every change is archived alongside the code, functioning like a version-controlled migration system for product decisions. I plan to evaluate tools that can visualize these state machine transitions directly from the codebase to ensure that new features never create 'dangling' states or conflict with previously established journeys.
+              - generic [ref=e1898]:
+                - separator [ref=e1901]
+                - generic [ref=e1903]:
+                  - generic [ref=e1904]: Researching websites...
+                  - generic [ref=e1905]:
+                    - 'link "mjolner.dk Eventstorming: Make your customer journey a reality - Mjølner Informatics" [ref=e1907] [cursor=pointer]':
+                      - /url: https://mjolner.dk/en/ux-en2/eventstorming-make-your-customer-journey-strategy-a-reality/
+                      - generic [ref=e1908]: mjolner.dk
+                      - generic [ref=e1909]: "Eventstorming: Make your customer journey a reality - Mjølner Informatics"
+                    - 'link "nexocode.com Event Storming Workshop: A Game-Changer for Mapping Complex Business Domains" [ref=e1911] [cursor=pointer]':
+                      - /url: https://nexocode.com/blog/posts/event-storming-workshop-mapping-business-domains/
+                      - generic [ref=e1912]: nexocode.com
+                      - generic [ref=e1913]: "Event Storming Workshop: A Game-Changer for Mapping Complex Business Domains"
+                    - link "qlerify.com Event Storming – The Complete Guide | Qlerify" [ref=e1915] [cursor=pointer]:
+                      - /url: https://www.qlerify.com/post/event-storming-the-complete-guide
+                      - generic [ref=e1916]: qlerify.com
+                      - generic [ref=e1917]: Event Storming – The Complete Guide | Qlerify
+                    - link "medium.com A facilitators recipe for Event Storming | by Donal Spring | Medium" [ref=e1919] [cursor=pointer]:
+                      - /url: https://medium.com/@springdo/a-facilitators-recipe-for-event-storming-941dcb38db0d
+                      - generic [ref=e1920]: medium.com
+                      - generic [ref=e1921]: A facilitators recipe for Event Storming | by Donal Spring | Medium
+                    - link "getxray.app Smarter Test Coverage with AI Test Model Generation in Xray Enterprise" [ref=e1923] [cursor=pointer]:
+                      - /url: https://www.getxray.app/blog/smarter-test-coverage-ai-test-model-generation-xray-enterprise
+                      - generic [ref=e1924]: getxray.app
+                      - generic [ref=e1925]: Smarter Test Coverage with AI Test Model Generation in Xray Enterprise
+                    - 'link "testgrid.io Generate Test Cases with AI: Empower Enterprise QA Teams with CoTester - TestGrid" [ref=e1927] [cursor=pointer]':
+                      - /url: https://testgrid.io/blog/ai-test-case-generation/
+                      - generic [ref=e1928]: testgrid.io
+                      - generic [ref=e1929]: "Generate Test Cases with AI: Empower Enterprise QA Teams with CoTester - TestGrid"
+                    - link "usetusk.ai Top 11 AI Tools Helping Developers with Software Testing (2025) - Tusk" [ref=e1931] [cursor=pointer]:
+                      - /url: https://www.usetusk.ai/resources/ai-tools-software-testing-developers
+                      - generic [ref=e1932]: usetusk.ai
+                      - generic [ref=e1933]: Top 11 AI Tools Helping Developers with Software Testing (2025) - Tusk
+                    - 'link "keysight.com Software Testing Tools: Top Picks and an AI Test Automation Guide | Keysight Blogs" [ref=e1935] [cursor=pointer]':
+                      - /url: https://www.keysight.com/blogs/en/tech/software-testing/enterprise-testing-tools-ai
+                      - generic [ref=e1936]: keysight.com
+                      - generic [ref=e1937]: "Software Testing Tools: Top Picks and an AI Test Automation Guide | Keysight Blogs"
+                    - 'link "medium.com Generating Edge Case Scenarios: AI''s Role in Expanding Test Coverage Beyond the Obvious | by V2Solutions Inc. | Medium" [ref=e1939] [cursor=pointer]':
+                      - /url: https://medium.com/@v2solutions/generating-edge-case-scenarios-ais-role-in-expanding-test-coverage-beyond-the-obvious-f700e13f5df6
+                      - generic [ref=e1940]: medium.com
+                      - generic [ref=e1941]: "Generating Edge Case Scenarios: AI's Role in Expanding Test Coverage Beyond the Obvious | by V2Solutions Inc. | Medium"
+                    - link "medium.com Comprehensive Guide to Test-Driven Development (TDD) with React - Medium" [ref=e1943] [cursor=pointer]:
+                      - /url: https://medium.com/@ndmangrule/comprehensive-guide-to-test-driven-development-tdd-with-react-ed7e0cdea9d9
+                      - generic [ref=e1944]: medium.com
+                      - generic [ref=e1945]: Comprehensive Guide to Test-Driven Development (TDD) with React - Medium
+                    - 'link "github.com GitHub - dubzzz/fast-check: Property based testing framework for JavaScript (like QuickCheck) written in TypeScript" [ref=e1947] [cursor=pointer]':
+                      - /url: https://github.com/dubzzz/fast-check
+                      - generic [ref=e1948]: github.com
+                      - generic [ref=e1949]: "GitHub - dubzzz/fast-check: Property based testing framework for JavaScript (like QuickCheck) written in TypeScript"
+                    - link "defined.net Modern frontend testing with Vitest, Storybook, and Playwright - Defined Networking" [ref=e1951] [cursor=pointer]:
+                      - /url: https://www.defined.net/blog/modern-frontend-testing/
+                      - generic [ref=e1952]: defined.net
+                      - generic [ref=e1953]: Modern frontend testing with Vitest, Storybook, and Playwright - Defined Networking
+                    - link "harrisongoldste.in PROPERTY-BASED TESTING FOR THE PEOPLE Harrison Goldstein A DISSERTATION in Computer and Information Science Presented to the Fac" [ref=e1955] [cursor=pointer]:
+                      - /url: https://harrisongoldste.in/papers/dissertation.pdf
+                      - generic [ref=e1956]: harrisongoldste.in
+                      - generic [ref=e1957]: PROPERTY-BASED TESTING FOR THE PEOPLE Harrison Goldstein A DISSERTATION in Computer and Information Science Presented to the Fac
+                    - link "builder.aws.com Appointment tracker - Kiro Week 1 challenge - Micro Tools | AWS Builder Center" [ref=e1959] [cursor=pointer]:
+                      - /url: https://builder.aws.com/content/35vqF24UnVY2e9JizvBJQO5N9O2/appointment-tracker-kiro-week-1-challenge-micro-tools
+                      - generic [ref=e1960]: builder.aws.com
+                      - generic [ref=e1961]: Appointment tracker - Kiro Week 1 challenge - Micro Tools | AWS Builder Center
+                    - link "formulae.brew.sh homebrew-core - Homebrew Formulae" [ref=e1963] [cursor=pointer]:
+                      - /url: https://formulae.brew.sh/formula/
+                      - generic [ref=e1964]: formulae.brew.sh
+                      - generic [ref=e1965]: homebrew-core - Homebrew Formulae
+                    - 'link "github.com silentEAG/awesome-stars: My Awesome List - GitHub" [ref=e1967] [cursor=pointer]':
+                      - /url: https://github.com/silentEAG/awesome-stars
+                      - generic [ref=e1968]: github.com
+                      - generic [ref=e1969]: "silentEAG/awesome-stars: My Awesome List - GitHub"
+                    - 'link "github.com StrayDragon/awesome-stars: my stars list, thx for https://github.com/maguowei/starred · GitHub - GitHub" [ref=e1971] [cursor=pointer]':
+                      - /url: https://github.com/StrayDragon/awesome-stars
+                      - generic [ref=e1972]: github.com
+                      - generic [ref=e1973]: "StrayDragon/awesome-stars: my stars list, thx for https://github.com/maguowei/starred · GitHub - GitHub"
+                    - link "wangchujiang.com GitHub Repositories Ranking - Wang Chujiang (王楚江) 小弟调调" [ref=e1975] [cursor=pointer]:
+                      - /url: https://wangchujiang.com/github-rank/repos.html
+                      - generic [ref=e1976]: wangchujiang.com
+                      - generic [ref=e1977]: GitHub Repositories Ranking - Wang Chujiang (王楚江) 小弟调调
+                    - link "medium.com The Three-Layer System I Built to Make AI Tools Actually Remember - Medium" [ref=e1979] [cursor=pointer]:
+                      - /url: https://medium.com/design-bootcamp/the-three-layer-system-i-built-to-make-ai-tools-actually-remember-ac16756c71f3
+                      - generic [ref=e1980]: medium.com
+                      - generic [ref=e1981]: The Three-Layer System I Built to Make AI Tools Actually Remember - Medium
+                    - link "dev.to The Missing Link Between AI Agents and the Code They Modify - DEV Community" [ref=e1983] [cursor=pointer]:
+                      - /url: https://dev.to/jimutt/the-missing-link-between-ai-agents-and-the-code-they-modify-kke
+                      - generic [ref=e1984]: dev.to
+                      - generic [ref=e1985]: The Missing Link Between AI Agents and the Code They Modify - DEV Community
+                    - link "medium.com I Replaced My SDLC with AI Agents — Here's the Framework That Actually Worked | by Brett Luelling - Medium" [ref=e1987] [cursor=pointer]:
+                      - /url: https://medium.com/@brettluelling/i-replaced-my-sdlc-with-ai-agents-heres-the-framework-that-actually-worked-fcfbfa5e72d0
+                      - generic [ref=e1988]: medium.com
+                      - generic [ref=e1989]: I Replaced My SDLC with AI Agents — Here's the Framework That Actually Worked | by Brett Luelling - Medium
+                    - link "aws.amazon.com Introducing Strands Agent SOPs – Natural Language Workflows for AI Agents - AWS" [ref=e1991] [cursor=pointer]:
+                      - /url: https://aws.amazon.com/blogs/opensource/introducing-strands-agent-sops-natural-language-workflows-for-ai-agents/
+                      - generic [ref=e1992]: aws.amazon.com
+                      - generic [ref=e1993]: Introducing Strands Agent SOPs – Natural Language Workflows for AI Agents - AWS
+                    - link "lucid.co How to use Lucid's business transformation framework (+ templates)" [ref=e1995] [cursor=pointer]:
+                      - /url: https://lucid.co/blog/business-transformation-framework
+                      - generic [ref=e1996]: lucid.co
+                      - generic [ref=e1997]: How to use Lucid's business transformation framework (+ templates)
+                    - link "usenix.org Extracting Protocol Format as State Machine via Controlled Static Loop Analysis - USENIX" [ref=e1999] [cursor=pointer]:
+                      - /url: https://www.usenix.org/system/files/usenixsecurity23-shi-qingkai.pdf
+                      - generic [ref=e2000]: usenix.org
+                      - generic [ref=e2001]: Extracting Protocol Format as State Machine via Controlled Static Loop Analysis - USENIX
+                    - 'link "reddit.com Zustand: best way to extract object from store : r/reactnative - Reddit" [ref=e2003] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/reactnative/comments/1fm93b7/zustand_best_way_to_extract_object_from_store/
+                      - generic [ref=e2004]: reddit.com
+                      - generic [ref=e2005]: "Zustand: best way to extract object from store : r/reactnative - Reddit"
+                    - 'link "github.com GitHub - pmndrs/zustand: Bear necessities for state management in React" [ref=e2007] [cursor=pointer]':
+                      - /url: https://github.com/pmndrs/zustand
+                      - generic [ref=e2008]: github.com
+                      - generic [ref=e2009]: "GitHub - pmndrs/zustand: Bear necessities for state management in React"
+                    - link "medium.com An Essential Zustand Test Recipe. Intro | by Trevor Smith - Medium" [ref=e2011] [cursor=pointer]:
+                      - /url: https://medium.com/@tts2p4/an-essential-zustand-test-recipe-43e5892d75cb
+                      - generic [ref=e2012]: medium.com
+                      - generic [ref=e2013]: An Essential Zustand Test Recipe. Intro | by Trevor Smith - Medium
+                    - link "stackoverflow.com How to get state from zustand - Stack Overflow" [ref=e2015] [cursor=pointer]:
+                      - /url: https://stackoverflow.com/questions/75914007/how-to-get-state-from-zustand
+                      - generic [ref=e2016]: stackoverflow.com
+                      - generic [ref=e2017]: How to get state from zustand - Stack Overflow
+                    - link "figr.design 10 Essential User Flow Examples to Guide Your Product Design - Figr" [ref=e2019] [cursor=pointer]:
+                      - /url: https://figr.design/blog/user-flow-examples
+                      - generic [ref=e2020]: figr.design
+                      - generic [ref=e2021]: 10 Essential User Flow Examples to Guide Your Product Design - Figr
+                    - 'link "almcorp.com 47 Best SaaS Websites in 2026: Design Examples That Drive 300%+ More Conversions" [ref=e2023] [cursor=pointer]':
+                      - /url: https://almcorp.com/blog/best-saas-websites/
+                      - generic [ref=e2024]: almcorp.com
+                      - generic [ref=e2025]: "47 Best SaaS Websites in 2026: Design Examples That Drive 300%+ More Conversions"
+                    - link "joinground.com 61 Best Ecommerce Tools to Grow and Scale Your Online Store - Ground AI" [ref=e2027] [cursor=pointer]:
+                      - /url: https://joinground.com/seo-blogs/best-ecommerce-tools
+                      - generic [ref=e2028]: joinground.com
+                      - generic [ref=e2029]: 61 Best Ecommerce Tools to Grow and Scale Your Online Store - Ground AI
+                    - 'link "blackbeltcommerce.com Shopify Websites: Blackbelt Commerce Boosts Sales in 2025" [ref=e2031] [cursor=pointer]':
+                      - /url: https://www.blackbeltcommerce.com/custom-shopify-websites/
+                      - generic [ref=e2032]: blackbeltcommerce.com
+                      - generic [ref=e2033]: "Shopify Websites: Blackbelt Commerce Boosts Sales in 2025"
+            - generic [ref=e677]:
+              - separator [ref=e680]
+              - separator [ref=e688]

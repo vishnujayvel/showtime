@@ -1,0 +1,91 @@
+- generic [ref=e1]:
+  - link "Sign in" [ref=e6] [cursor=pointer]:
+    - /url: https://accounts.google.com/ServiceLogin?passive=1209600&continue=https://gemini.google.com/app/6e7ed7598073000b&followup=https://gemini.google.com/app/6e7ed7598073000b&ec=GAZAkgU
+  - main [ref=e8]:
+    - generic:
+      - button "Main menu" [ref=e10] [cursor=pointer]:
+        - img [ref=e11]: menu
+      - button "New chat" [disabled] [ref=e15]:
+        - generic [ref=e17]: Gemini
+    - generic [ref=e21]:
+      - link "About Gemini Opens in a new window" [ref=e22] [cursor=pointer]:
+        - /url: https://gemini.google/about/?utm_source=gemini&utm_medium=web&utm_campaign=gemini_zero_state_link_to_marketing_microsite
+        - text: About Gemini
+        - generic [ref=e23]: Opens in a new window
+      - link "Gemini App Opens in a new window" [ref=e24] [cursor=pointer]:
+        - /url: https://gemini.google.com/app/download
+        - text: Gemini App
+        - generic [ref=e25]: Opens in a new window
+      - link "Subscriptions Opens in a new window" [ref=e26] [cursor=pointer]:
+        - /url: https://one.google.com/ai
+        - text: Subscriptions
+        - generic [ref=e27]: Opens in a new window
+      - link "For Business Opens in a new window" [ref=e28] [cursor=pointer]:
+        - /url: https://workspace.google.com/solutions/ai/?utm_source=geminiforbusiness&utm_medium=et&utm_campaign=gemini-page-crosslink&utm_term=-&utm_content=forbusiness-2025Q3
+        - text: For Business
+        - generic [ref=e29]: Opens in a new window
+    - generic [ref=e31]:
+      - navigation [ref=e32]:
+        - generic [ref=e35]:
+          - group [ref=e36]:
+            - generic [ref=e37]:
+              - link "New chat" [disabled]:
+                - /url: /app
+                - generic:
+                  - generic:
+                    - img: edit_square
+          - group [ref=e38]:
+            - button "Settings & help" [ref=e40] [cursor=pointer]:
+              - img [ref=e43]: settings_2
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - heading "Conversation with Gemini" [level=1] [ref=e54]
+          - generic [ref=e59]:
+            - generic [ref=e64]:
+              - generic:
+                - generic [ref=e65]:
+                  - generic:
+                    - img
+                - generic:
+                  - heading "Meet Gemini, your personal AI assistant" [level=1]
+            - generic [ref=e71]:
+              - generic:
+                - generic:
+                  - generic:
+                    - button "Write, button, tap to use tool":
+                      - generic: Write
+                  - generic:
+                    - button "Plan, button, tap to use tool":
+                      - generic: Plan
+                  - generic:
+                    - button "Research, button, tap to use tool":
+                      - generic: Research
+                  - generic:
+                    - button "Learn, button, tap to use tool":
+                      - generic: Learn
+        - generic [ref=e72]:
+          - group [ref=e73]:
+            - generic [ref=e76]:
+              - textbox "Enter a prompt for Gemini" [active] [ref=e81]:
+                - text: Ask Gemini 3
+                - paragraph [ref=e82]
+              - generic [ref=e84]:
+                - button "Open mode picker" [ref=e87]:
+                  - generic [ref=e89]:
+                    - generic [ref=e90]: Fast
+                    - img [ref=e91]: keyboard_arrow_down
+                - generic [ref=e94]:
+                  - button "Microphone" [ref=e97] [cursor=pointer]:
+                    - img [ref=e99]: mic
+                  - text: send
+          - paragraph [ref=e104]:
+            - link "Google Terms Opens in a new window" [ref=e105] [cursor=pointer]:
+              - /url: https://policies.google.com/terms
+              - text: Google Terms
+              - generic [ref=e106]: Opens in a new window
+            - text: and the
+            - link "Google Privacy Policy Opens in a new window" [ref=e107] [cursor=pointer]:
+              - /url: https://policies.google.com/privacy
+              - text: Google Privacy Policy
+              - generic [ref=e108]: Opens in a new window
+            - text: apply. Gemini is AI and can make mistakes.
