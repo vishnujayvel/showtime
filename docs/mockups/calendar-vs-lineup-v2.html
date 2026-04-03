@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Calendar + Lineup Side-by-Side (v2)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+    --cat-deep: #8b5cf6;
+    --cat-exercise: #22c55e;
+    --cat-admin: #60a5fa;
+    --cat-creative: #f59e0b;
+    --cat-social: #ec4899;
+    --cat-personal: #14b8a6;
+    --calendar-accent: #3b82f6;
+    --calendar-bg: rgba(59, 130, 246, 0.06);
+    --calendar-border: rgba(59, 130, 246, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--studio-bg);
+    color: var(--txt-primary);
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  .page-header {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--txt-secondary);
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Tab Switcher */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 36px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 4px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    color: var(--txt-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--txt-secondary); }
+  .tab-btn.active {
+    background: var(--surface-hover);
+    color: var(--txt-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .mockup { display: none; max-width: 620px; margin: 0 auto; }
+  .mockup.active { display: block; }
+
+  /* Window Chrome */
+  .window {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.04);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .window-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red { background: #ff5f57; }
+  .dot-yellow { background: #febc2e; }
+  .dot-green { background: #28c840; }
+  .window-title {
+    flex: 1;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+  }
+  .window-body { padding: 16px; }
+
+  /* Section Labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-count {
+    font-weight: 400;
+    font-size: 9px;
+    color: var(--txt-muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* Approach Description */
+  .approach-desc {
+    margin-bottom: 20px;
+    padding: 14px;
+    background: rgba(217,119,87,0.06);
+    border: 1px solid rgba(217,119,87,0.12);
+    border-radius: 10px;
+  }
+  .approach-desc h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .approach-desc p {
+    font-size: 12px;
+    color: var(--txt-secondary);
+    line-height: 1.6;
+  }
+
+  /* ============ V1: Time-Aligned Rows ============ */
+  .aligned-layout { width: 100%; }
+  .aligned-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 16px 1fr;
+    gap: 0;
+    margin-bottom: 8px;
+  }
+  .aligned-header .section-label { margin-bottom: 0; }
+  .aligned-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 16px 1fr;
+    gap: 0;
+    align-items: start;
+    margin-bottom: 3px;
+    min-height: 44px;
+  }
+  .time-gutter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--txt-muted);
+    padding-top: 10px;
+    text-align: right;
+    padding-right: 10px;
+  }
+  .align-connector {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    position: relative;
+  }
+  .align-line {
+    width: 1px;
+    background: rgba(255,255,255,0.06);
+    min-height: 100%;
+  }
+  .align-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .align-dot.linked { background: rgba(255,255,255,0.25); }
+
+  /* Calendar cell */
+  .cal-cell { padding: 2px 4px 2px 0; }
+  .cal-card {
+    padding: 8px 10px;
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    border-radius: 8px;
+    border-left: 3px solid var(--calendar-accent);
+  }
+  .cal-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--calendar-accent);
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+  .cal-empty {
+    padding: 8px 10px;
+    border: 1px dashed rgba(59,130,246,0.1);
+    border-radius: 8px;
+    color: var(--txt-muted);
+    font-size: 11px;
+    font-style: italic;
+    text-align: center;
+    opacity: 0.5;
+  }
+
+  /* Lineup cell */
+  .lineup-cell { padding: 2px 0 2px 4px; }
+  .act-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--studio-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    cursor: grab;
+    transition: border-color 0.15s;
+  }
+  .act-card:hover { border-color: rgba(255,255,255,0.14); }
+  .act-grip {
+    color: var(--txt-muted);
+    font-size: 9px;
+    cursor: grab;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .act-card:hover .act-grip { opacity: 1; }
+  .act-stripe {
+    width: 3px;
+    height: 22px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .act-info { flex: 1; min-width: 0; }
+  .act-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .act-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .act-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .act-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--txt-secondary);
+    flex-shrink: 0;
+  }
+  .act-empty {
+    padding: 8px 10px;
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 8px;
+    color: var(--txt-muted);
+    font-size: 11px;
+    font-style: italic;
+    text-align: center;
+    opacity: 0.4;
+  }
+
+  /* Badge Colors */
+  .badge-deep { background: rgba(139,92,246,0.12); color: var(--cat-deep); border: 1px solid rgba(139,92,246,0.2); }
+  .badge-exercise { background: rgba(34,197,94,0.12); color: var(--cat-exercise); border: 1px solid rgba(34,197,94,0.2); }
+  .badge-admin { background: rgba(96,165,250,0.12); color: var(--cat-admin); border: 1px solid rgba(96,165,250,0.2); }
+  .badge-creative { background: rgba(245,158,11,0.12); color: var(--cat-creative); border: 1px solid rgba(245,158,11,0.2); }
+  .badge-social { background: rgba(236,72,153,0.12); color: var(--cat-social); border: 1px solid rgba(236,72,153,0.2); }
+  .badge-personal { background: rgba(20,184,166,0.12); color: var(--cat-personal); border: 1px solid rgba(20,184,166,0.2); }
+
+  /* Stats Bar */
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    margin-top: 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .stat-cell {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    background: var(--studio-bg);
+  }
+  .stat-cell:first-child { border-radius: 8px 0 0 8px; }
+  .stat-cell:last-child { border-radius: 0 8px 8px 0; }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--txt-primary);
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-top: 2px;
+  }
+
+  /* ============ V2: Swimlane with Time Blocks ============ */
+  .swimlane-layout {
+    display: grid;
+    grid-template-columns: 48px 1fr 1fr;
+    gap: 0;
+  }
+  .swim-time-col {
+    border-right: 1px solid rgba(255,255,255,0.04);
+  }
+  .swim-time-slot {
+    height: 52px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 4px 8px 0 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--txt-muted);
+    position: relative;
+  }
+  .swim-time-slot::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 4px;
+    width: 4px;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+  .swim-col {
+    padding: 0 4px;
+  }
+  .swim-col-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+  }
+  .swim-block {
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 3px;
+    position: relative;
+  }
+  .swim-block-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .swim-block-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    margin-top: 2px;
+  }
+  .swim-cal-block {
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    border-left: 3px solid var(--calendar-accent);
+  }
+  .swim-cal-block .swim-block-time { color: var(--calendar-accent); opacity: 0.7; }
+  .swim-act-block {
+    background: var(--studio-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: grab;
+    transition: border-color 0.15s;
+  }
+  .swim-act-block:hover { border-color: rgba(255,255,255,0.14); }
+  .swim-gap {
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-bottom: 3px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--txt-muted);
+    font-style: italic;
+    opacity: 0.5;
+  }
+  /* height simulation for time blocks */
+  .h-1 { min-height: 44px; }
+  .h-1-5 { min-height: 62px; }
+  .h-2 { min-height: 80px; }
+
+  /* ============ V3: Schedule Rail + Lineup Cards ============ */
+  .rail-layout {
+    display: flex;
+    gap: 14px;
+  }
+  .rail-panel {
+    width: 160px;
+    flex-shrink: 0;
+  }
+  .lineup-panel {
+    flex: 1;
+    min-width: 0;
+  }
+  .rail-track {
+    position: relative;
+    padding-left: 14px;
+    border-left: 2px solid rgba(59,130,246,0.15);
+  }
+  .rail-event {
+    position: relative;
+    padding: 8px 10px;
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .rail-event::before {
+    content: '';
+    position: absolute;
+    left: -19px;
+    top: 12px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--calendar-accent);
+    border: 2px solid var(--surface);
+  }
+  .rail-event-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--calendar-accent);
+    font-weight: 600;
+    opacity: 0.8;
+  }
+  .rail-event-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rail-gap {
+    position: relative;
+    padding: 4px 10px;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .rail-gap-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--txt-muted);
+    opacity: 0.6;
+  }
+  .rail-gap::before {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-50%);
+  }
+
+  /* Lineup full card in V3 */
+  .lineup-act {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--studio-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    margin-bottom: 5px;
+    cursor: grab;
+    transition: border-color 0.15s;
+  }
+  .lineup-act:hover { border-color: rgba(255,255,255,0.14); }
+  .lineup-act:hover .act-grip { opacity: 1; }
+  .lineup-act-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--txt-muted);
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .lineup-act-stripe {
+    width: 3px;
+    height: 26px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .lineup-act-info { flex: 1; min-width: 0; }
+  .lineup-act-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lineup-act-hint {
+    font-size: 10px;
+    color: var(--txt-muted);
+    margin-top: 1px;
+    font-style: italic;
+  }
+  .lineup-act-dur {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--txt-secondary);
+    flex-shrink: 0;
+  }
+
+  /* Connector lines from schedule to lineup */
+  .connector-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    margin-bottom: 5px;
+  }
+  .connector-line {
+    flex: 1;
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(59,130,246,0.2) 0px,
+      rgba(59,130,246,0.2) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+  .connector-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--calendar-accent);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  /* ============ V4: Compact Horizon ============ */
+  .horizon-layout { width: 100%; }
+  .horizon-sched {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: rgba(59,130,246,0.04);
+    border: 1px solid rgba(59,130,246,0.08);
+    border-radius: 10px;
+  }
+  .hz-event {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 6px;
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    min-width: 0;
+  }
+  .hz-event-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--calendar-accent);
+    opacity: 0.7;
+  }
+  .hz-event-title {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hz-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--txt-muted);
+    font-size: 10px;
+    opacity: 0.3;
+    flex-shrink: 0;
+  }
+
+  /* Lineup in V4 */
+  .hz-lineup-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .hz-lineup-label .section-label { margin-bottom: 0; }
+  .hz-lineup-label .divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* Finalize CTA */
+  .finalize-cta {
+    margin-top: 14px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(217,119,87,0.12), rgba(217,119,87,0.06));
+    border: 1px solid rgba(217,119,87,0.2);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .finalize-cta:hover {
+    background: linear-gradient(135deg, rgba(217,119,87,0.18), rgba(217,119,87,0.1));
+    border-color: rgba(217,119,87,0.35);
+  }
+  .finalize-cta-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .finalize-cta-sub {
+    font-size: 11px;
+    color: var(--txt-muted);
+    margin-top: 3px;
+  }
+
+  /* Notes */
+  .mockup-notes {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .mockup-notes h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: 6px;
+  }
+  .mockup-notes ul { list-style: none; padding: 0; }
+  .mockup-notes li {
+    font-size: 11px;
+    color: var(--txt-secondary);
+    line-height: 1.6;
+    padding-left: 14px;
+    position: relative;
+  }
+  .mockup-notes li::before {
+    content: ">";
+    position: absolute;
+    left: 0;
+    color: var(--txt-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Schedule + Lineup Side-by-Side (v2)</h1>
+  <p>
+    Four variations on the same idea: schedule on the left, lineup on the right,
+    with time alignment so you can see how the show fits around your day.
+  </p>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('v1')">V1: Grid</button>
+  <button class="tab-btn" onclick="showTab('v2')">V2: Swimlane</button>
+  <button class="tab-btn" onclick="showTab('v3')">V3: Rail</button>
+  <button class="tab-btn" onclick="showTab('v4')">V4: Horizon</button>
+</div>
+
+<!-- ======================== V1: Time-Aligned Grid ======================== -->
+<div id="mockup-v1" class="mockup active">
+  <div class="approach-desc">
+    <h3>V1 — Time-Aligned Grid</h3>
+    <p>
+      Time gutter on the left. Schedule and lineup in two columns.
+      Each row is a time slot — you can instantly see what's fixed and what Claude planned beside it.
+    </p>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+      <div class="aligned-layout">
+        <!-- Header -->
+        <div class="aligned-header">
+          <div></div>
+          <div class="section-label" style="color: var(--calendar-accent); padding-left: 4px;">Schedule</div>
+          <div></div>
+          <div class="section-label" style="color: var(--accent); padding-left: 4px;">Lineup</div>
+        </div>
+
+        <!-- 9:00 -->
+        <div class="aligned-row">
+          <div class="time-gutter">9:00</div>
+          <div class="cal-cell"><div class="cal-empty">free</div></div>
+          <div class="align-connector"><div class="align-line"></div></div>
+          <div class="lineup-cell">
+            <div class="act-card">
+              <span class="act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-deep);"></div>
+              <div class="act-info">
+                <div class="act-name">Morning Deep Work</div>
+                <div class="act-meta"><span class="act-badge badge-deep">Deep</span></div>
+              </div>
+              <span class="act-duration">90m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10:30 -->
+        <div class="aligned-row">
+          <div class="time-gutter">10:30</div>
+          <div class="cal-cell">
+            <div class="cal-card">
+              <div class="cal-title">Team Standup</div>
+              <div class="cal-time">10:30 - 11:00</div>
+            </div>
+          </div>
+          <div class="align-connector"><div class="align-line"></div><div class="align-dot linked"></div></div>
+          <div class="lineup-cell"><div class="act-empty">standup time</div></div>
+        </div>
+
+        <!-- 11:00 -->
+        <div class="aligned-row">
+          <div class="time-gutter">11:00</div>
+          <div class="cal-cell"><div class="cal-empty">free</div></div>
+          <div class="align-connector"><div class="align-line"></div></div>
+          <div class="lineup-cell">
+            <div class="act-card">
+              <span class="act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-admin);"></div>
+              <div class="act-info">
+                <div class="act-name">Email + Messages</div>
+                <div class="act-meta"><span class="act-badge badge-admin">Admin</span></div>
+              </div>
+              <span class="act-duration">30m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12:00 -->
+        <div class="aligned-row">
+          <div class="time-gutter">12:00</div>
+          <div class="cal-cell">
+            <div class="cal-card">
+              <div class="cal-title">Lunch with Coworker</div>
+              <div class="cal-time">12:00 - 1:00</div>
+            </div>
+          </div>
+          <div class="align-connector"><div class="align-line"></div><div class="align-dot linked"></div></div>
+          <div class="lineup-cell"><div class="act-empty">lunch break</div></div>
+        </div>
+
+        <!-- 1:00 -->
+        <div class="aligned-row">
+          <div class="time-gutter">1:00</div>
+          <div class="cal-cell"><div class="cal-empty">free</div></div>
+          <div class="align-connector"><div class="align-line"></div></div>
+          <div class="lineup-cell">
+            <div class="act-card">
+              <span class="act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-deep);"></div>
+              <div class="act-info">
+                <div class="act-name">Afternoon Focus Block</div>
+                <div class="act-meta"><span class="act-badge badge-deep">Deep</span></div>
+              </div>
+              <span class="act-duration">60m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2:30 -->
+        <div class="aligned-row">
+          <div class="time-gutter">2:30</div>
+          <div class="cal-cell">
+            <div class="cal-card">
+              <div class="cal-title">1:1 with Manager</div>
+              <div class="cal-time">2:30 - 3:00</div>
+            </div>
+          </div>
+          <div class="align-connector"><div class="align-line"></div><div class="align-dot linked"></div></div>
+          <div class="lineup-cell"><div class="act-empty">meeting</div></div>
+        </div>
+
+        <!-- 3:00 -->
+        <div class="aligned-row">
+          <div class="time-gutter">3:00</div>
+          <div class="cal-cell"><div class="cal-empty">free</div></div>
+          <div class="align-connector"><div class="align-line"></div></div>
+          <div class="lineup-cell">
+            <div class="act-card">
+              <span class="act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-creative);"></div>
+              <div class="act-info">
+                <div class="act-name">Creative Writing</div>
+                <div class="act-meta"><span class="act-badge badge-creative">Creative</span></div>
+              </div>
+              <span class="act-duration">45m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5:00 -->
+        <div class="aligned-row">
+          <div class="time-gutter">5:00</div>
+          <div class="cal-cell">
+            <div class="cal-card">
+              <div class="cal-title">Evening Run</div>
+              <div class="cal-time">5:00 - 6:00</div>
+            </div>
+          </div>
+          <div class="align-connector"><div class="align-line"></div><div class="align-dot linked"></div></div>
+          <div class="lineup-cell">
+            <div class="act-card">
+              <span class="act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-exercise);"></div>
+              <div class="act-info">
+                <div class="act-name">Wind Down + Stretch</div>
+                <div class="act-meta"><span class="act-badge badge-exercise">Exercise</span></div>
+              </div>
+              <span class="act-duration">20m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-cell">
+          <div class="stat-value" style="color: var(--calendar-accent);">4</div>
+          <div class="stat-label">Fixed</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value" style="color: var(--accent);">5</div>
+          <div class="stat-label">Acts</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">4h 15m</div>
+          <div class="stat-label">Show</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">1h 30m</div>
+          <div class="stat-label">Buffer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Time gutter anchors both columns to the same clock</li>
+      <li>Calendar slots are read-only blue cards. Lineup acts have drag handles</li>
+      <li>When a calendar event occupies a time slot, the lineup shows a muted placeholder</li>
+      <li>Dot connector lights up when schedule and lineup share a time boundary</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================== V2: Swimlane ======================== -->
+<div id="mockup-v2" class="mockup">
+  <div class="approach-desc">
+    <h3>V2 — Swimlane</h3>
+    <p>
+      Two swim lanes sharing a time axis. Block heights reflect duration.
+      Calendar events and lineup acts visually stack at the same scale, making gaps obvious.
+    </p>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+      <div class="swimlane-layout">
+        <!-- Time Column -->
+        <div class="swim-time-col">
+          <div class="swim-time-slot" style="height: 26px;"></div>
+          <div class="swim-time-slot">9:00</div>
+          <div class="swim-time-slot" style="height: 72px;">10:00</div>
+          <div class="swim-time-slot">11:00</div>
+          <div class="swim-time-slot">12:00</div>
+          <div class="swim-time-slot">1:00</div>
+          <div class="swim-time-slot">2:00</div>
+          <div class="swim-time-slot">3:00</div>
+          <div class="swim-time-slot" style="height: 32px;">5:00</div>
+        </div>
+
+        <!-- Schedule Lane -->
+        <div class="swim-col">
+          <div class="swim-col-header" style="color: var(--calendar-accent); background: rgba(59,130,246,0.06);">Schedule</div>
+          <div class="swim-gap h-1">free</div>
+          <div class="swim-cal-block h-1">
+            <div class="swim-block-title">Team Standup</div>
+            <div class="swim-block-time">10:30 - 11:00</div>
+          </div>
+          <div class="swim-gap h-1">free</div>
+          <div class="swim-cal-block h-1">
+            <div class="swim-block-title">Lunch with Coworker</div>
+            <div class="swim-block-time">12:00 - 1:00</div>
+          </div>
+          <div class="swim-gap h-1">free</div>
+          <div class="swim-cal-block h-1">
+            <div class="swim-block-title">1:1 with Manager</div>
+            <div class="swim-block-time">2:30 - 3:00</div>
+          </div>
+          <div class="swim-gap h-1">free</div>
+          <div class="swim-cal-block h-1">
+            <div class="swim-block-title">Evening Run</div>
+            <div class="swim-block-time">5:00 - 6:00</div>
+          </div>
+        </div>
+
+        <!-- Lineup Lane -->
+        <div class="swim-col">
+          <div class="swim-col-header" style="color: var(--accent); background: rgba(217,119,87,0.06);">Lineup</div>
+          <div class="swim-act-block h-1-5" style="border-left: 3px solid var(--cat-deep);">
+            <div class="swim-block-title">Morning Deep Work</div>
+            <div class="swim-block-time" style="color: var(--txt-muted);">90m &middot; Deep</div>
+          </div>
+          <div class="swim-gap" style="min-height: 36px;">standup</div>
+          <div class="swim-act-block h-1" style="border-left: 3px solid var(--cat-admin);">
+            <div class="swim-block-title">Email + Messages</div>
+            <div class="swim-block-time" style="color: var(--txt-muted);">30m &middot; Admin</div>
+          </div>
+          <div class="swim-gap" style="min-height: 36px;">lunch</div>
+          <div class="swim-act-block h-1" style="border-left: 3px solid var(--cat-deep);">
+            <div class="swim-block-title">Afternoon Focus Block</div>
+            <div class="swim-block-time" style="color: var(--txt-muted);">60m &middot; Deep</div>
+          </div>
+          <div class="swim-gap" style="min-height: 32px;">1:1</div>
+          <div class="swim-act-block h-1" style="border-left: 3px solid var(--cat-creative);">
+            <div class="swim-block-title">Creative Writing</div>
+            <div class="swim-block-time" style="color: var(--txt-muted);">45m &middot; Creative</div>
+          </div>
+          <div class="swim-act-block h-1" style="border-left: 3px solid var(--cat-personal);">
+            <div class="swim-block-title">Wind Down</div>
+            <div class="swim-block-time" style="color: var(--txt-muted);">20m &middot; Personal</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finalize-cta">
+        <div class="finalize-cta-text">Finalize Lineup</div>
+        <div class="finalize-cta-sub">5 acts around 4 events &middot; ~4h 15m of show time</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Block height proportional to duration — visual sense of time investment</li>
+      <li>Gaps in the lineup lane explicitly label what calendar event occupies that time</li>
+      <li>Schedule lane is read-only; lineup lane is draggable</li>
+      <li>Most "calendar app" feeling — familiar mental model</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================== V3: Rail + Cards ======================== -->
+<div id="mockup-v3" class="mockup">
+  <div class="approach-desc">
+    <h3>V3 — Schedule Rail + Lineup Cards</h3>
+    <p>
+      Schedule as a compact vertical rail on the left with timeline dots.
+      Lineup as full-size editable cards on the right with act numbers.
+      Dashed connectors hint at time alignment without being rigid.
+    </p>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+      <div class="rail-layout">
+
+        <!-- Left: Schedule Rail -->
+        <div class="rail-panel">
+          <div class="section-label" style="color: var(--calendar-accent);">
+            Schedule <span class="section-count">4</span>
+          </div>
+          <div class="rail-track">
+            <div class="rail-gap"><span class="rail-gap-label">9:00 - 10:30 free</span></div>
+
+            <div class="rail-event">
+              <div class="rail-event-time">10:30</div>
+              <div class="rail-event-title">Team Standup</div>
+            </div>
+
+            <div class="rail-gap"><span class="rail-gap-label">11:00 - 12:00 free</span></div>
+
+            <div class="rail-event">
+              <div class="rail-event-time">12:00</div>
+              <div class="rail-event-title">Lunch w/ Coworker</div>
+            </div>
+
+            <div class="rail-gap"><span class="rail-gap-label">1:00 - 2:30 free</span></div>
+
+            <div class="rail-event">
+              <div class="rail-event-time">2:30</div>
+              <div class="rail-event-title">1:1 with Manager</div>
+            </div>
+
+            <div class="rail-gap"><span class="rail-gap-label">3:00 - 5:00 free</span></div>
+
+            <div class="rail-event">
+              <div class="rail-event-time">5:00</div>
+              <div class="rail-event-title">Evening Run</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 14px; padding: 8px 10px; background: rgba(59,130,246,0.04); border-radius: 6px; text-align: center; border: 1px solid rgba(59,130,246,0.08);">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--txt-primary);">5h 30m</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--calendar-accent); margin-top: 2px; opacity: 0.6;">Available</div>
+          </div>
+        </div>
+
+        <!-- Right: Lineup -->
+        <div class="lineup-panel">
+          <div class="section-label" style="color: var(--accent);">
+            Tonight's Show <span class="section-count">5 acts</span>
+          </div>
+
+          <div class="lineup-act">
+            <div class="lineup-act-num">1</div>
+            <div class="lineup-act-stripe" style="background: var(--cat-deep);"></div>
+            <div class="lineup-act-info">
+              <div class="lineup-act-name">Morning Deep Work</div>
+              <div class="lineup-act-hint">before standup</div>
+            </div>
+            <span class="act-grip">&#8942;&#8942;</span>
+            <div class="lineup-act-dur">90m</div>
+          </div>
+
+          <div class="connector-hint">
+            <div class="connector-line"></div>
+            <span class="connector-label">10:30 standup</span>
+            <div class="connector-line"></div>
+          </div>
+
+          <div class="lineup-act">
+            <div class="lineup-act-num">2</div>
+            <div class="lineup-act-stripe" style="background: var(--cat-admin);"></div>
+            <div class="lineup-act-info">
+              <div class="lineup-act-name">Email + Messages</div>
+              <div class="lineup-act-hint">after standup</div>
+            </div>
+            <span class="act-grip">&#8942;&#8942;</span>
+            <div class="lineup-act-dur">30m</div>
+          </div>
+
+          <div class="connector-hint">
+            <div class="connector-line"></div>
+            <span class="connector-label">12:00 lunch</span>
+            <div class="connector-line"></div>
+          </div>
+
+          <div class="lineup-act">
+            <div class="lineup-act-num">3</div>
+            <div class="lineup-act-stripe" style="background: var(--cat-deep);"></div>
+            <div class="lineup-act-info">
+              <div class="lineup-act-name">Afternoon Focus Block</div>
+              <div class="lineup-act-hint">after lunch</div>
+            </div>
+            <span class="act-grip">&#8942;&#8942;</span>
+            <div class="lineup-act-dur">60m</div>
+          </div>
+
+          <div class="connector-hint">
+            <div class="connector-line"></div>
+            <span class="connector-label">2:30 one-on-one</span>
+            <div class="connector-line"></div>
+          </div>
+
+          <div class="lineup-act">
+            <div class="lineup-act-num">4</div>
+            <div class="lineup-act-stripe" style="background: var(--cat-creative);"></div>
+            <div class="lineup-act-info">
+              <div class="lineup-act-name">Creative Writing</div>
+              <div class="lineup-act-hint">afternoon open block</div>
+            </div>
+            <span class="act-grip">&#8942;&#8942;</span>
+            <div class="lineup-act-dur">45m</div>
+          </div>
+
+          <div class="lineup-act">
+            <div class="lineup-act-num">5</div>
+            <div class="lineup-act-stripe" style="background: var(--cat-personal);"></div>
+            <div class="lineup-act-info">
+              <div class="lineup-act-name">Wind Down + Stretch</div>
+              <div class="lineup-act-hint">after run</div>
+            </div>
+            <span class="act-grip">&#8942;&#8942;</span>
+            <div class="lineup-act-dur">20m</div>
+          </div>
+
+          <div class="finalize-cta" style="margin-top: 12px;">
+            <div class="finalize-cta-text">Finalize Lineup</div>
+            <div class="finalize-cta-sub">4h 15m of show &middot; 1h 15m buffer</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Schedule rail is compact — doesn't compete for attention with the lineup</li>
+      <li>Dashed connector lines between acts name the calendar event that creates the gap</li>
+      <li>Hints like "before standup" and "after lunch" ground acts in real time</li>
+      <li>"Available" time computed from calendar gaps — shows capacity at a glance</li>
+      <li>Acts are numbered (Act 1, 2, 3...) reinforcing the show metaphor</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================== V4: Compact Horizon ======================== -->
+<div id="mockup-v4" class="mockup">
+  <div class="approach-desc">
+    <h3>V4 — Compact Horizon</h3>
+    <p>
+      Schedule condensed into a horizontal strip at the top — a "horizon" showing your fixed points.
+      Full vertical space given to the lineup below. Most space-efficient at 560px width.
+    </p>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+      <div class="horizon-layout">
+
+        <!-- Schedule Horizon Strip -->
+        <div class="section-label" style="color: var(--calendar-accent);">
+          Your Day <span class="section-count">4 fixed events</span>
+        </div>
+        <div class="horizon-sched">
+          <div class="hz-event">
+            <div class="hz-event-time">10:30</div>
+            <div class="hz-event-title">Standup</div>
+          </div>
+          <div class="hz-arrow">&rarr;</div>
+          <div class="hz-event">
+            <div class="hz-event-time">12:00</div>
+            <div class="hz-event-title">Lunch</div>
+          </div>
+          <div class="hz-arrow">&rarr;</div>
+          <div class="hz-event">
+            <div class="hz-event-time">2:30</div>
+            <div class="hz-event-title">1:1</div>
+          </div>
+          <div class="hz-arrow">&rarr;</div>
+          <div class="hz-event">
+            <div class="hz-event-time">5:00</div>
+            <div class="hz-event-title">Run</div>
+          </div>
+        </div>
+
+        <!-- Lineup -->
+        <div class="hz-lineup-label">
+          <div class="section-label" style="color: var(--accent); margin-bottom: 0;">Tonight's Show <span class="section-count">5 acts &middot; 4h 15m</span></div>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="lineup-act">
+          <div class="lineup-act-num">1</div>
+          <div class="lineup-act-stripe" style="background: var(--cat-deep);"></div>
+          <div class="lineup-act-info">
+            <div class="lineup-act-name">Morning Deep Work</div>
+            <div class="act-meta"><span class="act-badge badge-deep">Deep Work</span></div>
+          </div>
+          <span class="act-grip">&#8942;&#8942;</span>
+          <div class="lineup-act-dur">90m</div>
+        </div>
+
+        <div class="lineup-act">
+          <div class="lineup-act-num">2</div>
+          <div class="lineup-act-stripe" style="background: var(--cat-admin);"></div>
+          <div class="lineup-act-info">
+            <div class="lineup-act-name">Email + Messages</div>
+            <div class="act-meta"><span class="act-badge badge-admin">Admin</span></div>
+          </div>
+          <span class="act-grip">&#8942;&#8942;</span>
+          <div class="lineup-act-dur">30m</div>
+        </div>
+
+        <div class="lineup-act">
+          <div class="lineup-act-num">3</div>
+          <div class="lineup-act-stripe" style="background: var(--cat-deep);"></div>
+          <div class="lineup-act-info">
+            <div class="lineup-act-name">Afternoon Focus Block</div>
+            <div class="act-meta"><span class="act-badge badge-deep">Deep Work</span></div>
+          </div>
+          <span class="act-grip">&#8942;&#8942;</span>
+          <div class="lineup-act-dur">60m</div>
+        </div>
+
+        <div class="lineup-act">
+          <div class="lineup-act-num">4</div>
+          <div class="lineup-act-stripe" style="background: var(--cat-creative);"></div>
+          <div class="lineup-act-info">
+            <div class="lineup-act-name">Creative Writing</div>
+            <div class="act-meta"><span class="act-badge badge-creative">Creative</span></div>
+          </div>
+          <span class="act-grip">&#8942;&#8942;</span>
+          <div class="lineup-act-dur">45m</div>
+        </div>
+
+        <div class="lineup-act">
+          <div class="lineup-act-num">5</div>
+          <div class="lineup-act-stripe" style="background: var(--cat-personal);"></div>
+          <div class="lineup-act-info">
+            <div class="lineup-act-name">Wind Down + Stretch</div>
+            <div class="act-meta"><span class="act-badge badge-personal">Personal</span></div>
+          </div>
+          <span class="act-grip">&#8942;&#8942;</span>
+          <div class="lineup-act-dur">20m</div>
+        </div>
+
+        <div style="margin-top: 8px; padding: 8px 12px; border: 1px dashed rgba(255,255,255,0.06); border-radius: 8px; text-align: center; font-size: 11px; color: var(--txt-muted); cursor: pointer;">
+          + Add an Act
+        </div>
+
+        <div class="stats-bar" style="margin-top: 14px;">
+          <div class="stat-cell">
+            <div class="stat-value" style="font-size: 14px; color: var(--calendar-accent);">2h 30m</div>
+            <div class="stat-label">Committed</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-value" style="font-size: 14px; color: var(--accent);">4h 15m</div>
+            <div class="stat-label">Show Time</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-value" style="font-size: 14px;">1h 15m</div>
+            <div class="stat-label">Buffer</div>
+          </div>
+        </div>
+
+        <div class="finalize-cta">
+          <div class="finalize-cta-text">We're Live!</div>
+          <div class="finalize-cta-sub">Your lineup fits around 4 events with room to breathe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Schedule compressed into a scannable strip — always visible, never in the way</li>
+      <li>Most space for the lineup, which is where all the interaction happens</li>
+      <li>Works best at 560px — nothing feels cramped</li>
+      <li>Trade-off: time alignment between schedule and lineup is implicit, not visual</li>
+      <li>Could expand the horizon strip on hover to show full event details</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.mockup').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mockup-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+- generic [ref=e1]:
+  - 'button "Google Account: Vishnu Jayavel (vishnuj81093@gmail.com)" [ref=e11] [cursor=pointer]':
+    - img [ref=e13]
+    - img [ref=e19]
+  - main [ref=e21]:
+    - generic:
+      - button "Main menu" [ref=e34] [cursor=pointer]:
+        - img [ref=e35]: menu
+      - button "New chat" [disabled] [ref=e39]:
+        - generic [ref=e41]: Gemini
+    - generic [ref=e43]:
+      - button "Temporary chat" [ref=e46] [cursor=pointer]:
+        - img [ref=e49]
+      - generic [ref=e54]:
+        - button "PRO" [disabled]:
+          - generic: PRO
+    - generic [ref=e26]:
+      - navigation [ref=e55]:
+        - generic [ref=e59]:
+          - group [ref=e60]:
+            - link "New chat" [ref=e62] [cursor=pointer]:
+              - /url: /app
+              - img [ref=e65]: edit_square
+          - group [ref=e68]:
+            - button "Settings & help" [ref=e70] [cursor=pointer]:
+              - img [ref=e73]: settings_2
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - heading "Conversation with Gemini" [level=1] [ref=e80]
+          - generic [ref=e82]:
+            - generic [ref=e85]:
+              - generic [ref=e86]:
+                - generic [ref=e92]: Hi Vishnu
+                - heading "What can we get done?" [level=1] [ref=e99]
+              - generic [ref=e107]:
+                - button "For you, button, tap to use tool" [ref=e109] [cursor=pointer]:
+                  - generic [ref=e110]: For you
+                - button "🖼️ Create image, button, tap to use tool" [ref=e112] [cursor=pointer]:
+                  - generic [ref=e113]: 🖼️ Create image
+                - button "🎸 Create music, button, tap to use tool" [ref=e115] [cursor=pointer]:
+                  - generic [ref=e116]: 🎸 Create music
+                - button "Write anything, button, tap to use tool" [ref=e118] [cursor=pointer]:
+                  - generic [ref=e119]: Write anything
+                - button "Help me learn, button, tap to use tool" [ref=e121] [cursor=pointer]:
+                  - generic [ref=e122]: Help me learn
+                - button "Boost my day, button, tap to use tool" [ref=e124] [cursor=pointer]:
+                  - generic [ref=e125]: Boost my day
+            - generic [ref=e129]:
+              - button "Dismiss" [ref=e130] [cursor=pointer]:
+                - img [ref=e131]: close
+              - generic [ref=e134]:
+                - generic [ref=e136]: Make music. Choose Thinking for better, longer tracks.
+                - button "Try it" [ref=e138]:
+                  - generic [ref=e139]: Try it
+        - generic [ref=e142]:
+          - group [ref=e143]:
+            - generic [ref=e146]:
+              - textbox "Enter a prompt for Gemini" [active] [ref=e151]:
+                - text: Ask Gemini 3
+                - paragraph [ref=e152]
+              - generic [ref=e153]:
+                - button "Open upload file menu" [ref=e158] [cursor=pointer]:
+                  - img [ref=e159]: add_2
+                - button "Tools" [ref=e165]:
+                  - img [ref=e166]: page_info
+                  - generic [ref=e169]: Tools
+              - generic [ref=e172]:
+                - button "Open mode picker" [ref=e175]:
+                  - generic [ref=e177]:
+                    - generic [ref=e178]: Pro
+                    - img [ref=e179]: keyboard_arrow_down
+                - generic [ref=e182]:
+                  - button "Microphone" [ref=e185] [cursor=pointer]:
+                    - img [ref=e187]: mic
+                  - text: send
+          - paragraph [ref=e192]
