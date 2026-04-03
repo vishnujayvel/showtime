@@ -12,7 +12,8 @@ Showtime is an **AI-native macOS desktop app** — built with Claude Code as a f
 | **Styling** | Tailwind CSS v4 (CSS-first) | ^4.2.1 |
 | **Components** | shadcn/ui + Radix UI | latest |
 | **Animation** | Framer Motion (spring physics) | ^12.35.1 |
-| **State** | Zustand | ^5.0.0 |
+| **State (phases)** | XState v5 | ^5.30.0 |
+| **State (UI)** | Zustand | ^5.0.0 |
 | **Database** | SQLite via better-sqlite3 + Drizzle ORM | ^12.8.0 / ^0.45.1 |
 | **AI Runtime** | Claude Code subprocess (node-pty) | CLI v2.1+ |
 | **Unit Tests** | Vitest + Testing Library | ^4.1.0 |
@@ -54,12 +55,15 @@ Claude Code integration tests use **cassette replay** — recorded HTTP interact
 
 ```
 e2e/cassettes/
-├── lineup-chat.cassette.json    # Writer's Room conversation
-├── refinement.cassette.json     # Follow-up refinement
-└── error-recovery.cassette.json # Error handling paths
+├── chat-ack.ndjson              # Acknowledgement flow
+├── error-recovery.ndjson        # Error handling paths
+├── happy-path-lineup.ndjson     # Writer's Room happy path
+├── low-energy-plan.ndjson       # Low energy plan generation
+├── multi-turn-initial.ndjson    # Multi-turn conversation start
+└── multi-turn-refinement.ndjson # Follow-up refinement
 ```
 
-Set `SHOWTIME_PLAYBACK=1` to replay cassettes instead of hitting the live API.
+Cassettes use NDJSON format (newline-delimited JSON). Set `SHOWTIME_PLAYBACK=1` to replay cassettes instead of hitting the live API.
 
 ---
 
@@ -96,7 +100,7 @@ new BrowserWindow({
 All renderer ↔ main communication goes through a typed `contextBridge` API:
 
 ```
-Renderer → window.clui.prompt() → ipcRenderer.invoke(IPC.PROMPT) → Main
+Renderer → window.showtime.prompt() → ipcRenderer.invoke(IPC.PROMPT) → Main
 Main → ipcMain.handle(IPC.PROMPT) → ControlPlane → Claude subprocess
 ```
 
@@ -146,6 +150,11 @@ All animations use **spring physics** — never linear durations:
 
 Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightFadeIn` (Dark Studio entrance), `goldenGlow` (DAY WON verdict).
 
+### Markdown Rendering
+
+- **react-markdown** (^10.1.0) — Renders Claude's markdown responses in chat messages
+- **remark-gfm** (^4.0.1) — GitHub-flavored markdown support (tables, strikethrough, task lists)
+
 ### Typography
 
 | Font | Usage |
@@ -157,13 +166,31 @@ Key animations: `tallyPulse` (ON AIR dot), `beatIgnite` (star lock), `spotlightF
 
 ## State Management
 
-### Zustand (^5.0.0)
+### XState v5 (^5.30.0) — Phase Lifecycle
 
-Two stores, no React Context for state:
+The show phase lifecycle is managed by an XState v5 state machine. The singleton `showActor` is the sole source of truth for all phase state.
+
+| Module | Purpose |
+|--------|---------|
+| `showMachine.ts` | XState v5 machine: 6 top-level phases, nested substates, guarded transitions |
+| `showActor.ts` | Singleton actor instance + side effects (SQLite sync, notifications, celebration timeout) |
+| `ShowMachineProvider.tsx` | React context + hooks (`useShowPhase`, `useShowContext`, `useShowSend`) |
+
+```tsx
+// Reading phase state in components
+const phase = useShowPhase()
+const acts = useShowContext(ctx => ctx.acts)
+const send = useShowSend()
+send({ type: 'START_SHOW' })
+```
+
+### Zustand (^5.0.0) — Non-Phase UI State
+
+Two stores for state that doesn't belong in the phase machine:
 
 | Store | Purpose |
 |-------|---------|
-| `showStore` | Show phase machine, acts, beats, energy, timer, verdict, lineup |
+| `uiStore` | Calendar cache, Claude session ID, UI preferences |
 | `sessionStore` | Claude Code tab sessions, streaming state, error tracking |
 
 ---
@@ -184,9 +211,10 @@ Database: `~/Library/Application Support/Showtime/app.db`
 |-------|---------|
 | `shows` | Show state (phase, energy, verdict, timestamps) |
 | `acts` | Acts within a show (name, category, duration, beat status) |
-| `timeline` | Event log (phase transitions, act completions, beat locks) |
+| `timeline_events` | Event log (phase transitions, act completions, beat locks) |
 | `metrics` | Performance timing data |
 | `claude_contexts` | Persisted Claude Code conversation context per show |
+| `calendar_cache` | Cached calendar events for lineup scheduling |
 
 Migrations are plain SQL files auto-copied to the build output at compile time.
 
@@ -197,16 +225,16 @@ Migrations are plain SQL files auto-copied to the build output at compile time.
 ### Unit Tests — Vitest (^4.1.0)
 
 ```bash
-npm test          # Run all 514+ unit tests
+npm test          # Run all 680+ unit tests
 npm run test:watch # Watch mode
 ```
 
-- **jsdom** (^29.0.1) — DOM environment for component tests
+- **jsdom** (^25.0.1) — DOM environment for component tests
 - **@testing-library/react** (^16.3.2) — Component rendering and queries
 - **@testing-library/jest-dom** (^6.9.1) — DOM assertion matchers
 - **fast-check** (^4.6.0) — Property-based testing for state machine invariants
 
-Test setup mocks the entire `window.clui` preload API so hooks and stores can be tested in isolation.
+Test setup mocks the entire `window.showtime` preload API so hooks and stores can be tested in isolation.
 
 ### E2E Tests — Playwright (^1.58.2)
 
@@ -292,7 +320,7 @@ These are enforced by CLAUDE.md, CodeRabbit, and pre-commit hooks:
 
 1. **No inline styles** — 100% Tailwind utility classes
 2. **Spring physics only** — No linear CSS transitions or Framer Motion durations
-3. **Zustand only** — No React Context for state management
+3. **XState for phases, Zustand for UI** — Phase lifecycle in XState machine, non-phase UI in Zustand stores. `ShowMachineProvider` is the one allowed React Context.
 4. **Typed IPC** — All channels via `IPC` enum, all payloads typed in `shared/types.ts`
 5. **E2E coverage** — Every feature must have Playwright tests
 6. **macOS native feel** — `frame: false`, no vibrancy, CSS backgrounds, content-tight sizing
