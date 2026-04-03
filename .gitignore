@@ -57,3 +57,4 @@ playwright-report/
 *.bak
 /coverage/
 .claude/specs/journey-discovery/
+gemini-auth
