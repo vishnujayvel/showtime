@@ -144,6 +144,11 @@ export function WritersRoomView() {
     if (!energy) setEnergy('medium')
   }, [energy, setEnergy])
 
+  // Pre-warm Claude subprocess when Writer's Room mounts
+  useEffect(() => {
+    window.showtime.prewarmSubprocess()
+  }, [])
+
   const tabReady = useSessionStore((s) => s.tabReady)
 
   // Calendar prefetch DISABLED in chat-first mode.

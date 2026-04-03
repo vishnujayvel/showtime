@@ -4,6 +4,7 @@ import { applyViewMode, forceRepaint, isValidViewMode } from '../window'
 import { DataService } from '../data/DataService'
 import { IPC } from '../../shared/types'
 import { appLog } from '../app-logger'
+import { getMetricsWriter } from '../metrics'
 import type { LogLevel } from '../app-logger'
 import type { ShowStateSnapshot, TimelineEventInput, ClaudeContextPayload } from '../data/types'
 import type { CachedCalendarEvent } from '../../shared/types'
@@ -245,6 +246,16 @@ export function registerShowtimeIpc(): void {
       data.calendarCache.upsertEvents(events)
     } catch (err: unknown) {
       log(`CALENDAR_CACHE_SET error: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  })
+
+  // ─── NDJSON file-based metrics (fire-and-forget) ───
+
+  ipcMain.on(IPC.EMIT_METRIC, (_e, metric: string, value: number, tags?: Record<string, string>) => {
+    try {
+      getMetricsWriter().emit(metric, value, tags)
+    } catch (err) {
+      // silent — metrics should never crash the app
     }
   })
 

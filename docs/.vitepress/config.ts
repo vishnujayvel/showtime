@@ -19,6 +19,7 @@ export default defineConfig({
 
     nav: [
       { text: 'Guide', link: '/getting-started/' },
+      { text: 'User Guide', link: '/guide/getting-started' },
       { text: 'Framework', link: '/framework/' },
       { text: 'Concepts', link: '/concepts/show-phases' },
       { text: 'App Tour', link: '/app-tour/' },
@@ -26,6 +27,18 @@ export default defineConfig({
     ],
 
     sidebar: {
+      '/guide/': [
+        {
+          text: 'User Guide',
+          items: [
+            { text: 'Getting Started', link: '/guide/getting-started' },
+            { text: "Writer's Room", link: '/guide/writers-room' },
+            { text: 'Live Show', link: '/guide/live-show' },
+            { text: 'Framework', link: '/guide/framework' },
+            { text: 'Settings', link: '/guide/settings' },
+          ],
+        },
+      ],
       '/getting-started/': [
         {
           text: 'Getting Started',

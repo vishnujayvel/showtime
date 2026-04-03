@@ -2,6 +2,7 @@ import { app, globalShortcut, ipcMain, screen } from 'electron'
 import { ensureSkills, type SkillStatus } from './skills/installer'
 import { flushLogs } from './logger'
 import { initAppLogger, flushAppLogs, appLog } from './app-logger'
+import { getMetricsWriter } from './metrics'
 import { DataService } from './data/DataService'
 import { SyncEngine } from './data/SyncEngine'
 import type { NormalizedEvent, EnrichedError } from '../shared/types'
@@ -51,20 +52,24 @@ app.whenReady().then(async () => {
     app.dock.hide()
   }
 
-  // Request permissions upfront so the user is never interrupted mid-session.
-  await requestPermissions()
+  // Parallelize independent init tasks:
+  // - requestPermissions + ensureSkills + buildAppMenu can run concurrently
+  // - DataService → SyncEngine → prune is the critical path before createWindow
+  await Promise.all([
+    requestPermissions(),
+    ensureSkills((status: SkillStatus) => {
+      log(`Skill ${status.name}: ${status.state}${status.error ? ` — ${status.error}` : ''}`)
+      broadcast(IPC.SKILL_STATUS, status)
+    }).catch((err: Error) => log(`Skill provisioning error: ${err.message}`)),
+    Promise.resolve(buildAppMenu()),
+  ])
 
-  // Skill provisioning — non-blocking, streams status to renderer
-  ensureSkills((status: SkillStatus) => {
-    log(`Skill ${status.name}: ${status.state}${status.error ? ` — ${status.error}` : ''}`)
-    broadcast(IPC.SKILL_STATUS, status)
-  }).catch((err: Error) => log(`Skill provisioning error: ${err.message}`))
-
-  // Initialize SQLite data layer
+  // Initialize SQLite data layer (critical path — window needs data layer ready for hydration)
   try {
     const dataService = DataService.init()
     setSyncEngine(new SyncEngine(dataService))
     dataService.metrics.prune(30)
+    getMetricsWriter().prune(30)
     log('DataService initialized')
     appLog('INFO', 'data_service_init', { status: 'ok' })
   } catch (err: unknown) {
@@ -73,14 +78,16 @@ app.whenReady().then(async () => {
     appLog('ERROR', 'data_service_init', { status: 'failed', error: msg })
   }
 
-  buildAppMenu()
   createWindow()
   snapshotWindowState('after createWindow')
 
-  // Record app startup timing
+  // Record app startup timing (SQLite + NDJSON)
   try {
     DataService.getInstance().metrics.recordTiming('app.startup', Date.now() - appStartTime)
   } catch { /* DataService may not be initialized */ }
+  try {
+    getMetricsWriter().emit('app.startup_time_ms', Date.now() - appStartTime)
+  } catch { /* MetricsWriter may not be initialized */ }
 
   // Start day boundary detection (checks every minute for midnight crossing)
   startDayBoundaryCheck()
@@ -144,6 +151,7 @@ app.whenReady().then(async () => {
 app.on('will-quit', () => {
   appLog('INFO', 'app_quit')
   flushAppLogs()
+  try { getMetricsWriter().flushSync() } catch { /* best-effort */ }
   globalShortcut.unregisterAll()
   controlPlane.shutdown()
   getSyncEngine()?.finalFlush()
