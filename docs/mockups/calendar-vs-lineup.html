@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Calendar vs Lineup Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+    --cat-deep: #8b5cf6;
+    --cat-exercise: #22c55e;
+    --cat-admin: #60a5fa;
+    --cat-creative: #f59e0b;
+    --cat-social: #ec4899;
+    --cat-personal: #14b8a6;
+    --calendar-accent: #3b82f6;
+    --calendar-bg: rgba(59, 130, 246, 0.06);
+    --calendar-border: rgba(59, 130, 246, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--studio-bg);
+    color: var(--txt-primary);
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  .page-header {
+    max-width: 800px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: var(--txt-secondary);
+    line-height: 1.6;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* Tab Switcher */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 40px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 4px;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--txt-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--txt-secondary); }
+  .tab-btn.active {
+    background: var(--surface-hover);
+    color: var(--txt-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .mockup { display: none; max-width: 560px; margin: 0 auto; }
+  .mockup.active { display: block; }
+
+  /* Shared Window Chrome */
+  .window {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.04);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .window-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red { background: #ff5f57; }
+  .dot-yellow { background: #febc2e; }
+  .dot-green { background: #28c840; }
+  .window-title {
+    flex: 1;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+  }
+  .window-body { padding: 20px; }
+
+  /* Section Labels */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Calendar Event Card */
+  .cal-event {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .cal-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(59, 130, 246, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .cal-event-info { flex: 1; min-width: 0; }
+  .cal-event-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-event-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--calendar-accent);
+    margin-top: 2px;
+  }
+  .cal-lock {
+    font-size: 10px;
+    color: var(--txt-muted);
+    flex-shrink: 0;
+  }
+
+  /* Lineup Act Card */
+  .act-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--studio-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    cursor: grab;
+    transition: border-color 0.15s;
+  }
+  .act-card:hover {
+    border-color: rgba(255,255,255,0.12);
+  }
+  .act-grip {
+    color: var(--txt-muted);
+    font-size: 10px;
+    cursor: grab;
+    flex-shrink: 0;
+    letter-spacing: -1px;
+  }
+  .act-stripe {
+    width: 3px;
+    height: 28px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .act-info { flex: 1; min-width: 0; }
+  .act-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--txt-primary);
+  }
+  .act-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .act-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .act-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--txt-secondary);
+    flex-shrink: 0;
+  }
+
+  /* Category colors */
+  .cat-deep { color: var(--cat-deep); }
+  .cat-deep .act-stripe { background: var(--cat-deep); }
+  .cat-deep .act-badge { background: rgba(139,92,246,0.12); color: var(--cat-deep); border: 1px solid rgba(139,92,246,0.2); }
+  .cat-exercise { color: var(--cat-exercise); }
+  .cat-exercise .act-stripe { background: var(--cat-exercise); }
+  .cat-exercise .act-badge { background: rgba(34,197,94,0.12); color: var(--cat-exercise); border: 1px solid rgba(34,197,94,0.2); }
+  .cat-admin { color: var(--cat-admin); }
+  .cat-admin .act-stripe { background: var(--cat-admin); }
+  .cat-admin .act-badge { background: rgba(96,165,250,0.12); color: var(--cat-admin); border: 1px solid rgba(96,165,250,0.2); }
+  .cat-creative { color: var(--cat-creative); }
+  .cat-creative .act-stripe { background: var(--cat-creative); }
+  .cat-creative .act-badge { background: rgba(245,158,11,0.12); color: var(--cat-creative); border: 1px solid rgba(245,158,11,0.2); }
+  .cat-social { color: var(--cat-social); }
+  .cat-social .act-stripe { background: var(--cat-social); }
+  .cat-social .act-badge { background: rgba(236,72,153,0.12); color: var(--cat-social); border: 1px solid rgba(236,72,153,0.2); }
+  .cat-personal { color: var(--cat-personal); }
+  .cat-personal .act-stripe { background: var(--cat-personal); }
+  .cat-personal .act-badge { background: rgba(20,184,166,0.12); color: var(--cat-personal); border: 1px solid rgba(20,184,166,0.2); }
+
+  /* Divider */
+  .section-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 20px 0;
+  }
+
+  /* Approach Descriptions */
+  .approach-desc {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: rgba(217,119,87,0.06);
+    border: 1px solid rgba(217,119,87,0.12);
+    border-radius: 10px;
+  }
+  .approach-desc h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .approach-desc p {
+    font-size: 13px;
+    color: var(--txt-secondary);
+    line-height: 1.6;
+  }
+  .approach-desc .pros, .approach-desc .cons {
+    font-size: 12px;
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+  .approach-desc .pros { color: var(--cat-exercise); }
+  .approach-desc .cons { color: var(--onair); }
+
+  /* Timeline approach specifics */
+  .timeline-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 2px;
+  }
+  .timeline-time {
+    width: 54px;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--txt-muted);
+    padding-top: 12px;
+    text-align: right;
+    padding-right: 12px;
+  }
+  .timeline-track {
+    width: 2px;
+    background: rgba(255,255,255,0.06);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 12px;
+    left: -3px;
+  }
+  .timeline-dot.cal { background: var(--calendar-accent); }
+  .timeline-dot.act { background: var(--accent); }
+  .timeline-content {
+    flex: 1;
+    padding: 4px 0 4px 14px;
+  }
+
+  /* Timeline Calendar Card */
+  .tl-cal-card {
+    padding: 10px 14px;
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    border-radius: 10px;
+    border-left: 3px solid var(--calendar-accent);
+  }
+  .tl-cal-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tl-cal-lock {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--calendar-accent);
+    background: rgba(59,130,246,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .tl-cal-detail {
+    font-size: 11px;
+    color: var(--txt-muted);
+    margin-top: 3px;
+  }
+
+  /* Timeline Act Card */
+  .tl-act-card {
+    padding: 10px 14px;
+    background: var(--studio-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    cursor: grab;
+    transition: border-color 0.15s;
+  }
+  .tl-act-card:hover { border-color: rgba(255,255,255,0.12); }
+  .tl-act-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tl-act-grip {
+    color: var(--txt-muted);
+    font-size: 9px;
+    cursor: grab;
+  }
+
+  /* Gap indicator */
+  .gap-fill {
+    padding: 6px 14px;
+    border: 1px dashed rgba(255,255,255,0.08);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--txt-muted);
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Approach C — Side-by-Side Panels */
+  .split-layout {
+    display: flex;
+    gap: 12px;
+  }
+  .split-panel {
+    flex: 1;
+    min-width: 0;
+  }
+  .mini-cal-event {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--calendar-bg);
+    border: 1px solid var(--calendar-border);
+    border-radius: 8px;
+    margin-bottom: 4px;
+  }
+  .mini-cal-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--calendar-accent);
+    width: 52px;
+    flex-shrink: 0;
+  }
+  .mini-cal-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mini-act-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--studio-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    margin-bottom: 4px;
+    cursor: grab;
+  }
+  .mini-act-card:hover { border-color: rgba(255,255,255,0.12); }
+  .mini-stripe {
+    width: 3px;
+    height: 20px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .mini-act-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--txt-primary);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mini-act-dur {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--txt-secondary);
+    flex-shrink: 0;
+  }
+
+  /* Summary Stats */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+  .stat {
+    text-align: center;
+    flex: 1;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--txt-primary);
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-top: 2px;
+  }
+
+  /* Footer Notes */
+  .mockup-notes {
+    margin-top: 20px;
+    padding: 14px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .mockup-notes h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: 8px;
+  }
+  .mockup-notes ul {
+    list-style: none;
+    padding: 0;
+  }
+  .mockup-notes li {
+    font-size: 12px;
+    color: var(--txt-secondary);
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+  }
+  .mockup-notes li::before {
+    content: ">";
+    position: absolute;
+    left: 0;
+    color: var(--txt-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Calendar vs Lineup — UX Exploration</h1>
+  <p>
+    Calendar events are read-only anchors from Google Calendar.
+    The Lineup is the show plan Claude builds around them.
+    Three approaches to keeping them visually distinct.
+  </p>
+</div>
+
+<!-- Tab Switcher -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('a')">A: Stacked</button>
+  <button class="tab-btn" onclick="showTab('b')">B: Timeline</button>
+  <button class="tab-btn" onclick="showTab('c')">C: Side-by-Side</button>
+</div>
+
+<!-- ======================== APPROACH A: Stacked Sections ======================== -->
+<div id="mockup-a" class="mockup active">
+  <div class="approach-desc">
+    <h3>Approach A — Stacked Sections</h3>
+    <p>
+      Calendar appears as a read-only "Your Schedule" section at the top.
+      The Lineup appears below as a separate "Tonight's Show" section.
+      Clear visual distinction through color coding: blue for calendar, warm tones for lineup.
+    </p>
+    <div class="pros">+ Clearest separation. Calendar can't be accidentally reordered.</div>
+    <div class="cons">- Doesn't show how lineup fits around calendar in time.</div>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+
+      <!-- Calendar Section -->
+      <div class="section-label" style="color: var(--calendar-accent);">
+        <span>&#128197;</span> Your Schedule
+        <span style="font-weight: 400; font-size: 9px; color: var(--txt-muted); letter-spacing: 0.06em;">4 events from Google Calendar</span>
+      </div>
+
+      <div class="cal-event">
+        <div class="cal-icon">&#128172;</div>
+        <div class="cal-event-info">
+          <div class="cal-event-title">Therapy with Eric</div>
+          <div class="cal-event-time">12:00 PM - 1:00 PM</div>
+        </div>
+        <div class="cal-lock">&#128274;</div>
+      </div>
+
+      <div class="cal-event">
+        <div class="cal-icon">&#128187;</div>
+        <div class="cal-event-info">
+          <div class="cal-event-title">Google L6 — System Design Round</div>
+          <div class="cal-event-time">2:00 PM - 3:00 PM</div>
+        </div>
+        <div class="cal-lock">&#128274;</div>
+      </div>
+
+      <div class="cal-event">
+        <div class="cal-icon">&#127939;</div>
+        <div class="cal-event-info">
+          <div class="cal-event-title">Gym — Push Day</div>
+          <div class="cal-event-time">5:30 PM - 6:30 PM</div>
+        </div>
+        <div class="cal-lock">&#128274;</div>
+      </div>
+
+      <div class="cal-event">
+        <div class="cal-icon">&#127860;</div>
+        <div class="cal-event-info">
+          <div class="cal-event-title">Dinner with Aseem</div>
+          <div class="cal-event-time">7:00 PM - 8:30 PM</div>
+        </div>
+        <div class="cal-lock">&#128274;</div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Lineup Section -->
+      <div class="section-label" style="color: var(--accent);">
+        <span>&#127916;</span> Tonight's Show
+        <span style="font-weight: 400; font-size: 9px; color: var(--txt-muted); letter-spacing: 0.06em;">5 acts &middot; ~3h 15m</span>
+      </div>
+
+      <div class="act-card cat-deep">
+        <span class="act-grip">&#8942;&#8942;</span>
+        <div class="act-stripe"></div>
+        <div class="act-info">
+          <div class="act-name">Interview Prep — Google System Design</div>
+          <div class="act-meta">
+            <span class="act-badge">Deep Work</span>
+          </div>
+        </div>
+        <span class="act-duration">45m</span>
+      </div>
+
+      <div class="act-card cat-admin">
+        <span class="act-grip">&#8942;&#8942;</span>
+        <div class="act-stripe"></div>
+        <div class="act-info">
+          <div class="act-name">Email Triage + Slack Catch-up</div>
+          <div class="act-meta">
+            <span class="act-badge">Admin</span>
+          </div>
+        </div>
+        <span class="act-duration">30m</span>
+      </div>
+
+      <div class="act-card cat-deep">
+        <span class="act-grip">&#8942;&#8942;</span>
+        <div class="act-stripe"></div>
+        <div class="act-info">
+          <div class="act-name">Showtime — Fix Pill View Resize</div>
+          <div class="act-meta">
+            <span class="act-badge">Deep Work</span>
+          </div>
+        </div>
+        <span class="act-duration">60m</span>
+      </div>
+
+      <div class="act-card cat-creative">
+        <span class="act-grip">&#8942;&#8942;</span>
+        <div class="act-stripe"></div>
+        <div class="act-info">
+          <div class="act-name">Journal + Evening Reflection</div>
+          <div class="act-meta">
+            <span class="act-badge">Creative</span>
+          </div>
+        </div>
+        <span class="act-duration">20m</span>
+      </div>
+
+      <div class="act-card cat-personal">
+        <span class="act-grip">&#8942;&#8942;</span>
+        <div class="act-stripe"></div>
+        <div class="act-info">
+          <div class="act-name">Wind Down — Read or Stretch</div>
+          <div class="act-meta">
+            <span class="act-badge">Personal</span>
+          </div>
+        </div>
+        <span class="act-duration">30m</span>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Fixed Events</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Show Acts</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">6h 20m</div>
+          <div class="stat-label">Total Day</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Calendar section is blue-tinted, read-only, lock icon on each event</li>
+      <li>Lineup section is warm-toned, draggable, editable</li>
+      <li>User sees their commitments first, then what Claude planned around them</li>
+      <li>Calendar events never show drag handles — they're anchors, not acts</li>
+      <li>"Finalize Lineup" only applies to the show acts, not calendar events</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================== APPROACH B: Timeline ======================== -->
+<div id="mockup-b" class="mockup">
+  <div class="approach-desc">
+    <h3>Approach B — Unified Timeline</h3>
+    <p>
+      A single chronological timeline where calendar events and lineup acts interleave.
+      Calendar events have blue left-border + "FIXED" badge. Acts have category colors + drag handles.
+      Shows exactly how the lineup fills gaps between your commitments.
+    </p>
+    <div class="pros">+ Shows the full picture of your day in order. Most informative.</div>
+    <div class="cons">- More complex. Risk of confusion between what's editable vs fixed.</div>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+      <div class="section-label" style="color: var(--txt-secondary);">
+        <span>&#128197;</span> Monday, March 31
+        <span style="font-weight: 400; font-size: 9px; color: var(--txt-muted);">4 fixed &middot; 5 acts</span>
+      </div>
+
+      <!-- 9:00 AM — Act: Interview Prep -->
+      <div class="timeline-row">
+        <div class="timeline-time">9:00</div>
+        <div class="timeline-track"><div class="timeline-dot act" style="background: var(--cat-deep);"></div></div>
+        <div class="timeline-content">
+          <div class="tl-act-card">
+            <div class="tl-act-top">
+              <span class="tl-act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-deep); width: 3px; height: 20px; border-radius: 2px;"></div>
+              <span class="act-name" style="font-size: 13px;">Interview Prep — Google System Design</span>
+            </div>
+            <div class="act-meta" style="margin-top: 4px; margin-left: 30px;">
+              <span class="act-badge" style="background: rgba(139,92,246,0.12); color: var(--cat-deep); border: 1px solid rgba(139,92,246,0.2);">Deep Work</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-secondary);">45m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10:00 AM — Act: Email Triage -->
+      <div class="timeline-row">
+        <div class="timeline-time">10:00</div>
+        <div class="timeline-track"><div class="timeline-dot act" style="background: var(--cat-admin);"></div></div>
+        <div class="timeline-content">
+          <div class="tl-act-card">
+            <div class="tl-act-top">
+              <span class="tl-act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-admin); width: 3px; height: 20px; border-radius: 2px;"></div>
+              <span class="act-name" style="font-size: 13px;">Email Triage + Slack Catch-up</span>
+            </div>
+            <div class="act-meta" style="margin-top: 4px; margin-left: 30px;">
+              <span class="act-badge" style="background: rgba(96,165,250,0.12); color: var(--cat-admin); border: 1px solid rgba(96,165,250,0.2);">Admin</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-secondary);">30m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12:00 PM — Calendar: Therapy -->
+      <div class="timeline-row">
+        <div class="timeline-time">12:00</div>
+        <div class="timeline-track"><div class="timeline-dot cal"></div></div>
+        <div class="timeline-content">
+          <div class="tl-cal-card">
+            <div class="tl-cal-title">
+              Therapy with Eric
+              <span class="tl-cal-lock">FIXED</span>
+            </div>
+            <div class="tl-cal-detail">12:00 PM - 1:00 PM &middot; Google Calendar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1:00 PM — Act: Showtime -->
+      <div class="timeline-row">
+        <div class="timeline-time">1:00</div>
+        <div class="timeline-track"><div class="timeline-dot act" style="background: var(--cat-deep);"></div></div>
+        <div class="timeline-content">
+          <div class="tl-act-card">
+            <div class="tl-act-top">
+              <span class="tl-act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-deep); width: 3px; height: 20px; border-radius: 2px;"></div>
+              <span class="act-name" style="font-size: 13px;">Showtime — Fix Pill View Resize</span>
+            </div>
+            <div class="act-meta" style="margin-top: 4px; margin-left: 30px;">
+              <span class="act-badge" style="background: rgba(139,92,246,0.12); color: var(--cat-deep); border: 1px solid rgba(139,92,246,0.2);">Deep Work</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-secondary);">60m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2:00 PM — Calendar: Interview -->
+      <div class="timeline-row">
+        <div class="timeline-time">2:00</div>
+        <div class="timeline-track"><div class="timeline-dot cal"></div></div>
+        <div class="timeline-content">
+          <div class="tl-cal-card">
+            <div class="tl-cal-title">
+              Google L6 — System Design Round
+              <span class="tl-cal-lock">FIXED</span>
+            </div>
+            <div class="tl-cal-detail">2:00 PM - 3:00 PM &middot; Google Calendar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3:00 PM — Act: Journal -->
+      <div class="timeline-row">
+        <div class="timeline-time">3:00</div>
+        <div class="timeline-track"><div class="timeline-dot act" style="background: var(--cat-creative);"></div></div>
+        <div class="timeline-content">
+          <div class="tl-act-card">
+            <div class="tl-act-top">
+              <span class="tl-act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-creative); width: 3px; height: 20px; border-radius: 2px;"></div>
+              <span class="act-name" style="font-size: 13px;">Journal + Evening Reflection</span>
+            </div>
+            <div class="act-meta" style="margin-top: 4px; margin-left: 30px;">
+              <span class="act-badge" style="background: rgba(245,158,11,0.12); color: var(--cat-creative); border: 1px solid rgba(245,158,11,0.2);">Creative</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-secondary);">20m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5:30 PM — Calendar: Gym -->
+      <div class="timeline-row">
+        <div class="timeline-time">5:30</div>
+        <div class="timeline-track"><div class="timeline-dot cal"></div></div>
+        <div class="timeline-content">
+          <div class="tl-cal-card">
+            <div class="tl-cal-title">
+              Gym — Push Day
+              <span class="tl-cal-lock">FIXED</span>
+            </div>
+            <div class="tl-cal-detail">5:30 PM - 6:30 PM &middot; Google Calendar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7:00 PM — Calendar: Dinner -->
+      <div class="timeline-row">
+        <div class="timeline-time">7:00</div>
+        <div class="timeline-track"><div class="timeline-dot cal"></div></div>
+        <div class="timeline-content">
+          <div class="tl-cal-card">
+            <div class="tl-cal-title">
+              Dinner with Aseem
+              <span class="tl-cal-lock">FIXED</span>
+            </div>
+            <div class="tl-cal-detail">7:00 PM - 8:30 PM &middot; Google Calendar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8:30 PM — Act: Wind Down -->
+      <div class="timeline-row">
+        <div class="timeline-time">8:30</div>
+        <div class="timeline-track"><div class="timeline-dot act" style="background: var(--cat-personal);"></div></div>
+        <div class="timeline-content">
+          <div class="tl-act-card">
+            <div class="tl-act-top">
+              <span class="tl-act-grip">&#8942;&#8942;</span>
+              <div class="act-stripe" style="background: var(--cat-personal); width: 3px; height: 20px; border-radius: 2px;"></div>
+              <span class="act-name" style="font-size: 13px;">Wind Down — Read or Stretch</span>
+            </div>
+            <div class="act-meta" style="margin-top: 4px; margin-left: 30px;">
+              <span class="act-badge" style="background: rgba(20,184,166,0.12); color: var(--cat-personal); border: 1px solid rgba(20,184,166,0.2);">Personal</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-secondary);">30m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Calendar events: blue dot, blue left-border, "FIXED" badge, no drag handles</li>
+      <li>Lineup acts: category-colored dot, drag handles, editable</li>
+      <li>Timeline shows the real flow of the day — how acts weave around commitments</li>
+      <li>Acts can only be reordered within the gaps between calendar events</li>
+      <li>Time column gives at-a-glance orientation</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================== APPROACH C: Side-by-Side ======================== -->
+<div id="mockup-c" class="mockup">
+  <div class="approach-desc">
+    <h3>Approach C — Side-by-Side Panels</h3>
+    <p>
+      Calendar as a narrow reference panel on the left. Lineup as the main panel on the right.
+      Calendar is always visible context while you edit the lineup.
+      Most compact — fits in the Writer's Room's 560px width.
+    </p>
+    <div class="pros">+ Calendar is always visible reference. Lineup has full editing space.</div>
+    <div class="cons">- Tight at 560px. Doesn't explicitly show time relationships.</div>
+  </div>
+
+  <div class="window">
+    <div class="window-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="window-title">Writer's Room</span>
+      <div style="width: 48px;"></div>
+    </div>
+    <div class="window-body">
+      <div class="split-layout">
+
+        <!-- Left: Calendar Reference -->
+        <div class="split-panel" style="flex: 0 0 190px;">
+          <div class="section-label" style="color: var(--calendar-accent); font-size: 8px;">
+            &#128197; Schedule
+            <span style="font-weight: 400; color: var(--txt-muted);">4</span>
+          </div>
+
+          <div class="mini-cal-event">
+            <div class="mini-cal-time">12:00</div>
+            <div class="mini-cal-title">Therapy</div>
+          </div>
+          <div class="mini-cal-event">
+            <div class="mini-cal-time">2:00</div>
+            <div class="mini-cal-title">Google Interview</div>
+          </div>
+          <div class="mini-cal-event">
+            <div class="mini-cal-time">5:30</div>
+            <div class="mini-cal-title">Gym — Push Day</div>
+          </div>
+          <div class="mini-cal-event">
+            <div class="mini-cal-time">7:00</div>
+            <div class="mini-cal-title">Dinner w/ Aseem</div>
+          </div>
+
+          <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px; text-align: center;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--txt-primary);">4h 30m</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt-muted); margin-top: 2px;">Free Time</div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div style="width: 1px; background: rgba(255,255,255,0.06); margin: 0 2px;"></div>
+
+        <!-- Right: Lineup -->
+        <div class="split-panel">
+          <div class="section-label" style="color: var(--accent); font-size: 8px;">
+            &#127916; Tonight's Show
+            <span style="font-weight: 400; color: var(--txt-muted);">5 acts &middot; 3h 5m</span>
+          </div>
+
+          <div class="mini-act-card cat-deep">
+            <div class="mini-stripe" style="background: var(--cat-deep);"></div>
+            <div class="mini-act-name">Interview Prep — Google SD</div>
+            <div class="mini-act-dur">45m</div>
+          </div>
+          <div class="mini-act-card cat-admin">
+            <div class="mini-stripe" style="background: var(--cat-admin);"></div>
+            <div class="mini-act-name">Email Triage + Slack</div>
+            <div class="mini-act-dur">30m</div>
+          </div>
+          <div class="mini-act-card cat-deep">
+            <div class="mini-stripe" style="background: var(--cat-deep);"></div>
+            <div class="mini-act-name">Showtime — Pill View Fix</div>
+            <div class="mini-act-dur">60m</div>
+          </div>
+          <div class="mini-act-card cat-creative">
+            <div class="mini-stripe" style="background: var(--cat-creative);"></div>
+            <div class="mini-act-name">Journal + Reflection</div>
+            <div class="mini-act-dur">20m</div>
+          </div>
+          <div class="mini-act-card cat-personal">
+            <div class="mini-stripe" style="background: var(--cat-personal);"></div>
+            <div class="mini-act-name">Wind Down — Read</div>
+            <div class="mini-act-dur">30m</div>
+          </div>
+
+          <div style="margin-top: 8px; padding: 8px 10px; border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px; text-align: center; font-size: 11px; color: var(--txt-muted); cursor: pointer;">
+            + Add an Act
+          </div>
+        </div>
+
+      </div>
+
+      <div class="stats-row" style="margin-top: 16px;">
+        <div class="stat">
+          <div class="stat-value" style="font-size: 14px;">4h 30m</div>
+          <div class="stat-label">Committed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="font-size: 14px;">3h 5m</div>
+          <div class="stat-label">Show Time</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="font-size: 14px;">1h 25m</div>
+          <div class="stat-label">Buffer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <h4>Design Notes</h4>
+    <ul>
+      <li>Calendar is a compact reference panel — always visible, never editable</li>
+      <li>Free time computed automatically from calendar gaps</li>
+      <li>"Buffer" stat shows unplanned time — encourages not overscheduling</li>
+      <li>Tight at 560px but workable with compact cards</li>
+      <li>Could expand calendar panel on hover for full event details</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.mockup').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mockup-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

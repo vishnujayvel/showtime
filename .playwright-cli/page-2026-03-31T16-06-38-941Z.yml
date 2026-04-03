@@ -1,0 +1,4 @@
+- generic [active] [ref=e1]:
+  - link "Sign in" [ref=e6] [cursor=pointer]:
+    - /url: https://accounts.google.com/ServiceLogin?passive=1209600&continue=https://gemini.google.com/app/6e7ed7598073000b&followup=https://gemini.google.com/app/6e7ed7598073000b&ec=GAZAkgU
+  - main [ref=e8]

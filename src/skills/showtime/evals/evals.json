@@ -1,0 +1,170 @@
+{
+  "skill_name": "showtime-director",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have high energy today. Need to spend 2 hours on the API migration, 45 min gym, 30 min clearing emails, and 20 min prepping for tomorrow's standup.",
+      "expected_output": "A showtime-lineup JSON block with 4 acts. Deep Work first (highest cognitive demand while energy is fresh), Exercise mid-show as reset, Admin tasks at end. beatThreshold should be 3. openingNote should use SNL show language.",
+      "assertions": [
+        {
+          "id": "valid-json",
+          "text": "Response contains a valid showtime-lineup JSON code block that parses without error",
+          "type": "structural"
+        },
+        {
+          "id": "four-acts",
+          "text": "Lineup contains exactly 4 acts",
+          "type": "structural"
+        },
+        {
+          "id": "deep-work-first",
+          "text": "First act has sketch 'Deep Work' (high energy = lead with cognitive demand)",
+          "type": "behavioral"
+        },
+        {
+          "id": "exercise-mid",
+          "text": "Exercise act is not first or last (mid-show reset position)",
+          "type": "behavioral"
+        },
+        {
+          "id": "beat-threshold-3",
+          "text": "beatThreshold is 3 (standard for high energy, 4-act show)",
+          "type": "structural"
+        },
+        {
+          "id": "valid-sketches",
+          "text": "All acts have sketch values from the valid set: Deep Work, Exercise, Admin, Creative, Social, Personal",
+          "type": "structural"
+        },
+        {
+          "id": "durations-match",
+          "text": "Act durations roughly match user's stated times (120, 45, 30, 20 minutes)",
+          "type": "behavioral"
+        },
+        {
+          "id": "has-opening-note",
+          "text": "openingNote is present and uses SNL show language (not corporate/productivity language)",
+          "type": "behavioral"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm really low energy today, barely slept. I have some admin stuff to handle and maybe a short walk. I feel bad about not doing more. Maybe 2 hours total.",
+      "expected_output": "A gentle 2-3 act lineup with short durations, beatThreshold of 2, and absolutely NO guilt language. Should reframe the user's self-criticism ('I feel bad') with compassionate SNL language. Should suggest intermissions.",
+      "assertions": [
+        {
+          "id": "valid-json",
+          "text": "Response contains a valid showtime-lineup JSON code block",
+          "type": "structural"
+        },
+        {
+          "id": "max-3-acts",
+          "text": "Lineup contains at most 3 acts (low energy guideline)",
+          "type": "behavioral"
+        },
+        {
+          "id": "low-beat-threshold",
+          "text": "beatThreshold is 2 or lower (low energy guideline)",
+          "type": "behavioral"
+        },
+        {
+          "id": "short-durations",
+          "text": "No act exceeds 45 minutes (low energy = shorter acts)",
+          "type": "behavioral"
+        },
+        {
+          "id": "no-guilt-language",
+          "text": "Response does NOT contain any forbidden words: failed, failure, behind, overdue, lazy, procrastinating, disappointed, unproductive, wasted time, should have, could have",
+          "type": "guardrail"
+        },
+        {
+          "id": "reframes-self-criticism",
+          "text": "Response acknowledges the user's 'feel bad' statement and reframes it positively using SNL language (e.g., 'the show adapts', 'rest is free', not 'don't worry about it')",
+          "type": "behavioral"
+        },
+        {
+          "id": "easy-act-first",
+          "text": "First act is not Deep Work or Creative (low energy = lead with easiest to build momentum)",
+          "type": "behavioral"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm in act 2 of my show right now and I just can't focus. I'm completely overwhelmed. Current act is 'Deep Work: Tax Filing' and I have 1 beat locked out of 3 threshold. I still have 'Exercise: Gym' and 'Admin: Email cleanup' after this. What do I do?",
+      "expected_output": "Director mode activation. Should open with 'The show adapts' language and offer exactly 4 compassionate options: cut remaining acts, reorder lineup, extended intermission, or call show early. Should never use 'should', 'try harder', or pressure language.",
+      "assertions": [
+        {
+          "id": "director-mode-activated",
+          "text": "Response clearly enters Director mode (uses Director language like 'the show adapts', 'what do you need right now')",
+          "type": "behavioral"
+        },
+        {
+          "id": "offers-four-options",
+          "text": "Response offers at least 3 of the 4 Director mode options: cut acts, reorder, extended intermission, call show early",
+          "type": "behavioral"
+        },
+        {
+          "id": "no-pressure-language",
+          "text": "Response does NOT contain: 'you should', 'try harder', 'don't give up', 'you still have time', 'you're behind'",
+          "type": "guardrail"
+        },
+        {
+          "id": "references-current-state",
+          "text": "Response references the user's current state (1 beat locked, act 2, tax filing) showing context awareness",
+          "type": "behavioral"
+        },
+        {
+          "id": "compassionate-tone",
+          "text": "Response uses affirming language like 'you showed up', 'that's the hardest part', 'rest is part of the performance'",
+          "type": "behavioral"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Just finished my Deep Work act on the project proposal. Took about 55 minutes. Time for a beat check — was I present?",
+      "expected_output": "A beat check prompt from the rotating list, warm and non-judgmental. Should NOT just repeat 'were you present?' verbatim — should use one of the 10 creative prompts from the skill.",
+      "assertions": [
+        {
+          "id": "uses-beat-check-prompt",
+          "text": "Response contains a creative beat check question (not just 'were you present?') — something like 'did time disappear?', 'any flash of flow?', 'moment of genuine immersion?'",
+          "type": "behavioral"
+        },
+        {
+          "id": "warm-tone",
+          "text": "Response acknowledges the completed act warmly before asking the beat check question",
+          "type": "behavioral"
+        },
+        {
+          "id": "no-judgment",
+          "text": "Response does not imply there's a right or wrong answer to the beat check",
+          "type": "guardrail"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "The show is done. I locked 2 beats out of 3 today. How'd it go?",
+      "expected_output": "SOLID SHOW verdict (beats = threshold - 1). Should use one of the SOLID SHOW verdict messages. Should NOT use DAY WON or SHOW CALLED EARLY language.",
+      "assertions": [
+        {
+          "id": "correct-verdict",
+          "text": "Response identifies this as SOLID SHOW (2 out of 3 = threshold minus 1)",
+          "type": "behavioral"
+        },
+        {
+          "id": "uses-verdict-message",
+          "text": "Response uses SOLID SHOW language (e.g., 'one beat short of a standing ovation', 'still a solid show', 'performance to be proud of')",
+          "type": "behavioral"
+        },
+        {
+          "id": "no-wrong-verdict",
+          "text": "Response does NOT use DAY WON ('standing ovation', 'full beat count') or SHOW CALLED EARLY ('show called early') language",
+          "type": "guardrail"
+        }
+      ]
+    }
+  ]
+}
