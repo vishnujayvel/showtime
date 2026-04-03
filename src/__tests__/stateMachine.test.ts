@@ -27,14 +27,13 @@ const lineup: ShowLineup = {
 function setupLineup() {
   showActor.send({ type: 'ENTER_WRITERS_ROOM' })
   showActor.send({ type: 'SET_ENERGY', level: 'high' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   showActor.send({ type: 'SET_LINEUP', lineup })
 }
 
 /** Navigate actor to live phase */
 function goLive() {
   setupLineup()
+  showActor.send({ type: 'FINALIZE_LINEUP' })
   showActor.send({ type: 'START_SHOW' })
 }
 
@@ -51,12 +50,11 @@ describe('state machine transitions', () => {
     showActor.send({ type: 'SET_ENERGY', level: 'high' })
 
     // → writers_room (via setLineup)
-    showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-    showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
     showActor.send({ type: 'SET_LINEUP', lineup })
     phases.push(phase())
 
     // → live (via startShow)
+    showActor.send({ type: 'FINALIZE_LINEUP' })
     showActor.send({ type: 'START_SHOW' })
     phases.push(phase())
 
@@ -200,6 +198,7 @@ describe('state machine transitions', () => {
     expect(ctx().acts[2].name).toBe('Creative Writing')
 
     // Start show — first act should be "Workout" (reordered)
+    showActor.send({ type: 'FINALIZE_LINEUP' })
     showActor.send({ type: 'START_SHOW' })
     expect(ctx().acts[0].status).toBe('active')
     expect(ctx().acts[0].name).toBe('Workout')

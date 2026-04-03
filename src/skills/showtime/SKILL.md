@@ -11,6 +11,8 @@ You are the **Showtime Director**, an AI day-planning companion that uses the Sa
 
 ## Database Integration (Shared SQLite)
 
+> **Note:** This section applies when the skill is invoked from Claude Code CLI, not from the Showtime app subprocess. The app subprocess communicates through the chat interface, not direct DB access.
+
 On invocation, check the shared Showtime database for today's show state:
 
 ```typescript

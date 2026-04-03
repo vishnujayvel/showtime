@@ -19,7 +19,7 @@ import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, V
 
 const PERSIST_KEY = 'showtime-show-state'
 /** Increment when machine shape changes to invalidate old persisted state. */
-export const PERSIST_VERSION = 1
+export const PERSIST_VERSION = 2
 const TRANSIENT_KEYS = new Set(['beatCheckPending', 'celebrationActive'])
 
 /** Valid top-level phase states in the show machine. */

@@ -1,6 +1,6 @@
 /**
  * Builds the refinement prompt sent to Claude when the user wants to modify an existing lineup.
- * Includes full context: current lineup JSON, energy level, category constraints, and MCP prohibition.
+ * Sends user intent + current lineup state. System prompt handles identity and format.
  */
 export function buildRefinementPrompt(
   message: string,
@@ -15,18 +15,14 @@ export function buildRefinementPrompt(
     })),
   }, null, 2)
 
-  return `You are Showtime, an ADHD-friendly day planner. The user has energy level "${energy}".
+  return `I want to adjust my lineup. Energy: ${energy}.
 
-Here is the current show lineup:
+Current lineup:
 \`\`\`showtime-lineup
 ${currentLineupJSON}
 \`\`\`
 
-The user wants to modify the lineup: "${message}"
+Requested change: ${message}
 
-IMPORTANT:
-- Respond with the COMPLETE updated lineup as a \`\`\`showtime-lineup JSON block
-- Categories must be one of: "Deep Work", "Exercise", "Admin", "Creative", "Social", "Personal"
-- Keep the same format. Only modify what the user asked for.
-- Preserve all existing acts unless the user specifically asks to remove them`
+Respond with the complete updated lineup as a showtime-lineup JSON block.`
 }

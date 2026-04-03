@@ -39,4 +39,10 @@ export const SKILLS: SkillEntry[] = [
       'scripts/package_skill.py',
     ],
   },
+  {
+    name: 'showtime',
+    source: { type: 'bundled' },
+    version: '1.0.0',
+    requiredFiles: ['SKILL.md'],
+  },
 ]

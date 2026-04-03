@@ -27,14 +27,13 @@ const sampleLineup: ShowLineup = {
 function setupLineup() {
   showActor.send({ type: 'ENTER_WRITERS_ROOM' })
   showActor.send({ type: 'SET_ENERGY', level: 'high' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'plan' })
-  showActor.send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' })
   showActor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
 }
 
 /** Navigate actor to live phase */
 function goLive() {
   setupLineup()
+  showActor.send({ type: 'FINALIZE_LINEUP' })
   showActor.send({ type: 'START_SHOW' })
 }
 
@@ -643,6 +642,7 @@ describe('showActor', () => {
   describe('TRIGGER_GOING_LIVE / COMPLETE_GOING_LIVE', () => {
     it('triggers going live and completes to live', () => {
       setupLineup()
+      showActor.send({ type: 'FINALIZE_LINEUP' })
       showActor.send({ type: 'TRIGGER_GOING_LIVE' })
       expect(phase()).toBe('going_live')
 

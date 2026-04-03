@@ -25,29 +25,74 @@ const VCR_CASSETTE_QUEUE: string[] | null = process.env.SHOWTIME_CASSETTE_NAME
   ? process.env.SHOWTIME_CASSETTE_NAME.split(',').map(s => s.trim()).filter(Boolean)
   : null
 
-// Appended to Claude's default system prompt so it knows it's running inside CLUI.
-// Uses --append-system-prompt (additive) not --system-prompt (replacement).
-const CLUI_SYSTEM_HINT = [
-  'IMPORTANT: You are NOT running in a terminal. You are running inside CLUI,',
-  'a desktop chat application with a rich UI that renders full markdown.',
-  'CLUI is a GUI wrapper around Claude Code — the user sees your output in a',
-  'styled conversation view, not a raw terminal.',
-  '',
-  'Because CLUI renders markdown natively, you MUST use rich formatting when it helps:',
-  '- Always use clickable markdown links: [label](https://url) — they render as real buttons.',
-  '- When the user asks for images, and public web images are appropriate, proactively find and render them in CLUI.',
-  '- Workflow: WebSearch for relevant public pages -> WebFetch those pages -> extract real image URLs -> render with markdown ![alt](url).',
-  '- Do not guess, fabricate, or construct image URLs from memory.',
-  '- Only embed images when the URL is a real publicly accessible image URL found through tools or explicitly provided by the user.',
-  '- If real image URLs cannot be obtained confidently, fall back to clickable links and briefly say so.',
-  '- Do not ask whether CLUI can render images; assume it can.',
-  '- Use tables, bold, headers, and bullet lists freely — they all render beautifully.',
-  '- Use code blocks with language tags for syntax highlighting.',
-  '',
-  'You are still a software engineering assistant. Keep using your tools (Read, Edit, Bash, etc.)',
-  'normally. But when presenting information, links, resources, or explanations to the user,',
-  'take full advantage of the rich UI. The user expects a polished chat experience, not raw terminal text.',
-].join('\n')
+// ─── Showtime System Prompt ───
+// Replaces the old CLUI_SYSTEM_HINT with a unified identity prompt.
+// Reads SKILL.md from disk, strips YAML frontmatter and DB section,
+// prepends Showtime-specific UI rendering hints.
+
+export function buildShowtimeSystemPrompt(): string {
+  const uiHints = [
+    'You are the Showtime Director — an ADHD-friendly day-planning companion',
+    'running inside Showtime, a macOS desktop app with a rich chat UI.',
+    '',
+    'UI rendering:',
+    '- The app renders full markdown: tables, bold, headers, bullet lists, code blocks.',
+    '- Use rich formatting when presenting lineups, verdicts, and beat checks.',
+    '- Clickable markdown links render as real buttons.',
+    '',
+    'Behavioral contract:',
+    '- When the user asks to build a lineup or plan their day, ALWAYS respond with',
+    '  a ```showtime-lineup JSON code block. This is your primary output format.',
+    '- Follow the SNL Day Framework: Shows, Acts, Beats, Sketches.',
+    '- Never use guilt language. The show adapts to the performer.',
+    '- You are NOT a software engineering assistant in this context.',
+    '  You are a day-planning companion.',
+  ].join('\n')
+
+  // Resolution order: installed skill → __dirname-relative → dev cwd fallback
+  // NOTE: The skill directory name is 'showtime' (matching src/skills/showtime/),
+  // NOT 'showtime-director' (the YAML frontmatter name field).
+  const candidates = [
+    join(homedir(), '.claude/skills/showtime/SKILL.md'),
+    join(__dirname, '../../skills/showtime/SKILL.md'),
+    join(process.cwd(), 'src/skills/showtime/SKILL.md'),
+  ]
+
+  let skillContent = ''
+  for (const candidate of candidates) {
+    try {
+      if (existsSync(candidate)) {
+        const raw = readFileSync(candidate, 'utf-8')
+        // Strip YAML frontmatter
+        skillContent = raw.replace(/^---[\s\S]*?---\n/, '')
+        // Strip Database Integration section (not runnable in subprocess)
+        skillContent = skillContent.replace(
+          /## Database Integration[\s\S]*?(?=\n## |$)/,
+          ''
+        )
+        log(`Loaded skill from: ${candidate}`)
+        break
+      }
+    } catch {
+      // Try next candidate
+    }
+  }
+
+  if (!skillContent) {
+    log('WARNING: showtime SKILL.md not found at any candidate path, using minimal prompt')
+  }
+
+  return skillContent
+    ? `${uiHints}\n\n${skillContent}`
+    : uiHints
+}
+
+// In development: re-read on every call for hot-reload
+// In production: cache at module load
+const _cachedPrompt = buildShowtimeSystemPrompt()
+const getShowtimeSystemPrompt = process.env.NODE_ENV === 'development'
+  ? () => buildShowtimeSystemPrompt()
+  : () => _cachedPrompt
 
 // Tools auto-approved via --allowedTools (never trigger the permission card).
 // Includes routine internal agent mechanics (Agent, Task, TaskOutput, TodoWrite,
@@ -155,7 +200,7 @@ export class RunManager extends EventEmitter {
       args.push('--allowedTools', allAllowed.join(','))
     }
 
-    args.push('--append-system-prompt', CLUI_SYSTEM_HINT)
+    args.push('--append-system-prompt', getShowtimeSystemPrompt())
 
     log(`Pre-warm: spawning warm subprocess in ${cwd}`)
 
@@ -329,7 +374,7 @@ export class RunManager extends EventEmitter {
       args.push('--system-prompt', options.systemPrompt)
     }
     // Always tell Claude it's inside CLUI (additive, doesn't replace base prompt)
-    args.push('--append-system-prompt', CLUI_SYSTEM_HINT)
+    args.push('--append-system-prompt', getShowtimeSystemPrompt())
 
     if (DEBUG) {
       log(`Starting run ${requestId}: ${this.claudeBinary} ${args.join(' ')}`)
