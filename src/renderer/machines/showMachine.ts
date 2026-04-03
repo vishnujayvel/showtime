@@ -483,7 +483,8 @@ export const showMachine = setup({
             // Auto-resume: restore from DB snapshot to the correct phase
             RESTORE_SHOW: [
               {
-                // Confirmed lineup in writers_room is invalid — promote to live
+                // Safety net: Confirmed lineup in writers_room is invalid — promote to live.
+                // Primary path (hydrateFromDB) already promotes targetPhase before dispatch.
                 target: '#show.phase.live.act_active',
                 guard: ({ event }) =>
                   event.type === 'RESTORE_SHOW' &&

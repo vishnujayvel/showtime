@@ -16,7 +16,7 @@ import {
   type ShowMachineContext,
   type ShowMachineEvent,
 } from '../renderer/machines/showMachine'
-import type { ShowLineup, ShowPhase, Act, ViewTier } from '../shared/types'
+import type { ShowLineup, ShowPhase, Act, ViewTier, EnergyLevel, ActStatus } from '../shared/types'
 
 // ─── Helpers ───
 

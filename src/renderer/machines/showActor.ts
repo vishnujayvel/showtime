@@ -412,7 +412,7 @@ export async function hydrateFromDB(): Promise<boolean> {
       },
     })
 
-    console.log(`[showtime] Auto-resumed show from DB: phase=${targetPhase}, acts=${acts.length}`)
+    console.log(`[showtime] Auto-resumed show from DB: phase=${resolvedPhase} (DB: ${targetPhase}), acts=${acts.length}`)
     return true
   } catch (err) {
     console.warn('[showtime] Failed to hydrate from DB:', err)
