@@ -10,7 +10,7 @@ const PILL_BOTTOM_MARGIN = 24
 // ─── Content-tight window sizing ───
 // Window resizes to match view content exactly. No transparent dead zones.
 export const VIEW_DIMENSIONS: Record<ViewMode, { width: number; height: number }> = {
-  pill: { width: 320, height: 64 },   // 56px content + 8px for MiniRundownStrip
+  pill: { width: 480, height: 64 },   // max-w-[480px] in PillView; content shrinks via min-w-80
   compact: { width: 340, height: 140 },
   dashboard: { width: 400, height: 320 },
   expanded: { width: 560, height: 620 },

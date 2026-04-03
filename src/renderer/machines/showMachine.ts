@@ -422,16 +422,25 @@ export const showMachine = setup({
 
     updateActContext: assign(({ context, event }) => {
       if (event.type !== 'UPDATE_ACT') return {}
+      const updatedActs = context.acts.map((a) =>
+        a.id === event.actId
+          ? {
+              ...a,
+              ...(event.name !== undefined ? { name: event.name } : {}),
+              ...(event.durationMinutes !== undefined ? { durationMinutes: event.durationMinutes } : {}),
+            }
+          : a
+      )
+      // If updating the currently active act's duration, recalculate timerEndAt
+      const act = updatedActs.find((a) => a.id === event.actId)
+      const isActiveAct = event.actId === context.currentActId && context.timerEndAt && act?.startedAt
+      const newTimerEndAt =
+        isActiveAct && event.durationMinutes !== undefined
+          ? act.startedAt! + event.durationMinutes * 60 * 1000
+          : context.timerEndAt
       return {
-        acts: context.acts.map((a) =>
-          a.id === event.actId
-            ? {
-                ...a,
-                ...(event.name !== undefined ? { name: event.name } : {}),
-                ...(event.durationMinutes !== undefined ? { durationMinutes: event.durationMinutes } : {}),
-              }
-            : a
-        ),
+        acts: updatedActs,
+        ...(newTimerEndAt !== context.timerEndAt ? { timerEndAt: newTimerEndAt } : {}),
       }
     }),
 
