@@ -16,6 +16,13 @@ export function registerShowtimeIpc(): void {
     getMainWindow()?.hide()
   })
 
+  ipcMain.on(IPC.MINIMIZE_TO_TRAY, () => {
+    const win = getMainWindow()
+    if (win && !win.isDestroyed()) {
+      win.hide()
+    }
+  })
+
   ipcMain.on(IPC.APP_QUIT, () => {
     // Hide window first to avoid black flash during quit
     getMainWindow()?.hide()
