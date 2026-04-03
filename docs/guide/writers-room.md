@@ -1,92 +1,74 @@
-# Writer's Room
+# The Writer's Room
 
-The Writer's Room is where you plan your day through a conversation with Claude. You are the Head Writer, drafting tonight's lineup. The whole thing takes about three minutes -- and the room has a 20-minute clock to keep planning from becoming its own form of procrastination.
+The Writer's Room is where you plan your day — through a conversation with Claude. The whole thing takes about three minutes.
 
-## Entering the Writer's Room
+## Setting Your Energy
 
-From the Dark Studio, click **Enter the Writer's Room**. The screen transitions from the empty stage to a chat interface. You're no longer staring at a spotlight. You're sitting down with your writing partner.
+Before anything else, pick your energy level. A chip in the title bar shows your current selection — tap it to change.
 
-## Setting Your Energy Level
+| Level | Emoji | What it means |
+|-------|-------|---------------|
+| **High** | ⚡ | Intensive, demanding work. You're firing on all cylinders. |
+| **Medium** | ☀️ | Balanced day. The default. |
+| **Low** | 🌙 | Gentle, low-pressure. Not every day is a sprint. |
+| **Recovery** | 🛋️ | Rest, self-care, minimal commitment. Recovery days are valid days. |
 
-Before anything else, set your energy. A chip in the title bar shows your current level. Tap it to choose.
-
-| Level | Capacity | What it means |
-|-------|----------|---------------|
-| **High** | 8+ hours | Full tank. Deep focus, hard problems, sustained concentration. |
-| **Medium** | 6-8 hours | Solid working day. Mix of focused and lighter work. |
-| **Low** | 4-6 hours | Lighter day. Admin, emails, errands. Shorter lineup. |
-| **Recovery** | 2-4 hours | Near empty. Gentle activities only. One Beat wins the day. |
-
-Your energy level shapes everything downstream: how many Acts get scheduled, what kind of work goes on stage, how many Beats count as a win. High energy days get more Deep Work acts. Recovery days lean toward gentle tasks.
-
-::: info Be honest
-Picking "Recovery" isn't failing. Picking "High" isn't performing well. Energy is a weather report, not a grade. For the full philosophy, see [Energy Levels](/getting-started/energy-levels).
-:::
+Be honest. Claude uses your energy level to calibrate act durations and intensity. A recovery day with two 25-minute acts is a real day.
 
 ## Chatting with Claude
 
-Now for the fun part. Tell Claude about your day. Type what's on your plate into the chat -- don't organize it, don't prioritize it, don't worry about format.
+Type what's on your plate into the chat. Don't organize it, don't prioritize it. Stream of consciousness is fine:
 
-Some examples of what you might type:
+> "finish the API thing, need to email alex, maybe gym if I feel like it, groceries"
 
-- "I need to finish the API endpoint, answer some emails, and probably go for a run"
-- "Big presentation prep today, plus errands this afternoon"
-- "Not sure what to do today. Kind of foggy. Maybe light stuff?"
-- "I have a meeting at 2pm, need to prep for it, and should probably clean the kitchen"
+That's plenty. Claude has access to your calendar through MCP tools, so it can factor in meetings and time blocks automatically.
 
-Claude takes your brain dump and your energy level and builds a structured lineup of Acts. Each Act gets a name, a duration (45-90 minutes), and a category.
+**Quick-start templates** are available if you want a head start:
 
-Hit **BUILD MY LINEUP** when you're ready for Claude to generate the plan.
+- **"Light day"** — 2–3 gentle acts, low pressure
+- **"Deep focus day"** — Long deep work blocks
 
-## Understanding the Lineup
+Or hit **BUILD MY LINEUP** to send your brain dump directly.
 
-The lineup appears as an interactive card right in the chat. Each Act shows:
+Claude responds with a structured lineup of Acts — timed blocks of work organized by category and duration.
 
-- **Name** -- what you'll be doing (e.g., "API Endpoint Sprint")
-- **Category** -- the type of work, shown as a color-coded badge
-- **Duration** -- how long the Act runs (45-90 minutes)
+## Reviewing the Lineup
 
-The five categories (called Sketches in Showtime lingo):
+Once Claude generates a lineup, you'll see it as an interactive panel labeled **CONFIRM LINEUP**. Each Act appears as an editable card showing:
 
-| Sketch | Color | Examples |
-|--------|-------|----------|
-| **Deep Work** | Purple | Coding, writing, design, focused problem-solving |
-| **Exercise** | Green | Gym, run, yoga, walk |
-| **Admin** | Blue | Email, scheduling, paperwork, errands |
-| **Creative** | Amber | Brainstorming, art, music, side projects |
-| **Social** | Pink | Meetings, calls, catch-ups, collaboration |
+- **Act name** — click to rename inline
+- **Category badge** — color-coded sketch type (Deep Work, Exercise, Admin, Creative, Social)
+- **Duration** — click to change (5–240 minutes)
+- **Reorder buttons** — move acts up or down
+- **Remove button** — delete acts you don't need
 
-The lineup is ordered based on your energy level. High energy days front-load Deep Work when your brain is sharpest. Lower energy days spread lighter tasks throughout.
+You can also click **+ Add Act** to create a new one with default values.
 
-## Editing the Lineup
+### Refining with Claude
 
-The lineup card is fully interactive. You don't have to accept Claude's first draft.
+Below the lineup, a chat input appears with the placeholder *"Tell the writers to change something..."*
 
-- **Click a name** to rename an Act
-- **Click a duration** to change how long it runs
-- **Click the category badge** to switch an Act's Sketch
-- **Drag to reorder** Acts in the lineup
-- **Add or remove** Acts with the buttons on the card
+Type a refinement request and Claude regenerates the lineup with your changes applied:
 
-You can also just type a follow-up message in the chat:
+> "make the exercise block longer"
+> "swap acts 2 and 3"
+> "add a 30-minute admin block before lunch"
 
-- "Make the exercise block longer"
-- "Swap acts 2 and 3"
-- "Add a creative block after lunch"
-- "Actually, drop the admin stuff today"
+You can go back and forth as many times as you want. The lineup updates live.
 
-Claude regenerates the lineup each time, incorporating your changes.
+## Auto-Resume
 
-::: tip Imperfect lineups are fine
-The Writer's Room has a 20-minute clock for a reason. You don't need the perfect lineup. You need a good-enough lineup that gets you on stage. You can always call on the Director later if things need to change.
-:::
+If you quit the app mid-show and relaunch, Showtime automatically detects your existing lineup in the database and resumes exactly where you left off — same phase, same acts, same timer state. No action required.
+
+This means you can close the app during intermission, reboot your machine, or recover from a crash without losing your show.
 
 ## Going Live
 
-Once you're happy with the lineup -- or at least happy enough -- hit **WE'RE LIVE!**
+Once the lineup looks right, click **Finalize Lineup** to confirm your choices. The button changes to **Confirm & Go Live**.
 
-The ON AIR light ignites red. The transition animation plays. *"Live from your desk, it's [today's date]!"*
+Click it and the stage lights up. A full-screen transition plays:
 
-This is a threshold crossing. You've left the Writer's Room. You're no longer the Head Writer. You are now the Performer, and the show has started.
+> **"Live from your desk, it's Wednesday, April 2, 2026!"**
+> *"The studio lights are on."*
 
-Your first Act begins immediately. Head to [Live Show](./live-show) for what happens next.
+The ON AIR light ignites. Click **Go Live** and the show begins.

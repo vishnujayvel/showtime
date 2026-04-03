@@ -1,66 +1,48 @@
 # Settings
 
-Showtime keeps configuration minimal -- the app should feel like it works out of the box. But there are a few things you can adjust. Open Settings anytime with **Cmd + ,**.
+## Timer Display Mode
 
-## Timer Display Modes
+Showtime offers two ways to keep time visible while you work:
 
-During the live show, the timer can appear in two forms:
+### Floating Pill
 
-### Pill View
+The default. A compact rounded window (320 × 64px) floats on top of your other windows showing the current act, timer, and beat counter. Always visible, never in the way.
 
-A small floating capsule (320px wide) that sits on top of your other windows. Shows the Act name, countdown timer, Beat count, and a thin colored timeline of your lineup. This is the default during focus work -- it stays visible without taking up space.
+### Menu Bar Timer
 
-Use Pill view when you want the timer present but unobtrusive. One click expands it to the full view. Press **Escape** to collapse back.
+Prefer a cleaner desktop? Switch to menu bar mode and the countdown appears in your macOS menu bar instead. The floating pill hides, and all show information moves to the tray menu.
 
-### Expanded View
+The menu bar shows:
+- `12:34` — remaining time in the current act
+- `⚡ 00:45` — lightning bolt prefix when under 5 minutes
 
-The full-stage experience with a 64px hero timer, full lineup sidebar, ON AIR bar, and Beat stars. For when you want to lean into the production metaphor and see everything at once.
+### Toggling Between Modes
 
-Switch between views anytime using keyboard shortcuts:
+Right-click (or click) the Showtime tray icon and select **"Show as Floating Pill / Menu Bar"**. Your choice is saved and persists across app restarts.
 
-| Shortcut | View |
-|----------|------|
-| **Cmd + 1** | Pill view |
-| **Cmd + 2** | Compact view |
-| **Cmd + 3** | Dashboard view |
-| **Cmd + 4** | Expanded view |
-| **Escape** | Collapse to Pill |
+## Help Button
 
-For the full breakdown of all view sizes, see [View Tiers](/concepts/view-tiers).
+A small **?** button appears in the top-right corner of most screens. Click it to open the Showtime documentation in your browser.
+
+The help button is context-aware — it links to the guide page most relevant to what you're doing:
+
+| Screen | Links to |
+|--------|----------|
+| Dark Studio | Getting Started |
+| Writer's Room | Writer's Room Guide |
+| Live Show | Live Show Guide |
+| Intermission | Live Show Guide |
+| Strike | Framework — Strike |
+| Settings | Settings Guide |
+
+The help button is hidden on transition screens (Going Live, Cold Open) and micro views (pill, compact) to avoid clutter.
 
 ## Keyboard Shortcuts
 
-Showtime is fully keyboard-navigable. The essential shortcuts:
+| Key | Action |
+|-----|--------|
+| **Space** | Pause / resume timer |
+| **S** | Skip current act |
+| **⌘ ,** | Open settings |
 
-| Shortcut | Action |
-|----------|--------|
-| **Space** | Pause / resume the current Act timer |
-| **Cmd + D** | Open Director Mode |
-| **Cmd + Enter** | Lock a Beat during Beat Check |
-| **Cmd + I** | Start Intermission |
-| **Cmd + Shift + S** | Strike the Stage (end the show) |
-| **Cmd + ,** | Open Settings |
-
-For the complete reference, see [Keyboard Shortcuts](/getting-started/keyboard-shortcuts).
-
-## Data Storage
-
-Showtime stores your show history in a local SQLite database inside the app's data directory. Your data stays on your machine -- nothing is sent to external servers (except the Claude conversation during the Writer's Room, which uses the Claude CLI).
-
-Your shows, Acts, Beats, verdicts, and energy levels are all persisted locally. This means you can look back at past shows to see patterns in your energy, Beat counts, and verdicts over time.
-
-## Resetting Data
-
-If you want a completely fresh start -- no history, no past shows -- you can reset the database from Settings. This clears all stored shows, Acts, and Beats.
-
-::: warning This is permanent
-Resetting your data cannot be undone. All past show history will be deleted. The app will return to its first-run state, starting with the Dark Studio as if it's your first day.
-:::
-
-## Getting Help
-
-If you run into issues or have questions:
-
-- **GitHub Issues** -- Report bugs or request features at [github.com/vishnujayvel/showtime/issues](https://github.com/vishnujayvel/showtime/issues)
-- **Documentation** -- You're reading it. Browse the sidebar for concepts, framework details, and contributing guides.
-- **Framework questions** -- Start with [The Showtime Framework](./framework) for an overview of how everything fits together, or dive into the [Concepts](/concepts/show-phases) section for detailed explanations of each piece.
+For the full list, see [Keyboard Shortcuts](/getting-started/keyboard-shortcuts).

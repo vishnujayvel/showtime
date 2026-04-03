@@ -18,8 +18,7 @@ export default defineConfig({
     logo: '/favicon.ico',
 
     nav: [
-      { text: 'Guide', link: '/getting-started/' },
-      { text: 'User Guide', link: '/guide/getting-started' },
+      { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Framework', link: '/framework/' },
       { text: 'Concepts', link: '/concepts/show-phases' },
       { text: 'App Tour', link: '/app-tour/' },

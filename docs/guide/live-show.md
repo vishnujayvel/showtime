@@ -1,102 +1,158 @@
-# Live Show
+# The Live Show
 
-The show is live. The ON AIR light is glowing red. You're on stage. Here's everything that happens between "We're Live!" and "Strike the Stage."
+Once you're live, the show runs on a timer. Each Act counts down. You work. The app stays out of your way.
 
-## The Live Show View
+## Views During the Show
 
-When the show goes live, your first Act begins with a studio clock counting down in big monospaced numbers. The interface shows:
+Showtime gives you three ways to watch the show while you work:
 
-- **Current Act** -- the name, category badge, and countdown timer
-- **Lineup sidebar** -- all your Acts with status indicators (completed, current, upcoming)
-- **ON AIR bar** -- a red light confirming the show is live
-- **Beat count** -- your golden stars so far
+### Pill View
 
-The timer is the heartbeat of the show. Acts run 45 to 90 minutes. When the clock hits zero, the Act is over -- whether the underlying work is "done" or not. The Act is done because the time is done.
+A small floating pill (320 × 64px) sits on top of your windows. It shows:
 
-::: tip The timer shifts to amber
-When less than 5 minutes remain in an Act, the studio clock shifts to amber. A gentle visual nudge that the segment is wrapping up. No alarm. No panic. Just a heads-up.
-:::
+- **Tally light** — red pulsing dot when live, gray during intermission
+- **Act name** — what you're working on right now
+- **Timer** — minutes and seconds remaining (turns gold when under 5 minutes)
+- **Beat counter** — stars showing your presence moments
 
-## Pill View vs Expanded View
+A mini rundown strip below the pill shows a color-coded timeline of all acts with a red "NOW" marker.
 
-You don't have to stare at the full Showtime window while you work. The app has multiple view sizes.
+Click the pill to expand into the full view.
 
-**Pill View** (320px floating capsule) -- The tiniest version. A little pill floating above your other windows showing the Act name, timer, Beat count, and a thin colored timeline of your day. Use this when you're in the zone and just need a quiet reminder that the clock is running.
+### Compact View
 
-**Expanded View** (full stage) -- The hero timer at 64px, the full lineup sidebar, ON AIR bar, and Act details. For when you want to lean all the way into the production metaphor.
+A middle ground between pill and expanded. Shows the title bar, rundown bar, and beat counter in a rounded container. Useful when you want more context without the full sidebar.
 
-Switch between them anytime:
-- **Click the Pill** to expand
-- **Press Escape** to collapse back to Pill
-- **Cmd + 1** through **Cmd + 4** to jump to specific views
+### Expanded View
 
-For the full breakdown of all view sizes, see [View Tiers](/concepts/view-tiers).
+The full production dashboard (560 × 620px). Two columns:
+
+**Left column — the stage:**
+- Clapperboard badge showing act number and category
+- Act name
+- Studio clock — large monospaced countdown (turns amber under 5 minutes)
+- Progress bar color-coded by category
+- Action buttons: **+15m** (extend the act), **End Act**, **Rest** (take intermission)
+
+**Right column — the sidebar:**
+- **TODAY'S LINEUP** header
+- All acts listed with status dots (red pulsing = active, gold = completed with beat, green = completed, gray = skipped)
+- Projected start/end times with drift indicators
+- **+ Encore** button to add acts during the live show
+
+**Bottom bar:**
+- ON AIR indicator (glowing red)
+- Show start time
+- Beat counter
+
+### Menu Bar Timer
+
+When you prefer to work without the floating pill, toggle to **menu bar mode**. The countdown appears in your macOS menu bar as `12:34` (or `⚡ 00:45` when under 5 minutes).
+
+Right-click the tray icon for a context menu showing:
+- Current act name and category
+- Timer remaining
+- Beat progress with stars (★★☆)
+- **COMING UP** — next 3 acts
+- Toggle: **"Show as Floating Pill / Menu Bar"**
+- Quick links: **Open Expanded View**, **Director Mode**
+
+Toggle between pill and menu bar any time from the tray menu. Your preference is saved across sessions.
+
+## The Rundown Bar
+
+A visual timeline across the top of expanded and compact views. Each act is a color-coded segment:
+
+- **Active act** — highlighted with an ON AIR glow
+- **Completed acts** — slightly faded
+- **Upcoming acts** — dimmed
+- **Red "NOW" marker** — tracks your position in real time
+- **Drift indicator** — shows if you're ahead or behind schedule
 
 ## Beat Checks
 
-After each Act, a spotlight narrows and the app asks: **"Did you have a moment of presence?"**
+After each Act completes, the stage dims and a spotlight narrows. The app asks:
+
+> **"Did you have a moment of presence?"**
+
+Two options:
+
+- **"Yes — Lock the Beat"** — A golden star ignites. That moment was real.
+- **"Not this time"** — The Act still counted. You still showed up.
 
 A Beat isn't about productivity. It's about noticing. Were you there? Did you feel alive inside the work, even for a second?
 
-- *"That solution clicked."*
-- *"I was actually enjoying this."*
-- *"I noticed I was focused, and that felt good."*
-
-If yes, **lock the Beat**. A golden star ignites -- the gray star transitions to warm gold in a brief animation. That moment was real.
-
-If no, that's fine. Tap skip. The Act still counted. You still showed up. A Beat without presence is still a completed Act.
-
-::: info Beats are presence, not productivity
-You can complete an Act perfectly without having a Beat. You can have a Beat in an Act where you barely got anything done. The Beat tracks whether you were *there*, not whether you were *productive*. For more on the philosophy, see [Acts & Beats](/concepts/acts-and-beats).
-:::
-
-## Completing an Act
-
-When the studio clock hits zero:
-
-1. The timer stops
-2. A **Beat Check** appears
-3. You lock a Beat or skip it
-4. The show transitions to **Intermission**
-
-You don't need to "finish" the task. The Act is honored because the time is honored. "That Act wrapped" is the only status that matters.
+Beats accumulate toward your daily verdict. But skipping a Beat carries no penalty.
 
 ## Intermission
 
-Between Acts, the ON AIR light goes dark. A vintage card appears: **"WE'LL BE RIGHT BACK."**
+Between Acts, the ON AIR light goes dark. A vintage card appears:
 
-There is no timer. There is no guilt. **Rest costs zero capacity. Always has.**
+> **"WE'LL BE RIGHT BACK"**
 
-Get a coffee. Stretch. Stare at the wall. Scroll your phone. Take five minutes or take forty-five. The show is not going anywhere.
+Below it, a rotating affirmation:
 
-Intermission is not a reward you earn by working hard enough. It's a part of the show, the same way a commercial break is part of a broadcast.
+- *"Rest is free. Always has been."*
+- *"The audience isn't going anywhere."*
+- *"Even the best shows have intermissions."*
+- *"Your presence doesn't have an expiry date."*
+- *"The stage will be here when you're ready."*
 
-When you're ready for the next Act, tap **Back to the show**.
+There's no timer. There's no guilt. Get a coffee. Stretch. Stare at the wall.
+
+Tap **Back to the show** when you're ready for the next Act.
 
 ## Director Mode
 
-If things go sideways -- you're overwhelmed, you've skipped a couple of Acts, the day isn't going as planned -- the Director steps in. You can also open Director Mode yourself at any time with **Cmd + D**.
+If things go sideways — you're overwhelmed, distracted, or the plan isn't working — click the **Director** button. The Director steps in with five compassionate options:
 
-The Director presents four options. All of them are valid. None of them is failure.
-
-| Option | What it does |
+| Option | What happens |
 |--------|-------------|
-| **Skip to next Act** | This Act isn't landing. Cut it from the show and move on. |
-| **Call the show early** | End the show now. Go straight to Strike the Stage. |
-| **Take a longer break** | Extended intermission. No timer. No limit. |
-| **Just breathe** | Five minutes of nothing. The clock pauses. Nothing is expected. |
+| **Skip this act, move on** | Marks the current act as skipped, starts the next one |
+| **Call the show early** | Skips all remaining acts, goes straight to Strike |
+| **Take a longer break** | Enters Intermission — same no-timer, no-guilt break |
+| **Just a moment** | Starts a 5-minute breathing pause, pauses the act timer |
+| **Reset today's show** | Clears everything and starts fresh (requires confirmation) |
 
-"I called the show early" is a sentence spoken by someone who made a decision. It's a production call, not a personal failure. For the full breakdown, see [Director Mode](/concepts/director-mode).
+None of these is failure. They're production decisions.
 
-## The ON AIR Light and Tally
+## Strike the Stage
 
-Two indicators confirm the show is live:
+When the show is over — either because you finished the lineup, ran out of acts, or called it early — it's time to Strike.
 
-- **ON AIR light** -- A red bordered box in the interface. Pulsing glow when live, dark gray during intermission.
-- **Tally light** -- A small red pulsing dot visible in Pill view. The draggable indicator that the show is running.
+### Stats
 
-When the show is live, these glow. During Intermission, they dim. After Strike, they go dark. Visual ceremony for every transition.
+Four numbers, staggered in:
 
-## What Comes Next
+- **Acts Completed** — how many you finished
+- **Acts Cut** — how many were skipped
+- **Beats Locked** — presence moments out of total possible
+- **Show Duration** — total time from start to finish
 
-After your last Act and Beat Check, the show is ready to close. Head to the [Framework guide](./framework) to understand the bigger picture, or jump straight to [Strike the Stage](/concepts/verdicts) to learn about end-of-show verdicts.
+### Verdicts
+
+| Verdict | When | Message |
+|---------|------|---------|
+| **DAY WON** | Beats ≥ threshold | *"You showed up and you were present."* Standing ovation. Confetti. |
+| **SOLID SHOW** | One beat short | *"Not every sketch lands. The show was still great."* |
+| **GOOD EFFORT** | Half the beats | *"You got on stage. That's the hardest part."* |
+| **SHOW CALLED EARLY** | Called early | *"Sometimes the show is short. The audience still came."* |
+
+There is no bad verdict. There is no failure state.
+
+### End Credits
+
+A scrollable list of all acts with their final status:
+
+- ✓ Completed (green)
+- ✕ Skipped (gray)
+- ★ Beat locked (gold)
+
+### What's Next
+
+After Strike, you have options:
+
+- **Add an Encore** — go back to the Writer's Room to add more acts
+- **Plan Tomorrow** — full reset, empty stage
+- **That's a Wrap** — collapse to pill view
+- **View Past Shows** — browse your show history
