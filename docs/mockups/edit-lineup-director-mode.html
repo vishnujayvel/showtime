@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Showtime — Edit Lineup from Director Mode (Mockup)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0d0f; color: #e8e6e0; font-family: 'Inter', -apple-system, sans-serif; display: flex; gap: 48px; padding: 40px; flex-wrap: wrap; justify-content: center; }
+    .mockup { position: relative; border-radius: 16px; overflow: hidden; }
+    .label { text-align: center; font-size: 11px; color: #9a9890; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+    .sublabel { text-align: center; font-size: 12px; color: #5a5855; margin-bottom: 24px; }
+    .arrow { color: #d97757; font-size: 32px; display: flex; align-items: center; padding: 0 16px; align-self: center; }
+
+    /* Director Mode Card */
+    .director-card {
+      width: 420px;
+      padding: 32px;
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 16px;
+    }
+    .director-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .director-card .sub { font-size: 14px; color: #9a9890; margin-bottom: 28px; }
+    .director-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .btn-default { background: #242428; border-color: #333; color: #e8e6e0; }
+    .btn-edit { background: rgba(217, 119, 87, 0.1); border-color: rgba(217, 119, 87, 0.3); color: #d97757; }
+    .btn-edit-highlight { background: rgba(217, 119, 87, 0.15); border-color: rgba(217, 119, 87, 0.5); color: #d97757; box-shadow: 0 0 12px rgba(217, 119, 87, 0.15); }
+    .btn-red { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .btn-purple { background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+    .btn-blue { background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+    .btn-muted { background: rgba(90, 88, 85, 0.1); border-color: rgba(90, 88, 85, 0.2); color: #5a5855; }
+    .divider { border-top: 1px solid #242428; margin: 6px 0 16px; }
+    .new-badge { display: inline-block; font-size: 9px; padding: 2px 6px; background: #d97757; color: #0d0d0f; border-radius: 4px; font-weight: 700; margin-left: 8px; vertical-align: middle; letter-spacing: 0.5px; }
+
+    /* Chat Resume View */
+    .chat-view {
+      width: 560px;
+      height: 500px;
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #242428;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-header h3 { font-size: 14px; font-weight: 600; }
+    .chat-header .status { font-size: 11px; color: #22c55e; display: flex; align-items: center; gap: 6px; }
+    .chat-header .status::before { content: ''; width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
+    .chat-body { flex: 1; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+    .msg-user { align-self: flex-end; background: #d97757; color: #0d0d0f; border-bottom-right-radius: 4px; }
+    .msg-claude { align-self: flex-start; background: #242428; color: #e8e6e0; border-bottom-left-radius: 4px; }
+    .msg-system { align-self: center; background: transparent; color: #5a5855; font-size: 11px; font-style: italic; text-align: center; padding: 4px; }
+    .chat-input {
+      padding: 12px 20px;
+      border-top: 1px solid #242428;
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input input {
+      flex: 1;
+      background: #242428;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #e8e6e0;
+      font-size: 13px;
+      outline: none;
+    }
+    .chat-input button {
+      background: #d97757;
+      color: #0d0d0f;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .lineup-banner {
+      margin: 8px 20px;
+      padding: 10px 14px;
+      background: rgba(217, 119, 87, 0.08);
+      border: 1px solid rgba(217, 119, 87, 0.2);
+      border-radius: 8px;
+      font-size: 11px;
+      color: #d97757;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .lineup-banner button {
+      background: #d97757;
+      color: #0d0d0f;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Flow diagram */
+    .flow { display: flex; align-items: flex-start; gap: 24px; }
+    .step { text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- Step 1: Updated Director Mode -->
+  <div class="step">
+    <div class="label">Step 1 — Director Mode</div>
+    <div class="sublabel">New "Edit the lineup" button added</div>
+    <div class="director-card">
+      <h2>The Director is here.</h2>
+      <p class="sub">What's the call?</p>
+
+      <div class="director-btn btn-edit-highlight">
+        ✏️ Edit the lineup <span class="new-badge">NEW</span>
+      </div>
+
+      <div class="director-btn btn-default">Skip this act, move on</div>
+      <div class="director-btn btn-red">Call the show early</div>
+      <div class="director-btn btn-purple">Take a longer break</div>
+      <div class="director-btn btn-blue">Just a moment</div>
+      <div class="divider"></div>
+      <div class="director-btn btn-muted">Reset today's show</div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div class="arrow">→</div>
+
+  <!-- Step 2: Resumed Chat View -->
+  <div class="step">
+    <div class="label">Step 2 — Writer's Room (Resumed)</div>
+    <div class="sublabel">Previous conversation restored via Claude Code session ID</div>
+    <div class="chat-view">
+      <div class="chat-header">
+        <h3>✏️ Editing Lineup — Show Paused</h3>
+        <div class="status">Session resumed</div>
+      </div>
+
+      <div class="chat-body">
+        <div class="msg msg-system">— Earlier conversation restored —</div>
+        <div class="msg msg-claude">Here's your lineup for today:<br><br>1. Deep Work — Yoodli drill (45m)<br>2. Admin — Email triage (20m)<br>3. Creative — Blog draft (30m)</div>
+        <div class="msg msg-user">Move Deep Work to after lunch and drop the admin block. Add a 15-min break after creative.</div>
+        <div class="msg msg-claude">Got it! Updated lineup:<br><br>1. Creative — Blog draft (30m)<br>2. Deep Work — Yoodli drill (45m)<br><br>I dropped Admin — Email triage and the schedule now has a natural break between acts. Want to confirm this lineup?</div>
+      </div>
+
+      <div class="lineup-banner">
+        <span>2 acts updated · Timer paused at 23:45</span>
+        <button>Confirm & Resume Show</button>
+      </div>
+
+      <div class="chat-input">
+        <input type="text" placeholder="Tell the director what to change..." />
+        <button>Send</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
