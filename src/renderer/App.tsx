@@ -13,6 +13,8 @@ import {
   useGoingLiveActive,
   showSelectors,
 } from './machines/ShowMachineProvider'
+import { hydrateFromDB } from './machines/showActor'
+import { useUIStore } from './stores/uiStore'
 import { useThemeStore } from './theme'
 import { DarkStudioView } from './views/DarkStudioView'
 import { WritersRoomView } from './views/WritersRoomView'
@@ -28,6 +30,7 @@ import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
 import { HelpDialog } from './components/HelpDialog'
+import { HelpButton } from './components/HelpButton'
 import type { ViewTier, ViewMode, ShowPhase } from '../shared/types'
 
 // Map viewTier + phase to the IPC view mode that determines window size
@@ -58,6 +61,8 @@ export default function App() {
   const beatCheckPending = useShowContext((ctx) => ctx.beatCheckPending)
   const send = useShowSend()
   const setSystemTheme = useThemeStore((s) => s.setSystemTheme)
+  const timerDisplay = useUIStore((s) => s.timerDisplay)
+  const toggleTimerDisplay = useUIStore((s) => s.toggleTimerDisplay)
 
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return localStorage.getItem('showtime-onboarding-complete') !== 'true'
@@ -115,6 +120,21 @@ export default function App() {
       }
     })
   }, [])
+
+  // ─── Listen for timer display toggle from tray menu ───
+  useEffect(() => {
+    if (!window.showtime?.onTimerDisplayToggle) return
+    return window.showtime.onTimerDisplayToggle(() => toggleTimerDisplay())
+  }, [toggleTimerDisplay])
+
+  // ─── Auto-resume from DB on startup ───
+  useEffect(() => {
+    // If the machine is at no_show (localStorage was empty/stale),
+    // try to restore from SQLite. This handles app restart scenarios.
+    if (phase === 'no_show') {
+      hydrateFromDB()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- one-time startup check
 
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {
@@ -200,9 +220,12 @@ export default function App() {
     }
 
     // Live/intermission/director — tier-based routing
+    // When menu bar timer is active, skip pill and show compact instead
     switch (viewTier) {
       case 'micro':
-        return <PillView key="pill" />
+        return timerDisplay === 'menubar'
+          ? <CompactView key="compact" />
+          : <PillView key="pill" />
       case 'compact':
         return <CompactView key="compact" />
       case 'dashboard':
@@ -215,14 +238,12 @@ export default function App() {
 
   return (
     <div data-testid="showtime-app" className="w-full h-full relative bg-transparent flex flex-col">
-      {/* Help button — visible on DarkStudio when onboarding was completed */}
-      {!showOnboarding && phase === 'no_show' && isExpanded && !coldOpenActive && !goingLiveActive && !showHistory && (
-        <button
-          onClick={handleHelpClick}
-          className="absolute right-3 top-3.5 w-6 h-6 rounded-full bg-surface-hover/60 text-txt-muted hover:text-txt-secondary text-xs font-body flex items-center justify-center no-drag z-50"
-        >
-          ?
-        </button>
+      {/* Help button — visible on every view except onboarding, transitions, pill, and compact */}
+      {!showOnboarding && !coldOpenActive && !goingLiveActive && !showHistory && isExpanded && viewTier !== 'micro' && viewTier !== 'compact' && (
+        <HelpButton
+          phase={showSettings ? 'settings' : phase}
+          className="absolute right-3 top-3.5"
+        />
       )}
       <AnimatePresence mode="wait">
         {renderView()}

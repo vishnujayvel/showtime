@@ -21,6 +21,7 @@ export interface ShowtimeAPI {
 
   // ─── App lifecycle ───
   quit(): void
+  openExternal(url: string): void
 
   // ─── Window management ───
   isVisible(): Promise<boolean>
@@ -46,6 +47,7 @@ export interface ShowtimeAPI {
   onToggleExpanded(callback: () => void): () => void
   onResetShow(callback: () => void): () => void
   onOpenSettings(callback: () => void): () => void
+  onTimerDisplayToggle(callback: () => void): () => void
 
   // ─── Showtime data persistence ───
   dataHydrate(): Promise<ShowStateSnapshot | null>
@@ -105,6 +107,7 @@ const api: ShowtimeAPI = {
 
   // ─── App lifecycle ───
   quit: () => ipcRenderer.send(IPC.APP_QUIT),
+  openExternal: (url: string) => ipcRenderer.send(IPC.OPEN_EXTERNAL, url),
 
   // ─── Window management ───
   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
@@ -183,6 +186,12 @@ const api: ShowtimeAPI = {
     const handler = () => callback()
     ipcRenderer.on(IPC.OPEN_SETTINGS, handler)
     return () => ipcRenderer.removeListener(IPC.OPEN_SETTINGS, handler)
+  },
+
+  onTimerDisplayToggle: (callback) => {
+    const handler = () => callback()
+    ipcRenderer.on(IPC.TIMER_DISPLAY_TOGGLE, handler)
+    return () => ipcRenderer.removeListener(IPC.TIMER_DISPLAY_TOGGLE, handler)
   },
 
   // ─── Showtime data persistence ───

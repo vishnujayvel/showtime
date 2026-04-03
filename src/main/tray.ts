@@ -94,6 +94,10 @@ function buildLiveMenu(state: TrayShowState, showWindow: (s?: string) => void): 
 
   items.push(
     { type: 'separator' },
+    { label: 'Show as Floating Pill / Menu Bar', click: () => {
+      const win = getMainWindow()
+      if (win && !win.isDestroyed()) win.webContents.send(IPC.TIMER_DISPLAY_TOGGLE)
+    }},
     { label: 'Open Expanded View', click: () => showWindow('tray open') },
     { label: 'Director Mode…', click: () => {
       showWindow('tray director')
