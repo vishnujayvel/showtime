@@ -405,6 +405,7 @@ export interface TrayShowState {
   actIndex: number
   totalActs: number
   nextActs: Array<{ name: string; sketch: string; durationMinutes: number }>
+  windowVisible?: boolean
 }
 
 // ─── IPC Channel Names ───
@@ -445,6 +446,7 @@ export const IPC = {
   HIDE_WINDOW: 'showtime:hide-window',
   WINDOW_SHOWN: 'showtime:window-shown',
   IS_VISIBLE: 'showtime:is-visible',
+  MINIMIZE_TO_TRAY: 'showtime:minimize-to-tray',
 
   // Skill provisioning (main → renderer)
   SKILL_STATUS: 'showtime:skill-status',

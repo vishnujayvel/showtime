@@ -25,6 +25,7 @@ export interface ShowtimeAPI {
 
   // ─── Window management ───
   isVisible(): Promise<boolean>
+  minimizeToTray(): void
 
   // ─── Event listeners (main → renderer) ───
   onEvent(callback: (tabId: string, event: NormalizedEvent) => void): () => void
@@ -114,6 +115,7 @@ const api: ShowtimeAPI = {
 
   // ─── Window management ───
   isVisible: () => ipcRenderer.invoke(IPC.IS_VISIBLE),
+  minimizeToTray: () => ipcRenderer.send(IPC.MINIMIZE_TO_TRAY),
 
   // ─── Event listeners ───
   onEvent: (callback) => {

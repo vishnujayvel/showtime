@@ -129,6 +129,16 @@ export function PillView() {
           )}
         </div>
 
+        {/* Minimize to tray button */}
+        <button
+          className="shrink-0 w-5 h-5 rounded-full border border-white/10 text-txt-muted hover:text-txt-secondary hover:border-white/20 transition-colors flex items-center justify-center text-[10px] font-mono leading-none no-drag"
+          aria-label="Minimize to menu bar"
+          data-testid="pill-minimize-btn"
+          onClick={() => window.showtime.minimizeToTray()}
+        >
+          −
+        </button>
+
         {/* Help button */}
         <Popover>
           <PopoverTrigger asChild>
