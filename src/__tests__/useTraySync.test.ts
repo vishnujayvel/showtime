@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { showActor, resetShowActor } from '../renderer/machines/showActor'
 import { getPhaseFromState } from '../renderer/machines/showMachine'
+import { useUIStore } from '../renderer/stores/uiStore'
 import type { TrayShowState, ShowLineup } from '../shared/types'
 
 /** Helper to get actor context */
@@ -40,6 +41,8 @@ describe('useTraySync', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     resetShowActor()
+    // Default to menubar mode so timer tests work as expected
+    useUIStore.setState({ timerDisplay: 'menubar' })
 
     updateTrayState = vi.fn()
     updateTrayTimer = vi.fn()

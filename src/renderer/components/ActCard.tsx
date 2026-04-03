@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import type { Act } from '../../shared/types'
 import { cn } from '../lib/utils'
 import { ClapperboardBadge } from './ClapperboardBadge'
@@ -9,6 +10,8 @@ interface ActCardProps {
   actNumber: number
   onReorder?: (direction: 'up' | 'down') => void
   onRemove?: () => void
+  onUpdateName?: (name: string) => void
+  onUpdateDuration?: (minutes: number) => void
   timeLabel?: string
   timeDrifted?: boolean
   plannedTimeLabel?: string
@@ -16,8 +19,39 @@ interface ActCardProps {
   pinned?: boolean
 }
 
-function FullActCard({ act, actNumber, onReorder, onRemove, pinned }: Omit<ActCardProps, 'variant'>) {
+function FullActCard({ act, actNumber, onReorder, onRemove, onUpdateName, onUpdateDuration, pinned }: Omit<ActCardProps, 'variant'>) {
   const categoryClasses = getCategoryClasses(act.sketch)
+  const [editingName, setEditingName] = useState(false)
+  const [editingDuration, setEditingDuration] = useState(false)
+  const [nameValue, setNameValue] = useState(act.name)
+  const [durationValue, setDurationValue] = useState(String(act.durationMinutes))
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const durationInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { setNameValue(act.name) }, [act.name])
+  useEffect(() => { setDurationValue(String(act.durationMinutes)) }, [act.durationMinutes])
+  useEffect(() => { if (editingName) nameInputRef.current?.focus() }, [editingName])
+  useEffect(() => { if (editingDuration) durationInputRef.current?.focus() }, [editingDuration])
+
+  const commitName = () => {
+    setEditingName(false)
+    const trimmed = nameValue.trim()
+    if (trimmed && trimmed !== act.name && onUpdateName) {
+      onUpdateName(trimmed)
+    } else {
+      setNameValue(act.name)
+    }
+  }
+
+  const commitDuration = () => {
+    setEditingDuration(false)
+    const parsed = parseInt(durationValue, 10)
+    if (!isNaN(parsed) && parsed > 0 && parsed !== act.durationMinutes && onUpdateDuration) {
+      onUpdateDuration(parsed)
+    } else {
+      setDurationValue(String(act.durationMinutes))
+    }
+  }
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-hover/50 border border-card-border">
@@ -26,18 +60,75 @@ function FullActCard({ act, actNumber, onReorder, onRemove, pinned }: Omit<ActCa
 
       {/* Middle content */}
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm text-txt-primary truncate">
-          {pinned && <span className="text-txt-muted mr-1" title="Pinned to calendar time">&#128204;</span>}
-          {act.name}
-        </div>
+        {editingName ? (
+          <input
+            ref={nameInputRef}
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={commitName}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitName(); if (e.key === 'Escape') { setNameValue(act.name); setEditingName(false) } }}
+            className="w-full bg-transparent border-b border-accent/50 text-sm text-txt-primary font-medium outline-none"
+            data-testid="act-name-input"
+          />
+        ) : (
+          <div
+            className={cn('font-medium text-sm text-txt-primary truncate', onUpdateName && 'cursor-text hover:text-accent')}
+            onClick={() => onUpdateName && setEditingName(true)}
+            data-testid="act-name"
+          >
+            {pinned && <span className="text-txt-muted mr-1" title="Pinned to calendar time">&#128204;</span>}
+            {act.name}
+          </div>
+        )}
         <div className="flex items-center gap-2 mt-0.5">
           <ClapperboardBadge sketch={act.sketch} actNumber={actNumber} size="sm" />
-          <span className="text-xs text-txt-muted">{act.durationMinutes}m</span>
+          {editingDuration ? (
+            <div className="flex items-center gap-1">
+              <input
+                ref={durationInputRef}
+                value={durationValue}
+                onChange={(e) => setDurationValue(e.target.value)}
+                onBlur={commitDuration}
+                onKeyDown={(e) => { if (e.key === 'Enter') commitDuration(); if (e.key === 'Escape') { setDurationValue(String(act.durationMinutes)); setEditingDuration(false) } }}
+                className="w-10 bg-transparent border-b border-accent/50 text-xs text-txt-muted outline-none text-center"
+                data-testid="act-duration-input"
+              />
+              <span className="text-xs text-txt-muted">m</span>
+            </div>
+          ) : (
+            <span
+              className={cn('text-xs text-txt-muted', onUpdateDuration && 'cursor-text hover:text-accent')}
+              onClick={() => onUpdateDuration && setEditingDuration(true)}
+              data-testid="act-duration"
+            >
+              {act.durationMinutes}m
+            </span>
+          )}
         </div>
       </div>
 
       {/* Right actions */}
       <div className="flex items-center gap-1">
+        {onUpdateDuration && (
+          <div className="flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => onUpdateDuration(Math.min(act.durationMinutes + 5, 240))}
+              className="text-txt-muted hover:text-txt-secondary text-[10px] leading-none p-0.5"
+              title="Add 5 minutes"
+            >
+              +5
+            </button>
+            <button
+              type="button"
+              onClick={() => onUpdateDuration(Math.max(act.durationMinutes - 5, 5))}
+              className="text-txt-muted hover:text-txt-secondary text-[10px] leading-none p-0.5"
+              title="Remove 5 minutes"
+            >
+              -5
+            </button>
+          </div>
+        )}
         {onReorder && (
           <div className="flex flex-col gap-0.5">
             <button
@@ -146,7 +237,7 @@ function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReord
   )
 }
 
-export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabel, timeDrifted, plannedTimeLabel, pinned }: ActCardProps) {
+export function ActCard({ act, variant, actNumber, onReorder, onRemove, onUpdateName, onUpdateDuration, timeLabel, timeDrifted, plannedTimeLabel, pinned }: ActCardProps) {
   if (variant === 'sidebar') {
     return (
       <SidebarActCard
@@ -168,6 +259,8 @@ export function ActCard({ act, variant, actNumber, onReorder, onRemove, timeLabe
       actNumber={actNumber}
       onReorder={onReorder}
       onRemove={onRemove}
+      onUpdateName={onUpdateName}
+      onUpdateDuration={onUpdateDuration}
       pinned={pinned}
     />
   )

@@ -467,6 +467,12 @@ export const IPC = {
   RESET_SHOW: 'showtime:reset-show',
   OPEN_SETTINGS: 'showtime:open-settings',
 
+  // Open URL in default browser
+  OPEN_EXTERNAL: 'showtime:open-external',
+
+  // Timer display mode toggle (main → renderer)
+  TIMER_DISPLAY_TOGGLE: 'showtime:timer-display-toggle',
+
   // Showtime tray state (renderer → main)
   TRAY_STATE_UPDATE: 'showtime:tray-state-update',
   TRAY_TIMER_UPDATE: 'showtime:tray-timer-update',

@@ -7,6 +7,8 @@
 import { create } from 'zustand'
 import type { CalendarEvent, CalendarFetchStatus } from '../../shared/types'
 
+export type TimerDisplay = 'pill' | 'menubar'
+
 interface UIStoreState {
   calendarAvailable: boolean
   calendarEnabled: boolean
@@ -14,6 +16,7 @@ interface UIStoreState {
   calendarFetchStatus: CalendarFetchStatus
   calendarFetchedAt: number | null
   claudeSessionId: string | null
+  timerDisplay: TimerDisplay
 }
 
 interface UIStoreActions {
@@ -23,6 +26,8 @@ interface UIStoreActions {
   setCalendarFetchStatus: (status: CalendarFetchStatus) => void
   clearCalendarCache: () => void
   setClaudeSessionId: (id: string | null) => void
+  setTimerDisplay: (mode: TimerDisplay) => void
+  toggleTimerDisplay: () => void
 }
 
 export type UIStore = UIStoreState & UIStoreActions
@@ -34,6 +39,7 @@ export const useUIStore = create<UIStore>()((set) => ({
   calendarFetchStatus: 'idle',
   calendarFetchedAt: null,
   claudeSessionId: null,
+  timerDisplay: (typeof localStorage !== 'undefined' && localStorage.getItem('showtime-timer-display') as TimerDisplay) || 'pill',
 
   setCalendarAvailable: (available) => set({ calendarAvailable: available }),
 
@@ -59,4 +65,15 @@ export const useUIStore = create<UIStore>()((set) => ({
   }),
 
   setClaudeSessionId: (id) => set({ claudeSessionId: id }),
+
+  setTimerDisplay: (mode) => {
+    try { localStorage.setItem('showtime-timer-display', mode) } catch { /* ignore */ }
+    set({ timerDisplay: mode })
+  },
+
+  toggleTimerDisplay: () => set((state) => {
+    const next = state.timerDisplay === 'pill' ? 'menubar' as const : 'pill' as const
+    try { localStorage.setItem('showtime-timer-display', next) } catch { /* ignore */ }
+    return { timerDisplay: next }
+  }),
 }))

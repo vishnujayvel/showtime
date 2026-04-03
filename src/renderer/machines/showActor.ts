@@ -13,7 +13,7 @@ import {
   type ShowMachineContext,
   type ShowMachineEvent,
 } from './showMachine'
-import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, ViewTier } from '../../shared/types'
+import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, ViewTier, ShowStateSnapshot, ActSnapshot } from '../../shared/types'
 
 // ─── State Persistence ───
 
@@ -319,6 +319,99 @@ showActor.subscribe((snapshot) => {
     persistState(snapshot.value, ctx)
   }
 })
+
+// ─── DB Hydration (Auto-Resume) ───
+
+/**
+ * Convert a DB ActSnapshot to the machine's Act format.
+ */
+function dbActToMachineAct(a: ActSnapshot): Act {
+  return {
+    id: a.id,
+    name: a.name,
+    sketch: a.sketch,
+    durationMinutes: Math.round(a.plannedDurationMs / 60000),
+    status: (a.status === 'pending' ? 'upcoming' : a.status) as ActStatus,
+    beatLocked: (a.beatLocked ?? 0) === 1,
+    order: a.sortOrder,
+    startedAt: a.actualStartAt ?? undefined,
+    completedAt: a.actualEndAt ?? undefined,
+    pinnedStartAt: a.plannedStartAt ?? null,
+  }
+}
+
+/**
+ * Attempt to hydrate the show machine from SQLite on startup.
+ * If today's show exists in the DB and the machine is at no_show,
+ * sends RESTORE_SHOW to jump to the correct phase.
+ *
+ * Returns true if a show was restored, false otherwise.
+ */
+export async function hydrateFromDB(): Promise<boolean> {
+  try {
+    // Only hydrate if currently at no_show (localStorage didn't have state)
+    const currentPhase = getPhaseFromState(
+      showActor.getSnapshot().value as Record<string, unknown>
+    )
+    if (currentPhase !== 'no_show') return false
+
+    const snapshot: ShowStateSnapshot | null = await window.showtime.dataHydrate()
+    if (!snapshot || !snapshot.acts?.length) return false
+
+    const targetPhase = snapshot.phase as ShowPhase
+    // Don't restore no_show or strike (SyncEngine.hydrate already filters these, but double-check)
+    if (targetPhase === 'no_show' || targetPhase === 'strike') return false
+
+    const acts = snapshot.acts.map(dbActToMachineAct)
+    const activeAct = acts.find((a) => a.status === 'active')
+    const currentActId = activeAct?.id ?? null
+
+    // Reconstruct timer for active act
+    let timerEndAt: number | null = null
+    if (activeAct?.startedAt) {
+      timerEndAt = activeAct.startedAt + activeAct.durationMinutes * 60 * 1000
+      // If timer would have expired, set to now + 1 minute so user can complete/extend
+      if (timerEndAt < Date.now()) {
+        timerEndAt = Date.now() + 60 * 1000
+      }
+    }
+
+    // Determine writers room step for writers_room phase
+    const hasConfirmedLineup = acts.length > 0
+    const writersRoomStep = hasConfirmedLineup ? 'lineup_ready' as const : 'energy' as const
+    const lineupStatus = hasConfirmedLineup ? 'confirmed' as const : 'draft' as const
+
+    showActor.send({
+      type: 'RESTORE_SHOW',
+      targetPhase,
+      context: {
+        energy: (snapshot.energy as EnergyLevel) ?? null,
+        acts,
+        currentActId,
+        beatsLocked: snapshot.beatsLocked ?? 0,
+        beatThreshold: snapshot.beatThreshold ?? 3,
+        timerEndAt,
+        timerPausedRemaining: null,
+        showDate: snapshot.showId,
+        showStartedAt: snapshot.startedAt ?? null,
+        verdict: (snapshot.verdict as ShowVerdict) ?? null,
+        viewTier: targetPhase === 'live' ? 'micro' as ViewTier : 'expanded' as ViewTier,
+        beatCheckPending: false,
+        celebrationActive: false,
+        writersRoomStep,
+        writersRoomEnteredAt: null,
+        breathingPauseEndAt: null,
+        lineupStatus,
+      },
+    })
+
+    console.log(`[showtime] Auto-resumed show from DB: phase=${targetPhase}, acts=${acts.length}`)
+    return true
+  } catch (err) {
+    console.warn('[showtime] Failed to hydrate from DB:', err)
+    return false
+  }
+}
 
 // ─── Test Support ───
 

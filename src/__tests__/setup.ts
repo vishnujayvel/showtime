@@ -40,6 +40,7 @@ if (typeof window !== 'undefined') {
     recordMetricTiming: vi.fn(),
     // App lifecycle
     quit: vi.fn(),
+    openExternal: vi.fn(),
     // Show history
     getShowHistory: vi.fn().mockResolvedValue([]),
   }

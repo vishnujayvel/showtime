@@ -72,8 +72,11 @@ export type ShowMachineEvent =
   | { type: 'REORDER_ACT'; actId: string; direction: 'up' | 'down' }
   | { type: 'REMOVE_ACT'; actId: string }
   | { type: 'ADD_ACT'; name: string; sketch: string; durationMinutes: number }
+  | { type: 'UPDATE_ACT'; actId: string; name?: string; durationMinutes?: number }
   // View tier
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
+  // Auto-resume from DB
+  | { type: 'RESTORE_SHOW'; targetPhase: ShowPhase; context: Partial<ShowMachineContext> }
 
 // ─── Helpers ───
 
@@ -417,6 +420,30 @@ export const showMachine = setup({
       }
     }),
 
+    updateActContext: assign(({ context, event }) => {
+      if (event.type !== 'UPDATE_ACT') return {}
+      return {
+        acts: context.acts.map((a) =>
+          a.id === event.actId
+            ? {
+                ...a,
+                ...(event.name !== undefined ? { name: event.name } : {}),
+                ...(event.durationMinutes !== undefined ? { durationMinutes: event.durationMinutes } : {}),
+              }
+            : a
+        ),
+      }
+    }),
+
+    restoreShowContext: assign(({ event }) => {
+      if (event.type !== 'RESTORE_SHOW') return {}
+      // Filter out undefined values to avoid overwriting defaults with undefined.
+      // Partial<ShowMachineContext> can have undefined fields from DB rows with NULL.
+      return Object.fromEntries(
+        Object.entries(event.context).filter(([, v]) => v !== undefined)
+      )
+    }),
+
     logDroppedEvent: ({ event, self }) => {
       const snap = self.getSnapshot()
       if (typeof window !== 'undefined' && window.showtime?.logEvent) {
@@ -453,6 +480,47 @@ export const showMachine = setup({
               actions: 'enterWritersRoom',
             },
             TRIGGER_COLD_OPEN: 'cold_open',
+            // Auto-resume: restore from DB snapshot to the correct phase
+            RESTORE_SHOW: [
+              {
+                // Restore to lineup_ready if acts exist (has a lineup to show)
+                target: '#show.phase.writers_room.lineup_ready',
+                guard: ({ event }) =>
+                  event.type === 'RESTORE_SHOW' &&
+                  event.targetPhase === 'writers_room' &&
+                  (event.context.acts?.length ?? 0) > 0,
+                actions: 'restoreShowContext',
+              },
+              {
+                // Restore to energy if no acts (fresh Writer's Room)
+                target: '#show.phase.writers_room.energy',
+                guard: ({ event }) =>
+                  event.type === 'RESTORE_SHOW' &&
+                  event.targetPhase === 'writers_room' &&
+                  (event.context.acts?.length ?? 0) === 0,
+                actions: 'restoreShowContext',
+              },
+              {
+                target: '#show.phase.live.act_active',
+                guard: ({ event }) => event.type === 'RESTORE_SHOW' && event.targetPhase === 'live',
+                actions: 'restoreShowContext',
+              },
+              {
+                target: '#show.phase.intermission.resting',
+                guard: ({ event }) => event.type === 'RESTORE_SHOW' && event.targetPhase === 'intermission',
+                actions: 'restoreShowContext',
+              },
+              {
+                target: '#show.phase.director',
+                guard: ({ event }) => event.type === 'RESTORE_SHOW' && event.targetPhase === 'director',
+                actions: 'restoreShowContext',
+              },
+              {
+                target: '#show.phase.strike',
+                guard: ({ event }) => event.type === 'RESTORE_SHOW' && event.targetPhase === 'strike',
+                actions: 'restoreShowContext',
+              },
+            ],
             // RESET in no_show is intentionally a no-op — already reset.
             // Without this, the wildcard handler logs 524 false-positive drops
             // from test beforeEach blocks and app startup safety resets.
@@ -489,6 +557,7 @@ export const showMachine = setup({
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
+            UPDATE_ACT: { actions: 'updateActContext' },
             START_SHOW: {
               target: 'live',
               guard: 'hasConfirmedLineup',
@@ -587,6 +656,7 @@ export const showMachine = setup({
             REORDER_ACT: { actions: 'reorderActContext' },
             REMOVE_ACT: { actions: 'removeActContext' },
             ADD_ACT: { actions: 'addActContext' },
+            UPDATE_ACT: { actions: 'updateActContext' },
             RESET: {
               target: 'no_show',
               actions: 'resetContext',

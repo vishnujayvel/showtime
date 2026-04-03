@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useShowActor } from '../machines/ShowMachineProvider'
 import { getPhaseFromState } from '../machines/showMachine'
+import { useUIStore } from '../stores/uiStore'
 import type { TrayShowState } from '../../shared/types'
 
 /**
@@ -8,9 +9,13 @@ import type { TrayShowState } from '../../shared/types'
  * Timer-only updates (every 1s during live/director phase) use a lightweight
  * IPC channel that only sets tray title + icon — no menu rebuild.
  * Full state updates (with menu rebuild) are sent only on phase/act/beat changes.
+ *
+ * When timerDisplay === 'pill', tray title is cleared (no timer in menu bar).
+ * When timerDisplay === 'menubar', tray title shows countdown.
  */
 export function useTraySync(): void {
   const actor = useShowActor()
+  const timerDisplay = useUIStore((s) => s.timerDisplay)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -44,11 +49,19 @@ export function useTraySync(): void {
           : [],
       }
 
+      // When pill mode is active, null out timerSeconds so tray title stays empty
+      if (useUIStore.getState().timerDisplay === 'pill' && (phase === 'live' || phase === 'director')) {
+        state.timerSeconds = null
+      }
       window.showtime.updateTrayState(state)
     }
 
     /** Lightweight timer-only update — no menu rebuild */
     function sendTimerOnly(): void {
+      // When pill mode is active, clear the tray title (no timer in menu bar)
+      if (useUIStore.getState().timerDisplay === 'pill') {
+        return
+      }
       const snapshot = actor.getSnapshot()
       const ctx = snapshot.context
       if (ctx.timerEndAt) {
@@ -123,5 +136,5 @@ export function useTraySync(): void {
       subscription.unsubscribe()
       stopTimerInterval()
     }
-  }, [actor])
+  }, [actor, timerDisplay])
 }
