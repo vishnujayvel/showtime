@@ -6,6 +6,7 @@ import { PermissionServer, maskSensitiveFields } from '../hooks/permission-serve
 import type { HookToolRequest, PermissionOption } from '../hooks/permission-server'
 import { log as _log } from '../logger'
 import { appLog } from '../app-logger'
+import { DataService } from '../data/DataService'
 import type {
   TabStatus,
   TabRegistryEntry,
@@ -661,6 +662,28 @@ export class ControlPlane extends EventEmitter {
     // Set status to connecting (first run) or running (subsequent)
     const newStatus: TabStatus = tab.claudeSessionId ? 'running' : 'connecting'
     this._setTabStatus(tabId, newStatus)
+
+    // ─── Inject today's lineup state into system prompt ───
+    // Prevents Claude from running 10+ Glob/Bash calls hunting for the DB.
+    if (!this.initRequestIds.has(requestId)) {
+      try {
+        const ds = DataService.getInstance()
+        const todayShow = ds.shows.getTodayShow()
+        if (todayShow) {
+          const todayActs = ds.acts.getActsForShow(todayShow.id)
+          const lineupContext = [
+            `\n\n[Showtime Context] Today's show (${todayShow.id}):`,
+            `Phase: ${todayShow.phase} | Energy: ${todayShow.energy ?? 'not set'} | Beats: ${todayShow.beatsLocked}/${todayShow.beatThreshold}`,
+            todayActs.length > 0
+              ? `Acts:\n${todayActs.map((a, i) => `  ${i + 1}. ${a.name} (${a.sketch}, ${a.plannedDurationMs / 60000}min, ${a.status})`).join('\n')}`
+              : 'No acts yet.',
+          ].join('\n')
+          options = { ...options, systemPrompt: (options.systemPrompt ?? '') + lineupContext }
+        }
+      } catch {
+        // DataService not initialized yet — skip injection
+      }
+    }
 
     // ─── Pick transport ───
     // Stream-json is the stable transport for all regular messages.
