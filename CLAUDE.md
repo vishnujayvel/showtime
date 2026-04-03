@@ -196,6 +196,8 @@ import { useUIStore } from '../stores/uiStore'
 const calendarEvents = useUIStore(s => s.calendarEvents)
 ```
 
+**Machine visualization is live via `@statelyai/inspect` — do not maintain static diagrams.** In DEV mode, the Stately Inspector opens automatically showing a live, interactive state chart. The `inspect` callback on `showActor` also provides runtime drop detection via `snapshot.can()`. See `src/renderer/machines/devInspector.ts` and `showActor.ts`.
+
 ## Design System
 
 Full reference: `docs/plans/design-system.md`

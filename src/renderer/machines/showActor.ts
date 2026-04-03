@@ -4,7 +4,7 @@
  * This is the source of truth for all phase-related state.
  * Import this to send events or read state directly.
  */
-import { createActor } from 'xstate'
+import { createActor, type InspectionEvent } from 'xstate'
 import {
   showMachine,
   createInitialContext,
@@ -13,6 +13,7 @@ import {
   type ShowMachineContext,
   type ShowMachineEvent,
 } from './showMachine'
+import { forwardToDevInspector, initDevInspector } from './devInspector'
 import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, ViewTier, ShowStateSnapshot, ActSnapshot } from '../../shared/types'
 
 // ─── State Persistence ───
@@ -126,12 +127,59 @@ export function clearPersistedState() {
 
 const persistedSnapshot = getPersistedSnapshot()
 
+// ─── Inspect Callback (Layer 1: Drop Detection + Layer 2: Dev Inspector) ───
+
+/**
+ * Layer 1 — Runtime drop detection via snapshot.can().
+ * Fires on every event sent to the actor. If the current state can't handle
+ * the event, log it as a potential drop. This complements the wildcard
+ * logDroppedEvent handler (Layer 0) with an observation-only second layer.
+ *
+ * Note: The machine's root wildcard `*` handler (logDroppedEvent) has actions,
+ * so snapshot.can() returns true for most events — the wildcard "handles" them.
+ * can() only returns false for events explicitly blocked via empty transitions
+ * (e.g., RESET: {} in no_show). If the wildcard is ever removed, this check
+ * becomes the primary drop detection mechanism.
+ */
+function inspectCallback(inspectionEvent: InspectionEvent): void {
+  // Layer 1: detect dropped events via snapshot.can()
+  if (inspectionEvent.type === '@xstate.event') {
+    const event = inspectionEvent.event as ShowMachineEvent
+    // Skip internal XState events (prefixed with xstate.)
+    if (typeof event.type === 'string' && event.type.startsWith('xstate.')) return
+    const snapshot = showActor.getSnapshot()
+    if (!snapshot.can(event)) {
+      if (typeof window !== 'undefined' && window.showtime?.logEvent) {
+        window.showtime.logEvent('WARN', 'xstate.inspect_drop', {
+          event: event.type,
+          state: JSON.stringify(snapshot.value),
+        })
+      }
+      if (import.meta.env.DEV) {
+        console.warn(`[inspect] Event "${event.type}" not handled in state`, snapshot.value)
+      }
+    }
+  }
+  // Layer 2: forward to dev inspector (no-op if not initialized)
+  forwardToDevInspector(inspectionEvent)
+}
+
 export const showActor = createActor(showMachine, {
   ...(persistedSnapshot ? { snapshot: persistedSnapshot } : {}),
+  inspect: inspectCallback,
 })
 
 // Start immediately — actor is alive for the entire app lifecycle
 showActor.start()
+
+// Layer 2: async-initialize dev inspector (approach b from PRD)
+// Actor is already running with Layer 1. Once the browser inspector loads,
+// Layer 2 events flow automatically via forwardToDevInspector.
+if (import.meta.env.DEV) {
+  initDevInspector().catch((err) =>
+    console.warn('[showtime] Dev inspector init failed:', err)
+  )
+}
 
 // ─── SQLite Sync Side Effects ───
 // Subscribe to actor state changes and sync to SQLite/notifications.
