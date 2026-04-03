@@ -13,6 +13,7 @@ import {
   useGoingLiveActive,
   showSelectors,
 } from './machines/ShowMachineProvider'
+import { hydrateFromDB } from './machines/showActor'
 import { useThemeStore } from './theme'
 import { DarkStudioView } from './views/DarkStudioView'
 import { WritersRoomView } from './views/WritersRoomView'
@@ -115,6 +116,15 @@ export default function App() {
       }
     })
   }, [])
+
+  // ─── Auto-resume from DB on startup ───
+  useEffect(() => {
+    // If the machine is at no_show (localStorage was empty/stale),
+    // try to restore from SQLite. This handles app restart scenarios.
+    if (phase === 'no_show') {
+      hydrateFromDB()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- one-time startup check
 
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {
