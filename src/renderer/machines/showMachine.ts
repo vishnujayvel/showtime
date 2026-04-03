@@ -437,7 +437,11 @@ export const showMachine = setup({
 
     restoreShowContext: assign(({ event }) => {
       if (event.type !== 'RESTORE_SHOW') return {}
-      return { ...event.context }
+      // Filter out undefined values to avoid overwriting defaults with undefined.
+      // Partial<ShowMachineContext> can have undefined fields from DB rows with NULL.
+      return Object.fromEntries(
+        Object.entries(event.context).filter(([, v]) => v !== undefined)
+      )
     }),
 
     logDroppedEvent: ({ event, self }) => {
@@ -479,8 +483,21 @@ export const showMachine = setup({
             // Auto-resume: restore from DB snapshot to the correct phase
             RESTORE_SHOW: [
               {
+                // Restore to lineup_ready if acts exist (has a lineup to show)
                 target: '#show.phase.writers_room.lineup_ready',
-                guard: ({ event }) => event.type === 'RESTORE_SHOW' && event.targetPhase === 'writers_room',
+                guard: ({ event }) =>
+                  event.type === 'RESTORE_SHOW' &&
+                  event.targetPhase === 'writers_room' &&
+                  (event.context.acts?.length ?? 0) > 0,
+                actions: 'restoreShowContext',
+              },
+              {
+                // Restore to energy if no acts (fresh Writer's Room)
+                target: '#show.phase.writers_room.energy',
+                guard: ({ event }) =>
+                  event.type === 'RESTORE_SHOW' &&
+                  event.targetPhase === 'writers_room' &&
+                  (event.context.acts?.length ?? 0) === 0,
                 actions: 'restoreShowContext',
               },
               {
