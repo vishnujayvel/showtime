@@ -381,9 +381,16 @@ export async function hydrateFromDB(): Promise<boolean> {
     const writersRoomStep = hasConfirmedLineup ? 'lineup_ready' as const : 'energy' as const
     const lineupStatus = hasConfirmedLineup ? 'confirmed' as const : 'draft' as const
 
+    // Confirmed lineup in writers_room is invalid — promote to live
+    let resolvedPhase: ShowPhase = targetPhase
+    if (targetPhase === 'writers_room' && lineupStatus === 'confirmed') {
+      resolvedPhase = 'live'
+      console.log('[showtime] Promoting writers_room → live (confirmed lineup on rehydration)')
+    }
+
     showActor.send({
       type: 'RESTORE_SHOW',
-      targetPhase,
+      targetPhase: resolvedPhase,
       context: {
         energy: (snapshot.energy as EnergyLevel) ?? null,
         acts,
@@ -395,7 +402,7 @@ export async function hydrateFromDB(): Promise<boolean> {
         showDate: snapshot.showId,
         showStartedAt: snapshot.startedAt ?? null,
         verdict: (snapshot.verdict as ShowVerdict) ?? null,
-        viewTier: targetPhase === 'live' ? 'micro' as ViewTier : 'expanded' as ViewTier,
+        viewTier: resolvedPhase === 'live' ? 'micro' as ViewTier : 'expanded' as ViewTier,
         beatCheckPending: false,
         celebrationActive: false,
         writersRoomStep,

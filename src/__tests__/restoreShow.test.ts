@@ -79,7 +79,33 @@ describe('RESTORE_SHOW (auto-resume)', () => {
   // ─── 1. Restore to writers_room ───
 
   describe('no_show → writers_room.lineup_ready', () => {
-    it('restores to writers_room with acts and energy', () => {
+    it('restores writers_room with draft lineup (no promotion)', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'writers_room',
+        context: {
+          energy: 'medium',
+          acts: makeActs(2),
+          writersRoomStep: 'lineup_ready',
+          lineupStatus: 'draft',
+        },
+      })
+
+      expect(getPhase(actor)).toBe('writers_room')
+      const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
+      expect(step).toBe('lineup_ready')
+
+      const ctx = getContext(actor)
+      expect(ctx.energy).toBe('medium')
+      expect(ctx.acts).toHaveLength(2)
+      expect(ctx.lineupStatus).toBe('draft')
+    })
+  })
+
+  // ─── 1b. Confirmed lineup in writers_room promotes to live (#182) ───
+
+  describe('no_show → live.act_active (confirmed lineup promotion)', () => {
+    it('promotes writers_room with confirmed lineup to live.act_active', () => {
       const acts = makeActs(3)
       actor.send({
         type: 'RESTORE_SHOW',
@@ -93,9 +119,10 @@ describe('RESTORE_SHOW (auto-resume)', () => {
         },
       })
 
-      expect(getPhase(actor)).toBe('writers_room')
-      const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
-      expect(step).toBe('lineup_ready')
+      // Should NOT land in writers_room — confirmed lineup promotes to live
+      expect(getPhase(actor)).toBe('live')
+      const snap = actor.getSnapshot()
+      expect((snap.value as any).phase.live).toBe('act_active')
 
       const ctx = getContext(actor)
       expect(ctx.energy).toBe('high')
@@ -104,23 +131,37 @@ describe('RESTORE_SHOW (auto-resume)', () => {
       expect(ctx.beatThreshold).toBe(3)
     })
 
-    it('restores writers_room with medium energy', () => {
+    it('does NOT promote writers_room with draft lineup', () => {
       actor.send({
         type: 'RESTORE_SHOW',
         targetPhase: 'writers_room',
         context: {
-          energy: 'medium',
+          energy: 'high',
           acts: makeActs(2),
           writersRoomStep: 'lineup_ready',
           lineupStatus: 'draft',
         },
       })
 
+      // Draft lineup stays in writers_room
       expect(getPhase(actor)).toBe('writers_room')
-      const ctx = getContext(actor)
-      expect(ctx.energy).toBe('medium')
-      expect(ctx.acts).toHaveLength(2)
-      expect(ctx.lineupStatus).toBe('draft')
+      const step = getWritersRoomStep(actor.getSnapshot().value as Record<string, unknown>)
+      expect(step).toBe('lineup_ready')
+    })
+
+    it('does NOT promote writers_room with confirmed lineup but no acts', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'writers_room',
+        context: {
+          energy: 'high',
+          acts: [],
+          lineupStatus: 'confirmed',
+        },
+      })
+
+      // No acts — falls through to energy substate, stays in writers_room
+      expect(getPhase(actor)).toBe('writers_room')
     })
   })
 
@@ -571,7 +612,7 @@ describe('RESTORE_SHOW (auto-resume)', () => {
       expect(getContext(actor).acts).toHaveLength(0)
     })
 
-    it('restored writers_room can start show after finalize', () => {
+    it('restored writers_room with confirmed lineup goes directly to live (#182)', () => {
       const acts = makeActs(2)
 
       actor.send({
@@ -585,12 +626,9 @@ describe('RESTORE_SHOW (auto-resume)', () => {
         },
       })
 
-      expect(getPhase(actor)).toBe('writers_room')
-
-      // Should be able to start show since lineup is confirmed and acts exist
-      actor.send({ type: 'START_SHOW' })
+      // Confirmed lineup promotes directly to live — no writers_room stop
       expect(getPhase(actor)).toBe('live')
-      expect(getContext(actor).currentActId).not.toBeNull()
+      expect(getContext(actor).acts).toHaveLength(2)
     })
   })
 })

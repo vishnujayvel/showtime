@@ -1007,4 +1007,97 @@ describe('showMachine', () => {
       expect(getContext(actor).acts).toHaveLength(0)
     })
   })
+
+  // ─── RESTORE_SHOW (Rehydration) ───
+
+  describe('RESTORE_SHOW rehydration', () => {
+    const restoredActs: Act[] = [
+      { id: 'a1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 60, status: 'upcoming', beatLocked: false, order: 0, pinnedStartAt: null },
+      { id: 'a2', name: 'Exercise', sketch: 'Exercise', durationMinutes: 45, status: 'upcoming', beatLocked: false, order: 1, pinnedStartAt: null },
+    ]
+
+    it('confirmed lineup in writers_room promotes to live.act_active (#182)', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'writers_room',
+        context: {
+          acts: restoredActs,
+          lineupStatus: 'confirmed',
+          energy: 'medium' as EnergyLevel,
+          writersRoomStep: 'lineup_ready',
+        },
+      })
+
+      expect(getPhase(actor)).toBe('live')
+      const snap = actor.getSnapshot()
+      expect((snap.value as any).phase.live).toBe('act_active')
+      expect(getContext(actor).acts).toHaveLength(2)
+      expect(getContext(actor).lineupStatus).toBe('confirmed')
+    })
+
+    it('draft lineup in writers_room stays in writers_room.lineup_ready', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'writers_room',
+        context: {
+          acts: restoredActs,
+          lineupStatus: 'draft',
+          energy: 'medium' as EnergyLevel,
+          writersRoomStep: 'lineup_ready',
+        },
+      })
+
+      expect(getPhase(actor)).toBe('writers_room')
+      const snap = actor.getSnapshot()
+      expect((snap.value as any).phase.writers_room).toBe('lineup_ready')
+      expect(getContext(actor).acts).toHaveLength(2)
+      expect(getContext(actor).lineupStatus).toBe('draft')
+    })
+
+    it('writers_room with no acts restores to energy', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'writers_room',
+        context: {
+          acts: [],
+          lineupStatus: 'draft',
+          energy: 'high' as EnergyLevel,
+          writersRoomStep: 'energy',
+        },
+      })
+
+      expect(getPhase(actor)).toBe('writers_room')
+      const snap = actor.getSnapshot()
+      expect((snap.value as any).phase.writers_room).toBe('energy')
+    })
+
+    it('live targetPhase restores to live.act_active', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'live',
+        context: {
+          acts: [{ ...restoredActs[0], status: 'active' as ActStatus, startedAt: Date.now() }],
+          currentActId: 'a1',
+          timerEndAt: Date.now() + 60000,
+          lineupStatus: 'confirmed',
+        },
+      })
+
+      expect(getPhase(actor)).toBe('live')
+      expect(getContext(actor).currentActId).toBe('a1')
+    })
+
+    it('intermission targetPhase restores to intermission.resting', () => {
+      actor.send({
+        type: 'RESTORE_SHOW',
+        targetPhase: 'intermission',
+        context: {
+          acts: restoredActs,
+          lineupStatus: 'confirmed',
+        },
+      })
+
+      expect(getPhase(actor)).toBe('intermission')
+    })
+  })
 })

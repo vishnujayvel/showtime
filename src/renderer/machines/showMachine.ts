@@ -483,6 +483,16 @@ export const showMachine = setup({
             // Auto-resume: restore from DB snapshot to the correct phase
             RESTORE_SHOW: [
               {
+                // Confirmed lineup in writers_room is invalid — promote to live
+                target: '#show.phase.live.act_active',
+                guard: ({ event }) =>
+                  event.type === 'RESTORE_SHOW' &&
+                  event.targetPhase === 'writers_room' &&
+                  event.context.lineupStatus === 'confirmed' &&
+                  (event.context.acts?.length ?? 0) > 0,
+                actions: 'restoreShowContext',
+              },
+              {
                 // Restore to lineup_ready if acts exist (has a lineup to show)
                 target: '#show.phase.writers_room.lineup_ready',
                 guard: ({ event }) =>
