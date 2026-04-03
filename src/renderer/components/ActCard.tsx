@@ -46,8 +46,13 @@ function FullActCard({ act, actNumber, onReorder, onRemove, onUpdateName, onUpda
   const commitDuration = () => {
     setEditingDuration(false)
     const parsed = parseInt(durationValue, 10)
-    if (!isNaN(parsed) && parsed > 0 && parsed !== act.durationMinutes && onUpdateDuration) {
-      onUpdateDuration(parsed)
+    if (!isNaN(parsed) && parsed > 0 && onUpdateDuration) {
+      const clamped = Math.max(5, Math.min(240, parsed))
+      if (clamped !== act.durationMinutes) {
+        onUpdateDuration(clamped)
+      } else {
+        setDurationValue(String(act.durationMinutes))
+      }
     } else {
       setDurationValue(String(act.durationMinutes))
     }
@@ -68,6 +73,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove, onUpdateName, onUpda
             onBlur={commitName}
             onKeyDown={(e) => { if (e.key === 'Enter') commitName(); if (e.key === 'Escape') { setNameValue(act.name); setEditingName(false) } }}
             className="w-full bg-transparent border-b border-accent/50 text-sm text-txt-primary font-medium outline-none"
+            aria-label="Act name"
             data-testid="act-name-input"
           />
         ) : (
@@ -91,6 +97,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove, onUpdateName, onUpda
                 onBlur={commitDuration}
                 onKeyDown={(e) => { if (e.key === 'Enter') commitDuration(); if (e.key === 'Escape') { setDurationValue(String(act.durationMinutes)); setEditingDuration(false) } }}
                 className="w-10 bg-transparent border-b border-accent/50 text-xs text-txt-muted outline-none text-center"
+                aria-label="Act duration in minutes"
                 data-testid="act-duration-input"
               />
               <span className="text-xs text-txt-muted">m</span>
@@ -116,6 +123,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove, onUpdateName, onUpda
               onClick={() => onUpdateDuration(Math.min(act.durationMinutes + 5, 240))}
               className="text-txt-muted hover:text-txt-secondary text-[10px] leading-none p-0.5"
               title="Add 5 minutes"
+              aria-label="Increase duration"
             >
               +5
             </button>
@@ -124,6 +132,7 @@ function FullActCard({ act, actNumber, onReorder, onRemove, onUpdateName, onUpda
               onClick={() => onUpdateDuration(Math.max(act.durationMinutes - 5, 5))}
               className="text-txt-muted hover:text-txt-secondary text-[10px] leading-none p-0.5"
               title="Remove 5 minutes"
+              aria-label="Decrease duration"
             >
               -5
             </button>

@@ -53,7 +53,7 @@ export function PillView() {
     <motion.div
       data-pill-content
       className={cn(
-        'w-80 min-h-14 rounded-full flex flex-col',
+        'min-w-80 w-auto max-w-[480px] min-h-14 rounded-full flex flex-col',
         'bg-surface/85 backdrop-blur-[20px]',
         'border border-white/[0.06]',
         'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
@@ -88,7 +88,7 @@ export function PillView() {
               </span>
               <span
                 className={cn(
-                  'font-mono text-sm font-semibold tabular-nums shrink-0',
+                  'font-mono text-sm font-semibold tabular-nums shrink-0 whitespace-nowrap',
                   isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
                 )}
               >
