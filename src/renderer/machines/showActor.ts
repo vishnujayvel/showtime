@@ -140,6 +140,9 @@ const persistedSnapshot = getPersistedSnapshot()
  * can() only returns false for events explicitly blocked via empty transitions
  * (e.g., RESET: {} in no_show). If the wildcard is ever removed, this check
  * becomes the primary drop detection mechanism.
+ *
+ * Intentionally active in production for IPC telemetry — events fire at human
+ * interaction frequency, so the snapshot.can() overhead is negligible.
  */
 function inspectCallback(inspectionEvent: InspectionEvent): void {
   // Layer 1: detect dropped events via snapshot.can()

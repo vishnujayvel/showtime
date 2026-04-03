@@ -15,6 +15,8 @@ let inspectorObserver: Observer<InspectionEvent> | null = null
  */
 export async function initDevInspector(): Promise<void> {
   if (!import.meta.env.DEV) return
+  // Skip in non-browser environments (jsdom, test runners) where window.open is not implemented
+  if (typeof window === 'undefined' || typeof window.open !== 'function') return
   try {
     const { createBrowserInspector } = await import('@statelyai/inspect')
     const inspector = createBrowserInspector({ autoStart: true })
