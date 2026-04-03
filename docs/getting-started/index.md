@@ -36,9 +36,9 @@ This is where you plan your day — through a conversation with Claude. The whol
 
 **Set your energy.** A chip in the title bar shows your energy level. Tap it to pick one: High, Medium, Low, or Recovery. Be honest. Recovery days are valid days. See [Energy Levels](./energy-levels) for what each level means.
 
-**Tell Claude about your day.** Type into the chat what's on your plate. Don't organize it, don't prioritize it. "finish the API thing, need to email alex, maybe gym if I feel like it, groceries." That's plenty. Hit **BUILD MY LINEUP** and Claude structures your brain dump into a lineup of Acts (timed blocks of work).
+**Tell Claude about your day.** Type into the chat what's on your plate. Don't organize it, don't prioritize it. "finish the API thing, need to email alex, maybe gym if I feel like it, groceries." That's plenty. Hit **BUILD MY LINEUP** and Claude structures your brain dump into a lineup of Acts (timed blocks of work). Claude can also pull in your calendar events automatically.
 
-**Review and refine.** The lineup appears as an interactive card right in the chat. Each Act shows its category, name, and duration — all editable inline. Click a name to rename it. Click a duration to change it. Click the category badge to switch sketches. Add or remove Acts with the buttons. Or just type a follow-up message: "make the exercise block longer" or "swap acts 2 and 3" and Claude will regenerate the lineup.
+**Review and refine.** The lineup appears as an interactive panel. Each Act shows its category, name, and duration — all editable inline. Click a name to rename it. Click a duration to change it. Click the category badge to switch sketches. Reorder acts with the arrow buttons. Add or remove Acts as needed. Below the lineup, type refinement requests like "make the exercise block longer" or "swap acts 2 and 3" and Claude regenerates the lineup with your changes applied. See the full [Writer's Room guide](/guide/writers-room) for details.
 
 ### 3. "We're Live!"
 
@@ -48,7 +48,7 @@ The show has started.
 
 ### 4. Act Timer
 
-Your first Act begins with a countdown timer, a studio clock in big monospaced numbers. The pill view floats on your screen showing the Act name, timer, and Beat count so you can see where you are while you work.
+Your first Act begins with a countdown timer, a studio clock in big monospaced numbers. The pill view floats on your screen showing the Act name, timer, and Beat count so you can see where you are while you work. Prefer a cleaner desktop? Switch to [menu bar mode](/guide/settings) and the timer appears in your macOS menu bar instead.
 
 Acts are typically 45-90 minutes. When the timer runs out, the Act is over. You don't have to finish the task perfectly. The Act is done because the time is done.
 
@@ -96,4 +96,12 @@ There is no "bad show" verdict. There is no failure state. Close the laptop. The
 
 ---
 
+If you close Showtime mid-show and relaunch later, the app automatically resumes where you left off — same phase, same acts, same timer. No lost progress.
+
 Tomorrow the stage is empty again. No streaks to protect, no backlog to dread. Just a warm spotlight and a Writer's Room waiting to hear what's on tonight's show.
+
+## Next Steps
+
+- [Writer's Room](/guide/writers-room) — deep dive into lineup building and refinement
+- [Live Show](/guide/live-show) — timer views, beat checks, intermission, director mode, verdicts
+- [Settings](/guide/settings) — timer display mode, help button, keyboard shortcuts

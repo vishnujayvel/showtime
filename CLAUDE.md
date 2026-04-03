@@ -303,3 +303,4 @@ Fix CodeRabbit comments before merging. If a comment is a false positive, reply 
 - [workflow] Do NOT use titleBarStyle with frame:false
 - [testing] Playwright E2E tests require full Electron app build before running
 - [testing] Cassette replay tests (SHOWTIME_PLAYBACK=1) are primary tier — use before real Claude tests
+- [state] `writers_room` phase MUST NOT have `lineupStatus === 'confirmed'` — rehydration must promote to `live` (#182)
