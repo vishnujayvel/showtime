@@ -4,7 +4,7 @@ Showtime uses **Bun** as its development toolchain for package management, scrip
 
 ## Architecture
 
-```
+```text
 Development (your machine)          Shipped Application
 ┌──────────────────────────┐        ┌──────────────────────────┐
 │  Bun                     │        │  Electron                │
