@@ -7,6 +7,7 @@ import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { RundownBar } from '../components/RundownBar'
+import { ViewMenu } from '../components/ViewMenu'
 import { cn } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
@@ -17,7 +18,12 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
-export function CompactView() {
+interface CompactViewProps {
+  onShowHistory?: () => void
+  onShowSettings?: () => void
+}
+
+export function CompactView({ onShowHistory, onShowSettings }: CompactViewProps) {
   const phase = useShowPhase()
   const verdict = useShowContext((ctx) => ctx.verdict)
   const currentAct = useShowSelector(showSelectors.currentAct)
@@ -87,6 +93,11 @@ export function CompactView() {
             </>
           )}
         </div>
+        <ViewMenu
+          view="compact"
+          onShowHistory={onShowHistory}
+          onShowSettings={onShowSettings}
+        />
         <button
           onClick={collapseViewTier}
           className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
