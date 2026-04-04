@@ -186,7 +186,7 @@ export const FIXTURES = {
 // ─── Expected Window Dimensions (matches main/window.ts VIEW_DIMENSIONS) ───
 
 export const VIEW_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  pill: { width: 320, height: 64 },
+  pill: { width: 320, height: 48 },
   compact: { width: 340, height: 140 },
   dashboard: { width: 400, height: 320 },
   expanded: { width: 560, height: 620 },
