@@ -406,6 +406,9 @@ export interface TrayShowState {
   totalActs: number
   nextActs: Array<{ name: string; sketch: string; durationMinutes: number }>
   windowVisible?: boolean
+  /** When false, the menu bar title (next to tray icon) should not show the timer countdown.
+   *  The dropdown menu still shows the timer regardless. */
+  showMenuBarTimer?: boolean
 }
 
 // ─── IPC Channel Names ───

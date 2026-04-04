@@ -46,6 +46,9 @@ export class ShowRepository {
   }
 
   getRecentShows(limit = 30): ShowHistoryEntry[] {
+    // Use raw SQL column reference for correlated subqueries — Drizzle's ${column}
+    // interpolation inside sql`` can bind as a parameter instead of a column ref,
+    // causing the subquery to always return 0.
     const rows = this.db
       .select({
         showId: shows.id,
@@ -56,8 +59,8 @@ export class ShowRepository {
         beatThreshold: shows.beatThreshold,
         startedAt: shows.startedAt,
         endedAt: shows.endedAt,
-        actCount: sql<number>`(SELECT COUNT(*) FROM acts WHERE acts.show_id = ${shows.id})`,
-        completedActCount: sql<number>`(SELECT COUNT(*) FROM acts WHERE acts.show_id = ${shows.id} AND acts.status = 'completed')`,
+        actCount: sql<number>`(SELECT COUNT(*) FROM acts WHERE acts.show_id = shows.id)`,
+        completedActCount: sql<number>`(SELECT COUNT(*) FROM acts WHERE acts.show_id = shows.id AND acts.status = 'completed')`,
       })
       .from(shows)
       .orderBy(desc(shows.id))

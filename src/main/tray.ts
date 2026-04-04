@@ -186,7 +186,7 @@ export function createTray(
         const isAmber = state.timerSeconds !== null && state.timerSeconds < 300
         menu = buildLiveMenu(state, showWindow, windowHidden)
         setTrayIcon(tray, isAmber ? 'amber' : 'live')
-        if (state.timerSeconds !== null) {
+        if (state.timerSeconds !== null && state.showMenuBarTimer !== false) {
           const timer = formatTimer(state.timerSeconds)
           if (windowHidden && state.currentActName) {
             tray.setTitle(isAmber ? `⚡ ${state.currentActName} — ${timer}` : `${state.currentActName} — ${timer}`)
@@ -202,7 +202,7 @@ export function createTray(
         const isDirAmber = state.timerSeconds !== null && state.timerSeconds < 300
         menu = buildLiveMenu(state, showWindow, windowHidden)
         setTrayIcon(tray, isDirAmber ? 'amber' : 'live')
-        if (state.timerSeconds !== null) {
+        if (state.timerSeconds !== null && state.showMenuBarTimer !== false) {
           const timer = formatTimer(state.timerSeconds)
           if (windowHidden && state.currentActName) {
             tray.setTitle(isDirAmber ? `⚡ ${state.currentActName} — ${timer}` : `${state.currentActName} — ${timer}`)

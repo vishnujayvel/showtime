@@ -23,6 +23,32 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   upcoming: { label: 'Upcoming', color: 'text-txt-secondary' },
 }
 
+/** Categorize a show as Completed, In Progress, or Abandoned for the diary view */
+function getShowStatus(show: ShowHistoryEntry): { label: string; color: string } {
+  // Has a verdict → completed show
+  if (show.verdict) {
+    return VERDICT_LABELS[show.verdict] ?? { label: 'Complete', color: 'text-emerald-400' }
+  }
+  // Strike phase without verdict → still complete
+  if (show.phase === 'strike') {
+    return { label: 'Complete', color: 'text-emerald-400' }
+  }
+  // Active phases → show in progress
+  if (show.phase === 'live' || show.phase === 'intermission' || show.phase === 'director') {
+    return { label: 'In Progress', color: 'text-onair' }
+  }
+  // Past-date shows that never went live → abandoned
+  const today = new Date().toISOString().slice(0, 10)
+  if (show.showId < today && (show.phase === 'writers_room' || show.phase === 'no_show')) {
+    return { label: 'Never Aired', color: 'text-txt-muted' }
+  }
+  // Today's show in planning
+  if (show.phase === 'writers_room') {
+    return { label: 'Planning', color: 'text-txt-secondary' }
+  }
+  return { label: 'No Show', color: 'text-txt-muted' }
+}
+
 function formatShowDate(dateId: string): string {
   const d = new Date(dateId + 'T12:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -39,15 +65,20 @@ import { springGentle as springTransition } from '../constants/animations'
 export function HistoryView({ onBack }: HistoryViewProps) {
   const [history, setHistory] = useState<ShowHistoryEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [detail, setDetail] = useState<ShowDetailEntry | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
 
   useEffect(() => {
     window.showtime.getShowHistory(30).then((entries) => {
-      setHistory(entries)
+      setHistory(Array.isArray(entries) ? entries : [])
       setLoading(false)
-    }).catch(() => setLoading(false))
+    }).catch((err) => {
+      console.error('[HistoryView] Failed to load show history:', err)
+      setError('Failed to load show history')
+      setLoading(false)
+    })
   }, [])
 
   const toggleExpand = useCallback((showId: string) => {
@@ -91,14 +122,20 @@ export function HistoryView({ onBack }: HistoryViewProps) {
           <p className="text-sm text-txt-muted text-center py-8">Loading...</p>
         )}
 
-        {!loading && history.length === 0 && (
+        {!loading && error && (
+          <p className="text-sm text-onair text-center py-8">
+            {error}
+          </p>
+        )}
+
+        {!loading && !error && history.length === 0 && (
           <p className="text-sm text-txt-muted text-center py-8">
             No past shows yet. Your history will appear here after your first show.
           </p>
         )}
 
-        {!loading && history.map((show, i) => {
-          const verdictInfo = show.verdict ? VERDICT_LABELS[show.verdict] : null
+        {!loading && !error && history.map((show, i) => {
+          const statusInfo = getShowStatus(show)
           const isExpanded = expandedId === show.showId
           return (
             <div key={show.showId}>
@@ -122,17 +159,11 @@ export function HistoryView({ onBack }: HistoryViewProps) {
                   </p>
                 </div>
 
-                {/* Verdict badge */}
+                {/* Status badge */}
                 <div className="w-[90px] shrink-0">
-                  {verdictInfo ? (
-                    <span className={cn('font-mono text-[10px] font-bold uppercase tracking-wider', verdictInfo.color)}>
-                      {verdictInfo.label}
-                    </span>
-                  ) : (
-                    <span className="font-mono text-[10px] text-txt-muted">
-                      {show.phase === 'strike' ? 'Complete' : 'In Progress'}
-                    </span>
-                  )}
+                  <span className={cn('font-mono text-[10px] font-bold uppercase tracking-wider', statusInfo.color)}>
+                    {statusInfo.label}
+                  </span>
                 </div>
 
                 {/* Acts */}
