@@ -306,3 +306,6 @@ Fix CodeRabbit comments before merging. If a comment is a false positive, reply 
 - [testing] Playwright E2E tests require full Electron app build before running
 - [testing] Cassette replay tests (SHOWTIME_PLAYBACK=1) are primary tier — use before real Claude tests
 - [state] `writers_room` phase MUST NOT have `lineupStatus === 'confirmed'` — rehydration must promote to `live` (#182)
+- [git] After `git reset --hard` on main, ALWAYS `git pull origin main` to resync — local/remote desync causes false "ghost merge" alarms (#190 retro)
+- [workflow] Never trust GitHub "MERGED" status alone — verify code exists on main with `grep` for the key feature identifier before closing issues
+- [loki] Squash-merge Wave PRs subsume individual PR merge commits, making them unreachable in git history — this is expected, not data loss

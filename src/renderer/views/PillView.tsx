@@ -53,7 +53,7 @@ export function PillView() {
     <motion.div
       data-pill-content
       className={cn(
-        'min-w-80 w-auto max-w-[480px] min-h-14 rounded-full flex flex-col',
+        'min-w-[320px] w-auto max-w-[320px] min-h-12 rounded-full flex flex-col',
         'bg-surface/85 backdrop-blur-[20px]',
         'border border-white/[0.06]',
         'shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
@@ -64,21 +64,18 @@ export function PillView() {
       exit={{ scale: 0.8, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
     >
-      <div className="flex items-center gap-3 py-2.5 px-4">
-        {/* Left: drag handle with SHOWTIME label */}
-        <div className="shrink-0 flex items-center gap-1.5 drag-region cursor-grab">
+      <div className="flex items-center gap-1.5 py-2 px-2.5">
+        {/* Left: drag handle with tally light */}
+        <div className="shrink-0 flex items-center drag-region cursor-grab">
           {phase === 'live' ? (
             <TallyLight isLive={true} size="lg" />
           ) : phase === 'intermission' ? (
             <TallyLight isLive={false} />
           ) : null}
-          <span className="font-mono text-[9px] tracking-[0.12em] uppercase text-txt-muted">
-            SHOWTIME
-          </span>
         </div>
         {/* Rest: click to expand */}
         <div
-          className="flex items-center gap-3 flex-1 cursor-pointer no-drag"
+          className="flex items-center gap-1.5 flex-1 cursor-pointer no-drag"
           onClick={expandViewTier}
         >
           {phase === 'live' && (

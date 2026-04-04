@@ -41,10 +41,12 @@ export function getTodayPersistedShow(): PersistedShowInfo | null {
   }
 }
 
-function getTemporalGreeting(hasShow: boolean): { heading: string; sub: string } {
+function getTemporalGreeting(todayShow: PersistedShowInfo | null): { heading: string; sub: string } {
   const hour = new Date().getHours()
+  const hasShow = !!todayShow
+  const isCompleted = todayShow?.isStrike ?? false
 
-  if (hasShow) {
+  if (hasShow && !isCompleted) {
     if (hour < 12) return { heading: "Your show is waiting.", sub: 'Pick up where you left off.' }
     if (hour < 18) return { heading: "The show must go on.", sub: 'Resume your lineup and keep the momentum.' }
     return { heading: "Tonight's show has a history.", sub: 'Review or wrap up.' }
@@ -62,9 +64,15 @@ function getTemporalGreeting(hasShow: boolean): { heading: string; sub: string }
       sub: 'There\u2019s still time to make it a great one.',
     }
   }
+  if (isCompleted) {
+    return {
+      heading: "Tomorrow's show hasn't been written yet.",
+      sub: 'Plan ahead — the best shows are written the night before.',
+    }
+  }
   return {
-    heading: "Tomorrow's show hasn't been written yet.",
-    sub: 'Plan ahead — the best shows are written the night before.',
+    heading: "Tonight's show hasn't been written yet.",
+    sub: 'The stage is yours — there\u2019s still time tonight.',
   }
 }
 
@@ -76,7 +84,7 @@ export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
   const send = useShowSend()
   const triggerColdOpen = useCallback(() => send({ type: 'TRIGGER_COLD_OPEN' }), [send])
   const todayShow = useMemo(getTodayPersistedShow, [])
-  const greeting = useMemo(() => getTemporalGreeting(!!todayShow), [todayShow])
+  const greeting = useMemo(() => getTemporalGreeting(todayShow), [todayShow])
 
   // Subprocess prewarm deferred to WritersRoomView mount for faster bootstrap
 

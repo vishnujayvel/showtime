@@ -78,7 +78,7 @@ function buildLiveMenu(state: TrayShowState, showWindow: (s?: string) => void, w
   const beatStars = '★'.repeat(state.beatsLocked) + '☆'.repeat(Math.max(0, state.beatThreshold - state.beatsLocked))
 
   const items: Electron.MenuItemConstructorOptions[] = [
-    { label: `ON AIR${state.currentActCategory ? ` • ${state.currentActCategory.toUpperCase()}` : ''} • ${state.currentActName || 'Act'}`, enabled: false },
+    { label: `🔴 ${state.currentActName || 'Act'}`, enabled: false },
     { type: 'separator' },
     { label: `⏱ ${timerLabel} remaining`, enabled: false },
     { label: `${beatStars}  ${state.beatsLocked}/${state.beatThreshold} beats`, enabled: false },

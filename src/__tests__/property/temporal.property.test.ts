@@ -20,14 +20,15 @@ function getGreeting(hour: number): string {
   return 'Late night'
 }
 
-/** Returns whether the show is being planned for "tomorrow" vs "today" */
-function isForTomorrow(hour: number): boolean {
-  return hour >= 18 // After 6 PM, planning for tomorrow
+/** Returns whether the show is being planned for "tomorrow" vs "today/tonight" */
+function isForTomorrow(hour: number, hasCompletedShow = false): boolean {
+  return hour >= 18 && hasCompletedShow
 }
 
 /** Returns the copy text for the plan target */
-function getPlanTargetCopy(hour: number): string {
-  return isForTomorrow(hour) ? "tomorrow's show" : "today's show"
+function getPlanTargetCopy(hour: number, hasCompletedShow = false): string {
+  if (hour >= 18 && !hasCompletedShow) return "tonight's show"
+  return isForTomorrow(hour, hasCompletedShow) ? "tomorrow's show" : "today's show"
 }
 
 // ─── Tests ───
@@ -71,13 +72,14 @@ describe('Layer 2b: Temporal Property Tests', () => {
     }
   })
 
-  it('"tomorrow" copy is used only after 6 PM for any hour', () => {
+  it('"tomorrow" copy is used only after 6 PM with a completed show', () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 23 }),
-        (hour) => {
-          const forTomorrow = isForTomorrow(hour)
-          if (hour >= 18) {
+        fc.boolean(),
+        (hour, hasCompleted) => {
+          const forTomorrow = isForTomorrow(hour, hasCompleted)
+          if (hour >= 18 && hasCompleted) {
             expect(forTomorrow).toBe(true)
           } else {
             expect(forTomorrow).toBe(false)
@@ -87,13 +89,14 @@ describe('Layer 2b: Temporal Property Tests', () => {
     )
   })
 
-  it('plan target copy is always either "today\'s show" or "tomorrow\'s show"', () => {
+  it('plan target copy is always one of the three valid values', () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 23 }),
-        (hour) => {
-          const copy = getPlanTargetCopy(hour)
-          expect(["today's show", "tomorrow's show"]).toContain(copy)
+        fc.boolean(),
+        (hour, hasCompleted) => {
+          const copy = getPlanTargetCopy(hour, hasCompleted)
+          expect(["today's show", "tonight's show", "tomorrow's show"]).toContain(copy)
         }
       )
     )
@@ -120,7 +123,7 @@ describe('Layer 2b: Temporal Property Tests', () => {
     )
   })
 
-  it('getTemporalShowLabel returns correct label for time of day', () => {
+  it('getTemporalShowLabel returns correct label for time of day (no completed show)', () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 23 }),
@@ -132,8 +135,33 @@ describe('Layer 2b: Temporal Property Tests', () => {
           } else if (hour < 18) {
             expect(label).toBe("your next")
           } else {
-            expect(label).toBe("tomorrow's")
+            expect(label).toBe("tonight's")
           }
+        }
+      )
+    )
+  })
+
+  it('getTemporalShowLabel returns "tomorrow\'s" after 6 PM when show is completed', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 18, max: 23 }),
+        (hour) => {
+          const date = new Date(2026, 0, 15, hour, 30, 0)
+          const label = getTemporalShowLabel(date, true)
+          expect(label).toBe("tomorrow's")
+        }
+      )
+    )
+  })
+
+  it('getTemporalShowLabel hasCompletedShow has no effect before 6 PM', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 17 }),
+        (hour) => {
+          const date = new Date(2026, 0, 15, hour, 30, 0)
+          expect(getTemporalShowLabel(date, true)).toBe(getTemporalShowLabel(date, false))
         }
       )
     )
@@ -143,9 +171,10 @@ describe('Layer 2b: Temporal Property Tests', () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 23 }),
-        (hour) => {
+        fc.boolean(),
+        (hour, hasCompleted) => {
           const date = new Date(2026, 0, 15, hour, 30, 0)
-          expect(getTemporalShowLabelUpper(date)).toBe(getTemporalShowLabel(date).toUpperCase())
+          expect(getTemporalShowLabelUpper(date, hasCompleted)).toBe(getTemporalShowLabel(date, hasCompleted).toUpperCase())
         }
       )
     )

@@ -13,18 +13,19 @@ export function formatDateLabel(): string {
 
 /**
  * Returns temporal-aware possessive for lineup/show references.
- * Before noon → "today's", noon–6 PM → "your next", after 6 PM → "tomorrow's"
+ * Before noon → "today's", noon–6 PM → "your next",
+ * after 6 PM → "tonight's" (default) or "tomorrow's" (if today's show is completed)
  */
-export function getTemporalShowLabel(now: Date = new Date()): string {
+export function getTemporalShowLabel(now: Date = new Date(), hasCompletedShow = false): string {
   const hour = now.getHours()
   if (hour < 12) return "today's"
   if (hour < 18) return "your next"
-  return "tomorrow's"
+  return hasCompletedShow ? "tomorrow's" : "tonight's"
 }
 
 /**
  * Same as getTemporalShowLabel but returns uppercase for monospaced labels.
  */
-export function getTemporalShowLabelUpper(now: Date = new Date()): string {
-  return getTemporalShowLabel(now).toUpperCase()
+export function getTemporalShowLabelUpper(now: Date = new Date(), hasCompletedShow = false): string {
+  return getTemporalShowLabel(now, hasCompletedShow).toUpperCase()
 }
