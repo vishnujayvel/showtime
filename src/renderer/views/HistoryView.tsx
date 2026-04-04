@@ -38,7 +38,8 @@ function getShowStatus(show: ShowHistoryEntry): { label: string; color: string }
     return { label: 'In Progress', color: 'text-onair' }
   }
   // Past-date shows that never went live → abandoned
-  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   if (show.showId < today && (show.phase === 'writers_room' || show.phase === 'no_show')) {
     return { label: 'Never Aired', color: 'text-txt-muted' }
   }
