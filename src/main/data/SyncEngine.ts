@@ -1,4 +1,5 @@
 import type { DataService } from './DataService'
+import { localToday } from '../../shared/date-utils'
 import type { ShowStateSnapshot, TimelineEventInput } from './types'
 
 export class SyncEngine {
@@ -59,7 +60,7 @@ export class SyncEngine {
    */
   hydrate(): ShowStateSnapshot | null {
     const start = Date.now()
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     const show = this.data.shows.getShow(today)
     if (!show) {
       this.data.metrics.recordTiming('sqlite.hydrate', Date.now() - start)

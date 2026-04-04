@@ -6,6 +6,7 @@
  * and a parallel animation region.
  */
 import { setup, assign, createActor, type AnyActorRef } from 'xstate'
+import { localToday } from '../../shared/date-utils'
 import type {
   ShowPhase,
   EnergyLevel,
@@ -85,7 +86,7 @@ export type ShowMachineEvent =
 // ─── Helpers ───
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  return localToday()
 }
 
 function generateId(): string {

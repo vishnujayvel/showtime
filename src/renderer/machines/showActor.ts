@@ -5,6 +5,7 @@
  * Import this to send events or read state directly.
  */
 import { createActor, type InspectionEvent } from 'xstate'
+import { localToday } from '../../shared/date-utils'
 import {
   showMachine,
   createInitialContext,
@@ -80,8 +81,8 @@ function getPersistedSnapshot() {
       return undefined
     }
 
-    // Only hydrate if same day (both use UTC for consistency with showMachine.today())
-    const today = new Date().toISOString().slice(0, 10)
+    // Only hydrate if same day
+    const today = localToday()
     if (context.showDate !== today) {
       localStorage.removeItem(PERSIST_KEY)
       return undefined
