@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, unlinkSync, appendFileSync } from 'fs'
+import { localToday } from '../shared/date-utils'
 import { appendFile } from 'fs/promises'
 import { join } from 'path'
 import { app } from 'electron'
@@ -113,7 +114,7 @@ export class MetricsWriter {
   }
 
   private getFilePath(): string {
-    const date = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+    const date = localToday()
     return join(this.metricsDir, `${date}.ndjson`)
   }
 

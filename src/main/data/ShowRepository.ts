@@ -1,4 +1,5 @@
 import { eq, desc, asc, sql } from 'drizzle-orm'
+import { localToday } from '../../shared/date-utils'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { shows, acts, claudeContexts } from './schema'
 import type { ShowHistoryEntry, ShowDetailEntry } from './types'
@@ -33,7 +34,7 @@ export class ShowRepository {
   }
 
   getTodayShow(): ShowRow | undefined {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     return this.getShow(today)
   }
 
