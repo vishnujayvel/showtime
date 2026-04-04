@@ -8,6 +8,7 @@
  * as the main app's Drizzle ORM definitions.
  */
 import Database from 'better-sqlite3'
+import { localToday } from './date-utils'
 import { existsSync } from 'fs'
 import { resolveDbPath } from './db-path'
 
@@ -79,7 +80,7 @@ export function readToday(dbPath?: string): TodayShow | null {
 
   const db = openDb(path)
   try {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     const show = db.prepare(`
       SELECT id, phase, energy, verdict,
         beats_locked AS beatsLocked,
@@ -118,7 +119,7 @@ export function writeLineup(lineup: Lineup, energy?: string, dbPath?: string): v
   const db = openDb(path)
 
   try {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
 
     db.exec('BEGIN')
     try {
@@ -170,7 +171,7 @@ export function getPhase(dbPath?: string): string | null {
 
   const db = openDb(path)
   try {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     const row = db.prepare('SELECT phase FROM shows WHERE id = ?').get(today) as { phase: string } | undefined
     return row?.phase ?? null
   } finally {

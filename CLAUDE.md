@@ -309,3 +309,4 @@ Fix CodeRabbit comments before merging. If a comment is a false positive, reply 
 - [git] After `git reset --hard` on main, ALWAYS `git pull origin main` to resync — local/remote desync causes false "ghost merge" alarms (#190 retro)
 - [workflow] Never trust GitHub "MERGED" status alone — verify code exists on main with `grep` for the key feature identifier before closing issues
 - [loki] Squash-merge Wave PRs subsume individual PR merge commits, making them unreachable in git history — this is expected, not data loss
+- [date] Always use `localToday()` from `src/shared/date-utils.ts` — never `toISOString().slice(0,10)` which returns UTC and breaks after 5 PM in negative-UTC timezones (#200)

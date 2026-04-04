@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useCallback } from 'react'
+import { localToday } from '../../shared/date-utils'
 import { motion } from 'framer-motion'
 import { useShowSend } from '../machines/ShowMachineProvider'
 import { Button } from '../ui/button'
@@ -19,7 +20,7 @@ export function getTodayPersistedShow(): PersistedShowInfo | null {
     if (!raw) return null
     const { context } = JSON.parse(raw)
     if (!context) return null
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     if (context.showDate !== today) return null
 
     const acts = context.acts ?? []

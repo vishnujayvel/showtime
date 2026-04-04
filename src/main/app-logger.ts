@@ -1,4 +1,5 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, readFileSync } from 'fs'
+import { localToday } from '../shared/date-utils'
 import { appendFile } from 'fs/promises'
 import { homedir } from 'os'
 import { join, basename } from 'path'
@@ -48,7 +49,7 @@ function logDir(): string {
 }
 
 function getLogPath(): string {
-  const date = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  const date = localToday()
   return join(logDir(), `showtime-${date}.log`)
 }
 
