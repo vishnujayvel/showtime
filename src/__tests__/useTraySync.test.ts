@@ -310,6 +310,41 @@ describe('useTraySync', () => {
     expect(sentState.currentActCategory).toBe('Deep Work')
   })
 
+  it('always sends real timerSeconds in tray state even when pill mode is active', async () => {
+    const { useTraySync } = await import('../renderer/hooks/useTraySync')
+
+    // Set pill mode (was previously nulling out timerSeconds)
+    useUIStore.setState({ timerDisplay: 'pill' })
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 10 }],
+    })
+
+    renderHook(() => useTraySync())
+
+    const sentState: TrayShowState = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
+    // timerSeconds should be populated (not null) — the tray dropdown menu needs it
+    expect(sentState.timerSeconds).toBe(600)
+    // But the menu bar title should not show the timer
+    expect(sentState.showMenuBarTimer).toBe(false)
+  })
+
+  it('sets showMenuBarTimer to true when menubar mode is active', async () => {
+    const { useTraySync } = await import('../renderer/hooks/useTraySync')
+
+    useUIStore.setState({ timerDisplay: 'menubar' })
+
+    goLiveWithActs({
+      acts: [{ name: 'Focus', sketch: 'Deep Work', durationMinutes: 10 }],
+    })
+
+    renderHook(() => useTraySync())
+
+    const sentState: TrayShowState = updateTrayState.mock.calls[updateTrayState.mock.calls.length - 1][0]
+    expect(sentState.timerSeconds).toBe(600)
+    expect(sentState.showMenuBarTimer).toBe(true)
+  })
+
   it('does not call updateTrayTimer when timerEndAt is null during live phase', async () => {
     const { useTraySync } = await import('../renderer/hooks/useTraySync')
 
