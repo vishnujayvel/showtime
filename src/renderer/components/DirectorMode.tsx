@@ -34,6 +34,16 @@ export function DirectorMode() {
 
         <div className="flex flex-col gap-3">
           <Button
+            className="w-full py-3 rounded-xl bg-accent/10 text-accent text-sm font-medium border border-accent/20 hover:bg-accent/15 transition-colors"
+            onClick={() => {
+              send({ type: 'EDIT_LINEUP' })
+            }}
+            data-testid="edit-lineup-btn"
+          >
+            ✏️ Edit the lineup
+          </Button>
+
+          <Button
             className="w-full py-3 rounded-xl bg-surface-hover text-txt-primary text-sm font-medium border border-border-default hover:bg-[#2a2a2e] transition-colors"
             onClick={() => {
               send({ type: 'SKIP_TO_NEXT' })

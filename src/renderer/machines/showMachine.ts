@@ -37,6 +37,7 @@ export interface ShowMachineContext {
   writersRoomEnteredAt: number | null
   breathingPauseEndAt: number | null
   lineupStatus: 'draft' | 'confirmed'
+  editingMidShow: boolean
 }
 
 // ─── Events ───
@@ -73,6 +74,9 @@ export type ShowMachineEvent =
   | { type: 'REMOVE_ACT'; actId: string }
   | { type: 'ADD_ACT'; name: string; sketch: string; durationMinutes: number }
   | { type: 'UPDATE_ACT'; actId: string; name?: string; durationMinutes?: number }
+  // Mid-show lineup editing
+  | { type: 'EDIT_LINEUP' }
+  | { type: 'CONFIRM_LINEUP_EDIT'; acts: Act[] }
   // View tier
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
   // Auto-resume from DB
@@ -127,6 +131,7 @@ export function createInitialContext(): ShowMachineContext {
     writersRoomEnteredAt: null,
     breathingPauseEndAt: null,
     lineupStatus: 'draft',
+    editingMidShow: false,
   }
 }
 
@@ -444,6 +449,34 @@ export const showMachine = setup({
       }
     }),
 
+    editLineupContext: assign(({ context }) => {
+      const remaining = context.timerEndAt ? Math.max(0, context.timerEndAt - Date.now()) : null
+      return {
+        timerEndAt: null,
+        timerPausedRemaining: remaining,
+        editingMidShow: true,
+        writersRoomStep: 'conversation' as WritersRoomStep,
+      }
+    }),
+
+    confirmLineupEditContext: assign(({ context, event }) => {
+      if (event.type !== 'CONFIRM_LINEUP_EDIT') return {}
+      // Merge: keep completed/active acts, replace upcoming with new lineup
+      const completedActs = context.acts.filter((a) => a.status === 'completed' || a.status === 'skipped')
+      const activeAct = context.acts.find((a) => a.id === context.currentActId && a.status === 'active')
+      const keptActs = activeAct ? [...completedActs, activeAct] : completedActs
+      // New acts from the edit (upcoming replacements)
+      const newUpcoming = event.acts.filter((a) => a.status === 'upcoming')
+      const mergedActs = [...keptActs, ...newUpcoming].map((a, i) => ({ ...a, order: i }))
+      return {
+        acts: mergedActs,
+        timerEndAt: context.timerPausedRemaining ? Date.now() + context.timerPausedRemaining : null,
+        timerPausedRemaining: null,
+        editingMidShow: false,
+        lineupStatus: 'confirmed' as const,
+      }
+    }),
+
     restoreShowContext: assign(({ event }) => {
       if (event.type !== 'RESTORE_SHOW') return {}
       // Filter out undefined values to avoid overwriting defaults with undefined.
@@ -564,6 +597,12 @@ export const showMachine = setup({
         writers_room: {
           initial: 'energy',
           on: {
+            // Mid-show editing: return to live with merged lineup
+            CONFIRM_LINEUP_EDIT: {
+              target: '#show.phase.live.act_active',
+              guard: ({ context }) => context.editingMidShow && context.currentActId !== null,
+              actions: 'confirmLineupEditContext',
+            },
             // SET_LINEUP at parent level: accepted from any substate (energy, plan,
             // conversation, lineup_ready). The chat-first flow parses lineups before
             // reaching the conversation substate — parent-level handler fixes #160.
@@ -648,6 +687,10 @@ export const showMachine = setup({
         live: {
           initial: 'act_active',
           on: {
+            EDIT_LINEUP: {
+              target: '#show.phase.writers_room.conversation',
+              actions: ['clearBeatState', 'editLineupContext'],
+            },
             ENTER_INTERMISSION: {
               target: 'intermission',
               actions: ['clearBeatState', 'enterIntermissionContext'],
@@ -843,6 +886,10 @@ export const showMachine = setup({
             EXIT_DIRECTOR: {
               target: 'live',
               guard: 'hasCurrentAct',
+            },
+            EDIT_LINEUP: {
+              target: '#show.phase.writers_room.conversation',
+              actions: 'editLineupContext',
             },
             SKIP_TO_NEXT: [
               {

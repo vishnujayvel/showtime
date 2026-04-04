@@ -13,7 +13,7 @@ import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatDateLabel } from '../lib/utils'
 import { cn } from '../lib/utils'
-import type { EnergyLevel, ShowLineup } from '../../shared/types'
+import type { Act, EnergyLevel, ShowLineup } from '../../shared/types'
 
 import { springDefault as springTransition } from '../constants/animations'
 
@@ -92,12 +92,15 @@ export function WritersRoomView() {
   const acts = useShowContext((ctx) => ctx.acts)
   const writersRoomStep = useShowContext((ctx) => ctx.writersRoomStep)
   const lineupStatus = useShowContext((ctx) => ctx.lineupStatus)
+  const editingMidShow = useShowContext((ctx) => ctx.editingMidShow)
+  const timerPausedRemaining = useShowContext((ctx) => ctx.timerPausedRemaining)
   const send = useShowSend()
   const setEnergy = useCallback((level: EnergyLevel) => send({ type: 'SET_ENERGY', level }), [send])
   const setLineup = useCallback((lineup: ShowLineup) => send({ type: 'SET_LINEUP', lineup }), [send])
   const finalizeLineup = useCallback(() => send({ type: 'FINALIZE_LINEUP' }), [send])
   const triggerGoingLive = useCallback(() => send({ type: 'TRIGGER_GOING_LIVE' }), [send])
   const refineLineup = useCallback(() => send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' }), [send])
+  const confirmLineupEdit = useCallback(() => send({ type: 'CONFIRM_LINEUP_EDIT', acts }), [send, acts])
   const calendarAvailable = useUIStore((s) => s.calendarAvailable)
   const calendarEnabled = useUIStore((s) => s.calendarEnabled)
   const setCalendarEnabled = useUIStore((s) => s.setCalendarEnabled)
@@ -314,6 +317,20 @@ export function WritersRoomView() {
         </div>
       </div>
 
+      {/* Mid-show editing banner */}
+      {editingMidShow && (
+        <div className="px-5 py-2.5 bg-accent/10 border-b border-accent/20 flex items-center justify-between shrink-0" data-testid="mid-show-edit-banner">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-accent font-medium">✏️ Editing Lineup — Show Paused</span>
+            {timerPausedRemaining != null && (
+              <span className="font-mono text-xs text-txt-muted">
+                Timer paused at {Math.floor(timerPausedRemaining / 60000)}:{String(Math.floor((timerPausedRemaining % 60000) / 1000)).padStart(2, '0')}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Chat messages */}
       <div
         ref={messagesContainerRef}
@@ -463,7 +480,19 @@ export function WritersRoomView() {
             >
               Refine
             </button>
-            {lineupStatus === 'confirmed' ? (
+            {editingMidShow ? (
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  window.showtime.logEvent('INFO', 'confirm_lineup_edit_clicked', { actCount: acts.length })
+                  confirmLineupEdit()
+                }}
+                data-testid="confirm-lineup-edit-btn"
+              >
+                Confirm & Resume Show
+              </Button>
+            ) : lineupStatus === 'confirmed' ? (
               <Button
                 variant="primary"
                 className="flex-1"
@@ -528,8 +557,23 @@ export function WritersRoomView() {
 
           {/* Action buttons */}
           <div className="flex items-center gap-3 mt-3">
-            {/* BUILD MY LINEUP — visible when no lineup */}
-            {!hasLineup && (
+            {/* Mid-show editing: always show confirm & resume */}
+            {editingMidShow && hasLineup && (
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  window.showtime.logEvent('INFO', 'confirm_lineup_edit_clicked', { actCount: acts.length })
+                  confirmLineupEdit()
+                }}
+                data-testid="confirm-lineup-edit-btn"
+              >
+                Confirm & Resume Show
+              </Button>
+            )}
+
+            {/* BUILD MY LINEUP — visible when no lineup and not mid-show editing */}
+            {!hasLineup && !editingMidShow && (
               <button
                 onClick={handleBuildLineup}
                 disabled={false}
@@ -540,8 +584,8 @@ export function WritersRoomView() {
               </button>
             )}
 
-            {/* Finalize Lineup — visible when lineup exists but not in confirmation step */}
-            {hasLineup && (
+            {/* Finalize Lineup — visible when lineup exists but not in confirmation step and not mid-show */}
+            {hasLineup && !editingMidShow && (
               <Button
                 variant="primary"
                 className="flex-1"
