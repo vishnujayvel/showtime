@@ -127,9 +127,9 @@ describe('Personal category (Issue #115)', () => {
   })
 })
 
-// ─── Issue #117: PillView Help Button ───
+// ─── Issue #117 → #201: PillView Menu Button (was help button, now ViewMenu) ───
 
-describe('PillView help button (Issue #117)', () => {
+describe('PillView menu button (Issue #201, replaces #117)', () => {
   let PillView: any
 
   beforeEach(async () => {
@@ -137,41 +137,39 @@ describe('PillView help button (Issue #117)', () => {
     PillView = mod.PillView
   })
 
-  it('renders a help button with data-testid="pill-help-btn"', () => {
+  it('renders a menu button with data-testid="view-menu-trigger"', () => {
     goLive({ acts: [{ name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30 }] })
-    // START_SHOW sets viewTier to 'micro'
 
     render(<PillView />)
-    const helpBtn = screen.getByTestId('pill-help-btn')
-    expect(helpBtn).toBeInTheDocument()
+    const menuBtn = screen.getByTestId('view-menu-trigger')
+    expect(menuBtn).toBeInTheDocument()
   })
 
-  it('help button displays "?" text', () => {
+  it('menu button displays "⋮" text', () => {
     goLive({ acts: [{ name: 'Focus Time', sketch: 'Deep Work', durationMinutes: 25 }] })
 
     render(<PillView />)
-    const helpBtn = screen.getByTestId('pill-help-btn')
-    expect(helpBtn).toHaveTextContent('?')
+    const menuBtn = screen.getByTestId('view-menu-trigger')
+    expect(menuBtn).toHaveTextContent('\u22EE')
   })
 
-  it('help button renders during intermission phase', () => {
+  it('menu button renders during intermission phase', () => {
     goLive({ acts: [{ name: 'Break', sketch: 'Personal', durationMinutes: 15 }] })
     showActor.send({ type: 'SET_VIEW_TIER', tier: 'micro' })
     showActor.send({ type: 'ENTER_INTERMISSION' })
 
     render(<PillView />)
-    const helpBtn = screen.getByTestId('pill-help-btn')
-    expect(helpBtn).toBeInTheDocument()
+    const menuBtn = screen.getByTestId('view-menu-trigger')
+    expect(menuBtn).toBeInTheDocument()
   })
 
-  it('help button renders during strike phase', () => {
+  it('menu button renders during strike phase', () => {
     goLive({ acts: [{ name: 'Done', sketch: 'Admin', durationMinutes: 30 }], beatThreshold: 3 })
     showActor.send({ type: 'STRIKE' })
-    // STRIKE sets viewTier to 'expanded', switch to micro for pill test
     showActor.send({ type: 'SET_VIEW_TIER', tier: 'micro' })
 
     render(<PillView />)
-    const helpBtn = screen.getByTestId('pill-help-btn')
-    expect(helpBtn).toBeInTheDocument()
+    const menuBtn = screen.getByTestId('view-menu-trigger')
+    expect(menuBtn).toBeInTheDocument()
   })
 })

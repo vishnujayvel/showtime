@@ -10,6 +10,7 @@ import { IntermissionView } from '../components/IntermissionView'
 import { DirectorMode } from '../components/DirectorMode'
 import { RundownBar } from '../components/RundownBar'
 import { MuteToggle } from '../components/MuteToggle'
+import { ViewMenu } from '../components/ViewMenu'
 import { formatDateLabel } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
@@ -20,7 +21,12 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
-export function ExpandedView() {
+interface ExpandedViewProps {
+  onShowHistory?: () => void
+  onShowSettings?: () => void
+}
+
+export function ExpandedView({ onShowHistory, onShowSettings }: ExpandedViewProps) {
   const phase = useShowPhase()
   const acts = useShowContext((ctx) => ctx.acts)
   const currentAct = useShowSelector(showSelectors.currentAct)
@@ -63,6 +69,11 @@ export function ExpandedView() {
           >
             Director
           </button>
+          <ViewMenu
+            view="expanded"
+            onShowHistory={onShowHistory}
+            onShowSettings={onShowSettings}
+          />
           <button
             onClick={collapseViewTier}
             className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"

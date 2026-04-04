@@ -224,15 +224,15 @@ export default function App() {
     switch (viewTier) {
       case 'micro':
         return timerDisplay === 'menubar'
-          ? <CompactView key="compact" />
-          : <PillView key="pill" />
+          ? <CompactView key="compact" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
+          : <PillView key="pill" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
       case 'compact':
-        return <CompactView key="compact" />
+        return <CompactView key="compact" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
       case 'dashboard':
         return <DashboardView key="dashboard" />
       case 'expanded':
       default:
-        return <ExpandedView key="expanded" />
+        return <ExpandedView key="expanded" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
     }
   }
 
