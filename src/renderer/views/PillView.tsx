@@ -7,7 +7,7 @@ import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { MiniRundownStrip } from '../components/MiniRundownStrip'
-import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover'
+import { ViewMenu } from '../components/ViewMenu'
 import { cn } from '../lib/utils'
 
 const PHASE_INFO: Record<string, { label: string; description: string }> = {
@@ -19,7 +19,12 @@ const PHASE_INFO: Record<string, { label: string; description: string }> = {
   no_show: { label: 'Dark Studio', description: 'No show running yet.' },
 }
 
-export function PillView() {
+interface PillViewProps {
+  onShowHistory?: () => void
+  onShowSettings?: () => void
+}
+
+export function PillView({ onShowHistory, onShowSettings }: PillViewProps) {
   const phase = useShowPhase()
   const viewTier = useShowContext((ctx) => ctx.viewTier)
   const send = useShowSend()
@@ -136,44 +141,12 @@ export function PillView() {
           −
         </button>
 
-        {/* Help button */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className="shrink-0 w-5 h-5 rounded-full border border-white/10 text-txt-muted hover:text-txt-secondary hover:border-white/20 transition-colors flex items-center justify-center text-[10px] font-mono no-drag"
-              data-testid="pill-help-btn"
-            >
-              ?
-            </button>
-          </PopoverTrigger>
-          <PopoverContent side="top" align="end" sideOffset={8} className="w-56">
-            <div className="space-y-3">
-              <div>
-                <span className="font-mono text-[10px] tracking-widest uppercase text-txt-muted">
-                  {PHASE_INFO[phase]?.label ?? 'Showtime'}
-                </span>
-                <p className="text-xs text-txt-secondary mt-0.5">
-                  {PHASE_INFO[phase]?.description ?? 'Your ADHD-friendly day planner.'}
-                </p>
-              </div>
-              <div className="border-t border-card-border pt-2 space-y-1.5">
-                <p className="font-mono text-[9px] tracking-widest uppercase text-txt-muted">Actions</p>
-                <button
-                  onClick={() => expandViewTier()}
-                  className="block text-xs text-txt-secondary hover:text-accent transition-colors"
-                >
-                  Expand view
-                </button>
-                <button
-                  onClick={() => setViewTier('expanded')}
-                  className="block text-xs text-txt-secondary hover:text-accent transition-colors"
-                >
-                  Settings &amp; History
-                </button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+        {/* View menu */}
+        <ViewMenu
+          view="pill"
+          onShowHistory={onShowHistory}
+          onShowSettings={onShowSettings}
+        />
       </div>
       {showStrip && <MiniRundownStrip />}
     </motion.div>
