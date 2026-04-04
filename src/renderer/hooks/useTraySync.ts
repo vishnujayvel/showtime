@@ -31,6 +31,8 @@ export function useTraySync(): void {
         timerSeconds = Math.max(0, Math.ceil((ctx.timerEndAt - Date.now()) / 1000))
       }
 
+      const isPillMode = useUIStore.getState().timerDisplay === 'pill'
+
       const state: TrayShowState = {
         phase,
         currentActName: currentAct?.name ?? null,
@@ -47,12 +49,11 @@ export function useTraySync(): void {
               durationMinutes: a.durationMinutes,
             }))
           : [],
+        // When pill mode is active, hide the menu bar title timer but keep timerSeconds
+        // so the dropdown menu always shows the correct countdown
+        showMenuBarTimer: !isPillMode,
       }
 
-      // When pill mode is active, null out timerSeconds so tray title stays empty
-      if (useUIStore.getState().timerDisplay === 'pill' && (phase === 'live' || phase === 'director')) {
-        state.timerSeconds = null
-      }
       window.showtime.updateTrayState(state)
     }
 

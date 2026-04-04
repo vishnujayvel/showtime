@@ -72,6 +72,36 @@ describe('ShowRepository', () => {
   it('returns undefined for missing show', () => {
     expect(data.shows.getShow('2099-01-01')).toBeUndefined()
   })
+
+  it('getRecentShows returns full ShowHistoryEntry shape with act counts', () => {
+    data.shows.upsertShow({ id: '2026-03-28', phase: 'strike', energy: 'high', verdict: 'DAY_WON', beatsLocked: 3, beatThreshold: 3 })
+    data.acts.insertActs('2026-03-28', [
+      { id: 'a1', name: 'Deep Work', sketch: 'Deep Work', plannedDurationMs: 1800000, sortOrder: 0, status: 'completed' },
+      { id: 'a2', name: 'Email', sketch: 'Admin', plannedDurationMs: 900000, sortOrder: 1, status: 'completed' },
+      { id: 'a3', name: 'Lunch', sketch: 'Social', plannedDurationMs: 1800000, sortOrder: 2, status: 'cut' },
+    ])
+
+    data.shows.upsertShow({ id: '2026-03-29', phase: 'writers_room', energy: 'medium' })
+
+    const recent = data.shows.getRecentShows(10)
+    expect(recent).toHaveLength(2)
+
+    // Most recent first (desc order)
+    const show1 = recent[0]
+    expect(show1.showId).toBe('2026-03-29')
+    expect(show1.phase).toBe('writers_room')
+    expect(show1.actCount).toBe(0)
+    expect(show1.completedActCount).toBe(0)
+
+    const show2 = recent[1]
+    expect(show2.showId).toBe('2026-03-28')
+    expect(show2.phase).toBe('strike')
+    expect(show2.verdict).toBe('DAY_WON')
+    expect(show2.beatsLocked).toBe(3)
+    expect(show2.beatThreshold).toBe(3)
+    expect(show2.actCount).toBe(3)
+    expect(show2.completedActCount).toBe(2)
+  })
 })
 
 describe('ActRepository', () => {
