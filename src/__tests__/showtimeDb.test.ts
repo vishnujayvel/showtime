@@ -15,6 +15,7 @@ vi.mock('electron', () => ({
 }))
 
 import { readToday, writeLineup, getPhase, type Lineup } from '../shared/showtime-db'
+import { localToday } from '../shared/date-utils'
 
 let tmpDir: string
 let dbPath: string
@@ -142,7 +143,7 @@ describe('getPhase', () => {
 
     // Manually update phase
     const db = new Database(dbPath)
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     db.prepare('UPDATE shows SET phase = ? WHERE id = ?').run('live', today)
     db.close()
 
