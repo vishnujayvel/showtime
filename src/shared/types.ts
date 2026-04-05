@@ -363,28 +363,6 @@ export interface ShowLineup {
   openingNote: string
 }
 
-export interface ShowState {
-  phase: ShowPhase
-  energy: EnergyLevel | null
-  acts: Act[]
-  currentActId: string | null
-  beatsLocked: number
-  beatThreshold: number
-  timerEndAt: number | null
-  timerPausedRemaining: number | null
-  claudeSessionId: string | null
-  showDate: string
-  showStartedAt: number | null
-  verdict: ShowVerdict | null
-  viewTier: ViewTier
-  beatCheckPending: boolean
-  celebrationActive: boolean
-  goingLiveActive: boolean
-  writersRoomStep: WritersRoomStep
-  writersRoomEnteredAt: number | null
-  breathingPauseEndAt: number | null
-}
-
 export interface CachedCalendarEvent {
   id: string
   title: string

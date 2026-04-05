@@ -7,8 +7,8 @@ This file is the source of truth for ALL agents working in this codebase.
 
 ## Active Specification
 
-- **Spec:** `.claude/specs/showtime-v2/` (active)
-- **Superseded:** `.claude/specs/showtime-snl-planner/` (v1 — archived, do not use)
+- **Spec:** `openspec/` (active — managed by OpenSpec CLI)
+- **Superseded:** `.claude/specs/` has been removed (v1/v2 specs migrated to OpenSpec)
 
 ## Product Context
 
@@ -180,6 +180,8 @@ Show phase lifecycle is managed by an XState v5 state machine. The singleton `sh
 - `sessionStore.ts` — Claude subprocess session (simplified to single session)
 
 **Do NOT use Zustand for phase state.** All show phases, acts, beats, timers, and transitions go through the XState machine.
+
+**Every full-screen view MUST be a state in the XState machine.** Never use `useState` for view routing — dispatch XState events and read phase state. Views like History, Settings, and Onboarding must be machine states so the coverage report (`bun run scripts/state-coverage-report.ts`) can track them. Shadow states (React state outside XState) are bugs. (#205)
 
 **How to read phase state in components:**
 ```tsx
