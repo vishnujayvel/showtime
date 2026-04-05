@@ -29,7 +29,6 @@ import { HistoryView } from './views/HistoryView'
 import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
-import { HelpDialog } from './components/HelpDialog'
 import { HelpButton } from './components/HelpButton'
 import type { ViewTier, ViewMode, ShowPhase } from '../shared/types'
 
@@ -69,8 +68,6 @@ export default function App() {
   })
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [showHelp, setShowHelp] = useState(false)
-
   // ─── Listen for tray-triggered reset ───
   useEffect(() => {
     if (!window.showtime?.onResetShow) return
@@ -171,11 +168,6 @@ export default function App() {
     }
   }, [send])
 
-  // ─── Help button opens help dialog ───
-  const handleHelpClick = useCallback(() => {
-    setShowHelp(true)
-  }, [])
-
   // ─── View routing ───
   const renderView = () => {
     // Settings overlay
@@ -248,7 +240,6 @@ export default function App() {
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>
-      <HelpDialog open={showHelp} onOpenChange={setShowHelp} />
       <BeatCheckModal />
     </div>
   )
