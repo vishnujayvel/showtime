@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Burning Fuse at All Sizes</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+    --cat-deep: #8b5cf6;
+  }
+
+  body {
+    background-color: #0a0a0c;
+    color: var(--txt-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ============================================
+     PAGE LAYOUT
+     ============================================ */
+
+  .page-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: 8px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--txt-secondary);
+    margin-bottom: 48px;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.5;
+  }
+
+  .view-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 56px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .view-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: 6px;
+  }
+
+  .view-size {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--txt-muted);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+
+  /* ============================================
+     SHARED: TALLY DOT
+     ============================================ */
+
+  @keyframes tally-pulse {
+    0%, 100% {
+      box-shadow: 0 0 4px var(--onair), 0 0 8px rgba(239, 68, 68, 0.3);
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 6px var(--onair), 0 0 14px rgba(239, 68, 68, 0.5);
+      opacity: 0.85;
+    }
+  }
+
+  .tally {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--onair);
+    flex-shrink: 0;
+    animation: tally-pulse 2s ease-in-out infinite;
+  }
+
+  .tally-lg {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* ============================================
+     SHARED: ON AIR BOX
+     ============================================ */
+
+  @keyframes onair-glow {
+    0%, 100% {
+      box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.4), inset 0 0 4px rgba(239, 68, 68, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 14px 4px rgba(239, 68, 68, 0.65), inset 0 0 6px rgba(239, 68, 68, 0.25);
+    }
+  }
+
+  .onair-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid var(--onair);
+    border-radius: 4px;
+    padding: 3px 8px;
+    animation: onair-glow 2s ease-in-out infinite;
+  }
+
+  .onair-box .onair-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--onair);
+    animation: tally-pulse 2s ease-in-out infinite;
+  }
+
+  .onair-box .onair-text {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--onair);
+  }
+
+  /* ============================================
+     SHARED: CLAPPERBOARD BADGE
+     ============================================ */
+
+  .clap-badge {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1.5px solid var(--cat-deep);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--cat-deep);
+  }
+
+  .clap-badge .divider {
+    opacity: 0.4;
+  }
+
+  /* ============================================
+     SHARED: BEAT STARS
+     ============================================ */
+
+  .beat-stars {
+    font-size: 14px;
+    letter-spacing: 2px;
+    user-select: none;
+  }
+
+  .beat-stars .lit {
+    color: var(--beat);
+    text-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+  }
+
+  .beat-stars .dim {
+    color: var(--txt-muted);
+  }
+
+  /* ============================================
+     1. PILL VIEW (320x48)
+     ============================================ */
+
+  .pill {
+    width: 320px;
+    height: 48px;
+    border-radius: 9999px;
+    background-color: var(--surface);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .pill .act-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pill .timer-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pill .beat-star-mini {
+    font-size: 11px;
+    color: var(--beat);
+    flex-shrink: 0;
+    text-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+  }
+
+  .pill .pill-icons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .pill .pill-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--surface-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pill .pill-icon svg {
+    width: 9px;
+    height: 9px;
+    fill: none;
+    stroke: var(--txt-muted);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  /* Pill fuse bar */
+  .pill .fuse-track {
+    position: absolute;
+    bottom: 0;
+    left: 24px;
+    right: 24px;
+    height: 2px;
+  }
+
+  /* ============================================
+     2. COMPACT VIEW (340x140)
+     ============================================ */
+
+  .compact-view {
+    width: 340px;
+    height: 140px;
+    border-radius: 16px;
+    background-color: var(--surface);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.4),
+      0 8px 24px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .compact-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(239, 68, 68, 0.06);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.12);
+  }
+
+  .compact-top-bar .onair-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .compact-top-bar .onair-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--onair);
+  }
+
+  .compact-top-bar .act-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--txt-secondary);
+  }
+
+  .compact-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px 0;
+    gap: 4px;
+  }
+
+  .compact-body .act-name-compact {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--txt-primary);
+  }
+
+  .compact-body .timer-compact {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--txt-primary);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .compact-body .beat-stars-compact {
+    font-size: 12px;
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+
+  .compact-fuse-wrap {
+    padding: 0 16px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .compact-fuse-wrap .fuse-track {
+    width: 100%;
+    height: 4px;
+    position: relative;
+  }
+
+  /* ============================================
+     3. EXPANDED VIEW (560x300)
+     ============================================ */
+
+  .expanded-view {
+    width: 560px;
+    border-radius: 16px;
+    background-color: var(--surface);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 16px 48px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .expanded-onair-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(239, 68, 68, 0.05);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+  }
+
+  .expanded-onair-bar .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .expanded-onair-bar .right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .expanded-onair-bar .next-label {
+    font-size: 11px;
+    color: var(--txt-muted);
+  }
+
+  .expanded-onair-bar .next-act {
+    font-size: 11px;
+    color: var(--txt-secondary);
+    font-weight: 500;
+  }
+
+  .expanded-timer-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 40px 20px;
+    gap: 12px;
+  }
+
+  .expanded-timer-panel .hero-timer {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--txt-primary);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    position: relative;
+  }
+
+  .expanded-timer-panel .hero-label-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .expanded-fuse-wrap {
+    padding: 0 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .expanded-fuse-wrap .fuse-track {
+    width: 100%;
+    height: 8px;
+    position: relative;
+  }
+
+  .expanded-fuse-wrap .fuse-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--txt-muted);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.06em;
+  }
+
+  /* ============================================
+     4. BEAT CHECK MODAL (380px)
+     ============================================ */
+
+  .beatcheck-modal {
+    width: 380px;
+    border-radius: 16px;
+    background-color: var(--surface);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 16px 48px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+
+  .beatcheck-spotlight {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .beatcheck-header {
+    text-align: center;
+    padding: 28px 24px 0;
+  }
+
+  .beatcheck-header .badge {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--beat);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .beatcheck-header .badge .beat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--beat);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+  }
+
+  .beatcheck-header .question {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  .beatcheck-header .question em {
+    font-style: normal;
+    color: var(--cat-deep);
+    font-weight: 700;
+  }
+
+  .beatcheck-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 20px 24px;
+    justify-content: center;
+  }
+
+  .beatcheck-buttons button {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .beatcheck-buttons .btn-lock {
+    background: var(--beat);
+    color: #0d0d0f;
+  }
+
+  .beatcheck-buttons .btn-lock:hover {
+    background: #eab308;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+  }
+
+  .beatcheck-buttons .btn-skip {
+    background: var(--surface-hover);
+    color: var(--txt-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .beatcheck-buttons .btn-skip:hover {
+    background: #2a2a2e;
+    color: var(--txt-primary);
+  }
+
+  .beatcheck-fuse-wrap {
+    padding: 0 24px 16px;
+  }
+
+  .beatcheck-fuse-wrap .fuse-track {
+    width: 100%;
+    height: 4px;
+    position: relative;
+  }
+
+  .beatcheck-fuse-label {
+    font-size: 9px;
+    color: var(--txt-muted);
+    text-align: center;
+    padding-bottom: 14px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.06em;
+  }
+
+  /* ============================================
+     FUSE RENDERING (shared across all sizes)
+     ============================================ */
+
+  .fuse-track {
+    border-radius: 4px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .fuse-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .fuse-burned {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.02);
+    transition: width 0.08s linear;
+  }
+
+  .fuse-remaining {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: inherit;
+    transition: left 0.08s linear, width 0.08s linear, background 0.4s ease;
+  }
+
+  .fuse-ember-point {
+    position: absolute;
+    top: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: left 0.08s linear, background-color 0.4s ease, box-shadow 0.4s ease;
+    z-index: 3;
+  }
+
+  /* Particle trail — expanded view only */
+  .fuse-particle {
+    position: absolute;
+    top: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: left 0.08s linear;
+    z-index: 2;
+  }
+
+  /* Spark particles — critical phase */
+  .fuse-spark {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0;
+  }
+
+  @keyframes spark-fly {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--spark-dx), var(--spark-dy)) scale(0);
+    }
+  }
+
+  /* Ember wobble */
+  @keyframes ember-wobble {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    25% { transform: translate(-50%, calc(-50% - 0.5px)) scale(1.05); }
+    50% { transform: translate(-50%, calc(-50% + 0.5px)) scale(0.97); }
+    75% { transform: translate(-50%, calc(-50% - 0.3px)) scale(1.02); }
+  }
+
+  @keyframes ember-wobble-critical {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    20% { transform: translate(-50%, calc(-50% - 1px)) scale(1.1); }
+    40% { transform: translate(-50%, calc(-50% + 0.8px)) scale(0.93); }
+    60% { transform: translate(-50%, calc(-50% - 0.6px)) scale(1.07); }
+    80% { transform: translate(-50%, calc(-50% + 0.5px)) scale(0.96); }
+  }
+
+  /* ============================================
+     CONTROLS BAR (fixed bottom)
+     ============================================ */
+
+  .controls-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: linear-gradient(to top, rgba(10, 10, 12, 0.97) 70%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .controls-bar button {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--txt-secondary);
+    background: var(--surface);
+    border: 1px solid var(--surface-hover);
+    border-radius: 6px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .controls-bar button:hover {
+    color: var(--txt-primary);
+    background: var(--surface-hover);
+    border-color: var(--txt-muted);
+  }
+
+  .controls-bar button:active {
+    transform: scale(0.97);
+  }
+
+  .controls-bar button.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(217, 119, 87, 0.08);
+  }
+
+  .controls-bar .progress-readout {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--txt-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+    text-align: center;
+  }
+
+  .controls-bar .speed-group {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border-radius: 6px;
+    border: 1px solid var(--surface-hover);
+    padding: 2px;
+  }
+
+  .controls-bar .speed-group button {
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .controls-bar .speed-group button.active {
+    background: var(--accent);
+    color: #0d0d0f;
+    border-color: transparent;
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+
+  @media (max-width: 620px) {
+    .expanded-view {
+      width: 100%;
+      max-width: 560px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<span class="page-title">Burning Fuse Progress Bar</span>
+<p class="page-subtitle">
+  The burning fuse at every Showtime view size, synced to one countdown.
+  Watch the urgency ramp as it burns down.
+</p>
+
+<!-- =============================================
+     1. PILL VIEW
+     ============================================= -->
+<div class="view-section">
+  <span class="view-label">1. Pill View</span>
+  <span class="view-size">320 x 48px &middot; rounded-full</span>
+  <div class="pill" id="pill-view">
+    <div class="tally"></div>
+    <span class="act-name">Deep Work</span>
+    <span class="timer-mono" id="timer-pill">09:37</span>
+    <span class="beat-star-mini">&#9733;</span>
+    <span class="pill-icons">
+      <span class="pill-icon">
+        <svg viewBox="0 0 12 12"><polyline points="3,4.5 6,7.5 9,4.5"/></svg>
+      </span>
+      <span class="pill-icon">
+        <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5"/></svg>
+      </span>
+    </span>
+    <div class="fuse-track" id="fuse-pill" style="position:absolute;bottom:0;left:24px;right:24px;height:2px;">
+      <div class="fuse-bg"></div>
+      <div class="fuse-burned"></div>
+      <div class="fuse-remaining"></div>
+      <div class="fuse-ember-point"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     2. COMPACT VIEW
+     ============================================= -->
+<div class="view-section">
+  <span class="view-label">2. Compact View</span>
+  <span class="view-size">340 x 140px &middot; rounded-xl</span>
+  <div class="compact-view" id="compact-view">
+    <div class="compact-top-bar">
+      <div class="onair-row">
+        <div class="tally" style="width:6px;height:6px;"></div>
+        <span class="onair-label">ON AIR</span>
+      </div>
+      <span class="act-label">Act 2 of 5</span>
+    </div>
+    <div class="compact-body">
+      <span class="act-name-compact">Deep Work</span>
+      <span class="timer-compact" id="timer-compact">09:37</span>
+      <span class="beat-stars-compact beat-stars">
+        <span class="lit">&#9733;</span><span class="lit">&#9733;</span><span class="dim">&#9734;</span><span class="dim">&#9734;</span><span class="dim">&#9734;</span>
+      </span>
+    </div>
+    <div class="compact-fuse-wrap">
+      <div class="fuse-track" id="fuse-compact">
+        <div class="fuse-bg"></div>
+        <div class="fuse-burned"></div>
+        <div class="fuse-remaining"></div>
+        <div class="fuse-ember-point"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     3. EXPANDED VIEW (timer panel)
+     ============================================= -->
+<div class="view-section">
+  <span class="view-label">3. Expanded View &mdash; Timer Panel</span>
+  <span class="view-size">560 x ~300px &middot; rounded-xl</span>
+  <div class="expanded-view" id="expanded-view">
+    <div class="expanded-onair-bar">
+      <div class="left">
+        <div class="onair-box">
+          <div class="onair-dot"></div>
+          <span class="onair-text">ON AIR</span>
+        </div>
+        <div class="clap-badge">
+          <span>Deep Work</span>
+          <span class="divider">|</span>
+          <span>Act 2</span>
+        </div>
+      </div>
+      <div class="right">
+        <span class="next-label">Next:</span>
+        <span class="next-act">Admin &mdash; 15m</span>
+      </div>
+    </div>
+    <div class="expanded-timer-panel">
+      <span class="hero-timer" id="timer-expanded">09:37</span>
+      <div class="hero-label-row">
+        <span class="beat-stars" style="font-size:18px;">
+          <span class="lit">&#9733;</span><span class="lit">&#9733;</span><span class="dim">&#9734;</span><span class="dim">&#9734;</span><span class="dim">&#9734;</span>
+        </span>
+      </div>
+    </div>
+    <div class="expanded-fuse-wrap">
+      <div class="fuse-track" id="fuse-expanded">
+        <div class="fuse-bg"></div>
+        <div class="fuse-burned"></div>
+        <div class="fuse-remaining"></div>
+        <div class="fuse-ember-point"></div>
+        <!-- Particle trail -->
+        <div class="fuse-particle" data-trail="1"></div>
+        <div class="fuse-particle" data-trail="2"></div>
+        <div class="fuse-particle" data-trail="3"></div>
+      </div>
+      <div class="fuse-meta">
+        <span id="fuse-elapsed-label">00:00 elapsed</span>
+        <span id="fuse-remaining-label">09:37 remaining</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     4. BEAT CHECK MODAL
+     ============================================= -->
+<div class="view-section">
+  <span class="view-label">4. Beat Check Modal</span>
+  <span class="view-size">380px &middot; rounded-xl &middot; static fuse (~70% consumed)</span>
+  <div class="beatcheck-modal" id="beatcheck-modal">
+    <div class="beatcheck-spotlight"></div>
+    <div class="beatcheck-header">
+      <div class="badge">
+        <span class="beat-dot"></span>
+        Beat Check
+        <span class="beat-dot"></span>
+      </div>
+      <div class="question">
+        Did you stay present during<br><em>Deep Work</em>?
+      </div>
+    </div>
+    <div class="beatcheck-buttons">
+      <button class="btn-lock">&#9733; Lock Beat</button>
+      <button class="btn-skip">Skip Beat</button>
+    </div>
+    <div class="beatcheck-fuse-wrap">
+      <div class="fuse-track" id="fuse-beatcheck">
+        <div class="fuse-bg"></div>
+        <div class="fuse-burned"></div>
+        <div class="fuse-remaining"></div>
+        <!-- No ember — static display -->
+      </div>
+    </div>
+    <div class="beatcheck-fuse-label">70% of act time used</div>
+  </div>
+</div>
+
+<!-- =============================================
+     CONTROLS BAR
+     ============================================= -->
+<div class="controls-bar">
+  <button id="btn-reset">Reset</button>
+  <button id="btn-pause">Pause at 20%</button>
+  <span class="progress-readout" id="readout">100%</span>
+  <div class="speed-group">
+    <button class="active" data-speed="1">1x</button>
+    <button data-speed="3">3x</button>
+    <button data-speed="10">10x</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Config ----
+  const TOTAL_DURATION = 30000; // 30s countdown loop
+  const TICK_MS = 16; // ~60fps
+
+  // ---- State ----
+  let elapsed = 0;
+  let running = true;
+  let speed = 1;
+  let pauseAt20 = false;
+  let lastTimestamp = null;
+
+  // ---- Color helpers ----
+  function lerpColor(a, b, t) {
+    const ar = parseInt(a.slice(1, 3), 16), ag = parseInt(a.slice(3, 5), 16), ab = parseInt(a.slice(5, 7), 16);
+    const br = parseInt(b.slice(1, 3), 16), bg = parseInt(b.slice(3, 5), 16), bb = parseInt(b.slice(5, 7), 16);
+    const rr = Math.round(ar + (br - ar) * t), rg = Math.round(ag + (bg - ag) * t), rb = Math.round(ab + (bb - ab) * t);
+    return `#${rr.toString(16).padStart(2,'0')}${rg.toString(16).padStart(2,'0')}${rb.toString(16).padStart(2,'0')}`;
+  }
+
+  // Phase thresholds
+  function getPhase(pct) {
+    if (pct > 0.30) return 'normal';
+    if (pct > 0.15) return 'warning';
+    return 'critical';
+  }
+
+  // Fuse remaining line color based on phase
+  function getFuseColor(pct) {
+    if (pct > 0.50) {
+      // White to warm: 100% -> 50%
+      const t = 1 - ((pct - 0.50) / 0.50);
+      return lerpColor('#c8c6c0', '#d97757', t * 0.4);
+    } else if (pct > 0.30) {
+      // Warm to amber
+      const t = 1 - ((pct - 0.30) / 0.20);
+      return lerpColor('#c8a080', '#d97757', t);
+    } else if (pct > 0.15) {
+      // Amber to orange-red
+      const t = 1 - ((pct - 0.15) / 0.15);
+      return lerpColor('#d97757', '#f59e0b', t);
+    } else {
+      // Orange-red to red
+      const t = 1 - (pct / 0.15);
+      return lerpColor('#f59e0b', '#ef4444', t);
+    }
+  }
+
+  // Ember color
+  function getEmberColor(pct) {
+    if (pct > 0.30) return '#d97757';
+    if (pct > 0.15) return '#f59e0b';
+    return '#ef4444';
+  }
+
+  // Ember glow
+  function getEmberGlow(pct, radius) {
+    const col = getEmberColor(pct);
+    const phase = getPhase(pct);
+    const r = parseInt(col.slice(1, 3), 16), g = parseInt(col.slice(3, 5), 16), b = parseInt(col.slice(5, 7), 16);
+
+    if (phase === 'critical') {
+      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 150);
+      const intensity = 0.5 + pulse * 0.4;
+      return `0 0 ${radius}px rgba(${r},${g},${b},${intensity}),` +
+             `0 0 ${radius * 2}px rgba(${r},${g},${b},${intensity * 0.6}),` +
+             `0 0 ${radius * 3}px rgba(${r},${g},${b},${intensity * 0.2})`;
+    }
+    if (phase === 'warning') {
+      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 300);
+      const intensity = 0.4 + pulse * 0.3;
+      return `0 0 ${radius}px rgba(${r},${g},${b},${intensity}),` +
+             `0 0 ${radius * 1.8}px rgba(${r},${g},${b},${intensity * 0.5})`;
+    }
+    const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 500);
+    const intensity = 0.3 + pulse * 0.2;
+    return `0 0 ${radius * 0.8}px rgba(${r},${g},${b},${intensity}),` +
+           `0 0 ${radius * 1.5}px rgba(${r},${g},${b},${intensity * 0.4})`;
+  }
+
+  // ---- Timer formatting ----
+  function formatTimer(remainMs) {
+    const totalSec = Math.max(0, Math.ceil(remainMs / 1000));
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  // ---- Fuse renderers ----
+  // Each fuse instance: { track, bg, burned, remaining, ember, particles[], config }
+  const fuseInstances = [];
+
+  function createFuseInstance(trackEl, config) {
+    const bg = trackEl.querySelector('.fuse-bg');
+    const burned = trackEl.querySelector('.fuse-burned');
+    const remaining = trackEl.querySelector('.fuse-remaining');
+    const ember = trackEl.querySelector('.fuse-ember-point');
+    const particles = Array.from(trackEl.querySelectorAll('.fuse-particle'));
+
+    return { track: trackEl, bg, burned, remaining, ember, particles, config };
+  }
+
+  function renderFuse(inst, pct) {
+    const { track, bg, burned, remaining, ember, particles, config } = inst;
+    const trackW = track.offsetWidth;
+    const burnedW = trackW * (1 - pct);
+    const remainW = trackW * pct;
+    const emberX = burnedW;
+    const h = config.height;
+    const fuseColor = getFuseColor(pct);
+    const emberColor = getEmberColor(pct);
+    const phase = getPhase(pct);
+
+    // Background track
+    if (bg) {
+      bg.style.height = h + 'px';
+      bg.style.borderRadius = (h / 2) + 'px';
+    }
+
+    // Burned portion (dark, left side)
+    if (burned) {
+      burned.style.width = burnedW + 'px';
+      burned.style.height = h + 'px';
+      burned.style.borderRadius = (h / 2) + 'px';
+    }
+
+    // Remaining fuse line (right side, colored)
+    if (remaining) {
+      remaining.style.left = burnedW + 'px';
+      remaining.style.width = Math.max(0, remainW) + 'px';
+      remaining.style.height = h + 'px';
+      remaining.style.borderRadius = (h / 2) + 'px';
+      // Gradient: dimmer at far right, brighter near ember
+      remaining.style.background = `linear-gradient(90deg, ${fuseColor} 0%, ${fuseColor}88 70%, ${fuseColor}44 100%)`;
+    }
+
+    // Ember point
+    if (ember) {
+      const emberSize = config.emberSize;
+      ember.style.width = emberSize + 'px';
+      ember.style.height = emberSize + 'px';
+      ember.style.left = emberX + 'px';
+      ember.style.backgroundColor = emberColor;
+      ember.style.boxShadow = getEmberGlow(pct, config.glowRadius);
+
+      if (phase === 'critical') {
+        ember.style.animation = 'ember-wobble-critical 0.3s ease-in-out infinite';
+      } else {
+        ember.style.animation = 'ember-wobble 0.8s ease-in-out infinite';
+      }
+    }
+
+    // Particle trail (expanded only)
+    if (particles.length > 0 && pct < 0.999) {
+      particles.forEach((p, i) => {
+        const offset = (i + 1) * config.particleSpacing;
+        const px = Math.min(trackW, emberX + offset);
+        const pSize = config.particleSize * (1 - i * 0.25);
+        const pOpacity = (0.6 - i * 0.18) * (phase === 'critical' ? 1.2 : 1);
+        p.style.width = pSize + 'px';
+        p.style.height = pSize + 'px';
+        p.style.left = px + 'px';
+        p.style.backgroundColor = emberColor;
+        p.style.opacity = Math.max(0.1, pOpacity);
+        p.style.boxShadow = `0 0 ${config.glowRadius * 0.4}px ${emberColor}66`;
+        p.style.display = px < trackW ? 'block' : 'none';
+      });
+    }
+  }
+
+  // ---- Spark system (expanded view only) ----
+  const sparkContainer = document.getElementById('fuse-expanded');
+  let sparkTimer = 0;
+
+  function spawnSpark(pct) {
+    if (!sparkContainer) return;
+    const trackW = sparkContainer.offsetWidth;
+    const x = trackW * (1 - pct);
+
+    for (let i = 0; i < 2; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'fuse-spark';
+      const size = 2 + Math.random() * 2;
+      const dx = (Math.random() - 0.5) * 16;
+      const dy = -(4 + Math.random() * 10);
+      spark.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}px;
+        top: 50%;
+        background: ${getEmberColor(pct)};
+        box-shadow: 0 0 4px ${getEmberColor(pct)};
+        --spark-dx: ${dx}px;
+        --spark-dy: ${dy}px;
+        animation: spark-fly ${0.3 + Math.random() * 0.4}s ease-out forwards;
+      `;
+      sparkContainer.appendChild(spark);
+      setTimeout(() => spark.remove(), 800);
+    }
+  }
+
+  // ---- Initialize fuse instances ----
+  function initFuses() {
+    fuseInstances.length = 0;
+
+    // 1. Pill: 2px line, 6px ember, 6px glow
+    fuseInstances.push(createFuseInstance(document.getElementById('fuse-pill'), {
+      height: 2, emberSize: 6, glowRadius: 6, particleSpacing: 0, particleSize: 0
+    }));
+
+    // 2. Compact: 4px line, 8px ember, 8px glow
+    fuseInstances.push(createFuseInstance(document.getElementById('fuse-compact'), {
+      height: 4, emberSize: 8, glowRadius: 8, particleSpacing: 0, particleSize: 0
+    }));
+
+    // 3. Expanded: 8px line, 14px ember, 12px glow, particles
+    fuseInstances.push(createFuseInstance(document.getElementById('fuse-expanded'), {
+      height: 8, emberSize: 14, glowRadius: 12, particleSpacing: 14, particleSize: 5
+    }));
+  }
+
+  // ---- Beat Check (static) ----
+  function renderBeatCheckFuse() {
+    const track = document.getElementById('fuse-beatcheck');
+    if (!track) return;
+    const bg = track.querySelector('.fuse-bg');
+    const burned = track.querySelector('.fuse-burned');
+    const remaining = track.querySelector('.fuse-remaining');
+    const trackW = track.offsetWidth;
+    const staticPct = 0.30; // 70% consumed = 30% remaining
+
+    if (bg) { bg.style.height = '4px'; bg.style.borderRadius = '2px'; }
+    if (burned) {
+      burned.style.width = (trackW * 0.70) + 'px';
+      burned.style.height = '4px';
+      burned.style.borderRadius = '2px';
+      burned.style.background = 'rgba(255,255,255,0.02)';
+    }
+    if (remaining) {
+      remaining.style.left = (trackW * 0.70) + 'px';
+      remaining.style.width = (trackW * 0.30) + 'px';
+      remaining.style.height = '4px';
+      remaining.style.borderRadius = '2px';
+      remaining.style.background = `linear-gradient(90deg, #c8a080 0%, #c8a08088 70%, #c8a08044 100%)`;
+    }
+  }
+
+  // ---- Timer displays ----
+  const timerPill = document.getElementById('timer-pill');
+  const timerCompact = document.getElementById('timer-compact');
+  const timerExpanded = document.getElementById('timer-expanded');
+  const readout = document.getElementById('readout');
+  const fuseElapsedLabel = document.getElementById('fuse-elapsed-label');
+  const fuseRemainingLabel = document.getElementById('fuse-remaining-label');
+
+  function updateTimers(remainMs, pct) {
+    const txt = formatTimer(remainMs);
+    if (timerPill) timerPill.textContent = txt;
+    if (timerCompact) timerCompact.textContent = txt;
+    if (timerExpanded) timerExpanded.textContent = txt;
+    if (readout) readout.textContent = Math.round(pct * 100) + '%';
+    if (fuseElapsedLabel) fuseElapsedLabel.textContent = formatTimer(TOTAL_DURATION - remainMs) + ' elapsed';
+    if (fuseRemainingLabel) fuseRemainingLabel.textContent = txt + ' remaining';
+
+    // Color shift the expanded hero timer
+    if (timerExpanded) {
+      const phase = getPhase(pct);
+      if (phase === 'critical') {
+        timerExpanded.style.color = '#ef4444';
+        timerExpanded.style.textShadow = '0 0 20px rgba(239,68,68,0.3)';
+      } else if (phase === 'warning') {
+        timerExpanded.style.color = '#f59e0b';
+        timerExpanded.style.textShadow = '0 0 12px rgba(245,158,11,0.15)';
+      } else {
+        timerExpanded.style.color = '#e8e6e0';
+        timerExpanded.style.textShadow = 'none';
+      }
+    }
+  }
+
+  // ---- Animation loop ----
+  function tick(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const dt = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+
+    if (running) {
+      elapsed += dt * speed;
+
+      // Pause at 20% if requested
+      if (pauseAt20 && elapsed >= TOTAL_DURATION * 0.80) {
+        elapsed = TOTAL_DURATION * 0.80;
+        running = false;
+        document.getElementById('btn-pause').classList.add('active');
+        document.getElementById('btn-pause').textContent = 'Resume';
+      }
+
+      // Loop
+      if (elapsed >= TOTAL_DURATION) {
+        elapsed = 0;
+      }
+    }
+
+    const remainMs = Math.max(0, TOTAL_DURATION - elapsed);
+    const pct = remainMs / TOTAL_DURATION;
+
+    updateTimers(remainMs, pct);
+
+    // Render animated fuses
+    for (const inst of fuseInstances) {
+      renderFuse(inst, pct);
+    }
+
+    // Sparks in critical phase (expanded only)
+    const phase = getPhase(pct);
+    if (phase === 'critical' && running) {
+      sparkTimer += dt * speed;
+      if (sparkTimer > 120) {
+        spawnSpark(pct);
+        sparkTimer = 0;
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  // ---- Controls ----
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    elapsed = 0;
+    running = true;
+    pauseAt20 = false;
+    lastTimestamp = null;
+    const pauseBtn = document.getElementById('btn-pause');
+    pauseBtn.textContent = 'Pause at 20%';
+    pauseBtn.classList.remove('active');
+  });
+
+  document.getElementById('btn-pause').addEventListener('click', () => {
+    const btn = document.getElementById('btn-pause');
+    if (!running && pauseAt20) {
+      // Resume from pause
+      running = true;
+      pauseAt20 = false;
+      lastTimestamp = null;
+      btn.textContent = 'Pause at 20%';
+      btn.classList.remove('active');
+    } else if (running && !pauseAt20) {
+      // Enable pause at 20%
+      pauseAt20 = true;
+      btn.textContent = 'Will pause at 20%';
+      btn.classList.add('active');
+    } else {
+      // Toggle pause at 20% off
+      pauseAt20 = false;
+      btn.textContent = 'Pause at 20%';
+      btn.classList.remove('active');
+    }
+  });
+
+  // Speed buttons
+  document.querySelectorAll('.speed-group button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      speed = parseInt(btn.dataset.speed);
+      lastTimestamp = null;
+      document.querySelectorAll('.speed-group button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // ---- Boot ----
+  window.addEventListener('load', () => {
+    initFuses();
+    renderBeatCheckFuse();
+
+    // Re-render beat check on resize
+    window.addEventListener('resize', () => {
+      renderBeatCheckFuse();
+    });
+
+    requestAnimationFrame(tick);
+  });
+
+})();
+</script>
+
+</body>
+</html>

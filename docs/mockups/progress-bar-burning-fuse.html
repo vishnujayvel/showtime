@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime — Progress Bar Concepts</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+    --teal: #14b8a6;
+  }
+
+  body {
+    background-color: var(--studio-bg);
+    color: var(--txt-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 48px;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: -8px;
+  }
+
+  .variants {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .variant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .variant-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--txt-secondary);
+  }
+
+  /* === PILL === */
+  .pill {
+    width: 320px;
+    height: 48px;
+    border-radius: 9999px;
+    background-color: var(--surface);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  /* Tally dot */
+  .tally {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--onair);
+    flex-shrink: 0;
+    animation: tally-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes tally-pulse {
+    0%, 100% {
+      box-shadow: 0 0 4px var(--onair), 0 0 8px rgba(239, 68, 68, 0.3);
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 6px var(--onair), 0 0 14px rgba(239, 68, 68, 0.5);
+      opacity: 0.85;
+    }
+  }
+
+  .act-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .timer {
+    font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* === BAR TRACK === */
+  .bar-track {
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 4px;
+    border-radius: 2px;
+    overflow: visible;
+  }
+
+  /* ============================================
+     VARIANT 1: BURNING FUSE
+     ============================================ */
+
+  .fuse-track {
+    background: transparent;
+  }
+
+  .fuse-line {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.5) 30%,
+      rgba(232, 230, 224, 0.7) 100%
+    );
+    transition: width 0.1s linear;
+  }
+
+  .ember {
+    position: absolute;
+    top: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translateX(50%);
+    transition: left 0.1s linear, background-color 0.5s ease, box-shadow 0.5s ease;
+    animation: ember-shimmer 0.8s ease-in-out infinite alternate;
+  }
+
+  .ember.critical {
+    background: var(--onair);
+    animation: ember-shimmer-critical 0.4s ease-in-out infinite alternate;
+  }
+
+  @keyframes ember-shimmer {
+    0% {
+      box-shadow:
+        0 0 4px var(--accent),
+        0 0 8px rgba(217, 119, 87, 0.4),
+        0 0 12px rgba(217, 119, 87, 0.15);
+    }
+    100% {
+      box-shadow:
+        0 0 6px var(--accent),
+        0 0 12px rgba(217, 119, 87, 0.6),
+        0 0 18px rgba(217, 119, 87, 0.25);
+    }
+  }
+
+  @keyframes ember-shimmer-critical {
+    0% {
+      box-shadow:
+        0 0 6px var(--onair),
+        0 0 12px rgba(239, 68, 68, 0.5),
+        0 0 20px rgba(239, 68, 68, 0.2);
+    }
+    100% {
+      box-shadow:
+        0 0 8px var(--onair),
+        0 0 16px rgba(239, 68, 68, 0.7),
+        0 0 28px rgba(239, 68, 68, 0.35);
+    }
+  }
+
+  /* ============================================
+     VARIANT 2: COLOR TEMPERATURE SHIFT
+     ============================================ */
+
+  .temp-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+  }
+
+  .temp-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+  }
+
+  .temp-bar.critical {
+    animation: temp-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes temp-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  /* ============================================
+     VARIANT 3: HYBRID (FUSE + COLOR)
+     ============================================ */
+
+  .hybrid-track {
+    background: transparent;
+  }
+
+  .hybrid-line {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    height: 2px;
+    border-radius: 1px;
+    transition: width 0.1s linear, background 0.3s ease;
+  }
+
+  .hybrid-ember {
+    position: absolute;
+    top: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transform: translateX(50%);
+    transition: left 0.1s linear, background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hybrid-ember.phase-start {
+    background: var(--teal);
+    animation: hybrid-ember-teal 0.8s ease-in-out infinite alternate;
+  }
+
+  .hybrid-ember.phase-mid {
+    background: var(--accent);
+    animation: hybrid-ember-accent 0.8s ease-in-out infinite alternate;
+  }
+
+  .hybrid-ember.phase-critical {
+    background: var(--onair);
+    animation: hybrid-ember-critical 0.4s ease-in-out infinite alternate;
+  }
+
+  @keyframes hybrid-ember-teal {
+    0% {
+      box-shadow:
+        0 0 4px var(--teal),
+        0 0 8px rgba(20, 184, 166, 0.4),
+        0 0 12px rgba(20, 184, 166, 0.15);
+    }
+    100% {
+      box-shadow:
+        0 0 6px var(--teal),
+        0 0 12px rgba(20, 184, 166, 0.6),
+        0 0 18px rgba(20, 184, 166, 0.25);
+    }
+  }
+
+  @keyframes hybrid-ember-accent {
+    0% {
+      box-shadow:
+        0 0 4px var(--accent),
+        0 0 8px rgba(217, 119, 87, 0.4),
+        0 0 12px rgba(217, 119, 87, 0.15);
+    }
+    100% {
+      box-shadow:
+        0 0 6px var(--accent),
+        0 0 12px rgba(217, 119, 87, 0.6),
+        0 0 18px rgba(217, 119, 87, 0.25);
+    }
+  }
+
+  @keyframes hybrid-ember-critical {
+    0% {
+      box-shadow:
+        0 0 6px var(--onair),
+        0 0 12px rgba(239, 68, 68, 0.5),
+        0 0 20px rgba(239, 68, 68, 0.2);
+    }
+    100% {
+      box-shadow:
+        0 0 8px var(--onair),
+        0 0 16px rgba(239, 68, 68, 0.7),
+        0 0 28px rgba(239, 68, 68, 0.35);
+    }
+  }
+
+  /* ============================================
+     CONTROLS
+     ============================================ */
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .controls button {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--txt-secondary);
+    background: var(--surface);
+    border: 1px solid var(--surface-hover);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .controls button:hover {
+    color: var(--txt-primary);
+    background: var(--surface-hover);
+    border-color: var(--txt-muted);
+  }
+
+  .controls button:active {
+    transform: scale(0.97);
+  }
+
+  .progress-label {
+    font-family: 'SF Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--txt-muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+</head>
+<body>
+
+<h1>Showtime Progress Bar Concepts</h1>
+
+<div class="variants">
+  <!-- Variant 1: Burning Fuse -->
+  <div class="variant">
+    <span class="variant-label">Burning Fuse</span>
+    <div class="pill" id="pill-fuse">
+      <div class="tally"></div>
+      <span class="act-name">Deep Work</span>
+      <span class="timer" id="timer-fuse">00:30</span>
+      <div class="bar-track fuse-track">
+        <div class="fuse-line" id="fuse-line"></div>
+        <div class="ember" id="fuse-ember"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant 2: Color Temperature -->
+  <div class="variant">
+    <span class="variant-label">Color Temperature</span>
+    <div class="pill" id="pill-temp">
+      <div class="tally"></div>
+      <span class="act-name">Deep Work</span>
+      <span class="timer" id="timer-temp">00:30</span>
+      <div class="bar-track temp-track">
+        <div class="temp-bar" id="temp-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant 3: Hybrid -->
+  <div class="variant">
+    <span class="variant-label">Hybrid</span>
+    <div class="pill" id="pill-hybrid">
+      <div class="tally"></div>
+      <span class="act-name">Deep Work</span>
+      <span class="timer" id="timer-hybrid">00:30</span>
+      <div class="bar-track hybrid-track">
+        <div class="hybrid-line" id="hybrid-line"></div>
+        <div class="hybrid-ember" id="hybrid-ember"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button id="btn-reset">Reset</button>
+  <button id="btn-toggle">Pause</button>
+  <span class="progress-label" id="progress-label">100%</span>
+</div>
+
+<script>
+  const DURATION = 30000; // 30 seconds in ms
+  const TICK = 50;        // Update every 50ms for smooth animation
+
+  let startTime = Date.now();
+  let paused = false;
+  let pausedElapsed = 0;
+
+  // DOM refs
+  const timerFuse = document.getElementById('timer-fuse');
+  const timerTemp = document.getElementById('timer-temp');
+  const timerHybrid = document.getElementById('timer-hybrid');
+  const fuseLine = document.getElementById('fuse-line');
+  const fuseEmber = document.getElementById('fuse-ember');
+  const tempBar = document.getElementById('temp-bar');
+  const hybridLine = document.getElementById('hybrid-line');
+  const hybridEmber = document.getElementById('hybrid-ember');
+  const progressLabel = document.getElementById('progress-label');
+  const btnToggle = document.getElementById('btn-toggle');
+  const btnReset = document.getElementById('btn-reset');
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  // Interpolate between hex colors
+  function lerpColor(colorA, colorB, t) {
+    const a = hexToRgb(colorA);
+    const b = hexToRgb(colorB);
+    const r = Math.round(lerp(a.r, b.r, t));
+    const g = Math.round(lerp(a.g, b.g, t));
+    const bl = Math.round(lerp(a.b, b.b, t));
+    return 'rgb(' + r + ', ' + g + ', ' + bl + ')';
+  }
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return {
+      r: (n >> 16) & 255,
+      g: (n >> 8) & 255,
+      b: n & 255
+    };
+  }
+
+  // Temperature color: 100% teal -> 50% orange -> 0% red
+  function tempColor(pct) {
+    if (pct > 0.5) {
+      // teal to orange
+      var t = (1 - pct) / 0.5; // 0 at 100%, 1 at 50%
+      return lerpColor('#14b8a6', '#d97757', t);
+    } else {
+      // orange to red
+      var t = (0.5 - pct) / 0.5; // 0 at 50%, 1 at 0%
+      return lerpColor('#d97757', '#ef4444', t);
+    }
+  }
+
+  function formatTime(ms) {
+    var totalSec = Math.max(0, Math.ceil(ms / 1000));
+    var min = Math.floor(totalSec / 60);
+    var sec = totalSec % 60;
+    return (min < 10 ? '0' : '') + min + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function update() {
+    if (paused) return;
+
+    var elapsed = Date.now() - startTime;
+    var remaining = Math.max(0, DURATION - elapsed);
+    var pct = remaining / DURATION; // 1.0 -> 0.0
+
+    // Loop
+    if (remaining <= 0) {
+      startTime = Date.now();
+      return;
+    }
+
+    var timeStr = formatTime(remaining);
+    timerFuse.textContent = timeStr;
+    timerTemp.textContent = timeStr;
+    timerHybrid.textContent = timeStr;
+    progressLabel.textContent = Math.round(pct * 100) + '%';
+
+    var isCritical = pct < 0.2;
+
+    // --- Variant 1: Burning Fuse ---
+    var trackWidth = fuseLine.parentElement.offsetWidth;
+    var lineWidth = pct * trackWidth;
+    fuseLine.style.width = lineWidth + 'px';
+
+    var emberLeft = (1 - pct) * trackWidth - 3;
+    fuseEmber.style.left = Math.max(0, emberLeft) + 'px';
+
+    if (isCritical) {
+      fuseEmber.classList.add('critical');
+    } else {
+      fuseEmber.classList.remove('critical');
+    }
+
+    // --- Variant 2: Color Temperature ---
+    var color = tempColor(pct);
+    tempBar.style.backgroundColor = color;
+
+    if (isCritical) {
+      tempBar.classList.add('critical');
+    } else {
+      tempBar.classList.remove('critical');
+    }
+
+    // --- Variant 3: Hybrid ---
+    var hybridTrackWidth = hybridLine.parentElement.offsetWidth;
+    var hybridWidth = pct * hybridTrackWidth;
+    var hybridColor = tempColor(pct);
+
+    hybridLine.style.width = hybridWidth + 'px';
+    hybridLine.style.background = 'linear-gradient(90deg, ' +
+      lerpColor(hybridColor, '#ffffff', 0.15) + ' 0%, ' +
+      hybridColor + ' 100%)';
+
+    var hybridEmberLeft = (1 - pct) * hybridTrackWidth - 3;
+    hybridEmber.style.left = Math.max(0, hybridEmberLeft) + 'px';
+
+    // Phase classes for hybrid ember
+    hybridEmber.classList.remove('phase-start', 'phase-mid', 'phase-critical');
+    if (isCritical) {
+      hybridEmber.classList.add('phase-critical');
+    } else if (pct < 0.5) {
+      hybridEmber.classList.add('phase-mid');
+    } else {
+      hybridEmber.classList.add('phase-start');
+    }
+  }
+
+  // Timer color shifts
+  function updateTimerColors(pct) {
+    var isCritical = pct < 0.2;
+    var color = isCritical ? '#ef4444' : (pct < 0.35 ? '#f59e0b' : '#e8e6e0');
+    timerFuse.style.color = color;
+    timerTemp.style.color = color;
+    timerHybrid.style.color = color;
+  }
+
+  setInterval(function () {
+    if (!paused) {
+      var elapsed = Date.now() - startTime;
+      var remaining = Math.max(0, DURATION - elapsed);
+      var pct = remaining / DURATION;
+      update();
+      updateTimerColors(pct);
+    }
+  }, TICK);
+
+  // Controls
+  btnToggle.addEventListener('click', function () {
+    if (paused) {
+      // Resume: adjust startTime so elapsed stays the same
+      startTime = Date.now() - pausedElapsed;
+      paused = false;
+      btnToggle.textContent = 'Pause';
+    } else {
+      pausedElapsed = Date.now() - startTime;
+      paused = true;
+      btnToggle.textContent = 'Resume';
+    }
+  });
+
+  btnReset.addEventListener('click', function () {
+    startTime = Date.now();
+    pausedElapsed = 0;
+    paused = false;
+    btnToggle.textContent = 'Pause';
+    update();
+  });
+
+  // Initial render
+  update();
+</script>
+</body>
+</html>
