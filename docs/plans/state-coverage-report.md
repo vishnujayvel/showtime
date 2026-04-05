@@ -1,6 +1,6 @@
 # State Machine Coverage Report
 
-> Generated: 2026-04-05 01:55:37 UTC
+> Generated: 2026-04-05 19:57:49 UTC
 > Source: `src/renderer/machines/showMachine.ts`
 > Run: `bun run scripts/state-coverage-report.ts`
 
@@ -32,6 +32,11 @@ Every state and substate in the machine, with transition and test counts.
     ✅ show.animation.idle — 2 events, 2 tested
     ✅ show.animation.cold_open — 1 events, 1 tested
     ✅ show.animation.going_live — 1 events, 1 tested
+  ✅ show.overlay (compound) — 1 events, 1 tested
+    ✅ show.overlay.none — 3 events, 3 tested
+    ✅ show.overlay.history — 1 events, 1 tested
+    ✅ show.overlay.settings — 1 events, 1 tested
+    ✅ show.overlay.onboarding — 1 events, 1 tested
 ```
 
 ## 2. Transition Matrix
@@ -153,6 +158,16 @@ Legend:
 | TRIGGER_COLD_OPEN | `Y` | `W` | `W` |
 | TRIGGER_GOING_LIVE | `Y` | `W` | `W` |
 
+### overlay
+
+| Event | overlay.none | overlay.history | overlay.settings | overlay.onboarding |
+| --- | --- | --- | --- | --- |
+| CLOSE_OVERLAY | `W` | `Y` | `Y` | `Y` |
+| RESET | `Y` | `Y` | `Y` | `Y` |
+| VIEW_HISTORY | `Y` | `W` | `W` | `W` |
+| VIEW_ONBOARDING | `Y` | `W` | `W` | `W` |
+| VIEW_SETTINGS | `Y` | `W` | `W` | `W` |
+
 ## 3. Guard Coverage
 
 Named guards defined in the machine and their test coverage.
@@ -179,13 +194,20 @@ States with limited or no outgoing transitions (potential UX traps).
 
 | Metric | Count |
 | --- | --- |
-| Total states (all) | 23 |
-| Leaf (atomic) states | 17 |
-| Total transitions | 82 |
-| Unique events | 34 |
-| Reachable leaf states from initial | 17 / 17 |
-| Unreachable leaf states | 0 |
+| Total states (all) | 28 |
+| Leaf (atomic) states | 21 |
+| Total transitions | 89 |
+| Unique events | 38 |
+| Reachable leaf states from initial | 17 / 21 |
+| Unreachable leaf states | 4 |
 | States with only one exit | 3 |
+
+### Unreachable States
+
+- `show.overlay.none`
+- `show.overlay.history`
+- `show.overlay.settings`
+- `show.overlay.onboarding`
 
 ### States With Only One Exit (potential UX traps)
 
@@ -202,6 +224,7 @@ For each event type, which test files reference it.
 | `ADD_ACT` | ✅ | showMachine.test.ts, showStore.test.ts, stateMachine.test.ts |
 | `CALL_SHOW_EARLY` | ✅ | showMachine.test.ts, showStore.test.ts, stateMachine.test.ts, beatCheckForceExpand.test.ts, verdictLogic.test.ts |
 | `CELEBRATION_DONE` | ✅ | showMachine.test.ts, restoreShow.test.ts |
+| `CLOSE_OVERLAY` | ✅ | showMachine.test.ts |
 | `COMPLETE_ACT` | ✅ | showMachine.test.ts, xstate-bug-batch.test.ts, showStore.test.ts, inspect-drop-detection.test.ts, stateMachine.test.ts, beatCheckForceExpand.test.ts, restoreShow.test.ts, components.test.tsx, audioAndPolish.test.tsx, statePersistence.test.ts, verdictLogic.test.ts, useTraySync.test.ts |
 | `COMPLETE_COLD_OPEN` | ✅ | showMachine.test.ts, showStore.test.ts |
 | `COMPLETE_GOING_LIVE` | ✅ | showMachine.test.ts, showStore.test.ts |
@@ -233,8 +256,11 @@ For each event type, which test files reference it.
 | `TRIGGER_COLD_OPEN` | ✅ | showMachine.test.ts, xstate-bug-batch.test.ts, showStore.test.ts, inspect-drop-detection.test.ts |
 | `TRIGGER_GOING_LIVE` | ✅ | showMachine.test.ts, xstate-bug-batch.test.ts, showStore.test.ts |
 | `UPDATE_ACT` | ✅ | updateAct.test.ts |
+| `VIEW_HISTORY` | ✅ | showMachine.test.ts |
+| `VIEW_ONBOARDING` | ✅ | showMachine.test.ts |
+| `VIEW_SETTINGS` | ✅ | showMachine.test.ts |
 
-**Event coverage: 34/34 (100.0%)**
+**Event coverage: 38/38 (100.0%)**
 
 ## Summary
 
@@ -242,25 +268,19 @@ For each event type, which test files reference it.
 | --- | --- |
 | Machine | `showMachine` (XState v5, parallel) |
 | Top-level regions | phase, animation |
-| Total states | 23 |
-| Leaf states | 17 |
-| Total transitions | 82 |
+| Total states | 28 |
+| Leaf states | 21 |
+| Total transitions | 89 |
 | Named guards | 7 |
 | Inline guards | 21 |
-| Event types | 34 |
+| Event types | 38 |
 | Event test coverage | 100.0% |
 | State-event test coverage | 100.0% |
-| Reachability | 17/17 leaf states reachable |
+| Reachability | 17/21 leaf states reachable |
 
 ## 7. Shadow State Detection
 
 Scans `App.tsx` for `useState` patterns that control view rendering outside XState.
 These are bugs — every full-screen view must be a machine state. See CLAUDE.md rule.
 
-**⚠️ 3 shadow state(s) found:**
-
-- `showOnboarding` — controls rendering in App.tsx but is NOT in the XState machine
-- `showHistory` — controls rendering in App.tsx but is NOT in the XState machine
-- `showSettings` — controls rendering in App.tsx but is NOT in the XState machine
-
-**Action:** Move these into the XState machine as proper states or a parallel region.
+✅ No shadow states detected. All view routing goes through XState.

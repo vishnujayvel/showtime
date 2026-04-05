@@ -80,6 +80,11 @@ export type ShowMachineEvent =
   | { type: 'CONFIRM_LINEUP_EDIT'; acts: Act[] }
   // View tier
   | { type: 'SET_VIEW_TIER'; tier: ViewTier }
+  // Overlay views (history, settings, onboarding)
+  | { type: 'VIEW_HISTORY' }
+  | { type: 'VIEW_SETTINGS' }
+  | { type: 'VIEW_ONBOARDING' }
+  | { type: 'CLOSE_OVERLAY' }
   // Auto-resume from DB
   | { type: 'RESTORE_SHOW'; targetPhase: ShowPhase; context: Partial<ShowMachineContext> }
 
@@ -957,6 +962,38 @@ export const showMachine = setup({
         },
       },
     },
+
+    // ─── Overlay Region (parallel) — history, settings, onboarding ───
+    overlay: {
+      initial: 'none',
+      on: {
+        RESET: '.none',
+      },
+      states: {
+        none: {
+          on: {
+            VIEW_HISTORY: 'history',
+            VIEW_SETTINGS: 'settings',
+            VIEW_ONBOARDING: 'onboarding',
+          },
+        },
+        history: {
+          on: {
+            CLOSE_OVERLAY: 'none',
+          },
+        },
+        settings: {
+          on: {
+            CLOSE_OVERLAY: 'none',
+          },
+        },
+        onboarding: {
+          on: {
+            CLOSE_OVERLAY: 'none',
+          },
+        },
+      },
+    },
   },
 })
 
@@ -965,7 +1002,7 @@ export const showMachine = setup({
 export function createShowActor(context?: Partial<ShowMachineContext>) {
   return createActor(showMachine, {
     input: context,
-    ...(context ? { snapshot: showMachine.resolveState({ value: { phase: 'no_show', animation: 'idle' }, context: { ...createInitialContext(), ...context } }) } : {}),
+    ...(context ? { snapshot: showMachine.resolveState({ value: { phase: 'no_show', animation: 'idle', overlay: 'none' }, context: { ...createInitialContext(), ...context } }) } : {}),
   })
 }
 
@@ -994,6 +1031,12 @@ export function getWritersRoomStep(stateValue: Record<string, unknown> | string)
 /** Check if a specific animation is active */
 export function isAnimationActive(stateValue: Record<string, unknown>, animation: 'cold_open' | 'going_live'): boolean {
   return (stateValue as { animation: string }).animation === animation
+}
+
+/** Extract the current overlay state */
+export type OverlayState = 'none' | 'history' | 'settings' | 'onboarding'
+export function getOverlayFromState(stateValue: Record<string, unknown>): OverlayState {
+  return ((stateValue as { overlay?: string }).overlay ?? 'none') as OverlayState
 }
 
 // ─── Verdict Messages Export ───

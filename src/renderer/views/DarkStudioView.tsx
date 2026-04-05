@@ -77,11 +77,7 @@ function getTemporalGreeting(todayShow: PersistedShowInfo | null): { heading: st
   }
 }
 
-interface DarkStudioViewProps {
-  onShowHistory?: () => void
-}
-
-export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
+export function DarkStudioView() {
   const send = useShowSend()
   const triggerColdOpen = useCallback(() => send({ type: 'TRIGGER_COLD_OPEN' }), [send])
   const todayShow = useMemo(getTodayPersistedShow, [])
@@ -159,11 +155,9 @@ export function DarkStudioView({ onShowHistory }: DarkStudioViewProps) {
               Enter the Writer&apos;s Room
             </Button>
           )}
-          {onShowHistory && (
-            <Button variant="ghost_muted" onClick={onShowHistory}>
-              Past Shows
-            </Button>
-          )}
+          <Button variant="ghost_muted" onClick={() => send({ type: 'VIEW_HISTORY' })}>
+            Past Shows
+          </Button>
         </motion.div>
       </motion.div>
     </div>
