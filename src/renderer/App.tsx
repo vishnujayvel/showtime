@@ -147,7 +147,7 @@ export default function App() {
     if (phase === 'no_show') {
       hydrateFromDB()
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- one-time startup check
+  }, []) // one-time startup check
 
   // ─── Dynamic window sizing via IPC ───
   useEffect(() => {
