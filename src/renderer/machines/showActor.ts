@@ -21,7 +21,7 @@ import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, V
 
 const PERSIST_KEY = 'showtime-show-state'
 /** Increment when machine shape changes to invalidate old persisted state. */
-export const PERSIST_VERSION = 3
+export const PERSIST_VERSION = 4
 const TRANSIENT_KEYS = new Set(['beatCheckPending', 'celebrationActive'])
 
 /** Valid top-level phase states in the show machine. */
@@ -198,6 +198,7 @@ function buildSnapshot(ctx: ShowMachineContext, phase: string) {
     beatsLocked: ctx.beatsLocked,
     beatThreshold: ctx.beatThreshold,
     startedAt: ctx.showStartedAt,
+    endedAt: ctx.showEndedAt,
     planText: null as string | null,
     acts: ctx.acts.map((a) => ({
       id: a.id,

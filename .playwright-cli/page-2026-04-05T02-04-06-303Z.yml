@@ -1,0 +1,49 @@
+- generic [ref=e1]:
+  - link "Sign in" [ref=e6] [cursor=pointer]:
+    - /url: https://accounts.google.com/ServiceLogin?passive=1209600&continue=https://gemini.google.com/app&followup=https://gemini.google.com/app&ec=GAZAkgU
+  - main [ref=e8]:
+    - button "Main menu" [ref=e10] [cursor=pointer]:
+      - img [ref=e11]: menu
+    - generic [ref=e15]:
+      - navigation [ref=e16]:
+        - generic [ref=e19]:
+          - group [ref=e20]:
+            - generic [ref=e21]:
+              - link "New chat" [disabled]:
+                - /url: /app
+                - generic:
+                  - generic:
+                    - img: edit_square
+          - group [ref=e22]:
+            - button "Settings & help" [ref=e24] [cursor=pointer]:
+              - img [ref=e27]: settings_2
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - heading "Conversation with Gemini" [level=1] [ref=e38]
+          - img [ref=e51]
+        - generic [ref=e63]:
+          - group [ref=e64]:
+            - generic [ref=e67]:
+              - textbox "Enter a prompt for Gemini" [active] [ref=e72]:
+                - text: Ask Gemini
+                - paragraph [ref=e73]
+              - generic [ref=e75]:
+                - button "Open mode picker" [ref=e78]:
+                  - generic [ref=e80]:
+                    - generic [ref=e81]: Fast
+                    - img [ref=e82]: keyboard_arrow_down
+                - generic [ref=e85]:
+                  - button "Microphone" [ref=e88] [cursor=pointer]:
+                    - img [ref=e90]: mic
+                  - text: send
+          - paragraph [ref=e95]:
+            - link "Google Terms Opens in a new window" [ref=e96] [cursor=pointer]:
+              - /url: https://policies.google.com/terms
+              - text: Google Terms
+              - generic [ref=e97]: Opens in a new window
+            - text: and the
+            - link "Google Privacy Policy Opens in a new window" [ref=e98] [cursor=pointer]:
+              - /url: https://policies.google.com/privacy
+              - text: Google Privacy Policy
+              - generic [ref=e99]: Opens in a new window
+            - text: apply. Gemini is AI and can make mistakes.
