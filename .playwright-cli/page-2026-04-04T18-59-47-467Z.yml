@@ -1,0 +1,66 @@
+- generic [ref=e1]:
+  - generic [ref=e2]: Burning Fuse Progress Bar
+  - paragraph [ref=e3]: The burning fuse at every Showtime view size, synced to one countdown. Watch the urgency ramp as it burns down.
+  - generic [ref=e4]:
+    - generic [ref=e5]: 1. Pill View
+    - generic [ref=e6]: 320 x 48px · rounded-full
+    - generic [ref=e7]:
+      - generic [ref=e9]: Deep Work
+      - generic [ref=e10]: 00:05
+      - generic [ref=e11]: ★
+      - generic [ref=e12]:
+        - img [ref=e14]
+        - img [ref=e17]
+  - generic [ref=e23]:
+    - generic [ref=e24]: 2. Compact View
+    - generic [ref=e25]: 340 x 140px · rounded-xl
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e30]: ON AIR
+        - generic [ref=e31]: Act 2 of 5
+      - generic [ref=e32]:
+        - generic [ref=e33]: Deep Work
+        - generic [ref=e34]: 00:05
+        - generic [ref=e35]: ★★☆☆☆
+  - generic [ref=e41]:
+    - generic [ref=e42]: 3. Expanded View — Timer Panel
+    - generic [ref=e43]: 560 x ~300px · rounded-xl
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e49]: ON AIR
+          - generic [ref=e50]:
+            - generic [ref=e51]: Deep Work
+            - generic [ref=e52]: "|"
+            - generic [ref=e53]: Act 2
+        - generic [ref=e54]:
+          - generic [ref=e55]: "Next:"
+          - generic [ref=e56]: Admin — 15m
+      - generic [ref=e57]:
+        - generic [ref=e58]: 00:05
+        - generic [ref=e60]: ★★☆☆☆
+      - generic [ref=e66]:
+        - generic [ref=e67]: 00:26 elapsed
+        - generic [ref=e68]: 00:05 remaining
+  - generic [ref=e69]:
+    - generic [ref=e70]: 4. Beat Check Modal
+    - generic [ref=e71]: 380px · rounded-xl · static fuse (~70% consumed)
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - generic [ref=e74]: Beat Check
+        - generic [ref=e77]:
+          - text: Did you stay present during
+          - emphasis [ref=e78]: Deep Work
+          - text: "?"
+      - generic [ref=e79]:
+        - button "★ Lock Beat" [ref=e80] [cursor=pointer]
+        - button "Skip Beat" [ref=e81] [cursor=pointer]
+      - generic [ref=e87]: 70% of act time used
+  - generic [ref=e88]:
+    - button "Reset" [ref=e89] [cursor=pointer]
+    - button "Pause at 20%" [ref=e90] [cursor=pointer]
+    - generic [ref=e91]: 13%
+    - generic [ref=e92]:
+      - button "1x" [ref=e93] [cursor=pointer]
+      - button "3x" [active] [ref=e94] [cursor=pointer]
+      - button "10x" [ref=e95] [cursor=pointer]
