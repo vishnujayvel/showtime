@@ -507,6 +507,46 @@ describe('showMachine', () => {
     })
   })
 
+  // ─── showEndedAt (#228) ───
+
+  describe('showEndedAt timestamp', () => {
+    it('sets showEndedAt when entering strike via STRIKE', () => {
+      setupLive(actor)
+      const before = Date.now()
+      actor.send({ type: 'STRIKE' })
+      const after = Date.now()
+      expect(getPhase(actor)).toBe('strike')
+      const { showEndedAt } = getContext(actor)
+      expect(showEndedAt).toBeGreaterThanOrEqual(before)
+      expect(showEndedAt).toBeLessThanOrEqual(after)
+    })
+
+    it('sets showEndedAt when calling show early from director', () => {
+      setupLive(actor)
+      actor.send({ type: 'ENTER_DIRECTOR' })
+      const before = Date.now()
+      actor.send({ type: 'CALL_SHOW_EARLY' })
+      const after = Date.now()
+      expect(getPhase(actor)).toBe('strike')
+      const { showEndedAt } = getContext(actor)
+      expect(showEndedAt).toBeGreaterThanOrEqual(before)
+      expect(showEndedAt).toBeLessThanOrEqual(after)
+    })
+
+    it('showEndedAt is null before strike', () => {
+      setupLive(actor)
+      expect(getContext(actor).showEndedAt).toBeNull()
+    })
+
+    it('showEndedAt resets to null on RESET', () => {
+      setupLive(actor)
+      actor.send({ type: 'STRIKE' })
+      expect(getContext(actor).showEndedAt).not.toBeNull()
+      actor.send({ type: 'RESET' })
+      expect(getContext(actor).showEndedAt).toBeNull()
+    })
+  })
+
   // ─── Reset ───
 
   describe('reset', () => {

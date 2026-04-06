@@ -30,6 +30,7 @@ export interface ShowMachineContext {
   timerPausedRemaining: number | null
   showDate: string
   showStartedAt: number | null
+  showEndedAt: number | null
   verdict: ShowVerdict | null
   viewTier: ViewTier
   beatCheckPending: boolean
@@ -129,6 +130,7 @@ export function createInitialContext(): ShowMachineContext {
     timerPausedRemaining: null,
     showDate: today(),
     showStartedAt: null,
+    showEndedAt: null,
     verdict: null,
     viewTier: 'expanded' as ViewTier,
     beatCheckPending: false,
@@ -329,6 +331,7 @@ export const showMachine = setup({
       currentActId: null,
       timerEndAt: null,
       timerPausedRemaining: null,
+      showEndedAt: Date.now(),
       verdict: 'SHOW_CALLED_EARLY' as ShowVerdict,
       viewTier: 'expanded' as ViewTier,
       beatCheckPending: false,
@@ -338,6 +341,7 @@ export const showMachine = setup({
       const verdict = computeVerdict(context.beatsLocked, context.beatThreshold)
       return {
         verdict,
+        showEndedAt: Date.now(),
         currentActId: null,
         timerEndAt: null,
         timerPausedRemaining: null,
