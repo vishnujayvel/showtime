@@ -14,9 +14,17 @@ Director Mode can be triggered when:
 
 You can also open Director Mode yourself at any time. You don't have to wait for the app to suggest it.
 
-## The four options
+## The six options
 
-Director Mode presents four choices. All of them are valid. None of them is failure.
+Director Mode presents six choices. All of them are valid. None of them is failure.
+
+### Edit the lineup
+
+*"The plan needs adjusting."*
+
+Sometimes the lineup you built this morning doesn't match this afternoon's reality. Meetings got added, energy shifted, priorities changed. The Director can reopen the lineup for editing — add acts, remove acts, reorder the sequence — without resetting the whole show.
+
+This is the most common Director action. It's not a sign the original plan was bad. It's a sign the Director is paying attention.
 
 ### Skip to next Act
 
@@ -49,6 +57,14 @@ There is no timer on this break. There is no limit. Rest costs zero, and that's 
 Not a break. Not an intermission. Just five minutes where the only instruction is to breathe. The screen goes calm. The clock pauses. Nothing is expected of you.
 
 Sometimes the ADHD brain doesn't need a strategy or a pivot. It needs five minutes where nobody -- including itself -- is asking it to do anything.
+
+### Reset today's show
+
+*"Start fresh. Clean slate."*
+
+Sometimes the show has gone so far off-script that patching it isn't the right call. The Director can reset the entire show — clear the lineup, reset the timer, wipe the beats — and start over from Dark Studio.
+
+This requires confirmation (it can't be undone). But it's there because sometimes the most compassionate thing is a clean start, not a rescue mission.
 
 ## Why this works
 
