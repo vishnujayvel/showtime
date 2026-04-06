@@ -474,7 +474,7 @@ describe('ControlPlane', () => {
       `init-${tabId}`,
       expect.objectContaining({
         prompt: 'hi',
-        maxTurns: 1,
+        maxTurns: 3,
       }),
     )
   })

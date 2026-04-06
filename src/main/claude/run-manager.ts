@@ -385,7 +385,7 @@ export class RunManager extends EventEmitter {
 
     // Try to claim a pre-warmed process (only for fresh runs, not resumes)
     let child: ChildProcess
-    const warmChild = !options.sessionId ? this.getWarmProcess() : null
+    const warmChild = !options.sessionId && !options.maxTurns ? this.getWarmProcess() : null
     if (warmChild) {
       child = warmChild
       log(`Reusing pre-warmed process PID: ${child.pid}`)

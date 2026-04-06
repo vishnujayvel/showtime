@@ -237,7 +237,7 @@ export function WritersRoomView() {
 
     sendMessage(prompt, {
       displayText: hasUserContext ? '✨ Build my lineup' : '✨ What should we work on?',
-      maxTurns: hasUserContext ? 1 : undefined,
+      maxTurns: hasUserContext ? 3 : undefined,
     })
   }
 
