@@ -1,0 +1,129 @@
+- generic [ref=e1]:
+  - 'button "Google Account: Vishnu Jayavel (vishnuj81093@gmail.com)" [ref=e8] [cursor=pointer]':
+    - img [ref=e10]
+    - img [ref=e16]
+  - main [ref=e18]:
+    - generic:
+      - button "Main menu" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]: menu
+      - button "New chat" [disabled] [ref=e25]:
+        - generic [ref=e27]: Gemini
+    - generic [ref=e32]:
+      - button "Temporary chat" [ref=e35] [cursor=pointer]:
+        - img [ref=e38]
+      - generic [ref=e43]:
+        - button "PRO" [disabled]:
+          - generic: PRO
+    - generic [ref=e45]:
+      - navigation [ref=e46]:
+        - generic [ref=e50]:
+          - group [ref=e51]:
+            - link "New chat" [ref=e53] [cursor=pointer]:
+              - /url: /app
+              - img [ref=e56]: edit_square
+          - group [ref=e59]:
+            - button "Settings & help" [ref=e61] [cursor=pointer]:
+              - img [ref=e64]: settings_2
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - heading "Conversation with Gemini" [level=1] [ref=e76]
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e88]: Hi Vishnu
+              - heading "What should we try today?" [level=1] [ref=e95]
+            - generic [ref=e103]:
+              - button "For you, button, tap to use tool" [ref=e105] [cursor=pointer]:
+                - generic [ref=e106]: For you
+              - button "🖼️ Create image, button, tap to use tool" [ref=e108] [cursor=pointer]:
+                - generic [ref=e109]: 🖼️ Create image
+              - button "🎸 Create music, button, tap to use tool" [ref=e111] [cursor=pointer]:
+                - generic [ref=e112]: 🎸 Create music
+              - button "Help me learn, button, tap to use tool" [ref=e114] [cursor=pointer]:
+                - generic [ref=e115]: Help me learn
+              - button "Boost my day, button, tap to use tool" [ref=e117] [cursor=pointer]:
+                - generic [ref=e118]: Boost my day
+              - button "Create video, button, tap to use tool" [ref=e120] [cursor=pointer]:
+                - generic [ref=e121]: Create video
+        - generic [ref=e122]:
+          - group [ref=e123]:
+            - generic [ref=e126]:
+              - textbox "Enter a prompt for Gemini" [ref=e131]:
+                - paragraph [ref=e132]: "I'm building a living documentation system for an Electron/TypeScript desktop app. The codebase has 60+ markdown documents across 7 directories, a VitePress docs site, XState v5 state machines, Drizzle ORM with SQLite (7 tables), and React. I need comprehensive research on these five areas:"
+                - paragraph [ref=e174]
+                - paragraph [ref=e175]: "**0. Does an integrated open source framework already exist that handles most or all of this?**"
+                - paragraph [ref=e176]: "- I'm looking for any OSS project or framework that maintains living documentation as code evolves — where AI agents or automation keep docs in sync with the codebase"
+                - paragraph [ref=e177]: "- Specifically: systems that maintain product/domain docs, UI/technical docs, entity models, and state diagrams together as a unified documentation system"
+                - paragraph [ref=e178]: "- Examples might include: docs-as-code platforms with built-in drift detection, AI-powered doc maintenance agents, documentation engineering frameworks"
+                - paragraph [ref=e179]: "- Think Backstage (Spotify) for service catalogs, but for application-level documentation — entity models, state machines, customer journeys, architecture docs"
+                - paragraph [ref=e180]: "- Also interested in any emerging agent-based doc maintenance tools (e.g., using LLMs to detect when code changes invalidate docs and auto-propose updates)"
+                - paragraph [ref=e181]: "- Self-hosted/OSS only, not SaaS"
+                - paragraph [ref=e182]
+                - paragraph [ref=e183]: "**1. Open source frameworks for markdown frontmatter validation and staleness detection**"
+                - paragraph [ref=e184]: "- Tools like remark-lint, markdownlint, markdown-it, unified.js ecosystem"
+                - paragraph [ref=e185]: "- How to enforce a custom frontmatter schema (fields like status, last-verified, anchored-to, created)"
+                - paragraph [ref=e186]: "- Graduated enforcement: hard block on missing frontmatter, warnings on age-based staleness"
+                - paragraph [ref=e187]: "- Integration with build pipelines (Vite, VitePress, npm scripts)"
+                - paragraph [ref=e188]: "- Any existing docs-as-code frameworks that handle doc freshness natively"
+                - paragraph [ref=e189]
+                - paragraph [ref=e190]: "**2. Tools that auto-generate diagrams from TypeScript source code**"
+                - paragraph [ref=e191]: "- ER diagram generation from TypeScript interfaces/types or Drizzle ORM schemas"
+                - paragraph [ref=e192]: "- State machine visualization from XState v5 machine definitions (not just Stately Inspector — looking for static diagram generation for docs)"
+                - paragraph [ref=e193]: "- Mermaid, D2, PlantUML, or other diagram-as-code formats that can be generated from TS AST"
+                - paragraph [ref=e194]: "- Tools like ts-morph, TypeDoc, or custom AST walkers for extracting type relationships"
+                - paragraph [ref=e195]: "- Any tools specifically designed for XState to Mermaid/SVG conversion"
+                - paragraph [ref=e196]
+                - paragraph [ref=e197]: "**3. Best practices for separating product-level state models from UI state in documentation**"
+                - paragraph [ref=e198]: "- How mature teams document domain state (entity lifecycle, business rules) separately from UI state (component state, routing, animations)"
+                - paragraph [ref=e199]: "- Examples from open source projects that maintain both a domain model doc and a UI state doc"
+                - paragraph [ref=e200]: "- Patterns for bridging the two: how to show when the domain entity enters state X, the UI transitions to view Y"
+                - paragraph [ref=e201]: "- Any established taxonomy or vocabulary for this separation (DDD aggregates vs UI state machines)"
+                - paragraph [ref=e202]
+                - paragraph [ref=e203]: "**4. Doc gardening automation — CI/CD lint rules for code-doc drift detection**"
+                - paragraph [ref=e204]: "- How to cross-reference markdown anchored-to fields against actual code symbols (grep-based, AST-based, or otherwise)"
+                - paragraph [ref=e205]: "- Existing GitHub Actions or CI patterns that detect when a referenced code symbol changes and flag the associated doc as needing review"
+                - paragraph [ref=e206]: "- How projects like Rust, Kubernetes, or other large OSS projects handle doc-code drift"
+                - paragraph [ref=e207]: "- Custom remark/rehype plugins for validating frontmatter fields against external data sources"
+                - paragraph [ref=e208]
+                - paragraph [ref=e209]: "For each area, I want: specific tool names with GitHub links, pros/cons, maturity level, and whether they work with a TypeScript/Vite/VitePress stack. Prioritize battle-tested open source over new/experimental tools. If no single framework covers everything, recommend the best composable stack."
+              - generic [ref=e133]:
+                - button "Open upload file menu" [ref=e138] [cursor=pointer]:
+                  - img [ref=e139]: add_2
+                - button "Tools" [ref=e145]:
+                  - img [ref=e146]: page_info
+                  - generic [ref=e149]: Tools
+              - button "Expand input to Fullscreen" [ref=e212] [cursor=pointer]:
+                - img [ref=e213]: expand_content
+              - generic [ref=e152]:
+                - button "Open mode picker" [expanded] [ref=e155] [cursor=pointer]:
+                  - generic [ref=e157]:
+                    - generic [ref=e158]: Pro
+                    - img [ref=e159]: keyboard_arrow_down
+                - generic [ref=e162]:
+                  - text: mic
+                  - button "Send message" [ref=e217] [cursor=pointer]:
+                    - img [ref=e218]: send
+          - paragraph [ref=e172]
+  - menu [ref=e222]:
+    - generic [ref=e224]:
+      - generic [ref=e226]: Gemini 3
+      - menuitem "Fast Answers quickly" [ref=e227] [cursor=pointer]:
+        - generic [ref=e231]:
+          - generic [ref=e232]: Fast
+          - generic [ref=e233]: Answers quickly
+      - menuitem "Thinking Solves complex problems" [ref=e234] [cursor=pointer]:
+        - generic [ref=e238]:
+          - generic [ref=e239]: Thinking
+          - generic [ref=e240]: Solves complex problems
+      - menuitem "Pro Advanced math and code with 3.1 Pro" [active] [ref=e241] [cursor=pointer]:
+        - generic [ref=e243]:
+          - generic [ref=e245]:
+            - generic [ref=e246]: Pro
+            - generic [ref=e247]: Advanced math and code with 3.1 Pro
+          - img [ref=e248]: check_circle
+      - generic [ref=e249]:
+        - generic [ref=e250]:
+          - generic [ref=e251]: Google AI Ultra
+          - generic [ref=e252]: Get the highest access to models & features
+        - menuitem "Upgrade" [ref=e253] [cursor=pointer]:
+          - button "Upgrade" [ref=e255]:
+            - generic [ref=e256]: Upgrade

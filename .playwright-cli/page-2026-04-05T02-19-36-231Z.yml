@@ -1,0 +1,393 @@
+- generic [active] [ref=e1]:
+  - 'button "Google Account: Vishnu Jayavel (vishnuj81093@gmail.com)" [ref=e8] [cursor=pointer]':
+    - img [ref=e10]
+    - img [ref=e16]
+  - main [ref=e18]:
+    - generic:
+      - button "Main menu" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]: menu
+      - button "New chat" [ref=e25] [cursor=pointer]:
+        - generic [ref=e27]: Gemini
+    - generic [ref=e29]:
+      - generic [ref=e519]: Living Documentation System Research Plan
+      - generic [ref=e30]:
+        - link "Upgrade" [ref=e415]:
+          - img [ref=e416]: spark
+          - generic [ref=e418]: Upgrade
+        - generic [ref=e32]:
+          - button "Share conversation" [ref=e521] [cursor=pointer]:
+            - img [ref=e522]: share
+          - button "Open menu for conversation actions." [ref=e422] [cursor=pointer]:
+            - img [ref=e423]: more_vert
+    - generic [ref=e45]:
+      - navigation [ref=e46]:
+        - generic [ref=e50]:
+          - group [ref=e51]:
+            - link "New chat" [ref=e53] [cursor=pointer]:
+              - /url: /app
+              - img [ref=e56]: edit_square
+          - group [ref=e59]:
+            - button "Settings & help" [ref=e61] [cursor=pointer]:
+              - img [ref=e64]: settings_2
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - heading "Conversation with Gemini" [level=1] [ref=e76]
+            - generic [ref=e78]:
+              - generic [ref=e426]:
+                - generic [ref=e431]:
+                  - button "Copy prompt" [ref=e433] [cursor=pointer]:
+                    - img [ref=e434]: content_copy
+                  - generic [ref=e439]:
+                    - heading [level=2] [ref=e440]:
+                      - generic [ref=e441]: You said
+                      - paragraph [ref=e442]: "I'm building a living documentation system for an Electron/TypeScript desktop app. The codebase has 60+ markdown documents across 7 directories, a VitePress docs site, XState v5 state machines, Drizzle ORM with SQLite (7 tables), and React. I need comprehensive research on these five areas:"
+                      - paragraph [ref=e443]
+                      - paragraph [ref=e444]: "**0. Does an integrated open source framework already exist that handles most or all of this?**"
+                      - paragraph [ref=e445]: "- I'm looking for any OSS project or framework that maintains living documentation as code evolves — where AI agents or automation keep docs in sync with the codebase"
+                      - paragraph [ref=e446]: "- Specifically: systems that maintain product/domain docs, UI/technical docs, entity models, and state diagrams together as a unified documentation system"
+                      - paragraph [ref=e447]: "- Examples might include: docs-as-code platforms with built-in drift detection, AI-powered doc maintenance agents, documentation engineering frameworks"
+                      - paragraph [ref=e448]: "- Think Backstage (Spotify) for service catalogs, but for application-level documentation — entity models, state machines, customer journeys, architecture docs"
+                      - paragraph [ref=e449]: "- Also interested in any emerging agent-based doc maintenance tools (e.g., using LLMs to detect when code changes invalidate docs and auto-propose updates)"
+                      - paragraph [ref=e450]: "- Self-hosted/OSS only, not SaaS"
+                      - paragraph [ref=e451]
+                      - paragraph [ref=e452]: "**1. Open source frameworks for markdown frontmatter validation and staleness detection**"
+                      - paragraph [ref=e453]: "- Tools like remark-lint, markdownlint, markdown-it, unified.js ecosystem"
+                      - paragraph [ref=e454]: "- How to enforce a custom frontmatter schema (fields like status, last-verified, anchored-to, created)"
+                      - paragraph [ref=e455]: "- Graduated enforcement: hard block on missing frontmatter, warnings on age-based staleness"
+                      - paragraph [ref=e456]: "- Integration with build pipelines (Vite, VitePress, npm scripts)"
+                      - paragraph [ref=e457]: "- Any existing docs-as-code frameworks that handle doc freshness natively"
+                      - paragraph [ref=e458]
+                      - paragraph [ref=e459]: "**2. Tools that auto-generate diagrams from TypeScript source code**"
+                      - paragraph [ref=e460]: "- ER diagram generation from TypeScript interfaces/types or Drizzle ORM schemas"
+                      - paragraph [ref=e461]: "- State machine visualization from XState v5 machine definitions (not just Stately Inspector — looking for static diagram generation for docs)"
+                      - paragraph [ref=e462]: "- Mermaid, D2, PlantUML, or other diagram-as-code formats that can be generated from TS AST"
+                      - paragraph [ref=e463]: "- Tools like ts-morph, TypeDoc, or custom AST walkers for extracting type relationships"
+                      - paragraph [ref=e464]: "- Any tools specifically designed for XState to Mermaid/SVG conversion"
+                      - paragraph [ref=e465]
+                      - paragraph [ref=e466]: "**3. Best practices for separating product-level state models from UI state in documentation**"
+                      - paragraph [ref=e467]: "- How mature teams document domain state (entity lifecycle, business rules) separately from UI state (component state, routing, animations)"
+                      - paragraph [ref=e468]: "- Examples from open source projects that maintain both a domain model doc and a UI state doc"
+                      - paragraph [ref=e469]: "- Patterns for bridging the two: how to show when the domain entity enters state X, the UI transitions to view Y"
+                      - paragraph [ref=e470]: "- Any established taxonomy or vocabulary for this separation (DDD aggregates vs UI state machines)"
+                      - paragraph [ref=e471]
+                      - paragraph [ref=e472]: "**4. Doc gardening automation — CI/CD lint rules for code-doc drift detection**"
+                      - paragraph [ref=e473]: "- How to cross-reference markdown anchored-to fields against actual code symbols (grep-based, AST-based, or otherwise)"
+                      - paragraph [ref=e474]: "- Existing GitHub Actions or CI patterns that detect when a referenced code symbol changes and flag the associated doc as needing review"
+                      - paragraph [ref=e475]: "- How projects like Rust, Kubernetes, or other large OSS projects handle doc-code drift"
+                      - paragraph [ref=e476]: "- Custom remark/rehype plugins for validating frontmatter fields against external data sources"
+                      - paragraph [ref=e477]
+                      - paragraph [ref=e478]: "For each area, I want: specific tool names with GitHub links, pros/cons, maturity level, and whether they work with a TypeScript/Vite/VitePress stack. Prioritize battle-tested open source over new/experimental tools. If no single framework covers everything, recommend the best composable stack."
+                    - button "Expand" [ref=e479] [cursor=pointer]:
+                      - img [ref=e480]: expand_more
+                - generic [ref=e486]:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - button "Listen":
+                              - img: volume_up
+                        - menu
+                  - generic [ref=e487]:
+                    - generic [ref=e492]:
+                      - generic:
+                        - generic:
+                          - img
+                    - generic [ref=e494]:
+                      - button [ref=e501]:
+                        - generic [ref=e503]:
+                          - status:
+                            - generic: Show thinking
+                          - img [ref=e505]: expand_more
+                      - heading "Gemini said" [level=2] [ref=e508]
+                      - paragraph [ref=e600]:
+                        - text: I've put together a research plan. If you need to update it in any way, let me know.
+                        - generic [ref=e604]:
+                          - heading "Living Docs System Research" [level=3] [ref=e605]
+                          - generic [ref=e606]:
+                            - generic [ref=e607]:
+                              - generic [ref=e608]:
+                                - img [ref=e609]: select_window_2
+                                - generic [ref=e610]: Research Websites
+                              - generic [ref=e611]:
+                                - generic [ref=e612]: (1) Explore integrated open-source docs-as-code frameworks, self-hosted AI doc agents, and application-level alternatives to Backstage that maintain living documentation, entity models, and state diagrams. (2) Investigate tools for markdown frontmatter validation and staleness detection, focusing on the unified.js ecosystem and their capabilities to enforce custom schemas and integrate with VitePress build pipelines. (3) Find static diagram generation tools that parse TypeScript AST, specifically looking for ways to extract ER diagrams from Drizzle ORM schemas and convert XState v5 definitions into Mermaid, D2, or PlantUML formats. (4) Analyze best practices, Domain-Driven Design patterns, and examples from mature open-source projects regarding the separation and bridging of product-level domain state documentation versus UI component state. (5) Research CI/CD automation patterns and GitHub Actions for doc gardening, finding tools that detect code-doc drift by cross-referencing markdown anchors against code symbols. (6) Synthesize the findings to recommend either an integrated framework or a composable stack, detailing for each tool its maturity level, pros and cons, repositories, and compatibility with a TypeScript and VitePress environment.
+                                - button "More research plan details" [ref=e614] [cursor=pointer]:
+                                  - generic [ref=e615]: More
+                            - generic [ref=e619]:
+                              - img [ref=e620]: sort
+                              - generic [ref=e621]: Analyze Results
+                            - generic [ref=e624]:
+                              - img [ref=e625]: travel_explore
+                              - generic [ref=e626]: Create Report
+                          - generic [ref=e627]:
+                            - img [ref=e628]: schedule
+                            - generic [ref=e629]: Ready in a few mins
+                          - generic [ref=e630]:
+                            - button "Edit the research plan" [disabled]:
+                              - generic: Edit plan
+                            - button "Start research" [disabled]:
+                              - generic: Start research
+              - generic [ref=e631]:
+                - generic [ref=e636]:
+                  - button "Copy prompt" [ref=e638] [cursor=pointer]:
+                    - img [ref=e639]: content_copy
+                  - button "Edit" [ref=e723] [cursor=pointer]:
+                    - img [ref=e724]: edit
+                  - heading "You said Start research" [level=2] [ref=e645]:
+                    - generic [ref=e646]: You said
+                    - paragraph [ref=e647]: Start research
+                - generic [ref=e651]:
+                  - generic [ref=e652]:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - button "Listen":
+                              - img: volume_up
+                        - menu
+                    - generic [ref=e657]:
+                      - generic:
+                        - generic:
+                          - img
+                  - generic [ref=e660]:
+                    - heading "Gemini said" [level=2] [ref=e661]
+                    - paragraph [ref=e727]:
+                      - text: OK, starting now. As soon as your report is ready, I'll let you know. In the meantime, feel free to leave this chat.
+                      - generic [ref=e733] [cursor=pointer]:
+                        - generic [ref=e734]:
+                          - generic [ref=e736]:
+                            - generic:
+                              - img
+                          - img [ref=e737]: select_window_2
+                        - status [ref=e738]:
+                          - generic [ref=e739]: Living Docs System Research
+                          - generic [ref=e742]: Researching 37 websites...
+          - generic [ref=e122]:
+            - group [ref=e123]:
+              - generic [ref=e126]:
+                - textbox "Enter a prompt for Gemini" [ref=e342]:
+                  - text: What do you want to research?
+                  - paragraph [ref=e511]
+                - generic [ref=e133]:
+                  - button "Open upload file menu" [ref=e138] [cursor=pointer]:
+                    - img [ref=e139]: add_2
+                  - generic [ref=e144]:
+                    - text: page_info
+                    - button "Deselect Deep research" [ref=e385]:
+                      - img [ref=e386]: travel_explore
+                      - img [ref=e388]: close
+                - generic [ref=e152]:
+                  - button "Open mode picker" [ref=e155]:
+                    - generic [ref=e157]:
+                      - generic [ref=e158]: Pro
+                      - img [ref=e159]: keyboard_arrow_down
+                  - generic [ref=e162]:
+                    - text: mic
+                    - button "Stop response" [ref=e512] [cursor=pointer]:
+                      - text: send
+                      - img [ref=e668]: stop
+            - paragraph [ref=e515]: Gemini is AI and can make mistakes.
+        - generic [ref=e670]:
+          - generic [ref=e672]:
+            - generic [ref=e673]:
+              - img [ref=e674]: travel_explore
+              - heading "Living Docs System Research" [level=2] [ref=e675]
+              - separator [ref=e676]
+              - button "Show thinking" [ref=e677]:
+                - generic [ref=e678]: Show thinking
+                - img [ref=e679]: keyboard_arrow_down
+            - button "Close panel" [ref=e683] [cursor=pointer]:
+              - img [ref=e684]: close
+          - generic [ref=e688]:
+            - generic [ref=e743]:
+              - generic [ref=e744]:
+                - generic [ref=e745]:
+                  - img [ref=e747]: spark
+                  - separator [ref=e748]
+                - generic [ref=e749]:
+                  - generic [ref=e750]: Synthesizing Documentation Requirements
+                  - generic [ref=e751]: I am initiating a comprehensive evaluation of how to transform static documentation into a living system that evolves alongside an Electron and TypeScript codebase. I’m thinking through the challenge of unifying disparate technical assets—such as state machines, database schemas, and product docs—into a single, automated source of truth. My focus is on identifying self-hosted frameworks that act as a centralized catalog for application-level architecture, similar to how service registries operate for infrastructure.
+              - generic [ref=e752]:
+                - separator [ref=e754]
+                - generic [ref=e755]:
+                  - generic [ref=e756]: Identifying the Integration Gap
+                  - generic [ref=e757]: A significant hurdle I'm investigating is the potential lack of a single 'all-in-one' open-source solution for documentation drift. While many tools handle individual parts of the stack, bridging the gap between XState v5 definitions and static Mermaid diagrams, or Drizzle ORM schemas and entity-relationship docs, often requires custom automation. I am analyzing how to effectively separate domain-level state from UI-specific transitions to ensure the documentation remains readable for both product and engineering teams.
+              - generic [ref=e758]:
+                - separator [ref=e760]
+                - generic [ref=e761]:
+                  - generic [ref=e762]: Mapping the Technical Landscape
+                  - generic [ref=e763]: I am moving forward by researching specific automation patterns for 'doc gardening,' such as using custom plugins within the unified.js ecosystem to enforce metadata schemas and staleness thresholds. I will also be exploring how high-profile projects manage large-scale documentation freshness through CI/CD pipelines, specifically looking for methods to cross-reference code symbols with markdown anchors to flag outdated information automatically.
+              - generic [ref=e764]:
+                - separator [ref=e767]
+                - generic [ref=e769]:
+                  - generic [ref=e770]: Researching websites...
+                  - generic [ref=e771]:
+                    - link "latenode.com 11 Open Source AI Agent Frameworks That Will Transform Your Development (2025 Complete Guide) - Latenode" [ref=e773] [cursor=pointer]:
+                      - /url: https://latenode.com/blog/ai-agents-autonomous-systems/open-source-ai-agent-tools/11-open-source-ai-agent-frameworks-that-will-transform-your-development-2025-complete-guide
+                      - generic [ref=e774]: latenode.com
+                      - generic [ref=e775]: 11 Open Source AI Agent Frameworks That Will Transform Your Development (2025 Complete Guide) - Latenode
+                    - link "firecrawl.dev The Best Open Source Frameworks For Building AI Agents in 2026 - Firecrawl" [ref=e777] [cursor=pointer]:
+                      - /url: https://www.firecrawl.dev/blog/best-open-source-agent-frameworks
+                      - generic [ref=e778]: firecrawl.dev
+                      - generic [ref=e779]: The Best Open Source Frameworks For Building AI Agents in 2026 - Firecrawl
+                    - 'link "github.com livekit/agents: A framework for building realtime voice AI agents 🎙️ - GitHub" [ref=e781] [cursor=pointer]':
+                      - /url: https://github.com/livekit/agents
+                      - generic [ref=e782]: github.com
+                      - generic [ref=e783]: "livekit/agents: A framework for building realtime voice AI agents 🎙️ - GitHub"
+                    - 'link "arxiv.org RepoAgent: An LLM-Powered Open-Source Framework for Repository-level Code Documentation Generation - arXiv" [ref=e785] [cursor=pointer]':
+                      - /url: https://arxiv.org/html/2402.16667v1
+                      - generic [ref=e786]: arxiv.org
+                      - generic [ref=e787]: "RepoAgent: An LLM-Powered Open-Source Framework for Repository-level Code Documentation Generation - arXiv"
+                    - link "github.com Validate your Markdown frontmatter data against a JSON schema — remark-lint rule plugin - GitHub" [ref=e789] [cursor=pointer]:
+                      - /url: https://github.com/JulianCataldo/remark-lint-frontmatter-schema
+                      - generic [ref=e790]: github.com
+                      - generic [ref=e791]: Validate your Markdown frontmatter data against a JSON schema — remark-lint rule plugin - GitHub
+                    - link "unifiedjs.com remark-frontmatter - unified" [ref=e793] [cursor=pointer]:
+                      - /url: https://unifiedjs.com/explore/package/remark-frontmatter/
+                      - generic [ref=e794]: unifiedjs.com
+                      - generic [ref=e795]: remark-frontmatter - unified
+                    - link "discourse.gohugo.io How to validate frontmatter? - support - HUGO" [ref=e797] [cursor=pointer]:
+                      - /url: https://discourse.gohugo.io/t/how-to-validate-frontmatter/54085
+                      - generic [ref=e798]: discourse.gohugo.io
+                      - generic [ref=e799]: How to validate frontmatter? - support - HUGO
+                    - link "reddit.com Validate your Markdown frontmatter data against a JSON schema - remark plugin - Reddit" [ref=e801] [cursor=pointer]:
+                      - /url: https://www.reddit.com/r/Markdown/comments/wihxbl/validate_your_markdown_frontmatter_data_against_a/
+                      - generic [ref=e802]: reddit.com
+                      - generic [ref=e803]: Validate your Markdown frontmatter data against a JSON schema - remark plugin - Reddit
+                    - link "libhunt.com remark-lint-frontmatter-schema vs remark-parse-frontmatter - compare differences and reviews? | LibHunt" [ref=e805] [cursor=pointer]:
+                      - /url: https://www.libhunt.com/compare-remark-lint-frontmatter-schema-vs-remark-parse-frontmatter
+                      - generic [ref=e806]: libhunt.com
+                      - generic [ref=e807]: remark-lint-frontmatter-schema vs remark-parse-frontmatter - compare differences and reviews? | LibHunt
+                    - link "docs.github.com Creating Mermaid diagrams - GitHub Docs" [ref=e809] [cursor=pointer]:
+                      - /url: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams
+                      - generic [ref=e810]: docs.github.com
+                      - generic [ref=e811]: Creating Mermaid diagrams - GitHub Docs
+                    - 'link "github.com tomByrer/mermax: MermaidJS to XState (Finite State Machine) transformation - GitHub" [ref=e813] [cursor=pointer]':
+                      - /url: https://github.com/tomByrer/mermax
+                      - generic [ref=e814]: github.com
+                      - generic [ref=e815]: "tomByrer/mermax: MermaidJS to XState (Finite State Machine) transformation - GitHub"
+                    - 'link "github.com GitHub - mermaid-js/mermaid: Generation of diagrams like flowcharts or sequence diagrams from text in a similar manner as markdown" [ref=e817] [cursor=pointer]':
+                      - /url: https://github.com/mermaid-js/mermaid
+                      - generic [ref=e818]: github.com
+                      - generic [ref=e819]: "GitHub - mermaid-js/mermaid: Generation of diagrams like flowcharts or sequence diagrams from text in a similar manner as markdown"
+                    - 'link "github.com GitHub - statelyai/xstate: State machines, statecharts, and actors for complex logic" [ref=e821] [cursor=pointer]':
+                      - /url: https://github.com/statelyai/xstate
+                      - generic [ref=e822]: github.com
+                      - generic [ref=e823]: "GitHub - statelyai/xstate: State machines, statecharts, and actors for complex logic"
+                    - 'link "github.com Creation of diagrams during static side build using mermaidjs (or equivalent) · vercel next.js · Discussion #12837 - GitHub" [ref=e825] [cursor=pointer]':
+                      - /url: https://github.com/vercel/next.js/discussions/12837
+                      - generic [ref=e826]: github.com
+                      - generic [ref=e827]: "Creation of diagrams during static side build using mermaidjs (or equivalent) · vercel next.js · Discussion #12837 - GitHub"
+                    - link "github.com Generate mermaid markup from your schema defined with Drizzle ORM. - GitHub" [ref=e829] [cursor=pointer]:
+                      - /url: https://github.com/panudetjt/drizzle-mermaid-generator
+                      - generic [ref=e830]: github.com
+                      - generic [ref=e831]: Generate mermaid markup from your schema defined with Drizzle ORM. - GitHub
+                    - link "liambx.com Drizzle - Liam ERD" [ref=e833] [cursor=pointer]:
+                      - /url: https://liambx.com/docs/parser/supported-formats/drizzle
+                      - generic [ref=e834]: liambx.com
+                      - generic [ref=e835]: Drizzle - Liam ERD
+                    - 'link "github.com rikeda71/drizzle-docs-generator: CLI tool to generate DBML or markdown document from Drizzle ORM schemas. - GitHub" [ref=e837] [cursor=pointer]':
+                      - /url: https://github.com/rikeda71/drizzle-docs-generator
+                      - generic [ref=e838]: github.com
+                      - generic [ref=e839]: "rikeda71/drizzle-docs-generator: CLI tool to generate DBML or markdown document from Drizzle ORM schemas. - GitHub"
+                    - link "github.com rorz/drizzle-erd - GitHub" [ref=e841] [cursor=pointer]:
+                      - /url: https://github.com/rorz/drizzle-erd
+                      - generic [ref=e842]: github.com
+                      - generic [ref=e843]: rorz/drizzle-erd - GitHub
+                    - 'link "github.com Database diagram in Drizzle Studio · drizzle-team drizzle-orm · Discussion #1480 · GitHub" [ref=e845] [cursor=pointer]':
+                      - /url: https://github.com/drizzle-team/drizzle-orm/discussions/1480
+                      - generic [ref=e846]: github.com
+                      - generic [ref=e847]: "Database diagram in Drizzle Studio · drizzle-team drizzle-orm · Discussion #1480 · GitHub"
+                    - 'link "github.com clanker-lover/doc-drift: Verify external markdown documentation against Rust source code" [ref=e849] [cursor=pointer]':
+                      - /url: https://github.com/clanker-lover/doc-drift
+                      - generic [ref=e850]: github.com
+                      - generic [ref=e851]: "clanker-lover/doc-drift: Verify external markdown documentation against Rust source code"
+                    - 'link "github.com EML4U/Drift-detector-comparison: Drift Detection in Text Data with Document Embeddings" [ref=e853] [cursor=pointer]':
+                      - /url: https://github.com/EML4U/Drift-detector-comparison
+                      - generic [ref=e854]: github.com
+                      - generic [ref=e855]: "EML4U/Drift-detector-comparison: Drift Detection in Text Data with Document Embeddings"
+                    - link "youtube.com Drift Detection and Remediation Using Terraform and GitHub Actions | Real Time Project" [ref=e857] [cursor=pointer]:
+                      - /url: https://www.youtube.com/watch?v=nRgNIy-SDEw
+                      - generic [ref=e858]: youtube.com
+                      - generic [ref=e859]: Drift Detection and Remediation Using Terraform and GitHub Actions | Real Time Project
+                    - 'link "github.com GitHub - tradermonty/claude-trading-skills: Claude Code skills for equity investors and traders — market analysis, technical charting, economic calendars, screeners, and trading strategy development." [ref=e861] [cursor=pointer]':
+                      - /url: https://github.com/tradermonty/claude-trading-skills
+                      - generic [ref=e862]: github.com
+                      - generic [ref=e863]: "GitHub - tradermonty/claude-trading-skills: Claude Code skills for equity investors and traders — market analysis, technical charting, economic calendars, screeners, and trading strategy development."
+                    - 'link "github.com Improving Anchor Links in Markdown Files to be Context-Aware · community · Discussion #72257 - GitHub" [ref=e865] [cursor=pointer]':
+                      - /url: https://github.com/orgs/community/discussions/72257
+                      - generic [ref=e866]: github.com
+                      - generic [ref=e867]: "Improving Anchor Links in Markdown Files to be Context-Aware · community · Discussion #72257 - GitHub"
+                    - link "developer.android.com Domain layer | App architecture - Android Developers" [ref=e869] [cursor=pointer]:
+                      - /url: https://developer.android.com/topic/architecture/domain-layer
+                      - generic [ref=e870]: developer.android.com
+                      - generic [ref=e871]: Domain layer | App architecture - Android Developers
+                    - link "softwareengineering.stackexchange.com How do I encapsulate domain logic and preserve state in DDD+Clean Architecture?" [ref=e873] [cursor=pointer]:
+                      - /url: https://softwareengineering.stackexchange.com/questions/458510/how-do-i-encapsulate-domain-logic-and-preserve-state-in-dddclean-architecture
+                      - generic [ref=e874]: softwareengineering.stackexchange.com
+                      - generic [ref=e875]: How do I encapsulate domain logic and preserve state in DDD+Clean Architecture?
+                    - link "learn.microsoft.com Designing a DDD-oriented microservice - .NET - Microsoft Learn" [ref=e877] [cursor=pointer]:
+                      - /url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice
+                      - generic [ref=e878]: learn.microsoft.com
+                      - generic [ref=e879]: Designing a DDD-oriented microservice - .NET - Microsoft Learn
+                    - 'link "vaadin.com DDD Part 1: Strategic Domain-Driven Design | Vaadin" [ref=e881] [cursor=pointer]':
+                      - /url: https://vaadin.com/blog/ddd-part-1-strategic-domain-driven-design
+                      - generic [ref=e882]: vaadin.com
+                      - generic [ref=e883]: "DDD Part 1: Strategic Domain-Driven Design | Vaadin"
+                    - link "medium.com Building a GitOps Drift Detection & Auto-Remediation Pipeline with ArgoCD, GitHub Actions, and Kyverno | by Coding_Karma | Mar, 2026 | Medium" [ref=e885] [cursor=pointer]:
+                      - /url: https://medium.com/@codingkarma/building-a-gitops-drift-detection-auto-remediation-pipeline-with-argocd-github-actions-and-f72545c63fdf
+                      - generic [ref=e886]: medium.com
+                      - generic [ref=e887]: Building a GitOps Drift Detection & Auto-Remediation Pipeline with ArgoCD, GitHub Actions, and Kyverno | by Coding_Karma | Mar, 2026 | Medium
+                    - link "terrateam.io Implementing Terraform drift detection with GitHub Actions - Terrateam" [ref=e889] [cursor=pointer]:
+                      - /url: https://terrateam.io/blog/terraform-drift-detection-github-actions
+                      - generic [ref=e890]: terrateam.io
+                      - generic [ref=e891]: Implementing Terraform drift detection with GitHub Actions - Terrateam
+                    - link "github.com Terraform cloud/enterprise drift detection · Actions · GitHub Marketplace" [ref=e893] [cursor=pointer]:
+                      - /url: https://github.com/marketplace/actions/terraform-cloud-enterprise-drift-detection
+                      - generic [ref=e894]: github.com
+                      - generic [ref=e895]: Terraform cloud/enterprise drift detection · Actions · GitHub Marketplace
+                    - 'link "reddit.com DriftHound: an open-source tool to detect & notify infrastructure drift (early stage, Looking for feedback!) : r/Terraform - Reddit" [ref=e897] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/Terraform/comments/1pcmqsx/drifthound_an_opensource_tool_to_detect_notify/
+                      - generic [ref=e898]: reddit.com
+                      - generic [ref=e899]: "DriftHound: an open-source tool to detect & notify infrastructure drift (early stage, Looking for feedback!) : r/Terraform - Reddit"
+                    - link "buildwithfern.com Best self-hosted documentation tools for enterprise security in January 2026 - Fern" [ref=e901] [cursor=pointer]:
+                      - /url: https://buildwithfern.com/post/self-hosted-documentation-tools-enterprise-security
+                      - generic [ref=e902]: buildwithfern.com
+                      - generic [ref=e903]: Best self-hosted documentation tools for enterprise security in January 2026 - Fern
+                    - 'link "github.com GitHub - awesome-selfhosted/awesome-selfhosted: A list of Free Software network services and web applications which can be hosted on your own servers" [ref=e905] [cursor=pointer]':
+                      - /url: https://github.com/awesome-selfhosted/awesome-selfhosted
+                      - generic [ref=e906]: github.com
+                      - generic [ref=e907]: "GitHub - awesome-selfhosted/awesome-selfhosted: A list of Free Software network services and web applications which can be hosted on your own servers"
+                    - link "mintlify.com Want to try an open-source documentation tool? Read this first - Mintlify" [ref=e909] [cursor=pointer]:
+                      - /url: https://www.mintlify.com/library/want-to-try-an-open-source-documentation-tool-read-this-first
+                      - generic [ref=e910]: mintlify.com
+                      - generic [ref=e911]: Want to try an open-source documentation tool? Read this first - Mintlify
+                    - 'link "reddit.com Any good self-hosted project management tools with AI? : r/selfhosted - Reddit" [ref=e913] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/selfhosted/comments/1oijyk7/any_good_selfhosted_project_management_tools_with/
+                      - generic [ref=e914]: reddit.com
+                      - generic [ref=e915]: "Any good self-hosted project management tools with AI? : r/selfhosted - Reddit"
+                    - 'link "reddit.com What are the best self-hosted or open-source knowledge base solutions you''ve used (or recommend) for internal documentation or customer support? : r/selfhosted - Reddit" [ref=e917] [cursor=pointer]':
+                      - /url: https://www.reddit.com/r/selfhosted/comments/1l6zr1a/what_are_the_best_selfhosted_or_opensource/
+                      - generic [ref=e918]: reddit.com
+                      - generic [ref=e919]: "What are the best self-hosted or open-source knowledge base solutions you've used (or recommend) for internal documentation or customer support? : r/selfhosted - Reddit"
+              - generic [ref=e920]:
+                - generic [ref=e921]:
+                  - img [ref=e923]: spark
+                  - separator [ref=e924]
+                - generic [ref=e925]:
+                  - generic [ref=e926]: AI Documentation Maintenance
+                  - generic [ref=e927]: I have identified a promising framework called RepoAgent that uses large language models to proactively generate and update repository-level documentation. This aligns with the goal of creating a system where documentation is treated with the same importance as code, potentially automating the synchronization process. I am also evaluating specialized utilities that validate markdown metadata against structured schemas, which will allow for strict enforcement of fields like status and last-verified dates within the existing documentation site.
+              - generic [ref=e928]:
+                - separator [ref=e930]
+                - generic [ref=e931]:
+                  - generic [ref=e932]: Automated Diagram Generation
+                  - generic [ref=e933]: I've discovered several tools capable of generating visual entity-relationship diagrams directly from database schemas, specifically within the ecosystem used by the project. A significant insight is the existence of the liam-hq/cli and dedicated Mermaid generators that can be integrated into build pipelines. However, a complexity I'm currently resolving is finding a reliable, static command-line tool for state machine visualization that supports the latest version of the state management library, as many existing tools focus on the reverse process of turning diagrams into code.
+              - generic [ref=e934]:
+                - separator [ref=e936]
+                - generic [ref=e937]:
+                  - generic [ref=e938]: Drift Detection and Next Actions
+                  - generic [ref=e939]: While I found a sophisticated drift detection tool in the Rust ecosystem that cross-references code symbols with documentation, I am now focused on finding or adapting a similar pattern for the TypeScript environment. My next actions include investigating how to use the unified.js ecosystem to create custom alerts for document staleness and searching for specific methods to map code symbols to markdown anchors. I will also be looking for mature open-source projects that demonstrate best practices for documenting domain-level logic independently from user interface states.
+            - generic [ref=e690]:
+              - separator [ref=e693]
+              - separator [ref=e701]

@@ -1,0 +1,168 @@
+- generic [ref=e1]:
+  - 'button "Google Account: Vishnu Jayavel (vishnuj81093@gmail.com)" [ref=e8] [cursor=pointer]':
+    - img [ref=e10]
+    - img [ref=e16]
+  - main [ref=e18]:
+    - generic:
+      - button "Main menu" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]: menu
+      - button "New chat" [ref=e25] [cursor=pointer]:
+        - generic [ref=e27]: Gemini
+    - generic [ref=e29]:
+      - generic [ref=e519]: Living Documentation System Research Plan
+      - generic [ref=e30]:
+        - link "Upgrade" [ref=e415]:
+          - img [ref=e416]: spark
+          - generic [ref=e418]: Upgrade
+        - generic [ref=e32]:
+          - button "Share conversation" [ref=e521] [cursor=pointer]:
+            - img [ref=e522]: share
+          - button "Open menu for conversation actions." [ref=e422] [cursor=pointer]:
+            - img [ref=e423]: more_vert
+    - generic [ref=e45]:
+      - navigation [ref=e46]:
+        - generic [ref=e50]:
+          - group [ref=e51]:
+            - link "New chat" [ref=e53] [cursor=pointer]:
+              - /url: /app
+              - img [ref=e56]: edit_square
+          - group [ref=e59]:
+            - button "Settings & help" [ref=e61] [cursor=pointer]:
+              - img [ref=e64]: settings_2
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - heading "Conversation with Gemini" [level=1] [ref=e76]
+          - generic [ref=e426]:
+            - generic [ref=e431]:
+              - button "Copy prompt" [ref=e433] [cursor=pointer]:
+                - img [ref=e434]: content_copy
+              - button "Edit" [ref=e525] [cursor=pointer]:
+                - img [ref=e526]: edit
+              - generic [ref=e439]:
+                - heading [level=2] [ref=e440]:
+                  - generic [ref=e441]: You said
+                  - paragraph [ref=e442]: "I'm building a living documentation system for an Electron/TypeScript desktop app. The codebase has 60+ markdown documents across 7 directories, a VitePress docs site, XState v5 state machines, Drizzle ORM with SQLite (7 tables), and React. I need comprehensive research on these five areas:"
+                  - paragraph [ref=e443]
+                  - paragraph [ref=e444]: "**0. Does an integrated open source framework already exist that handles most or all of this?**"
+                  - paragraph [ref=e445]: "- I'm looking for any OSS project or framework that maintains living documentation as code evolves — where AI agents or automation keep docs in sync with the codebase"
+                  - paragraph [ref=e446]: "- Specifically: systems that maintain product/domain docs, UI/technical docs, entity models, and state diagrams together as a unified documentation system"
+                  - paragraph [ref=e447]: "- Examples might include: docs-as-code platforms with built-in drift detection, AI-powered doc maintenance agents, documentation engineering frameworks"
+                  - paragraph [ref=e448]: "- Think Backstage (Spotify) for service catalogs, but for application-level documentation — entity models, state machines, customer journeys, architecture docs"
+                  - paragraph [ref=e449]: "- Also interested in any emerging agent-based doc maintenance tools (e.g., using LLMs to detect when code changes invalidate docs and auto-propose updates)"
+                  - paragraph [ref=e450]: "- Self-hosted/OSS only, not SaaS"
+                  - paragraph [ref=e451]
+                  - paragraph [ref=e452]: "**1. Open source frameworks for markdown frontmatter validation and staleness detection**"
+                  - paragraph [ref=e453]: "- Tools like remark-lint, markdownlint, markdown-it, unified.js ecosystem"
+                  - paragraph [ref=e454]: "- How to enforce a custom frontmatter schema (fields like status, last-verified, anchored-to, created)"
+                  - paragraph [ref=e455]: "- Graduated enforcement: hard block on missing frontmatter, warnings on age-based staleness"
+                  - paragraph [ref=e456]: "- Integration with build pipelines (Vite, VitePress, npm scripts)"
+                  - paragraph [ref=e457]: "- Any existing docs-as-code frameworks that handle doc freshness natively"
+                  - paragraph [ref=e458]
+                  - paragraph [ref=e459]: "**2. Tools that auto-generate diagrams from TypeScript source code**"
+                  - paragraph [ref=e460]: "- ER diagram generation from TypeScript interfaces/types or Drizzle ORM schemas"
+                  - paragraph [ref=e461]: "- State machine visualization from XState v5 machine definitions (not just Stately Inspector — looking for static diagram generation for docs)"
+                  - paragraph [ref=e462]: "- Mermaid, D2, PlantUML, or other diagram-as-code formats that can be generated from TS AST"
+                  - paragraph [ref=e463]: "- Tools like ts-morph, TypeDoc, or custom AST walkers for extracting type relationships"
+                  - paragraph [ref=e464]: "- Any tools specifically designed for XState to Mermaid/SVG conversion"
+                  - paragraph [ref=e465]
+                  - paragraph [ref=e466]: "**3. Best practices for separating product-level state models from UI state in documentation**"
+                  - paragraph [ref=e467]: "- How mature teams document domain state (entity lifecycle, business rules) separately from UI state (component state, routing, animations)"
+                  - paragraph [ref=e468]: "- Examples from open source projects that maintain both a domain model doc and a UI state doc"
+                  - paragraph [ref=e469]: "- Patterns for bridging the two: how to show when the domain entity enters state X, the UI transitions to view Y"
+                  - paragraph [ref=e470]: "- Any established taxonomy or vocabulary for this separation (DDD aggregates vs UI state machines)"
+                  - paragraph [ref=e471]
+                  - paragraph [ref=e472]: "**4. Doc gardening automation — CI/CD lint rules for code-doc drift detection**"
+                  - paragraph [ref=e473]: "- How to cross-reference markdown anchored-to fields against actual code symbols (grep-based, AST-based, or otherwise)"
+                  - paragraph [ref=e474]: "- Existing GitHub Actions or CI patterns that detect when a referenced code symbol changes and flag the associated doc as needing review"
+                  - paragraph [ref=e475]: "- How projects like Rust, Kubernetes, or other large OSS projects handle doc-code drift"
+                  - paragraph [ref=e476]: "- Custom remark/rehype plugins for validating frontmatter fields against external data sources"
+                  - paragraph [ref=e477]
+                  - paragraph [ref=e478]: "For each area, I want: specific tool names with GitHub links, pros/cons, maturity level, and whether they work with a TypeScript/Vite/VitePress stack. Prioritize battle-tested open source over new/experimental tools. If no single framework covers everything, recommend the best composable stack."
+                - button "Expand" [ref=e479] [cursor=pointer]:
+                  - img [ref=e480]: expand_more
+            - generic [ref=e486]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - button "Listen":
+                          - img: volume_up
+                    - menu
+              - generic [ref=e487]:
+                - generic [ref=e492]:
+                  - generic:
+                    - generic:
+                      - img
+                - generic [ref=e494]:
+                  - button [ref=e501]:
+                    - generic [ref=e503]:
+                      - status:
+                        - generic: Show thinking
+                      - img [ref=e505]: expand_more
+                  - heading "Gemini said" [level=2] [ref=e508]
+                  - paragraph [ref=e531]:
+                    - text: I've put together a research plan. If you need to update it in any way, let me know.
+                    - generic [ref=e534]:
+                      - generic [ref=e535]:
+                        - heading "Living Docs System Research" [level=3] [ref=e536]
+                        - generic [ref=e537]:
+                          - generic [ref=e538]:
+                            - generic [ref=e539]:
+                              - img [ref=e540]: select_window_2
+                              - generic [ref=e541]: Research Websites
+                            - generic [ref=e542]:
+                              - generic [ref=e543]: (1) Explore integrated open-source docs-as-code frameworks, self-hosted AI doc agents, and application-level alternatives to Backstage that maintain living documentation, entity models, and state diagrams. (2) Investigate tools for markdown frontmatter validation and staleness detection, focusing on the unified.js ecosystem and their capabilities to enforce custom schemas and integrate with VitePress build pipelines. (3) Find static diagram generation tools that parse TypeScript AST, specifically looking for ways to extract ER diagrams from Drizzle ORM schemas and convert XState v5 definitions into Mermaid, D2, or PlantUML formats. (4) Analyze best practices, Domain-Driven Design patterns, and examples from mature open-source projects regarding the separation and bridging of product-level domain state documentation versus UI component state. (5) Research CI/CD automation patterns and GitHub Actions for doc gardening, finding tools that detect code-doc drift by cross-referencing markdown anchors against code symbols. (6) Synthesize the findings to recommend either an integrated framework or a composable stack, detailing for each tool its maturity level, pros and cons, repositories, and compatibility with a TypeScript and VitePress environment.
+                              - button "More research plan details" [ref=e545] [cursor=pointer]:
+                                - generic [ref=e546]: More
+                          - generic [ref=e550]:
+                            - img [ref=e551]: sort
+                            - generic [ref=e552]: Analyze Results
+                          - generic [ref=e555]:
+                            - img [ref=e556]: travel_explore
+                            - generic [ref=e557]: Create Report
+                        - generic [ref=e558]:
+                          - img [ref=e559]: schedule
+                          - generic [ref=e560]: Ready in a few mins
+                        - generic [ref=e561]:
+                          - button "Edit the research plan" [ref=e562]:
+                            - generic [ref=e563]: Edit plan
+                          - button "Start research" [ref=e566]:
+                            - generic [ref=e567]: Start research
+                      - button "Try again without Deep Research" [ref=e571]:
+                        - generic: Try again without Deep Research
+              - generic [ref=e577]:
+                - button "Good response" [ref=e579] [cursor=pointer]:
+                  - img [ref=e580]: thumb_up
+                - button "Bad response" [ref=e584] [cursor=pointer]:
+                  - img [ref=e585]: thumb_down
+                - button "Copy" [ref=e589]:
+                  - img [ref=e590]: content_copy
+                - button "Show more options" [ref=e596]:
+                  - img [ref=e597]: more_vert
+        - generic [ref=e122]:
+          - group [ref=e123]:
+            - generic [ref=e126]:
+              - textbox "Enter a prompt for Gemini" [active] [ref=e342]:
+                - text: What do you want to research?
+                - paragraph [ref=e511]
+              - generic [ref=e133]:
+                - button "Open upload file menu" [ref=e138] [cursor=pointer]:
+                  - img [ref=e139]: add_2
+                - generic [ref=e144]:
+                  - button "Tools" [ref=e380] [cursor=pointer]:
+                    - img [ref=e382]: page_info
+                  - button "Deselect Deep research" [ref=e385]:
+                    - img [ref=e386]: travel_explore
+                    - generic [ref=e387]: Deep research
+                    - img [ref=e388]: close
+              - generic [ref=e152]:
+                - button "Open mode picker" [ref=e155]:
+                  - generic [ref=e157]:
+                    - generic [ref=e158]: Pro
+                    - img [ref=e159]: keyboard_arrow_down
+                - generic [ref=e162]:
+                  - button "Microphone" [ref=e165] [cursor=pointer]:
+                    - img [ref=e167]: mic
+                  - text: send
+          - paragraph [ref=e515]: Gemini is AI and can make mistakes.
