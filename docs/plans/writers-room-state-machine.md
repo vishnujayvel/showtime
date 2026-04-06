@@ -1,5 +1,22 @@
 # Writer's Room State Machine
 
+## Terminology Bridge
+
+This doc uses UX-level names. Here's how they map to XState machine states (`showMachine.ts`):
+
+| UX Name | XState State Path | Phase |
+|---------|-------------------|-------|
+| DARK_STUDIO | `phase.no_show` | `no_show` |
+| WRITERS_ROOM_INIT | `phase.writers_room.energy` | `writers_room` |
+| SKELETON_LINEUP | `phase.writers_room.plan` | `writers_room` |
+| WRITERS_WORKING | `phase.writers_room.plan` (Claude streaming) | `writers_room` |
+| CLAUDE_STREAMING | `phase.writers_room.plan` (lineup parsing) | `writers_room` |
+| LINEUP_READY | `phase.writers_room.lineup_ready` | `writers_room` |
+| GOING_LIVE | `phase.going_live` | `going_live` |
+| ON_AIR | `phase.live` | `live` |
+
+The XState machine groups SKELETON_LINEUP, WRITERS_WORKING, and CLAUDE_STREAMING into a single `plan` substate — the UX distinctions exist in component rendering logic, not in the state machine.
+
 ## States
 
 ```text
