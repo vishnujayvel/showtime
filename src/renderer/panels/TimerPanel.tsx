@@ -1,8 +1,8 @@
 import { useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
 import { useTimer } from '../hooks/useTimer'
 import { ClapperboardBadge } from '../components/ClapperboardBadge'
+import { BurningFuse, getFuseUrgencyClass } from '../components/BurningFuse'
 import { Button } from '../ui/button'
-import { Progress } from '../ui/progress'
 import { getCategoryClasses } from '../lib/category-colors'
 
 export function TimerPanel() {
@@ -21,7 +21,7 @@ export function TimerPanel() {
   }
 
   const actNumber = acts.findIndex((a) => a.id === currentAct.id) + 1
-  const isUrgent = minutes < 5 && isRunning
+  const timerUrgencyClass = isRunning ? getFuseUrgencyClass(progress) : 'text-txt-primary'
   const categoryClasses = getCategoryClasses(currentAct.sketch)
 
   return (
@@ -37,18 +37,13 @@ export function TimerPanel() {
       </span>
 
       <span
-        className={`font-mono text-[64px] font-bold leading-none tracking-tight tabular-nums mt-4 ${
-          isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
-        }`}
+        className={`font-mono text-[64px] font-bold leading-none tracking-tight tabular-nums mt-4 transition-colors duration-500 ${timerUrgencyClass}`}
       >
         {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
       </span>
 
       <div className="mt-6 w-full max-w-[280px]">
-        <Progress
-          value={progress * 100}
-          className={`[&>[data-slot=indicator]]:${categoryClasses.bg}`}
-        />
+        <BurningFuse size="expanded" progress={progress} />
       </div>
 
       <div className="flex items-center gap-3 mt-8">
