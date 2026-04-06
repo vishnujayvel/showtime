@@ -1,3 +1,8 @@
+---
+title: "View Tiers"
+status: current
+last-verified: 2026-04-06
+---
 # View Tiers
 
 Showtime doesn't have one fixed window. It has four sizes, and you switch between them depending on what you need right now.

@@ -1,3 +1,8 @@
+---
+title: "Why Live TV Production Works"
+status: current
+last-verified: 2026-04-06
+---
 # Why Live TV Production Works
 
 Showtime could have used any metaphor. A ship's voyage. A garden. A dungeon crawl. It uses live television production, specifically the SNL format, because that format solves problems the others can't.

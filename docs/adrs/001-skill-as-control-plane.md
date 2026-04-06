@@ -1,3 +1,8 @@
+---
+title: "ADR-001: Skill-as-Control-Plane for Claude Subprocess Identity"
+status: current
+last-verified: 2026-04-06
+---
 # ADR-001: Skill-as-Control-Plane for Claude Subprocess Identity
 
 **Status:** Accepted

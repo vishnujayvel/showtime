@@ -1,3 +1,8 @@
+---
+title: "ADR: Claude Subprocess Authentication — OAuth via CLI, Not API Key or Agent SDK"
+status: current
+last-verified: 2026-04-06
+---
 # ADR: Claude Subprocess Authentication — OAuth via CLI, Not API Key or Agent SDK
 
 **Status:** Accepted

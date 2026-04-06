@@ -1,3 +1,8 @@
+---
+title: "Energy Levels"
+status: current
+last-verified: 2026-04-06
+---
 # Energy Levels
 
 Every show starts with an energy check. Before you plan a single Act, the Writer's Room asks: **"How's your energy today?"**

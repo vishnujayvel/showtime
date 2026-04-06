@@ -1,3 +1,8 @@
+---
+title: "Acts & Beats"
+status: current
+last-verified: 2026-04-06
+---
 # Acts & Beats
 
 Acts and Beats are the building blocks of every show. Acts define what you do and for how long. Beats define whether you were actually there while doing it.

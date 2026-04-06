@@ -1,3 +1,8 @@
+---
+title: "E2E Test Isolation — Design Document"
+status: current
+last-verified: 2026-04-06
+---
 # E2E Test Isolation — Design Document
 
 **Issue:** #42

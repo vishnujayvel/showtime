@@ -1,3 +1,8 @@
+---
+title: "Show Machine — State Diagram"
+status: current
+last-verified: 2026-04-06
+---
 # Show Machine — State Diagram
 
 Visual reference for the XState v5 show machine (`src/renderer/machines/showMachine.ts`).

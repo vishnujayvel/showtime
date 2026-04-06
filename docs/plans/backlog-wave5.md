@@ -1,3 +1,8 @@
+---
+title: "Wave 5: Test Performance — Issue #109"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave 5: Test Performance — Issue #109
 
 ## Issue #109: perf: investigate and optimize E2E test execution time

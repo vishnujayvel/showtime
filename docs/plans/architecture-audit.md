@@ -1,3 +1,8 @@
+---
+title: "Architecture Audit: Claude Code ↔ Electron Integration"
+status: current
+last-verified: 2026-04-06
+---
 # Architecture Audit: Claude Code ↔ Electron Integration
 
 **Date:** 2026-03-26

@@ -1,3 +1,8 @@
+---
+title: "Wave 1: Quick Wins — Issues #105, #103, #104"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave 1: Quick Wins — Issues #105, #103, #104
 
 ## Issue #105: fix: replace 2 `any` types in showStore.ts SQLite hydration

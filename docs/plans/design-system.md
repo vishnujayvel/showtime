@@ -1,3 +1,8 @@
+---
+title: "Showtime Design System"
+status: current
+last-verified: 2026-04-06
+---
 # Showtime Design System
 
 Extracted from **Direction 4: The Show** mockup (`docs/mockups/direction-4-the-show.html`).

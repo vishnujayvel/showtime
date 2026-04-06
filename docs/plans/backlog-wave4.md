@@ -1,3 +1,8 @@
+---
+title: "Wave 4: Features — Issues #97, #89"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave 4: Features — Issues #97, #89
 
 ## Issue #97: test: record Claude API cassettes for deterministic E2E testing

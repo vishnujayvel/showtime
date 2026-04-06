@@ -1,3 +1,8 @@
+---
+title: "Director Mode"
+status: current
+last-verified: 2026-04-06
+---
 # Director Mode
 
 Every live show has a Director -- the person in the control room making calls when things go off-script. In Showtime, the Director is a mode you can step into when the day isn't going as planned. The Director is not a judge. The Director is the person who keeps the show running.

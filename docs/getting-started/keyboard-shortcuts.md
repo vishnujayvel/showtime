@@ -1,3 +1,8 @@
+---
+title: "Keyboard Shortcuts"
+status: current
+last-verified: 2026-04-06
+---
 # Keyboard Shortcuts
 
 Quick reference for getting around Showtime without reaching for the mouse. All shortcuts use the macOS `Cmd` key.

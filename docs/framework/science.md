@@ -1,3 +1,8 @@
+---
+title: "Research Foundations"
+status: current
+last-verified: 2026-04-06
+---
 # Research Foundations
 
 Showtime isn't built on vibes. Every major design decision maps to published research in psychology, neuroscience, or behavioral science. This page covers the evidence behind the framework and how each finding turns into a specific feature.

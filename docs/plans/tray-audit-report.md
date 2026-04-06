@@ -1,3 +1,8 @@
+---
+title: "Tray Menu Bar — Audit Report"
+status: current
+last-verified: 2026-04-06
+---
 # Tray Menu Bar — Audit Report
 
 > Audit date: 2026-03-28

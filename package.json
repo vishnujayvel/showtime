@@ -26,6 +26,7 @@
     "test:e2e:report:open": "allure open allure-report",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "lint:docs": "npx tsx scripts/lint-docs.ts",
     "preview": "electron-vite preview",
     "dist": "electron-vite build --mode production && electron-builder --mac --dir",
     "doctor": "bash scripts/doctor.sh",

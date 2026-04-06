@@ -1,3 +1,8 @@
+---
+title: "SNL Day Framework -- Combined Reference"
+status: current
+last-verified: 2026-04-06
+---
 # SNL Day Framework -- Combined Reference
 
 This document combines the SNL Day Framework specification from two sources:

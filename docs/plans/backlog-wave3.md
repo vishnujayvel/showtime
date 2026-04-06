@@ -1,3 +1,8 @@
+---
+title: "Wave 3: Enhancements — Issues #100, #87, #88"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave 3: Enhancements — Issues #100, #87, #88
 
 ## Issue #100: chore: add husky pre-commit hooks for test + lint

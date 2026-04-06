@@ -1,3 +1,8 @@
+---
+title: "Getting Started"
+status: current
+last-verified: 2026-04-06
+---
 # Getting Started
 
 Welcome to Showtime. If you're here, you're probably tired of to-do apps that keep score against you. Showtime doesn't do that. Your day is a live TV show. You're the star. Let's get you on stage.
