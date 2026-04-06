@@ -339,7 +339,7 @@ describe('EventNormalizer', () => {
         type: 'error',
       })
       // Should contain subtype and diagnostic info, not just "Unknown error"
-      expect((result[0] as any).message).toMatch(/Error/)
+      expect((result[0] as any).message).toMatch(/Error \(error\):.*\d+ms.*turns/)
     })
   })
 
