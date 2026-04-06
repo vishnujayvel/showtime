@@ -500,7 +500,7 @@ export class ControlPlane extends EventEmitter {
     this.submitPrompt(tabId, requestId, {
       prompt: 'hi',
       projectPath: homedir(),
-      maxTurns: 1,
+      maxTurns: 3,
       model: 'claude-sonnet-4-6',
     }).catch((err) => {
       this.initRequestIds.delete(requestId)
