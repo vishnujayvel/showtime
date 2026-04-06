@@ -6,6 +6,7 @@ import type { ViewTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
+import { BurningFuse, getFuseUrgencyClass } from '../components/BurningFuse'
 import { MiniRundownStrip } from '../components/MiniRundownStrip'
 import { ViewMenu } from '../components/ViewMenu'
 import { cn } from '../lib/utils'
@@ -27,13 +28,10 @@ export function PillView() {
   const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
   const setViewTier = useCallback((tier: ViewTier) => send({ type: 'SET_VIEW_TIER', tier }), [send])
   const currentAct = useShowSelector(showSelectors.currentAct)
-  const { minutes, seconds, isRunning } = useTimer()
-
-  const isUrgent = minutes < 5 && isRunning
+  const { minutes, seconds, isRunning, progress } = useTimer()
 
   const timerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-
-  const showStrip = phase === 'live' || phase === 'intermission'
+  const timerUrgencyClass = isRunning ? getFuseUrgencyClass(progress) : 'text-txt-primary'
 
   // Stuck pill detection: if content isn't rendering after 3s, request force-repaint
   useEffect(() => {
@@ -85,8 +83,8 @@ export function PillView() {
               </span>
               <span
                 className={cn(
-                  'font-mono text-sm font-semibold tabular-nums shrink-0 whitespace-nowrap',
-                  isUrgent ? 'text-beat animate-warm-pulse' : 'text-txt-primary'
+                  'font-mono text-sm font-semibold tabular-nums shrink-0 whitespace-nowrap transition-colors duration-500',
+                  timerUrgencyClass
                 )}
               >
                 {timerText}
@@ -141,7 +139,12 @@ export function PillView() {
           view="pill"
         />
       </div>
-      {showStrip && <MiniRundownStrip />}
+      {phase === 'live' && isRunning && (
+        <div className="mx-3 mb-1.5">
+          <BurningFuse size="pill" progress={progress} />
+        </div>
+      )}
+      {phase === 'intermission' && <MiniRundownStrip />}
     </motion.div>
   )
 }

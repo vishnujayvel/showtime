@@ -140,6 +140,55 @@
   animation: slideUp 0.5s ease-out forwards;
 }
 
+/* ─── Burning Fuse Animations ─── */
+
+@keyframes ember-wobble {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  25% { transform: translate(-50%, calc(-50% - 0.5px)) scale(1.05); }
+  50% { transform: translate(-50%, calc(-50% + 0.5px)) scale(0.97); }
+  75% { transform: translate(-50%, calc(-50% - 0.3px)) scale(1.02); }
+}
+
+@keyframes ember-wobble-critical {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  20% { transform: translate(-50%, calc(-50% - 1px)) scale(1.1); }
+  40% { transform: translate(-50%, calc(-50% + 0.8px)) scale(0.93); }
+  60% { transform: translate(-50%, calc(-50% - 0.6px)) scale(1.07); }
+  80% { transform: translate(-50%, calc(-50% + 0.5px)) scale(0.96); }
+}
+
+@keyframes spark-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--spark-dx), var(--spark-dy)) scale(0);
+  }
+}
+
+.fuse-ember-point {
+  will-change: box-shadow, left;
+}
+
+.fuse-particle {
+  position: absolute;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fuse-spark {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+}
+
 /* ─── Writers Loading Animation ─── */
 
 @keyframes writersDot {
