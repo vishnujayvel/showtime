@@ -329,7 +329,7 @@ describe('EventNormalizer', () => {
       })
     })
 
-    it('uses "Unknown error" when result string is empty', () => {
+    it('uses descriptive fallback when result string is empty', () => {
       const raw = makeResultError('')
       // makeResultError sets result to the message, so override
       raw.result = ''
@@ -337,8 +337,9 @@ describe('EventNormalizer', () => {
 
       expect(result[0]).toMatchObject({
         type: 'error',
-        message: 'Unknown error',
       })
+      // Should contain subtype and diagnostic info, not just "Unknown error"
+      expect((result[0] as any).message).toMatch(/Error \(error\):.*\d+ms.*turns/)
     })
   })
 

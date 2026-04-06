@@ -119,7 +119,7 @@ function normalizeResult(event: ResultEvent): NormalizedEvent[] {
   if (event.is_error || event.subtype === 'error') {
     return [{
       type: 'error',
-      message: event.result || 'Unknown error',
+      message: event.result || `Error (${event.subtype || 'unknown'}): ${event.duration_ms ? `after ${event.duration_ms}ms, ${event.num_turns} turns` : 'no details'}`,
       isError: true,
       sessionId: event.session_id,
     }]
