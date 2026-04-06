@@ -459,9 +459,9 @@ function buildReport(): string {
   const reachable = new Set<string>()
   const initialPath = allStates[0]?.path ?? 'show'
 
-  // Find initial leaf states (the machine starts in no_show + idle for animation)
+  // Find initial leaf states (the machine starts in no_show + idle + overlay.none)
   const initialLeaves = leafStates.filter((s) =>
-    s.path.includes('no_show') || s.path.includes('idle')
+    s.path.endsWith('phase.no_show') || s.path.endsWith('animation.idle') || s.path.endsWith('overlay.none')
   )
   const queue = initialLeaves.map((s) => s.path)
   for (const q of queue) reachable.add(q)
@@ -574,7 +574,7 @@ function buildReport(): string {
   lines.push(`| Metric | Value |`)
   lines.push(`| --- | --- |`)
   lines.push(`| Machine | \`showMachine\` (XState v5, parallel) |`)
-  lines.push(`| Top-level regions | phase, animation |`)
+  lines.push(`| Top-level regions | phase, animation, overlay |`)
   lines.push(`| Total states | ${totalStates} |`)
   lines.push(`| Leaf states | ${totalLeafStates} |`)
   lines.push(`| Total transitions | ${totalTransitions} |`)

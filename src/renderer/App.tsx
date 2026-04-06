@@ -69,12 +69,20 @@ export default function App() {
   const showHistory = overlay === 'history'
   const showSettings = overlay === 'settings'
 
-  // Open onboarding on first launch
+  // Open onboarding only while still in the initial no_show phase
   useEffect(() => {
-    if (localStorage.getItem('showtime-onboarding-complete') !== 'true') {
+    const onboardingComplete = localStorage.getItem('showtime-onboarding-complete') === 'true'
+
+    if (!onboardingComplete && phase === 'no_show' && overlay === 'none') {
       send({ type: 'VIEW_ONBOARDING' })
+      return
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- one-time startup check
+
+    // Clean up stale overlay if phase advanced past no_show
+    if (phase !== 'no_show' && overlay === 'onboarding') {
+      send({ type: 'CLOSE_OVERLAY' })
+    }
+  }, [phase, overlay, send])
 
   // ─── Listen for tray-triggered reset ───
   useEffect(() => {

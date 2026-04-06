@@ -963,35 +963,21 @@ export const showMachine = setup({
       },
     },
 
-    // ─── Overlay Region (parallel) — history, settings, onboarding ───
+    // ─���─ Overlay Region (parallel) — history, settings, onboarding ──��
     overlay: {
       initial: 'none',
       on: {
         RESET: '.none',
+        VIEW_HISTORY: '.history',
+        VIEW_SETTINGS: '.settings',
+        VIEW_ONBOARDING: '.onboarding',
+        CLOSE_OVERLAY: '.none',
       },
       states: {
-        none: {
-          on: {
-            VIEW_HISTORY: 'history',
-            VIEW_SETTINGS: 'settings',
-            VIEW_ONBOARDING: 'onboarding',
-          },
-        },
-        history: {
-          on: {
-            CLOSE_OVERLAY: 'none',
-          },
-        },
-        settings: {
-          on: {
-            CLOSE_OVERLAY: 'none',
-          },
-        },
-        onboarding: {
-          on: {
-            CLOSE_OVERLAY: 'none',
-          },
-        },
+        none: {},
+        history: {},
+        settings: {},
+        onboarding: {},
       },
     },
   },

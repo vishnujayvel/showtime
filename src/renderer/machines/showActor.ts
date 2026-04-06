@@ -21,7 +21,7 @@ import type { ShowPhase, ShowLineup, EnergyLevel, Act, ActStatus, ShowVerdict, V
 
 const PERSIST_KEY = 'showtime-show-state'
 /** Increment when machine shape changes to invalidate old persisted state. */
-export const PERSIST_VERSION = 2
+export const PERSIST_VERSION = 3
 const TRANSIENT_KEYS = new Set(['beatCheckPending', 'celebrationActive'])
 
 /** Valid top-level phase states in the show machine. */
@@ -93,7 +93,7 @@ function getPersistedSnapshot() {
       console.warn('[showtime] Persisted state value does not match machine:', JSON.stringify(stateValue))
       // Fall back to no_show but preserve context (acts, energy, etc.)
       return showMachine.resolveState({
-        value: { phase: 'no_show', animation: 'idle' },
+        value: { phase: 'no_show', animation: 'idle', overlay: 'none' },
         context: { ...createInitialContext(), ...context },
       })
     }
