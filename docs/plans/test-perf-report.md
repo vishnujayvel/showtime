@@ -1,3 +1,8 @@
+---
+title: "E2E Test Performance Report — Wave 5, Issue #109"
+status: current
+last-verified: 2026-04-06
+---
 # E2E Test Performance Report — Wave 5, Issue #109
 
 ## Baseline Metrics (Before Optimization)

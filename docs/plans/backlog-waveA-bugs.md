@@ -1,3 +1,8 @@
+---
+title: "Wave A: Critical Bug Fixes — Issues #112, #113, #114, #118"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave A: Critical Bug Fixes — Issues #112, #113, #114, #118
 
 ## IMPORTANT: Issue Closure Protocol

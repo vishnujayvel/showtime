@@ -1,3 +1,8 @@
+---
+title: "Low-Level Design: Chat Message Lineup Detection"
+status: current
+last-verified: 2026-04-06
+---
 # Low-Level Design: Chat Message Lineup Detection
 
 ## Problem

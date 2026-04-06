@@ -1,3 +1,8 @@
+---
+title: "The Showtime Framework"
+status: current
+last-verified: 2026-04-06
+---
 # The Showtime Framework
 
 Showtime is built on a metaphor: your day is a live variety show, modeled after Saturday Night Live. This isn't decoration. The live TV production format provides the structure, ceremony, and emotional safety that ADHD brains need to stay engaged day after day.

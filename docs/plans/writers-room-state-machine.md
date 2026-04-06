@@ -1,3 +1,8 @@
+---
+title: "Writer's Room State Machine"
+status: current
+last-verified: 2026-04-06
+---
 # Writer's Room State Machine
 
 ## Terminology Bridge

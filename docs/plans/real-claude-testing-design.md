@@ -1,3 +1,8 @@
+---
+title: "Design: Real Claude Testing Infrastructure"
+status: current
+last-verified: 2026-04-06
+---
 # Design: Real Claude Testing Infrastructure
 
 **Issue:** #67

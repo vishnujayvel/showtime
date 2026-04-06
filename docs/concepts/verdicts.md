@@ -1,3 +1,8 @@
+---
+title: "Verdicts"
+status: current
+last-verified: 2026-04-06
+---
 # Verdicts
 
 At Strike the Stage, the show is over and you receive a verdict. Verdicts are not grades. They don't rank your day on a scale from A to F. They celebrate what you did -- and every single one of them acknowledges that you showed up.

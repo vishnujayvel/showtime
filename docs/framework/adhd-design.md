@@ -1,3 +1,8 @@
+---
+title: "ADHD Design Decisions"
+status: current
+last-verified: 2026-04-06
+---
 # ADHD Design Decisions
 
 Showtime isn't a general productivity app that happens to mention ADHD in its marketing. It's built from the ground up for brains that crave novelty, resist rigidity, struggle with task initiation, and have been burned by every tool they've ever tried.

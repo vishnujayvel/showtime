@@ -1,3 +1,8 @@
+---
+title: "Proposal: Allure Report 3 Integration"
+status: current
+last-verified: 2026-04-06
+---
 # Proposal: Allure Report 3 Integration
 
 ## Problem

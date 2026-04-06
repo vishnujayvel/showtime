@@ -1,3 +1,8 @@
+---
+title: "Chat-First Writer's Room"
+status: current
+last-verified: 2026-04-06
+---
 # Chat-First Writer's Room
 
 The Writer's Room is a unified chat interface where the user plans their day by talking to Claude. This page documents the architecture for contributors.

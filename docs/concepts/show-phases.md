@@ -1,3 +1,8 @@
+---
+title: "Show Phases"
+status: current
+last-verified: 2026-04-06
+---
 # Show Phases
 
 In Showtime, your day is a live TV show. Like any live broadcast, it moves through a sequence of production phases -- each one designed to give your brain the structure and ceremony it needs at that moment. You don't jump from "nothing" to "working." You warm up the studio, write the lineup, go live, take breaks, and close the show.

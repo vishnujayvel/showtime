@@ -1,3 +1,8 @@
+---
+title: "Wave C: Latency Reduction — Issues #118, #119, #120, #121"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave C: Latency Reduction — Issues #118, #119, #120, #121
 
 ## IMPORTANT: Issue Closure Protocol

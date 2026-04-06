@@ -1,3 +1,8 @@
+---
+title: "Development Toolchain"
+status: current
+last-verified: 2026-04-06
+---
 # Development Toolchain
 
 Showtime uses **Bun** as its development toolchain for package management, script execution, and build orchestration. The application itself runs on **Electron** (Node.js/V8) at runtime.

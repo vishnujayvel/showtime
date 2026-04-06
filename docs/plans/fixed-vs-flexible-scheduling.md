@@ -1,3 +1,8 @@
+---
+title: "Product Spec: Fixed vs Flexible Time Windows"
+status: current
+last-verified: 2026-04-06
+---
 # Product Spec: Fixed vs Flexible Time Windows
 
 **Issue:** [#130](https://github.com/vishnujayvel/showtime/issues/130)

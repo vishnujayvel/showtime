@@ -1,3 +1,8 @@
+---
+title: "The No-Guilt Philosophy"
+status: current
+last-verified: 2026-04-06
+---
 # The No-Guilt Philosophy
 
 This is the most important design principle in Showtime. Everything else, the metaphor, the animations, the energy system, serves this one thing. If you take one thing from these docs, let it be this:

@@ -1,3 +1,8 @@
+---
+title: "Show Machine — Event × State Coverage Matrix"
+status: current
+last-verified: 2026-04-06
+---
 # Show Machine — Event × State Coverage Matrix
 
 Tracks which event+state combinations are tested. Updated alongside `src/__tests__/showMachine.test.ts`.

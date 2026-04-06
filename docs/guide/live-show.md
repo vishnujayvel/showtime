@@ -1,3 +1,8 @@
+---
+title: "The Live Show"
+status: current
+last-verified: 2026-04-06
+---
 # The Live Show
 
 Once you're live, the show runs on a timer. Each Act counts down. You work. The app stays out of your way.

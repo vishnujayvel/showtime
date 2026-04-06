@@ -1,3 +1,8 @@
+---
+title: "Pill View Black Bar / Ghost Frames — Design Document"
+status: current
+last-verified: 2026-04-06
+---
 # Pill View Black Bar / Ghost Frames — Design Document
 
 **Issue:** #43

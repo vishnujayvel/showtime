@@ -1,3 +1,8 @@
+---
+title: "Design System"
+status: current
+last-verified: 2026-04-06
+---
 # Design System
 
 Showtime's visual language is built around the live TV production metaphor. Everything looks like a broadcast control room: dark surfaces, warm accent lighting, red tally indicators, and gold highlights for moments of presence.

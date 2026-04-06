@@ -1,3 +1,8 @@
+---
+title: "State Machine Coverage Report"
+status: current
+last-verified: 2026-04-06
+---
 # State Machine Coverage Report
 
 > Generated: 2026-04-05 19:57:49 UTC

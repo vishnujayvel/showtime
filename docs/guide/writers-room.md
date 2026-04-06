@@ -1,3 +1,8 @@
+---
+title: "The Writer's Room"
+status: current
+last-verified: 2026-04-06
+---
 # The Writer's Room
 
 The Writer's Room is where you plan your day — through a conversation with Claude. The whole thing takes about three minutes.

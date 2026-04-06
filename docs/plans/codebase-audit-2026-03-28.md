@@ -1,3 +1,8 @@
+---
+title: "Showtime Codebase Audit — March 28, 2026"
+status: current
+last-verified: 2026-04-06
+---
 # Showtime Codebase Audit — March 28, 2026
 
 > **Note:** This audit predates the XState v5 migration. State management now uses

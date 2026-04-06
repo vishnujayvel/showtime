@@ -1,3 +1,8 @@
+---
+title: "E2E Testing with VCR Cassettes"
+status: current
+last-verified: 2026-04-06
+---
 # E2E Testing with VCR Cassettes
 
 Showtime uses a three-tier testing strategy for its Claude integration. Cassette-based replay tests are the primary tier — fast, deterministic, and safe for CI.

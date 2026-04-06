@@ -1,3 +1,8 @@
+---
+title: "Wave B: Enhancements — Issues #115, #116, #117"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave B: Enhancements — Issues #115, #116, #117
 
 ## IMPORTANT: Issue Closure Protocol

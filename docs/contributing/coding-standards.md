@@ -1,3 +1,8 @@
+---
+title: "Coding Standards"
+status: current
+last-verified: 2026-04-06
+---
 # Coding Standards
 
 These are the rules for writing code in the Showtime codebase. They exist to keep the app consistent, accessible, and maintainable.

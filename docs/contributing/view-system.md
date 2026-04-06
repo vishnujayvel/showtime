@@ -1,3 +1,8 @@
+---
+title: "View System"
+status: current
+last-verified: 2026-04-06
+---
 # View System
 
 Showtime uses a combination of **show phases** and **view tiers** to determine which view component renders and how the window is sized.

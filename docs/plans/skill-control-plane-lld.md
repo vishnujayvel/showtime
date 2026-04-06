@@ -1,3 +1,8 @@
+---
+title: "Skill-as-Control-Plane: Low-Level Design"
+status: current
+last-verified: 2026-04-06
+---
 # Skill-as-Control-Plane: Low-Level Design
 
 **Issue:** #156

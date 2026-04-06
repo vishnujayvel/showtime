@@ -1,3 +1,8 @@
+---
+title: "Tech Stack"
+status: current
+last-verified: 2026-04-06
+---
 # Tech Stack
 
 Showtime is an **AI-native macOS desktop app** — built with Claude Code as a first-class development partner, not just an assistant. Every feature is spec'd, implemented, tested, and reviewed through an AI-augmented pipeline.

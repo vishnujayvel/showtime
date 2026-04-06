@@ -1,3 +1,8 @@
+---
+title: "Wave 2: Testing — Issues #96, #99, #101"
+status: archived
+last-verified: 2026-04-06
+---
 # Wave 2: Testing — Issues #96, #99, #101
 
 ## Issue #96: test: add unit tests for useClaudeEvents, useHealthReconciliation, useTraySync

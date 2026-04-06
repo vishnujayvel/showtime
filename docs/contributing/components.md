@@ -1,3 +1,8 @@
+---
+title: "Key Components"
+status: current
+last-verified: 2026-04-06
+---
 # Key Components
 
 A reference guide to the most important UI components in Showtime. All components live in `src/renderer/components/`.

@@ -1,3 +1,8 @@
+---
+title: "Settings"
+status: current
+last-verified: 2026-04-06
+---
 # Settings
 
 ## Timer Display Mode

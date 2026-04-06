@@ -1,3 +1,8 @@
+---
+title: "Design: Fix Multi-Turn Conversation (Issue #62)"
+status: current
+last-verified: 2026-04-06
+---
 # Design: Fix Multi-Turn Conversation (Issue #62)
 
 ## Problem
