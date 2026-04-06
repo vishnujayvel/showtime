@@ -28,6 +28,8 @@ interface State {
   activeTabId: string
   /** True once createTab() has resolved and the tab ID is valid in ControlPlane */
   tabReady: boolean
+  /** Prompts queued before tabReady — flushed when tab becomes ready */
+  pendingPrompts: Array<{ prompt: string; options?: { projectPath?: string; displayText?: string; maxTurns?: number } }>
   isExpanded: boolean
   staticInfo: StaticInfo | null
   preferredModel: string | null
@@ -103,6 +105,7 @@ export const useSessionStore = create<State>((set, get) => ({
   tabs: [initialTab],
   activeTabId: initialTab.id,
   tabReady: false,
+  pendingPrompts: [],
   isExpanded: false,
   staticInfo: null,
   preferredModel: null,
@@ -177,7 +180,8 @@ export const useSessionStore = create<State>((set, get) => ({
     const maxTurns = options?.maxTurns
     const { activeTabId, tabs, staticInfo, tabReady } = get()
     if (!tabReady) {
-      window.showtime.logEvent('WARN', 'sendMessage.dropped', { reason: 'tab not ready yet', activeTabId })
+      window.showtime.logEvent('INFO', 'sendMessage.queued', { reason: 'tab not ready yet', activeTabId })
+      set((s) => ({ pendingPrompts: [...s.pendingPrompts, { prompt, options }] }))
       return
     }
     const tab = tabs.find((t) => t.id === activeTabId)

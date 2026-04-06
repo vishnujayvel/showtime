@@ -127,6 +127,14 @@ export default function App() {
             activeTabId: tabId,
             tabReady: true,
           }))
+          // Flush any prompts queued before tab was ready
+          const pending = useSessionStore.getState().pendingPrompts
+          if (pending.length > 0) {
+            useSessionStore.setState({ pendingPrompts: [] })
+            for (const p of pending) {
+              useSessionStore.getState().sendMessage(p.prompt, p.options)
+            }
+          }
           // Warm up immediately after tab is created — don't wait for Writer's Room
           window.showtime.initSession(tabId)
         }).catch(() => {})

@@ -8,6 +8,7 @@ import { tryParseCalendarEvents } from '../lib/calendar-parser'
 import { ChatMessage } from '../components/ChatMessage'
 import { ActCard } from '../components/ActCard'
 import { CalendarToggle } from '../components/CalendarToggle'
+import { ViewMenu } from '../components/ViewMenu'
 import { ProgressiveLoader } from '../components/ProgressiveLoader'
 import { Button } from '../ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -142,10 +143,11 @@ export function WritersRoomView() {
     scrollToBottom()
   }, [messages.length, scrollToBottom])
 
-  // Default energy to medium if not set
+  // Default energy to medium if not set (mount-only — deps would reset on every XState cycle)
   useEffect(() => {
     if (!energy) setEnergy('medium')
-  }, [energy, setEnergy])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Pre-warm Claude subprocess when Writer's Room mounts
   useEffect(() => {
@@ -305,6 +307,8 @@ export function WritersRoomView() {
           </div>
 
           {/* Calendar toggle hidden in chat-first mode — Claude handles calendar via MCP */}
+
+          <ViewMenu view="writers_room" />
 
           {/* Close button */}
           <button

@@ -11,7 +11,7 @@ import {
 import { cn } from '../lib/utils'
 
 interface ViewMenuProps {
-  view: 'pill' | 'compact' | 'expanded'
+  view: 'pill' | 'compact' | 'expanded' | 'writers_room'
 }
 
 export function ViewMenu({ view }: ViewMenuProps) {
