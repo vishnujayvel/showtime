@@ -18,12 +18,7 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
-interface CompactViewProps {
-  onShowHistory?: () => void
-  onShowSettings?: () => void
-}
-
-export function CompactView({ onShowHistory, onShowSettings }: CompactViewProps) {
+export function CompactView() {
   const phase = useShowPhase()
   const verdict = useShowContext((ctx) => ctx.verdict)
   const currentAct = useShowSelector(showSelectors.currentAct)
@@ -95,8 +90,6 @@ export function CompactView({ onShowHistory, onShowSettings }: CompactViewProps)
         </div>
         <ViewMenu
           view="compact"
-          onShowHistory={onShowHistory}
-          onShowSettings={onShowSettings}
         />
         <button
           onClick={collapseViewTier}

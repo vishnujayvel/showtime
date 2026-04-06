@@ -14,6 +14,7 @@ import {
   type ShowMachineContext,
 } from '../renderer/machines/showMachine'
 import type { ShowLineup, ShowPhase } from '../shared/types'
+import { localToday } from '../shared/date-utils'
 
 // ─── Constants (mirror showActor.ts) ───
 
@@ -76,7 +77,7 @@ function getPersistedSnapshot() {
       return undefined
     }
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     if (context.showDate !== today) {
       localStorage.removeItem(PERSIST_KEY)
       return undefined
@@ -215,7 +216,8 @@ describe('state persistence', () => {
       const persisted = Object.fromEntries(
         Object.entries(snap.context).filter(([k]) => !TRANSIENT_KEYS.has(k))
       )
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+      const d = new Date(); d.setDate(d.getDate() - 1)
+      const yesterday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       ;(persisted as Record<string, unknown>).showDate = yesterday
 
       localStorage.setItem(

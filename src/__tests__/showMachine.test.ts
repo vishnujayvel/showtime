@@ -34,7 +34,7 @@ function createTestActor(contextOverrides?: Partial<ShowMachineContext>) {
   const actor = createActor(showMachine, {
     ...(contextOverrides ? {
       snapshot: showMachine.resolveState({
-        value: { phase: 'no_show', animation: 'idle' },
+        value: { phase: 'no_show', animation: 'idle', overlay: 'none' },
         context: { ...createInitialContext(), ...contextOverrides },
       }),
     } : {}),
@@ -72,7 +72,7 @@ describe('showMachine', () => {
   describe('initial state', () => {
     it('starts in no_show phase with idle animation', () => {
       const snap = actor.getSnapshot()
-      expect(snap.value).toEqual({ phase: 'no_show', animation: 'idle' })
+      expect(snap.value).toEqual({ phase: 'no_show', animation: 'idle', overlay: 'none' })
     })
 
     it('has correct initial context', () => {
@@ -593,6 +593,77 @@ describe('showMachine', () => {
       actor.send({ type: 'TRIGGER_COLD_OPEN' })
       expect(isAnimationActive(actor.getSnapshot().value as Record<string, unknown>, 'cold_open')).toBe(true)
       expect(isAnimationActive(actor.getSnapshot().value as Record<string, unknown>, 'going_live')).toBe(false)
+    })
+  })
+
+  // ─── Overlay Region ───
+
+  describe('overlay region', () => {
+    it('starts in none state', () => {
+      const snap = actor.getSnapshot()
+      expect((snap.value as Record<string, unknown>).overlay).toBe('none')
+    })
+
+    it('VIEW_HISTORY transitions overlay to history', () => {
+      actor.send({ type: 'VIEW_HISTORY' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('history')
+    })
+
+    it('VIEW_SETTINGS transitions overlay to settings', () => {
+      actor.send({ type: 'VIEW_SETTINGS' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('settings')
+    })
+
+    it('VIEW_ONBOARDING transitions overlay to onboarding', () => {
+      actor.send({ type: 'VIEW_ONBOARDING' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('onboarding')
+    })
+
+    it('CLOSE_OVERLAY returns to none from history', () => {
+      actor.send({ type: 'VIEW_HISTORY' })
+      actor.send({ type: 'CLOSE_OVERLAY' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('none')
+    })
+
+    it('CLOSE_OVERLAY returns to none from settings', () => {
+      actor.send({ type: 'VIEW_SETTINGS' })
+      actor.send({ type: 'CLOSE_OVERLAY' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('none')
+    })
+
+    it('CLOSE_OVERLAY returns to none from onboarding', () => {
+      actor.send({ type: 'VIEW_ONBOARDING' })
+      actor.send({ type: 'CLOSE_OVERLAY' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('none')
+    })
+
+    it('RESET clears overlay back to none', () => {
+      actor.send({ type: 'VIEW_HISTORY' })
+      actor.send({ type: 'RESET' })
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('none')
+    })
+
+    it('overlay is independent of phase transitions', () => {
+      actor.send({ type: 'VIEW_SETTINGS' })
+      actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      // Phase changed but overlay stays
+      const snap = actor.getSnapshot()
+      expect(getPhaseFromState(snap.value as Record<string, unknown>)).toBe('writers_room')
+      expect((snap.value as Record<string, unknown>).overlay).toBe('settings')
+    })
+
+    it('overlay works from live phase', () => {
+      setupLive(actor)
+      actor.send({ type: 'VIEW_HISTORY' })
+      const snap = actor.getSnapshot()
+      expect(getPhaseFromState(snap.value as Record<string, unknown>)).toBe('live')
+      expect((snap.value as Record<string, unknown>).overlay).toBe('history')
+    })
+
+    it('cannot open history while already in history (stays in history)', () => {
+      actor.send({ type: 'VIEW_HISTORY' })
+      actor.send({ type: 'VIEW_HISTORY' }) // no handler in history state
+      expect((actor.getSnapshot().value as Record<string, unknown>).overlay).toBe('history')
     })
   })
 

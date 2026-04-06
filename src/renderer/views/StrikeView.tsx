@@ -18,11 +18,7 @@ function formatDuration(startMs: number): string {
   return `${hours}h ${mins}m`
 }
 
-interface StrikeViewProps {
-  onShowHistory?: () => void
-}
-
-export function StrikeView({ onShowHistory }: StrikeViewProps) {
+export function StrikeView() {
   const verdict = useShowContext((ctx) => ctx.verdict)
   const acts = useShowContext((ctx) => ctx.acts)
   const beatsLocked = useShowContext((ctx) => ctx.beatsLocked)
@@ -240,15 +236,13 @@ export function StrikeView({ onShowHistory }: StrikeViewProps) {
           >
             That&apos;s a Wrap
           </Button>
-          {onShowHistory && (
-            <Button
-              variant="ghost_muted"
-              onClick={onShowHistory}
-              data-testid="view-history-btn"
-            >
-              View Past Shows
-            </Button>
-          )}
+          <Button
+            variant="ghost_muted"
+            onClick={() => send({ type: 'VIEW_HISTORY' })}
+            data-testid="view-history-btn"
+          >
+            View Past Shows
+          </Button>
         </div>
       </div>
     </motion.div>

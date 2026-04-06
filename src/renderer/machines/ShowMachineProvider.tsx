@@ -17,6 +17,8 @@ import {
   getPhaseFromState,
   getWritersRoomStep,
   isAnimationActive,
+  getOverlayFromState,
+  type OverlayState,
   type ShowMachineContext,
   type ShowMachineEvent,
   type ShowMachineActor,
@@ -89,6 +91,11 @@ export function useGoingLiveActive(): boolean {
   return useShowSelector((state) => isAnimationActive(state.value as Record<string, unknown>, 'going_live'))
 }
 
+/** Current overlay state (none, history, settings, onboarding) */
+export function useOverlay(): OverlayState {
+  return useShowSelector((state) => getOverlayFromState(state.value as Record<string, unknown>))
+}
+
 // ─── Context Value Selectors (read from machine context) ───
 
 export function useShowContext<T>(selector: (ctx: ShowMachineContext) => T): T {
@@ -159,4 +166,7 @@ export const showSelectors = {
 
   isExpanded: (state: ReturnType<ShowMachineActor['getSnapshot']>): boolean =>
     state.context.viewTier !== 'micro',
+
+  overlay: (state: ReturnType<ShowMachineActor['getSnapshot']>): OverlayState =>
+    getOverlayFromState(state.value as Record<string, unknown>),
 }

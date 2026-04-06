@@ -4,6 +4,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { getTodayPersistedShow } from '../renderer/views/DarkStudioView'
+import { localToday } from '../shared/date-utils'
 
 describe('getTodayPersistedShow', () => {
   beforeEach(() => {
@@ -11,7 +12,7 @@ describe('getTodayPersistedShow', () => {
   })
 
   it('detects today\'s show from localStorage', () => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     localStorage.setItem('showtime-show-state', JSON.stringify({
       stateValue: { phase: 'live', animation: 'idle' },
       context: {
@@ -35,7 +36,8 @@ describe('getTodayPersistedShow', () => {
   })
 
   it('returns null for yesterday\'s show', () => {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    const d = new Date(); d.setDate(d.getDate() - 1)
+    const yesterday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     localStorage.setItem('showtime-show-state', JSON.stringify({
       stateValue: { phase: 'live', animation: 'idle' },
       context: {
@@ -51,7 +53,7 @@ describe('getTodayPersistedShow', () => {
   })
 
   it('detects strike phase', () => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     localStorage.setItem('showtime-show-state', JSON.stringify({
       stateValue: { phase: 'strike', animation: 'idle' },
       context: {
@@ -83,7 +85,7 @@ describe('getTodayPersistedShow', () => {
   })
 
   it('identifies writers_room phase (acts exist but none active)', () => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = localToday()
     localStorage.setItem('showtime-show-state', JSON.stringify({
       stateValue: { phase: 'writers_room', animation: 'idle' },
       context: {

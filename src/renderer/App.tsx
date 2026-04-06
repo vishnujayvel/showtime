@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useClaudeEvents } from './hooks/useClaudeEvents'
 import { useHealthReconciliation } from './hooks/useHealthReconciliation'
@@ -11,6 +11,7 @@ import {
   useShowSelector,
   useColdOpenActive,
   useGoingLiveActive,
+  useOverlay,
   showSelectors,
 } from './machines/ShowMachineProvider'
 import { hydrateFromDB } from './machines/showActor'
@@ -29,7 +30,6 @@ import { HistoryView } from './views/HistoryView'
 import { SettingsView } from './views/SettingsView'
 import { OnboardingView } from './views/OnboardingView'
 import { BeatCheckModal } from './components/BeatCheckModal'
-import { HelpDialog } from './components/HelpDialog'
 import { HelpButton } from './components/HelpButton'
 import type { ViewTier, ViewMode, ShowPhase } from '../shared/types'
 
@@ -64,12 +64,25 @@ export default function App() {
   const timerDisplay = useUIStore((s) => s.timerDisplay)
   const toggleTimerDisplay = useUIStore((s) => s.toggleTimerDisplay)
 
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return localStorage.getItem('showtime-onboarding-complete') !== 'true'
-  })
-  const [showHistory, setShowHistory] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [showHelp, setShowHelp] = useState(false)
+  const overlay = useOverlay()
+  const showOnboarding = overlay === 'onboarding'
+  const showHistory = overlay === 'history'
+  const showSettings = overlay === 'settings'
+
+  // Open onboarding only while still in the initial no_show phase
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem('showtime-onboarding-complete') === 'true'
+
+    if (!onboardingComplete && phase === 'no_show' && overlay === 'none') {
+      send({ type: 'VIEW_ONBOARDING' })
+      return
+    }
+
+    // Clean up stale overlay if phase advanced past no_show
+    if (phase !== 'no_show' && overlay === 'onboarding') {
+      send({ type: 'CLOSE_OVERLAY' })
+    }
+  }, [phase, overlay, send])
 
   // ─── Listen for tray-triggered reset ───
   useEffect(() => {
@@ -80,8 +93,8 @@ export default function App() {
   // ─── Listen for settings open (Cmd+, or tray) ───
   useEffect(() => {
     if (!window.showtime?.onOpenSettings) return
-    return window.showtime.onOpenSettings(() => setShowSettings(true))
-  }, [])
+    return window.showtime.onOpenSettings(() => send({ type: 'VIEW_SETTINGS' }))
+  }, [send])
 
   // ─── Theme initialization ───
   useEffect(() => {
@@ -145,15 +158,15 @@ export default function App() {
       return
     }
 
-    // History and Settings views are full-screen
-    if (showHistory || showSettings) {
+    // Overlay views (history, settings, onboarding) are full-screen
+    if (overlay !== 'none') {
       window.showtime.setViewMode('full')
       return
     }
 
     const mode = tierToViewMode(viewTier, phase)
     window.showtime.setViewMode(mode)
-  }, [phase, viewTier, coldOpenActive, goingLiveActive, showHistory, showSettings])
+  }, [phase, viewTier, coldOpenActive, goingLiveActive, overlay])
 
   // ─── Force-expand on Beat Check ───
   useEffect(() => {
@@ -165,27 +178,22 @@ export default function App() {
   // ─── Onboarding completion handler ───
   const handleOnboardingComplete = useCallback((enterRoom: boolean) => {
     localStorage.setItem('showtime-onboarding-complete', 'true')
-    setShowOnboarding(false)
+    send({ type: 'CLOSE_OVERLAY' })
     if (enterRoom) {
       send({ type: 'ENTER_WRITERS_ROOM' })
     }
   }, [send])
 
-  // ─── Help button opens help dialog ───
-  const handleHelpClick = useCallback(() => {
-    setShowHelp(true)
-  }, [])
-
   // ─── View routing ───
   const renderView = () => {
     // Settings overlay
     if (showSettings) {
-      return <SettingsView key="settings" onBack={() => setShowSettings(false)} />
+      return <SettingsView key="settings" onBack={() => send({ type: 'CLOSE_OVERLAY' })} />
     }
 
     // History overlay
     if (showHistory) {
-      return <HistoryView key="history" onBack={() => setShowHistory(false)} />
+      return <HistoryView key="history" onBack={() => send({ type: 'CLOSE_OVERLAY' })} />
     }
 
     // Onboarding takes priority on first launch
@@ -212,11 +220,11 @@ export default function App() {
     // Full-screen phases render regardless of viewTier
     switch (phase) {
       case 'no_show':
-        return <DarkStudioView key="dark-studio" onShowHistory={() => setShowHistory(true)} />
+        return <DarkStudioView key="dark-studio" />
       case 'writers_room':
         return <WritersRoomView key="writers-room" />
       case 'strike':
-        return <StrikeView key="strike" onShowHistory={() => setShowHistory(true)} />
+        return <StrikeView key="strike" />
     }
 
     // Live/intermission/director — tier-based routing
@@ -224,22 +232,22 @@ export default function App() {
     switch (viewTier) {
       case 'micro':
         return timerDisplay === 'menubar'
-          ? <CompactView key="compact" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
-          : <PillView key="pill" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
+          ? <CompactView key="compact" />
+          : <PillView key="pill" />
       case 'compact':
-        return <CompactView key="compact" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
+        return <CompactView key="compact" />
       case 'dashboard':
         return <DashboardView key="dashboard" />
       case 'expanded':
       default:
-        return <ExpandedView key="expanded" onShowHistory={() => setShowHistory(true)} onShowSettings={() => setShowSettings(true)} />
+        return <ExpandedView key="expanded" />
     }
   }
 
   return (
     <div data-testid="showtime-app" className="w-full h-full relative bg-transparent flex flex-col">
       {/* Help button — visible on every view except onboarding, transitions, pill, and compact */}
-      {!showOnboarding && !coldOpenActive && !goingLiveActive && !showHistory && isExpanded && viewTier !== 'micro' && viewTier !== 'compact' && (
+      {overlay === 'none' && !coldOpenActive && !goingLiveActive && isExpanded && viewTier !== 'micro' && viewTier !== 'compact' && (
         <HelpButton
           phase={showSettings ? 'settings' : phase}
           className="absolute right-3 top-3.5"
@@ -248,7 +256,6 @@ export default function App() {
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>
-      <HelpDialog open={showHelp} onOpenChange={setShowHelp} />
       <BeatCheckModal />
     </div>
   )

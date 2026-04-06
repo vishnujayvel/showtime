@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showtime Progress Bar Concepts</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --studio-bg: #0d0d0f;
+    --surface: #1a1a1e;
+    --surface-hover: #242428;
+    --accent: #d97757;
+    --onair: #ef4444;
+    --beat: #f59e0b;
+    --txt-primary: #e8e6e0;
+    --txt-secondary: #9a9890;
+    --txt-muted: #5a5855;
+  }
+
+  body {
+    background: var(--studio-bg);
+    color: var(--txt-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 48px;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: -16px;
+  }
+
+  .variants {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .variant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .variant-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--txt-secondary);
+    font-family: monospace;
+  }
+
+  /* ---- Pill Container (shared) ---- */
+  .pill {
+    width: 320px;
+    height: 48px;
+    border-radius: 9999px;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ---- Pill Content ---- */
+  .pill-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .tally-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--onair);
+    flex-shrink: 0;
+    animation: tally-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+  }
+
+  @keyframes tally-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
+    50% { opacity: 0.5; box-shadow: 0 0 2px rgba(239, 68, 68, 0.3); }
+  }
+
+  .act-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+
+  .timer {
+    font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--txt-primary);
+    margin-left: auto;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Bar Track (shared for spotlight & curtain) ---- */
+  .bar-track {
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+  }
+
+  /* ======================================================
+     VARIANT 1: SPOTLIGHT NARROWING
+     ====================================================== */
+  .spotlight-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 2px;
+  }
+
+  .spotlight-bar .beam {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      ellipse var(--spot-width, 100%) 100% at 50% 50%,
+      var(--spot-color, #d97757) 0%,
+      rgba(217, 119, 87, 0.4) 40%,
+      rgba(217, 119, 87, 0.05) 70%,
+      transparent 100%
+    );
+    transition: none;
+  }
+
+  .spotlight-bar .beam.urgent {
+    animation: spotlight-pulse 0.8s ease-in-out infinite;
+  }
+
+  @keyframes spotlight-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  /* ======================================================
+     VARIANT 2: SEGMENTED BLOCKS
+     ====================================================== */
+  .segments-track {
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 8px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .segment {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--accent);
+    opacity: 1;
+    transform: scaleY(1);
+    transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                background 0.3s ease,
+                box-shadow 0.3s ease;
+  }
+
+  .segment.gone {
+    opacity: 0;
+    transform: scaleY(0.3) scaleX(0.8);
+  }
+
+  .segment.active {
+    box-shadow: 0 0 8px rgba(217, 119, 87, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.15);
+    background: var(--accent);
+  }
+
+  .segment.warning {
+    background: var(--beat);
+  }
+
+  .segment.danger {
+    background: var(--onair);
+  }
+
+  .segment.warning.active {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.15);
+  }
+
+  .segment.danger.active {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6), inset 0 0 4px rgba(255, 255, 255, 0.15);
+  }
+
+  /* ======================================================
+     VARIANT 3: STAGE CURTAIN
+     ====================================================== */
+  .curtain-track {
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent);
+    overflow: hidden;
+  }
+
+  .curtain-left,
+  .curtain-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--surface);
+    transition: width 0.15s ease-out, box-shadow 0.3s ease;
+    z-index: 1;
+  }
+
+  .curtain-left {
+    left: 0;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .curtain-right {
+    right: 0;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .curtain-left.urgent,
+  .curtain-right.urgent {
+    box-shadow: inset 0 0 6px rgba(239, 68, 68, 0.8);
+    animation: curtain-glow 1s ease-in-out infinite;
+  }
+
+  @keyframes curtain-glow {
+    0%, 100% { box-shadow: inset 0 0 4px rgba(239, 68, 68, 0.5); }
+    50% { box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.9); }
+  }
+
+  .curtain-center-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(217, 119, 87, 0.4) 50%, transparent 100%);
+    z-index: 0;
+  }
+
+  /* ---- Reset button ---- */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  button.reset-btn {
+    font-family: monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--txt-muted);
+    background: transparent;
+    color: var(--txt-secondary);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  button.reset-btn:hover {
+    border-color: var(--accent);
+    color: var(--txt-primary);
+  }
+
+  /* ---- Timer coloring ---- */
+  .timer.urgent {
+    color: var(--onair);
+  }
+
+  .timer.warning {
+    color: var(--beat);
+  }
+</style>
+</head>
+<body>
+
+<h1>Progress Bar Concepts</h1>
+
+<div class="variants">
+
+  <!-- VARIANT 1: SPOTLIGHT NARROWING -->
+  <div class="variant">
+    <span class="variant-label">Spotlight</span>
+    <div class="pill" id="pill-spotlight">
+      <div class="pill-content">
+        <div class="tally-dot"></div>
+        <span class="act-name">Deep Work</span>
+        <span class="timer" id="timer-spotlight">00:30</span>
+      </div>
+      <div class="bar-track">
+        <div class="spotlight-bar">
+          <div class="beam" id="spotlight-beam"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT 2: SEGMENTED BLOCKS -->
+  <div class="variant">
+    <span class="variant-label">Segments</span>
+    <div class="pill" id="pill-segments">
+      <div class="pill-content">
+        <div class="tally-dot"></div>
+        <span class="act-name">Deep Work</span>
+        <span class="timer" id="timer-segments">00:30</span>
+      </div>
+      <div class="segments-track" id="segments-track">
+        <div class="segment" data-index="0"></div>
+        <div class="segment" data-index="1"></div>
+        <div class="segment" data-index="2"></div>
+        <div class="segment" data-index="3"></div>
+        <div class="segment" data-index="4"></div>
+        <div class="segment" data-index="5"></div>
+        <div class="segment" data-index="6"></div>
+        <div class="segment" data-index="7"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT 3: STAGE CURTAIN -->
+  <div class="variant">
+    <span class="variant-label">Curtain</span>
+    <div class="pill" id="pill-curtain">
+      <div class="pill-content">
+        <div class="tally-dot"></div>
+        <span class="act-name">Deep Work</span>
+        <span class="timer" id="timer-curtain">00:30</span>
+      </div>
+      <div class="curtain-track">
+        <div class="curtain-center-glow"></div>
+        <div class="curtain-left" id="curtain-left"></div>
+        <div class="curtain-right" id="curtain-right"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button class="reset-btn" id="reset-btn">Reset</button>
+</div>
+
+<script>
+  const TOTAL_DURATION = 30; // seconds
+  const SEGMENT_COUNT = 8;
+  let startTime = Date.now();
+  let animationFrame;
+
+  // DOM refs
+  const timerSpotlight = document.getElementById('timer-spotlight');
+  const timerSegments = document.getElementById('timer-segments');
+  const timerCurtain = document.getElementById('timer-curtain');
+  const spotlightBeam = document.getElementById('spotlight-beam');
+  const segments = document.querySelectorAll('.segment');
+  const curtainLeft = document.getElementById('curtain-left');
+  const curtainRight = document.getElementById('curtain-right');
+  const resetBtn = document.getElementById('reset-btn');
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function tick() {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const remaining = Math.max(0, TOTAL_DURATION - elapsed);
+    const progress = remaining / TOTAL_DURATION; // 1 = full, 0 = done
+    const timeStr = formatTime(remaining);
+    const isUrgent = progress < 0.2;
+    const isWarning = progress < 0.35 && !isUrgent;
+
+    // Update all timers
+    [timerSpotlight, timerSegments, timerCurtain].forEach(function(el) {
+      el.textContent = timeStr;
+      el.classList.toggle('urgent', isUrgent);
+      el.classList.toggle('warning', isWarning);
+    });
+
+    // ---- Spotlight ----
+    // Width goes from 100% to ~8% as progress decreases
+    var spotWidth = Math.max(8, progress * 100);
+    var spotColor = isUrgent ? '#ef4444' : '#d97757';
+    spotlightBeam.style.background =
+      'radial-gradient(ellipse ' + spotWidth + '% 100% at 50% 50%, ' +
+      spotColor + ' 0%, ' +
+      (isUrgent ? 'rgba(239,68,68,0.4)' : 'rgba(217,119,87,0.4)') + ' 40%, ' +
+      (isUrgent ? 'rgba(239,68,68,0.05)' : 'rgba(217,119,87,0.05)') + ' 70%, ' +
+      'transparent 100%)';
+    spotlightBeam.classList.toggle('urgent', isUrgent);
+
+    // ---- Segments ----
+    // Each segment represents 1/8 of total time
+    var activeSegmentFloat = (1 - progress) * SEGMENT_COUNT; // 0..8
+    var consumedCount = Math.floor(activeSegmentFloat);
+    var currentIndex = SEGMENT_COUNT - 1 - consumedCount; // index being consumed (right to left)
+
+    segments.forEach(function(seg, i) {
+      var idx = SEGMENT_COUNT - 1 - i; // reverse: rightmost = highest index conceptually
+      var segIndex = i; // actual DOM index (0=left, 7=right)
+
+      // Segments disappear from right to left
+      var isGone = segIndex > currentIndex;
+      var isActive = segIndex === currentIndex;
+      var isLastTwo = segIndex <= 1;
+
+      seg.classList.toggle('gone', isGone);
+      seg.classList.toggle('active', isActive && !isGone);
+
+      // Color the last two segments
+      if (segIndex === 1) {
+        seg.classList.toggle('warning', !isGone);
+        seg.classList.remove('danger');
+      } else if (segIndex === 0) {
+        seg.classList.toggle('danger', !isGone);
+        seg.classList.remove('warning');
+      } else {
+        seg.classList.remove('warning');
+        seg.classList.remove('danger');
+      }
+    });
+
+    // ---- Curtain ----
+    // Each curtain covers half of the consumed progress
+    var curtainWidth = ((1 - progress) / 2) * 100;
+    curtainLeft.style.width = curtainWidth + '%';
+    curtainRight.style.width = curtainWidth + '%';
+    curtainLeft.classList.toggle('urgent', isUrgent);
+    curtainRight.classList.toggle('urgent', isUrgent);
+
+    // Loop if done
+    if (remaining <= 0) {
+      startTime = Date.now();
+    }
+
+    animationFrame = requestAnimationFrame(tick);
+  }
+
+  function reset() {
+    startTime = Date.now();
+    segments.forEach(function(seg) {
+      seg.classList.remove('gone', 'active', 'warning', 'danger');
+    });
+  }
+
+  resetBtn.addEventListener('click', reset);
+
+  // Start
+  tick();
+</script>
+
+</body>
+</html>
