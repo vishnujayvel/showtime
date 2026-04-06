@@ -19,12 +19,7 @@ const PHASE_INFO: Record<string, { label: string; description: string }> = {
   no_show: { label: 'Dark Studio', description: 'No show running yet.' },
 }
 
-interface PillViewProps {
-  onShowHistory?: () => void
-  onShowSettings?: () => void
-}
-
-export function PillView({ onShowHistory, onShowSettings }: PillViewProps) {
+export function PillView() {
   const phase = useShowPhase()
   const viewTier = useShowContext((ctx) => ctx.viewTier)
   const send = useShowSend()
@@ -144,8 +139,6 @@ export function PillView({ onShowHistory, onShowSettings }: PillViewProps) {
         {/* View menu */}
         <ViewMenu
           view="pill"
-          onShowHistory={onShowHistory}
-          onShowSettings={onShowSettings}
         />
       </div>
       {showStrip && <MiniRundownStrip />}

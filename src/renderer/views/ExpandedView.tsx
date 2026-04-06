@@ -21,12 +21,7 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
-interface ExpandedViewProps {
-  onShowHistory?: () => void
-  onShowSettings?: () => void
-}
-
-export function ExpandedView({ onShowHistory, onShowSettings }: ExpandedViewProps) {
+export function ExpandedView() {
   const phase = useShowPhase()
   const acts = useShowContext((ctx) => ctx.acts)
   const currentAct = useShowSelector(showSelectors.currentAct)
@@ -71,8 +66,6 @@ export function ExpandedView({ onShowHistory, onShowSettings }: ExpandedViewProp
           </button>
           <ViewMenu
             view="expanded"
-            onShowHistory={onShowHistory}
-            onShowSettings={onShowSettings}
           />
           <button
             onClick={collapseViewTier}

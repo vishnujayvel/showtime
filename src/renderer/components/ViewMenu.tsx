@@ -12,11 +12,9 @@ import { cn } from '../lib/utils'
 
 interface ViewMenuProps {
   view: 'pill' | 'compact' | 'expanded'
-  onShowHistory?: () => void
-  onShowSettings?: () => void
 }
 
-export function ViewMenu({ view, onShowHistory, onShowSettings }: ViewMenuProps) {
+export function ViewMenu({ view }: ViewMenuProps) {
   const phase = useShowPhase()
   const send = useShowSend()
 
@@ -100,26 +98,22 @@ export function ViewMenu({ view, onShowHistory, onShowSettings }: ViewMenuProps)
         {/* Navigation group */}
         <DropdownMenuSeparator className="bg-white/[0.06]" />
         <DropdownMenuGroup>
-          {onShowHistory && (
-            <DropdownMenuItem
-              onClick={onShowHistory}
-              data-testid="menu-history"
-              className="h-8 text-sm text-txt-primary hover:bg-surface-hover rounded-lg cursor-pointer"
-            >
-              <span className="text-txt-muted mr-2">&#128218;</span>
-              Show History
-            </DropdownMenuItem>
-          )}
-          {onShowSettings && (
-            <DropdownMenuItem
-              onClick={onShowSettings}
-              data-testid="menu-settings"
-              className="h-8 text-sm text-txt-primary hover:bg-surface-hover rounded-lg cursor-pointer"
-            >
-              <span className="text-txt-muted mr-2">&#9881;</span>
-              Settings
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem
+            onClick={() => send({ type: 'VIEW_HISTORY' })}
+            data-testid="menu-history"
+            className="h-8 text-sm text-txt-primary hover:bg-surface-hover rounded-lg cursor-pointer"
+          >
+            <span className="text-txt-muted mr-2">&#128218;</span>
+            Show History
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => send({ type: 'VIEW_SETTINGS' })}
+            data-testid="menu-settings"
+            className="h-8 text-sm text-txt-primary hover:bg-surface-hover rounded-lg cursor-pointer"
+          >
+            <span className="text-txt-muted mr-2">&#9881;</span>
+            Settings
+          </DropdownMenuItem>
         </DropdownMenuGroup>
 
         {/* Quit group (pill view only) */}

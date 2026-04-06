@@ -164,14 +164,12 @@ test.describe('Onboarding (#15)', () => {
     await navigateAndWait(page)
 
     const helpBtn = page.getByTestId('help-button').first()
-    if (await helpBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      // Help button exists and is clickable — opens external docs (no in-app dialog)
-      await expect(helpBtn).toBeVisible()
+    await expect(helpBtn).toBeVisible({ timeout: 5000 })
+    await helpBtn.click()
 
-      // Onboarding should NOT be triggered by presence of help button
-      const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
-      expect(flag).toBe('true')
-    }
+    // Onboarding should remain completed after help interaction
+    const flag = await page.evaluate(() => localStorage.getItem('showtime-onboarding-complete'))
+    expect(flag).toBe('true')
     await screenshot(page, 'onboarding-10-help-button')
   })
 })

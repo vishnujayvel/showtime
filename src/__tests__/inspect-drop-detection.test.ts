@@ -52,14 +52,12 @@ describe('inspect drop detection (Layer 1)', () => {
       actor.stop()
     })
 
-    it('returns false for RESET in no_show (explicit no-op overrides wildcard)', () => {
+    it('returns true for RESET in no_show (overlay region handles it)', () => {
       const actor = createTestActor()
       const snapshot = actor.getSnapshot()
-      // RESET in no_show is defined as `RESET: {}` — intentional no-op.
-      // This phase-level handler takes priority over the root wildcard,
-      // and since it has no target/actions, can() returns false.
-      // Layer 1 (inspect callback) catches this class of drops.
-      expect(snapshot.can({ type: 'RESET' })).toBe(false)
+      // RESET in no_show phase is `RESET: {}` (no-op), but the parallel
+      // overlay region has `RESET: '.none'`, so can() returns true.
+      expect(snapshot.can({ type: 'RESET' })).toBe(true)
       actor.stop()
     })
 
@@ -111,12 +109,12 @@ describe('inspect drop detection (Layer 1)', () => {
       actor.stop()
     })
 
-    it('no-op events return false from can() (Layer 1 catches them)', () => {
+    it('RESET in no_show is handled by overlay region (can() returns true)', () => {
       const actor = createActor(showMachine)
       actor.start()
 
-      // RESET in no_show → explicit no-op, can() returns false
-      expect(actor.getSnapshot().can({ type: 'RESET' })).toBe(false)
+      // RESET in no_show phase is a no-op, but overlay region handles it
+      expect(actor.getSnapshot().can({ type: 'RESET' })).toBe(true)
 
       // Sending it still doesn't crash or change phase
       actor.send({ type: 'RESET' })
@@ -138,11 +136,11 @@ describe('inspect drop detection (Layer 1)', () => {
       actor.stop()
     })
 
-    it('Layer 1 (inspect) catches events with explicit no-op handlers', () => {
+    it('RESET in no_show is now handled (overlay region has RESET handler)', () => {
       const actor = createTestActor()
-      // RESET in no_show has `RESET: {}` → no-op overrides wildcard
-      // can() returns false → Layer 1 inspect callback detects this
-      expect(actor.getSnapshot().can({ type: 'RESET' })).toBe(false)
+      // RESET in no_show phase is a no-op, but the parallel overlay region
+      // has RESET: '.none', so can() returns true
+      expect(actor.getSnapshot().can({ type: 'RESET' })).toBe(true)
       actor.stop()
     })
   })

@@ -123,33 +123,28 @@ describe('ViewMenu', () => {
     })
   })
 
-  describe('navigation callbacks', () => {
-    it('calls onShowHistory when Show History clicked', () => {
+  describe('overlay navigation via XState', () => {
+    it('always shows history and settings items', () => {
       goLive()
-      const onShowHistory = vi.fn()
-      render(<ViewMenu view="expanded" onShowHistory={onShowHistory} />)
+      render(<ViewMenu view="expanded" />)
+      expect(screen.getByTestId('menu-history')).toBeInTheDocument()
+      expect(screen.getByTestId('menu-settings')).toBeInTheDocument()
+    })
+
+    it('dispatches VIEW_HISTORY when Show History clicked', () => {
+      goLive()
+      render(<ViewMenu view="expanded" />)
       fireEvent.click(screen.getByTestId('menu-history'))
-      expect(onShowHistory).toHaveBeenCalledOnce()
+      const snap = showActor.getSnapshot()
+      expect((snap.value as Record<string, unknown>).overlay).toBe('history')
     })
 
-    it('calls onShowSettings when Settings clicked', () => {
+    it('dispatches VIEW_SETTINGS when Settings clicked', () => {
       goLive()
-      const onShowSettings = vi.fn()
-      render(<ViewMenu view="expanded" onShowSettings={onShowSettings} />)
+      render(<ViewMenu view="expanded" />)
       fireEvent.click(screen.getByTestId('menu-settings'))
-      expect(onShowSettings).toHaveBeenCalledOnce()
-    })
-
-    it('does not show history item when callback not provided', () => {
-      goLive()
-      render(<ViewMenu view="expanded" />)
-      expect(screen.queryByTestId('menu-history')).not.toBeInTheDocument()
-    })
-
-    it('does not show settings item when callback not provided', () => {
-      goLive()
-      render(<ViewMenu view="expanded" />)
-      expect(screen.queryByTestId('menu-settings')).not.toBeInTheDocument()
+      const snap = showActor.getSnapshot()
+      expect((snap.value as Record<string, unknown>).overlay).toBe('settings')
     })
   })
 
