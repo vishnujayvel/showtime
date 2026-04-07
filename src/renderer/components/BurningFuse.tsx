@@ -73,6 +73,7 @@ export function getFuseUrgencyClass(progress: number): string {
   return 'text-txt-primary'
 }
 
+/** Canvas-animated fuse that burns down with ember glow, color shifts, and spark particles as time runs out. */
 export function BurningFuse({ size, progress }: BurningFuseProps) {
   const trackRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number>(0)

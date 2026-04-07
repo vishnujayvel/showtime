@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { isMuted, setMuted } from '../hooks/useAudio'
 
+/** Toggle button that mutes or unmutes all app audio cues. */
 export function MuteToggle() {
   const [muted, setMutedState] = useState(isMuted)
 

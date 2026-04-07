@@ -15,6 +15,7 @@ const sizeClasses: Record<NonNullable<BeatCounterProps['size']>, string> = {
   xl: 'text-3xl',
 }
 
+/** Row of gold/gray star icons showing how many presence beats have been locked out of the threshold. */
 export function BeatCounter({
   size = 'md',
   showLabel = false,

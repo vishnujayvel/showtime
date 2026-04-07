@@ -30,6 +30,7 @@ const VCR_CASSETTE_QUEUE: string[] | null = process.env.SHOWTIME_CASSETTE_NAME
 // Reads SKILL.md from disk, strips YAML frontmatter and DB section,
 // prepends Showtime-specific UI rendering hints.
 
+/** Builds the Showtime Director system prompt by combining UI hints with the SKILL.md content. */
 export function buildShowtimeSystemPrompt(): string {
   const uiHints = [
     'You are the Showtime Director — an ADHD-friendly day-planning companion',
@@ -119,6 +120,7 @@ function log(msg: string): void {
   _log('RunManager', msg)
 }
 
+/** Represents an active or recently-finished Claude subprocess with its diagnostic state. */
 export interface RunHandle {
   runId: string
   sessionId: string | null
@@ -137,16 +139,7 @@ export interface RunHandle {
   permissionDenials: Array<{ tool_name: string; tool_use_id: string }>
 }
 
-/**
- * RunManager: spawns one `claude -p` process per run, parses NDJSON,
- * emits normalized events, handles cancel, and keeps diagnostic ring buffers.
- *
- * Events emitted:
- *  - 'normalized' (runId, NormalizedEvent)
- *  - 'raw' (runId, ClaudeEvent)  — for logging/debugging
- *  - 'exit' (runId, code, signal, sessionId)
- *  - 'error' (runId, Error)
- */
+/** Spawns Claude subprocess runs, parses NDJSON output, emits normalized events, and manages VCR cassette record/playback. */
 export class RunManager extends EventEmitter {
   private activeRuns = new Map<string, RunHandle>()
   /** Holds recently-finished runs so diagnostics survive past process exit */

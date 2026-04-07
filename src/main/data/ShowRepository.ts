@@ -4,9 +4,12 @@ import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { shows, acts, claudeContexts } from './schema'
 import type { ShowHistoryEntry, ShowDetailEntry } from './types'
 
+/** Inferred select type for a row in the shows table. */
 export type ShowRow = typeof shows.$inferSelect
+/** Inferred insert type for a row in the shows table. */
 export type ShowInsert = typeof shows.$inferInsert
 
+/** Persists and retrieves daily show records including history and detail views. */
 export class ShowRepository {
   constructor(private db: BetterSQLite3Database) {}
 

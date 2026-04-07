@@ -1,7 +1,4 @@
-/**
- * Builds the refinement prompt sent to Claude when the user wants to modify an existing lineup.
- * Sends user intent + current lineup state. System prompt handles identity and format.
- */
+/** Builds the refinement prompt sent to Claude to modify an existing lineup based on user intent. */
 export function buildRefinementPrompt(
   message: string,
   energy: string,

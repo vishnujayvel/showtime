@@ -2,6 +2,7 @@ import { eq, and, gte, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { metrics } from './schema'
 
+/** Aggregated statistics for a named performance metric. */
 export interface MetricsSummary {
   avg: number
   p95: number
@@ -10,6 +11,7 @@ export interface MetricsSummary {
   count: number
 }
 
+/** Records, summarizes, and prunes performance timing metrics. */
 export class MetricsRepository {
   constructor(private db: BetterSQLite3Database) {}
 

@@ -5,6 +5,7 @@ import { ClapperboardBadge } from './ClapperboardBadge'
 import { Button } from '../ui/button'
 import { playAudioCue } from '../hooks/useAudio'
 
+/** Modal overlay asking whether the user experienced a moment of presence after an act completes. */
 export function BeatCheckModal() {
   const beatCheckPending = useShowContext((ctx) => ctx.beatCheckPending)
   const celebrationActive = useShowContext((ctx) => ctx.celebrationActive)

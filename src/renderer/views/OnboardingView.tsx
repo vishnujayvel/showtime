@@ -43,6 +43,7 @@ const steps = [
 
 import { springDefault as springTransition } from '../constants/animations'
 
+/** Multi-step onboarding walkthrough introducing the Show metaphor to new users. */
 export function OnboardingView({ onComplete, onSkip }: OnboardingViewProps) {
   const [currentStep, setCurrentStep] = useState(0)
 

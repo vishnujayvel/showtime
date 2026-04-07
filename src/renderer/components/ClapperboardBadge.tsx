@@ -23,6 +23,7 @@ function resolveColors(sketch: string) {
   return ACCENT_CLASSES
 }
 
+/** Monospaced badge displaying the sketch category, act number, and optional duration or status. */
 export function ClapperboardBadge({
   sketch,
   actNumber,

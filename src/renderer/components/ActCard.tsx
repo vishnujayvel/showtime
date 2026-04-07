@@ -246,6 +246,7 @@ function SidebarActCard({ act, timeLabel, timeDrifted, plannedTimeLabel, onReord
   )
 }
 
+/** Renders an act as either a full editable card or a compact sidebar row based on the variant prop. */
 export function ActCard({ act, variant, actNumber, onReorder, onRemove, onUpdateName, onUpdateDuration, timeLabel, timeDrifted, plannedTimeLabel, pinned }: ActCardProps) {
   if (variant === 'sidebar') {
     return (

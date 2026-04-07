@@ -6,10 +6,7 @@ function isCalendarEvent(obj: unknown): obj is CalendarEvent {
   return typeof o.title === 'string' && typeof o.start === 'string' && typeof o.end === 'string'
 }
 
-/**
- * Parse calendar events from Claude's response text.
- * Expects a JSON array of CalendarEvent objects, optionally wrapped in markdown fences.
- */
+/** Parses an array of CalendarEvent objects from Claude's response text, supporting fenced and bare JSON. */
 export function tryParseCalendarEvents(text: string): CalendarEvent[] | null {
   // Try fenced JSON blocks first
   const fenced = text.match(/```(?:json)?\s*\n([\s\S]*?)```/)

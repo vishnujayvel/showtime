@@ -2,9 +2,12 @@ import { eq, asc } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { acts } from './schema'
 
+/** Inferred select type for a row in the acts table. */
 export type ActRow = typeof acts.$inferSelect
+/** Inferred insert type for a row in the acts table. */
 export type ActInsert = typeof acts.$inferInsert
 
+/** Persists and retrieves act records from SQLite. */
 export class ActRepository {
   constructor(private db: BetterSQLite3Database) {}
 

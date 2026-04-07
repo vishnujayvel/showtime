@@ -14,6 +14,7 @@ import { resolveDbPath } from './db-path'
 
 // ─── Types ───
 
+/** Row shape for a show record read from the shows table. */
 export interface ShowRecord {
   id: string
   phase: string
@@ -26,6 +27,7 @@ export interface ShowRecord {
   planText: string | null
 }
 
+/** Row shape for an act record read from the acts table. */
 export interface ActRecord {
   id: string
   showId: string
@@ -42,11 +44,13 @@ export interface ActRecord {
   actualEndAt: number | null
 }
 
+/** A show and its associated acts for a single day. */
 export interface TodayShow {
   show: ShowRecord
   acts: ActRecord[]
 }
 
+/** A single act entry in a lineup payload. */
 export interface LineupAct {
   name: string
   sketch: string
@@ -54,6 +58,7 @@ export interface LineupAct {
   reason?: string
 }
 
+/** A complete lineup with acts, beat threshold, and optional opening note. */
 export interface Lineup {
   acts: LineupAct[]
   beatThreshold: number
@@ -70,10 +75,7 @@ function openDb(dbPath?: string): Database.Database {
   return db
 }
 
-/**
- * Read today's show and acts from the database.
- * Returns null if no show exists for today or if the DB file doesn't exist.
- */
+/** Reads today's show and acts from the database, returning null if none exists. */
 export function readToday(dbPath?: string): TodayShow | null {
   const path = dbPath ?? resolveDbPath()
   if (!existsSync(path)) return null
@@ -110,10 +112,7 @@ export function readToday(dbPath?: string): TodayShow | null {
   }
 }
 
-/**
- * Write a lineup to the database, creating or updating today's show.
- * Replaces any existing acts for today.
- */
+/** Writes a lineup to the database, upserting today's show and replacing all existing acts. */
 export function writeLineup(lineup: Lineup, energy?: string, dbPath?: string): void {
   const path = dbPath ?? resolveDbPath()
   const db = openDb(path)
@@ -161,10 +160,7 @@ export function writeLineup(lineup: Lineup, energy?: string, dbPath?: string): v
   }
 }
 
-/**
- * Get the current phase of today's show.
- * Returns null if no show exists for today.
- */
+/** Returns the current phase of today's show, or null if no show exists. */
 export function getPhase(dbPath?: string): string | null {
   const path = dbPath ?? resolveDbPath()
   if (!existsSync(path)) return null

@@ -7,6 +7,7 @@
 import { create } from 'zustand'
 import type { CalendarEvent, CalendarFetchStatus } from '../../shared/types'
 
+/** Where the countdown timer is rendered: floating pill or macOS menu bar. */
 export type TimerDisplay = 'pill' | 'menubar'
 
 interface UIStoreState {
@@ -30,8 +31,10 @@ interface UIStoreActions {
   toggleTimerDisplay: () => void
 }
 
+/** Combined state and actions type for the UI Zustand store. */
 export type UIStore = UIStoreState & UIStoreActions
 
+/** Zustand store for non-phase UI state like calendar cache, Claude session, and timer display. */
 export const useUIStore = create<UIStore>()((set) => ({
   calendarAvailable: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-gcal-connected') === 'true',
   calendarEnabled: typeof localStorage !== 'undefined' && localStorage.getItem('showtime-calendar-enabled') === 'true',

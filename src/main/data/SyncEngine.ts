@@ -2,6 +2,7 @@ import type { DataService } from './DataService'
 import { localToday } from '../../shared/date-utils'
 import type { ShowStateSnapshot, TimelineEventInput } from './types'
 
+/** Debounced bridge that syncs XState snapshots to SQLite and hydrates state on startup. */
 export class SyncEngine {
   private debounceTimer: ReturnType<typeof setTimeout> | null = null
   private pendingSnapshot: ShowStateSnapshot | null = null

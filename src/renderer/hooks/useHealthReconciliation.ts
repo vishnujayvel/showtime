@@ -3,13 +3,7 @@ import { useSessionStore } from '../stores/sessionStore'
 
 const HEALTH_POLL_INTERVAL_MS = 1500
 
-/**
- * Health reconciliation loop: periodically compares running tabs
- * against backend health and unsticks UI when external CLI/session
- * changes happen.
- *
- * Copied from reference architecture (CopilotPill.tsx lines 1242-1271).
- */
+/** Polls backend health to detect stale running tabs and reconciles UI status accordingly. */
 export function useHealthReconciliation() {
   useEffect(() => {
     const timer = setInterval(async () => {

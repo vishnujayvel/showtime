@@ -2,9 +2,12 @@ import { eq, asc, sql } from 'drizzle-orm'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { timelineEvents, acts } from './schema'
 
+/** Inferred select type for a row in the timeline_events table. */
 export type TimelineEventRow = typeof timelineEvents.$inferSelect
+/** Inferred insert type for a row in the timeline_events table. */
 export type TimelineEventInsert = typeof timelineEvents.$inferInsert
 
+/** Represents the time drift between planned and actual duration for a single act. */
 export interface ActDrift {
   actId: string | null
   actName: string | null
@@ -13,6 +16,7 @@ export interface ActDrift {
   actualMs: number
 }
 
+/** Records and queries timeline events and computes schedule drift. */
 export class TimelineRepository {
   constructor(private db: BetterSQLite3Database) {}
 

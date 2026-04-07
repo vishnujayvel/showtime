@@ -1,4 +1,4 @@
-// Re-export from shared types — these were moved to fix process boundary violations
+/** Re-exports shared data types used across the main-process data layer. */
 export type {
   ShowStateSnapshot,
   ActSnapshot,

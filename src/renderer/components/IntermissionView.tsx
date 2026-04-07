@@ -13,6 +13,7 @@ const AFFIRMATIONS = [
   'The stage will be here when you\'re ready.',
 ]
 
+/** "We'll Be Right Back" card shown during intermission with a random affirmation and dimmed beat counter. */
 export function IntermissionView() {
   const send = useShowSend()
   const [affirmation] = useState(

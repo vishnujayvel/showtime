@@ -18,6 +18,7 @@ function formatDuration(startMs: number): string {
   return `${hours}h ${mins}m`
 }
 
+/** End-of-show summary with verdict, stats, act recap, and celebration confetti for DAY WON. */
 export function StrikeView() {
   const verdict = useShowContext((ctx) => ctx.verdict)
   const acts = useShowContext((ctx) => ctx.acts)

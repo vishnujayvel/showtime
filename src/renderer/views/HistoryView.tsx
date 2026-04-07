@@ -63,6 +63,7 @@ function formatDuration(ms: number): string {
 
 import { springGentle as springTransition } from '../constants/animations'
 
+/** Scrollable list of past shows with expandable detail rows for acts and plan text. */
 export function HistoryView({ onBack }: HistoryViewProps) {
   const [history, setHistory] = useState<ShowHistoryEntry[]>([])
   const [loading, setLoading] = useState(true)
