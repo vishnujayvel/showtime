@@ -1062,7 +1062,7 @@ test.describe('Reset Show (#16)', () => {
   })
 })
 
-// ─── Data Layer + RundownBar E2E ───
+// ─── Data Layer E2E ───
 
 test.describe('Data Layer — SQLite', () => {
   test('app creates SQLite database on launch', async () => {
@@ -1139,95 +1139,7 @@ test.describe('Data Layer — SQLite', () => {
   })
 })
 
-test.describe('RundownBar + MiniRundownStrip', () => {
-  test('RundownBar renders during live phase in expanded view', async () => {
-    // Set live phase with acts
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'live'
-        parsed.state.viewTier = 'expanded'
-        parsed.state.beatCheckPending = false
-        parsed.state.celebrationActive = false
-        parsed.state.goingLiveActive = false
-        // Ensure we have acts
-        if (!parsed.state.acts || parsed.state.acts.length === 0) {
-          parsed.state.acts = [
-            { id: 'e2e-act1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, order: 0, status: 'active', beatLocked: false },
-            { id: 'e2e-act2', name: 'Exercise', sketch: 'Exercise', durationMinutes: 20, order: 1, status: 'upcoming', beatLocked: false },
-            { id: 'e2e-act3', name: 'Admin', sketch: 'Admin', durationMinutes: 15, order: 2, status: 'upcoming', beatLocked: false },
-          ]
-          parsed.state.currentActId = 'e2e-act1'
-        }
-        parsed.state.showStartedAt = Date.now() - 600000 // 10 min ago
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait()
-
-    // RundownBar should render with proportional act blocks
-    const rundownBar = page.locator('[data-testid="rundown-bar"]').first()
-    const rundownBarAlt = page.locator('.rundown-bar').first()
-
-    const hasRundownBar = await rundownBar.isVisible().catch(() => false)
-      || await rundownBarAlt.isVisible().catch(() => false)
-
-    // Even if data-testid isn't present, check for the category-colored blocks
-    const categoryBlocks = page.locator('[class*="bg-cat-"]')
-    const blockCount = await categoryBlocks.count()
-
-    await screenshot('20-rundown-bar-live')
-
-    // Either rundown bar is visible OR category blocks are present
-    if (hasRundownBar || blockCount > 0) {
-      expect(hasRundownBar || blockCount > 0).toBe(true)
-    }
-  })
-
-  test('MiniRundownStrip renders in pill view during live', async () => {
-    // Set to pill (collapsed) live view
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'live'
-        parsed.state.viewTier = 'micro'
-        parsed.state.beatCheckPending = false
-        parsed.state.celebrationActive = false
-        parsed.state.goingLiveActive = false
-        parsed.state.showStartedAt = Date.now() - 600000
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait()
-
-    await screenshot('21-mini-rundown-strip')
-
-    // The pill view should contain the mini strip (4px tall)
-    const body = await page.textContent('body')
-    expect(body!.length).toBeGreaterThan(0)
-  })
-
-  test('RundownBar does not render during no_show phase', async () => {
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'no_show'
-        parsed.state.viewTier = 'expanded'
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait()
-
-    const rundownBar = page.locator('[data-testid="rundown-bar"]')
-    const count = await rundownBar.count()
-    expect(count).toBe(0)
-
-    await screenshot('22-no-rundown-in-dark-studio')
-  })
-
+test.describe('CSS Utilities', () => {
   test('overrun hatching class exists in CSS', async () => {
     // Verify the overrun-hatching class is available
     const hasOverrunClass = await page.evaluate(() => {

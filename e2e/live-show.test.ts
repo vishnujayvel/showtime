@@ -102,74 +102,7 @@ test.describe('Race Condition Guards (#11)', () => {
   })
 })
 
-test.describe('RundownBar + MiniRundownStrip', () => {
-  test('RundownBar renders during live phase in expanded view', async ({ mainPage: page }) => {
-    await page.evaluate(() => {
-      const raw = localStorage.getItem('showtime-show-state')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.state.phase = 'live'
-        parsed.state.viewTier = 'expanded'
-        parsed.state.beatCheckPending = false
-        parsed.state.celebrationActive = false
-        parsed.state.goingLiveActive = false
-        if (!parsed.state.acts || parsed.state.acts.length === 0) {
-          parsed.state.acts = [
-            { id: 'e2e-act1', name: 'Deep Work', sketch: 'Deep Work', durationMinutes: 30, order: 0, status: 'active', beatLocked: false },
-            { id: 'e2e-act2', name: 'Exercise', sketch: 'Exercise', durationMinutes: 20, order: 1, status: 'upcoming', beatLocked: false },
-            { id: 'e2e-act3', name: 'Admin', sketch: 'Admin', durationMinutes: 15, order: 2, status: 'upcoming', beatLocked: false },
-          ]
-          parsed.state.currentActId = 'e2e-act1'
-        }
-        parsed.state.showStartedAt = Date.now() - 600000
-        localStorage.setItem('showtime-show-state', JSON.stringify(parsed))
-      }
-    })
-    await navigateAndWait(page)
-
-    const rundownBar = page.locator('[data-testid="rundown-bar"]').first()
-    const rundownBarAlt = page.locator('.rundown-bar').first()
-    const hasRundownBar = await rundownBar.isVisible().catch(() => false)
-      || await rundownBarAlt.isVisible().catch(() => false)
-    const categoryBlocks = page.locator('[class*="bg-cat-"]')
-    const blockCount = await categoryBlocks.count()
-
-    await screenshot(page, '20-rundown-bar-live')
-
-    if (hasRundownBar || blockCount > 0) {
-      expect(hasRundownBar || blockCount > 0).toBe(true)
-    }
-  })
-
-  test('MiniRundownStrip renders in pill view during live', async ({ mainPage: page }) => {
-    await setShowState(page, {
-      phase: 'live',
-      viewTier: 'micro',
-      beatCheckPending: false,
-      celebrationActive: false,
-      goingLiveActive: false,
-      showStartedAt: Date.now() - 600000,
-    })
-
-    await screenshot(page, '21-mini-rundown-strip')
-
-    const body = await page.textContent('body')
-    expect(body!.length).toBeGreaterThan(0)
-  })
-
-  test('RundownBar does not render during no_show phase', async ({ mainPage: page }) => {
-    await setShowState(page, {
-      phase: 'no_show',
-      viewTier: 'expanded',
-    })
-
-    const rundownBar = page.locator('[data-testid="rundown-bar"]')
-    const count = await rundownBar.count()
-    expect(count).toBe(0)
-
-    await screenshot(page, '22-no-rundown-in-dark-studio')
-  })
-
+test.describe('CSS Utilities', () => {
   test('overrun hatching class exists in CSS', async ({ mainPage: page }) => {
     const hasOverrunClass = await page.evaluate(() => {
       const sheets = document.styleSheets

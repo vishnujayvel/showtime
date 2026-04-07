@@ -11,5 +11,5 @@ export const springDefault = { type: 'spring' as const, stiffness: 300, damping:
 /** Gentle spring — used for staggered reveals and slow entrances (Strike, History, Settings) */
 export const springGentle = { type: 'spring' as const, stiffness: 200, damping: 25 }
 
-/** Snappy spring — used for fast-tracking elements (RundownBar, progress fills) */
+/** Snappy spring — used for fast-tracking elements (BurningFuse, progress fills) */
 export const springSnappy = { type: 'spring' as const, stiffness: 400, damping: 40 }
