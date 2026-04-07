@@ -203,34 +203,24 @@ export function BurningFuse({ size, progress }: BurningFuseProps) {
       data-fuse-phase={phase}
     >
       {/* Background track */}
-      <div
-        className="absolute inset-0 rounded-full bg-white/[0.04]"
-        // Dynamic: border radius must match exact height for pill shape
-        style={{ borderRadius: config.height / 2 }}
-      />
+      <div className="absolute inset-0 rounded-full bg-white/[0.04]" />
 
       {/* Burned section (left) */}
       <div
         ref={burnedRef}
-        className="absolute top-0 left-0 bg-white/[0.02]"
-        // Dynamic: width tracks elapsed time, border radius matches height
-        style={{
-          width: `${burnedPercent}%`,
-          height: config.height,
-          borderRadius: config.height / 2,
-        }}
+        className="absolute top-0 left-0 h-full rounded-full bg-white/[0.02]"
+        // dynamic — Tailwind can't express runtime percentage width
+        style={{ width: `${burnedPercent}%` }}
       />
 
       {/* Remaining fuse (right) — color shifts with urgency */}
       <div
         ref={remainingRef}
-        className="absolute top-0"
-        // Dynamic: position, width, gradient color all track remaining time
+        className="absolute top-0 h-full rounded-full"
+        // dynamic — Tailwind can't express runtime position, width, or gradient color
         style={{
           left: `${burnedPercent}%`,
           width: `${Math.max(0, remainingPercent)}%`,
-          height: config.height,
-          borderRadius: config.height / 2,
           background: `linear-gradient(90deg, ${fuseColor} 0%, ${fuseColor}88 70%, ${fuseColor}44 100%)`,
         }}
       />
@@ -239,16 +229,15 @@ export function BurningFuse({ size, progress }: BurningFuseProps) {
       <div
         ref={emberRef}
         className={cn(
-          'fuse-ember-point absolute top-1/2 rounded-full z-[3]',
+          'fuse-ember-point absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full z-[3]',
           phase === 'critical' ? 'animate-[ember-wobble-critical_0.3s_ease-in-out_infinite]' : 'animate-[ember-wobble_0.8s_ease-in-out_infinite]'
         )}
-        // Dynamic: ember size, position, and color all track remaining time
+        // dynamic — Tailwind can't express runtime size, position, and color
         style={{
           width: config.emberSize,
           height: config.emberSize,
           left: `${burnedPercent}%`,
           backgroundColor: emberColor,
-          transform: 'translate(-50%, -50%)',
         }}
       />
 
