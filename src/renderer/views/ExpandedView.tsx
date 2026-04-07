@@ -1,7 +1,6 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
-import { collapseTier } from '../../shared/types'
+import { useShowPhase, useShowContext, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
 import { TimerPanel } from '../panels/TimerPanel'
 import { LineupPanel } from '../panels/LineupPanel'
 import { OnAirIndicator } from '../components/OnAirIndicator'
@@ -9,8 +8,7 @@ import { BeatCounter } from '../components/BeatCounter'
 import { IntermissionView } from '../components/IntermissionView'
 import { DirectorMode } from '../components/DirectorMode'
 import { RundownBar } from '../components/RundownBar'
-import { MuteToggle } from '../components/MuteToggle'
-import { ViewMenu } from '../components/ViewMenu'
+import { Toolbar } from '../components/Toolbar'
 import { formatDateLabel } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
@@ -28,10 +26,6 @@ export function ExpandedView() {
   const currentAct = useShowSelector(showSelectors.currentAct)
   const beatsLocked = useShowContext((ctx) => ctx.beatsLocked)
   const beatThreshold = useShowContext((ctx) => ctx.beatThreshold)
-  const viewTier = useShowContext((ctx) => ctx.viewTier)
-  const send = useShowSend()
-  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
-  const enterDirector = useCallback(() => send({ type: 'ENTER_DIRECTOR' }), [send])
   const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
 
   const dateLabel = useMemo(formatDateLabel, [])
@@ -57,31 +51,7 @@ export function ExpandedView() {
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
-          <MuteToggle />
-          <button
-            onClick={enterDirector}
-            className="px-3 py-1.5 rounded-lg bg-surface-hover text-txt-secondary text-sm font-medium hover:text-txt-primary transition-colors no-drag"
-          >
-            Director
-          </button>
-          <ViewMenu
-            view="expanded"
-          />
-          <button
-            onClick={collapseViewTier}
-            className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
-          >
-            ▼
-          </button>
-          <button
-            onClick={() => window.showtime.quit()}
-            className="px-2 py-1.5 text-txt-muted hover:text-onair transition-colors text-sm no-drag"
-            title="Quit Showtime"
-          >
-            ✕
-          </button>
-        </div>
+        <Toolbar />
       </div>
 
       {/* Rundown Bar — between title bar and main content */}

@@ -1,14 +1,13 @@
 import { useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
-import { expandTier, collapseTier } from '../../shared/types'
-import type { ViewTier } from '../../shared/types'
+import { expandTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { BurningFuse, getFuseUrgencyClass } from '../components/BurningFuse'
 import { MiniRundownStrip } from '../components/MiniRundownStrip'
-import { ViewMenu } from '../components/ViewMenu'
+import { Toolbar } from '../components/Toolbar'
 import { cn } from '../lib/utils'
 
 const PHASE_INFO: Record<string, { label: string; description: string }> = {
@@ -26,8 +25,6 @@ export function PillView() {
   const viewTier = useShowContext((ctx) => ctx.viewTier)
   const send = useShowSend()
   const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
-  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
-  const setViewTier = useCallback((tier: ViewTier) => send({ type: 'SET_VIEW_TIER', tier }), [send])
   const currentAct = useShowSelector(showSelectors.currentAct)
   const { minutes, seconds, isRunning, progress } = useTimer()
 
@@ -125,20 +122,7 @@ export function PillView() {
           )}
         </div>
 
-        {/* Minimize to tray button */}
-        <button
-          className="shrink-0 w-5 h-5 rounded-full border border-white/10 text-txt-muted hover:text-txt-secondary hover:border-white/20 transition-colors flex items-center justify-center text-[10px] font-mono leading-none no-drag"
-          aria-label="Minimize to menu bar"
-          data-testid="pill-minimize-btn"
-          onClick={() => window.showtime.minimizeToTray()}
-        >
-          −
-        </button>
-
-        {/* View menu */}
-        <ViewMenu
-          view="pill"
-        />
+        <Toolbar />
       </div>
       {phase === 'live' && isRunning && (
         <div className="mx-3 mb-1.5">
