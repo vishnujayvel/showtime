@@ -6,7 +6,6 @@ import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
-import { RundownBar } from '../components/RundownBar'
 import { Toolbar } from '../components/Toolbar'
 import { cn } from '../lib/utils'
 
@@ -89,11 +88,6 @@ export function CompactView() {
           )}
         </div>
         <Toolbar />
-      </div>
-
-      {/* RundownBar section */}
-      <div className="px-2">
-        <RundownBar variant="compact" />
       </div>
 
       {/* Status Bar (bottom) */}

@@ -6,7 +6,6 @@ import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { BurningFuse, getFuseUrgencyClass } from '../components/BurningFuse'
-import { MiniRundownStrip } from '../components/MiniRundownStrip'
 import { Toolbar } from '../components/Toolbar'
 import { cn } from '../lib/utils'
 
@@ -129,7 +128,6 @@ export function PillView() {
           <BurningFuse size="pill" progress={progress} />
         </div>
       )}
-      {phase === 'intermission' && <MiniRundownStrip />}
     </motion.div>
   )
 }

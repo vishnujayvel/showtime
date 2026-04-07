@@ -7,7 +7,6 @@ import { OnAirIndicator } from '../components/OnAirIndicator'
 import { BeatCounter } from '../components/BeatCounter'
 import { IntermissionView } from '../components/IntermissionView'
 import { DirectorMode } from '../components/DirectorMode'
-import { RundownBar } from '../components/RundownBar'
 import { Toolbar } from '../components/Toolbar'
 import { formatDateLabel } from '../lib/utils'
 
@@ -53,9 +52,6 @@ export function ExpandedView() {
 
         <Toolbar />
       </div>
-
-      {/* Rundown Bar — between title bar and main content */}
-      <RundownBar variant="full" />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">

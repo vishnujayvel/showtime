@@ -277,30 +277,3 @@ describe('DirectorMode', () => {
   })
 })
 
-// ─── RundownBar Tests ───
-
-describe('RundownBar', () => {
-  let RundownBar: any
-
-  beforeEach(async () => {
-    const mod = await import('../renderer/components/RundownBar')
-    RundownBar = mod.RundownBar
-  })
-
-  it('renders nothing when not live', () => {
-    const { container } = render(<RundownBar />)
-    expect(container.querySelector('[data-testid="rundown-bar"]')).toBeNull()
-  })
-
-  it('renders the rundown bar when live with acts', () => {
-    goLive()
-    render(<RundownBar />)
-    expect(screen.getByTestId('rundown-bar')).toBeInTheDocument()
-  })
-
-  it('renders in compact variant', () => {
-    goLive()
-    render(<RundownBar variant="compact" />)
-    expect(screen.getByTestId('rundown-bar')).toBeInTheDocument()
-  })
-})
