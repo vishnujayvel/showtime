@@ -79,19 +79,6 @@ test.describe('View Tier Verification', () => {
     await screenshot(page, 'tier-compact-bounds')
   })
 
-  test('compact: shows RundownBar', async ({ mainPage: page }) => {
-    await seedFixture(page, FIXTURES.live_compact)
-
-    // CompactView renders <RundownBar variant="compact" />
-    const body = await page.textContent('body')
-    expect(body!.length).toBeGreaterThan(0)
-
-    // Should show timer and act name
-    await expect(page.getByText('Deep Work Session')).toBeVisible({ timeout: 5000 })
-
-    await screenshot(page, 'tier-compact-rundown')
-  })
-
   test('compact: shows beat counter', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_compact)
 

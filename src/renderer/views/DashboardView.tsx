@@ -6,7 +6,6 @@ import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
-import { RundownBar } from '../components/RundownBar'
 import { ClapperboardBadge } from '../components/ClapperboardBadge'
 import { Toolbar } from '../components/Toolbar'
 import { cn } from '../lib/utils'
@@ -72,11 +71,6 @@ export function DashboardView() {
         </span>
         <div className="flex-1" />
         <Toolbar />
-      </div>
-
-      {/* RundownBar section */}
-      <div className="px-2 pt-1">
-        <RundownBar variant="full" />
       </div>
 
       {/* Timer Section — the hero area */}
