@@ -43,11 +43,20 @@ function getShowStatus(show: ShowHistoryEntry): { label: string; color: string }
   if (show.showId < today && (show.phase === 'writers_room' || show.phase === 'no_show')) {
     return { label: 'Never Aired', color: 'text-txt-muted' }
   }
+  // Past-date shows stuck in live/intermission → left the stage
+  if (show.showId < today) {
+    return { label: 'Left the Stage', color: 'text-txt-muted' }
+  }
   // Today's show in planning
   if (show.phase === 'writers_room') {
     return { label: 'Planning', color: 'text-txt-secondary' }
   }
   return { label: 'No Show', color: 'text-txt-muted' }
+}
+
+/** Whether a show is unfinished (no verdict and not in strike phase). */
+function isUnfinished(show: ShowHistoryEntry): boolean {
+  return !show.verdict && show.phase !== 'strike'
 }
 
 function formatShowDate(dateId: string): string {
@@ -76,9 +85,12 @@ export function HistoryView({ onBack }: HistoryViewProps) {
     window.showtime.getShowHistory(30).then((entries) => {
       setHistory(Array.isArray(entries) ? entries : [])
       setLoading(false)
-    }).catch((err) => {
-      console.error('[HistoryView] Failed to load show history:', err)
-      setError('Failed to load show history')
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[HistoryView] Failed to load show history:', msg)
+      setError(msg.includes('not initialized')
+        ? 'Database unavailable — restart the app to retry.'
+        : `Failed to load show history: ${msg}`)
       setLoading(false)
     })
   }, [])
@@ -134,11 +146,15 @@ export function HistoryView({ onBack }: HistoryViewProps) {
         {!loading && !error && history.map((show, i) => {
           const statusInfo = getShowStatus(show)
           const isExpanded = expandedId === show.showId
+          const dimmed = isUnfinished(show)
           return (
             <div key={show.showId}>
               <motion.button
                 data-testid={`show-entry-${show.showId}`}
-                className="w-full flex items-center gap-3 py-3 border-b border-[#242428] last:border-b-0 hover:bg-surface-hover/50 transition-colors rounded px-1 -mx-1 text-left"
+                className={cn(
+                  'w-full flex items-center gap-3 py-3 border-b border-[#242428] last:border-b-0 hover:bg-surface-hover/50 transition-colors rounded px-1 -mx-1 text-left',
+                  dimmed && 'opacity-60',
+                )}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ ...springTransition, delay: i * 0.03 }}

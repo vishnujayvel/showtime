@@ -144,6 +144,16 @@ describe('registerShowtimeIpc', () => {
     expect(handleMap.has(IPC.SHOW_DETAIL)).toBe(true)
   })
 
+  it('SHOW_HISTORY propagates DataService errors to renderer', async () => {
+    const { DataService } = await import('../main/data/DataService')
+    vi.mocked(DataService.getInstance).mockImplementationOnce(() => {
+      throw new Error('DataService not initialized. Call DataService.init() first.')
+    })
+    const handler = handleMap.get(IPC.SHOW_HISTORY)!
+    // Handler throws synchronously; Electron converts this to a rejected IPC promise
+    expect(() => handler({}, 30)).toThrow('DataService not initialized')
+  })
+
   it('GET_THEME returns isDark boolean', async () => {
     const handler = handleMap.get(IPC.GET_THEME)!
     const result = await handler()
