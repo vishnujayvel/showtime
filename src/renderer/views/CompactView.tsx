@@ -8,6 +8,7 @@ import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { RundownBar } from '../components/RundownBar'
 import { ViewMenu } from '../components/ViewMenu'
+import { MuteToggle } from '../components/MuteToggle'
 import { cn } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
@@ -89,6 +90,7 @@ export function CompactView() {
             </>
           )}
         </div>
+        <MuteToggle />
         <ViewMenu
           view="compact"
         />
@@ -97,6 +99,13 @@ export function CompactView() {
           className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
         >
           ▼
+        </button>
+        <button
+          onClick={() => window.showtime.quit()}
+          className="px-1 py-0.5 text-txt-muted hover:text-onair transition-colors text-xs no-drag"
+          title="Quit Showtime"
+        >
+          ✕
         </button>
       </div>
 

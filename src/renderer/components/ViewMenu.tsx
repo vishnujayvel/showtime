@@ -11,7 +11,7 @@ import {
 import { cn } from '../lib/utils'
 
 interface ViewMenuProps {
-  view: 'pill' | 'compact' | 'expanded' | 'writers_room'
+  view: 'pill' | 'compact' | 'dashboard' | 'expanded' | 'writers_room' | 'strike'
 }
 
 /** Dropdown menu providing quick access to show controls, navigation, and view switching. */

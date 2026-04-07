@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { localToday } from '../../shared/date-utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '../ui/button'
 import { cn } from '../lib/utils'
 import type { ShowHistoryEntry, ShowDetailEntry, ActSnapshot } from '../../shared/types'
 
@@ -268,12 +267,6 @@ export function HistoryView({ onBack }: HistoryViewProps) {
         })}
       </div>
 
-      {/* Footer */}
-      <div className="px-5 py-4 border-t border-[#242428]">
-        <Button variant="neutral" onClick={onBack}>
-          Back to Stage
-        </Button>
-      </div>
     </motion.div>
   )
 }
