@@ -4,149 +4,29 @@
  * Replaces imperative Zustand phase management with a declarative statechart.
  * 6 top-level phases, nested substates, guarded transitions, entry/exit actions,
  * and a parallel animation region.
+ *
+ * Context types and helpers: ./showMachine.context.ts
+ * Guard predicates: ./showMachine.guards.ts
+ * Action implementations: ./showMachine.actions.ts
  */
-import { setup, assign, createActor, type AnyActorRef } from 'xstate'
-import { localToday } from '../../shared/date-utils'
-import type {
-  ShowPhase,
-  EnergyLevel,
-  Act,
-  ActStatus,
-  ShowVerdict,
-  ShowLineup,
-  WritersRoomStep,
-  ViewTier,
-} from '../../shared/types'
+import { setup, createActor } from 'xstate'
+import { createInitialContext } from './showMachine.context'
+import { showMachineGuards } from './showMachine.guards'
+import { showMachineActions } from './showMachine.actions'
+import type { ShowMachineContext, ShowMachineEvent } from './showMachine.context'
+import type { ShowPhase, WritersRoomStep } from '../../shared/types'
 
-// ─── Context ───
-
-/** Full context shape for the show machine including acts, timer, energy, and view state. */
-export interface ShowMachineContext {
-  energy: EnergyLevel | null
-  acts: Act[]
-  currentActId: string | null
-  beatsLocked: number
-  beatThreshold: number
-  timerEndAt: number | null
-  timerPausedRemaining: number | null
-  showDate: string
-  showStartedAt: number | null
-  showEndedAt: number | null
-  verdict: ShowVerdict | null
-  viewTier: ViewTier
-  beatCheckPending: boolean
-  celebrationActive: boolean
-  writersRoomStep: WritersRoomStep
-  writersRoomEnteredAt: number | null
-  breathingPauseEndAt: number | null
-  lineupStatus: 'draft' | 'confirmed'
-  editingMidShow: boolean
-}
-
-// ─── Events ───
-
-/** Union of all events the show machine can receive. */
-export type ShowMachineEvent =
-  | { type: 'ENTER_WRITERS_ROOM' }
-  | { type: 'SET_ENERGY'; level: EnergyLevel }
-  | { type: 'SET_WRITERS_ROOM_STEP'; step: WritersRoomStep }
-  | { type: 'SET_LINEUP'; lineup: ShowLineup }
-  | { type: 'FINALIZE_LINEUP' }
-  | { type: 'START_SHOW' }
-  | { type: 'TRIGGER_COLD_OPEN' }
-  | { type: 'COMPLETE_COLD_OPEN' }
-  | { type: 'TRIGGER_GOING_LIVE' }
-  | { type: 'COMPLETE_GOING_LIVE' }
-  | { type: 'COMPLETE_ACT'; actId: string }
-  | { type: 'SKIP_ACT'; actId: string }
-  | { type: 'EXTEND_ACT'; minutes: number }
-  | { type: 'LOCK_BEAT' }
-  | { type: 'SKIP_BEAT' }
-  | { type: 'CELEBRATION_DONE' }
-  | { type: 'ENTER_INTERMISSION' }
-  | { type: 'EXIT_INTERMISSION' }
-  | { type: 'ENTER_DIRECTOR' }
-  | { type: 'EXIT_DIRECTOR' }
-  | { type: 'SKIP_TO_NEXT' }
-  | { type: 'CALL_SHOW_EARLY' }
-  | { type: 'START_BREATHING_PAUSE'; durationMs?: number }
-  | { type: 'END_BREATHING_PAUSE' }
-  | { type: 'STRIKE' }
-  | { type: 'RESET' }
-  // Lineup editing
-  | { type: 'REORDER_ACT'; actId: string; direction: 'up' | 'down' }
-  | { type: 'REMOVE_ACT'; actId: string }
-  | { type: 'ADD_ACT'; name: string; sketch: string; durationMinutes: number }
-  | { type: 'UPDATE_ACT'; actId: string; name?: string; durationMinutes?: number }
-  // Mid-show lineup editing
-  | { type: 'EDIT_LINEUP' }
-  | { type: 'CONFIRM_LINEUP_EDIT'; acts: Act[] }
-  // View tier
-  | { type: 'SET_VIEW_TIER'; tier: ViewTier }
-  // Overlay views (history, settings, onboarding)
-  | { type: 'VIEW_HISTORY' }
-  | { type: 'VIEW_SETTINGS' }
-  | { type: 'VIEW_ONBOARDING' }
-  | { type: 'CLOSE_OVERLAY' }
-  // Auto-resume from DB
-  | { type: 'RESTORE_SHOW'; targetPhase: ShowPhase; context: Partial<ShowMachineContext> }
-
-// ─── Helpers ───
-
-function today(): string {
-  return localToday()
-}
-
-function generateId(): string {
-  return Math.random().toString(36).slice(2, 10)
-}
-
-/** Human-readable verdict messages keyed by ShowVerdict enum value. */
-const VERDICT_MESSAGES: Record<ShowVerdict, string> = {
-  DAY_WON: 'You showed up and you were present.',
-  SOLID_SHOW: 'Not every sketch lands. The show was still great.',
-  GOOD_EFFORT: 'You got on stage. That\'s the hardest part.',
-  SHOW_CALLED_EARLY: 'Sometimes the show is short. The audience still came.',
-}
-
-/** Determine the show verdict based on how many beats were locked vs the threshold. */
-function computeVerdict(beatsLocked: number, beatThreshold: number): ShowVerdict {
-  if (beatsLocked >= beatThreshold) return 'DAY_WON'
-  if (beatsLocked === beatThreshold - 1) return 'SOLID_SHOW'
-  if (beatsLocked >= Math.ceil(beatThreshold / 2)) return 'GOOD_EFFORT'
-  return 'SHOW_CALLED_EARLY'
-}
-
-function findNextUpcoming(acts: Act[]): Act | undefined {
-  return acts.find((a) => a.status === 'upcoming')
-}
-
-// ─── Initial Context ───
-
-/** Create a fresh default context for a new show (no energy, no acts, today's date). */
-export function createInitialContext(): ShowMachineContext {
-  return {
-    energy: null,
-    acts: [],
-    currentActId: null,
-    beatsLocked: 0,
-    beatThreshold: 3,
-    timerEndAt: null,
-    timerPausedRemaining: null,
-    showDate: today(),
-    showStartedAt: null,
-    showEndedAt: null,
-    verdict: null,
-    viewTier: 'expanded' as ViewTier,
-    beatCheckPending: false,
-    celebrationActive: false,
-    writersRoomStep: 'energy',
-    writersRoomEnteredAt: null,
-    breathingPauseEndAt: null,
-    lineupStatus: 'draft',
-    editingMidShow: false,
-  }
-}
+// ─── Re-exports for backward compatibility ───
+// All consumers import from this file; the split is an internal detail.
+export type { ShowMachineContext, ShowMachineEvent } from './showMachine.context'
+export {
+  createInitialContext,
+  computeVerdict,
+  VERDICT_MESSAGES,
+  findNextUpcoming,
+  generateId,
+  today,
+} from './showMachine.context'
 
 // ─── Machine Definition ───
 
@@ -156,365 +36,11 @@ export const showMachine = setup({
     context: {} as ShowMachineContext,
     events: {} as ShowMachineEvent,
   },
-  guards: {
-    hasActs: ({ context }) => context.acts.length > 0,
-    hasCurrentAct: ({ context }) => context.currentActId !== null,
-    hasNextAct: ({ context }) => findNextUpcoming(context.acts) !== undefined,
-    noNextAct: ({ context }) => findNextUpcoming(context.acts) === undefined,
-    hasConfirmedLineup: ({ context }) => context.acts.length > 0 && context.lineupStatus === 'confirmed',
-    hasTimerRunning: ({ context }) => context.timerEndAt !== null,
-    hasPausedTimer: ({ context }) =>
-      context.timerPausedRemaining !== null &&
-      context.currentActId !== null &&
-      context.acts.some((a) => a.id === context.currentActId && a.status === 'active'),
-  },
-  actions: {
-    assignEnergy: assign({
-      energy: ({ event }) => {
-        if (event.type !== 'SET_ENERGY') return null
-        return event.level
-      },
-    }),
-
-    assignLineup: assign(({ context, event }) => {
-      if (event.type !== 'SET_LINEUP') return {}
-      const acts: Act[] = event.lineup.acts.map((a, i) => ({
-        id: generateId(),
-        name: a.name,
-        sketch: a.sketch,
-        durationMinutes: a.durationMinutes,
-        status: 'upcoming' as ActStatus,
-        beatLocked: false,
-        order: i,
-        pinnedStartAt: a.pinnedStartAt ?? null,
-        calendarEventId: a.calendarEventId ?? null,
-      }))
-      return {
-        acts,
-        beatThreshold: event.lineup.beatThreshold,
-        lineupStatus: 'draft' as const,
-        writersRoomStep: 'lineup_ready' as WritersRoomStep,
-      }
-    }),
-
-    finalizeLineupContext: assign({
-      lineupStatus: 'confirmed' as const,
-    }),
-
-    assignWritersRoomStep: assign({
-      writersRoomStep: ({ event }) => {
-        if (event.type !== 'SET_WRITERS_ROOM_STEP') return 'energy' as WritersRoomStep
-        return event.step
-      },
-    }),
-
-    enterWritersRoom: assign({
-      writersRoomStep: 'energy' as WritersRoomStep,
-      writersRoomEnteredAt: () => Date.now(),
-    }),
-
-    startShowContext: assign(({ context }) => {
-      const firstAct = context.acts[0]
-      const now = Date.now()
-      return {
-        currentActId: firstAct.id,
-        timerEndAt: now + firstAct.durationMinutes * 60 * 1000,
-        showDate: today(),
-        showStartedAt: now,
-        viewTier: 'micro' as ViewTier,
-        acts: context.acts.map((a, i) =>
-          i === 0 ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
-        ),
-      }
-    }),
-
-    completeActContext: assign(({ context, event }) => {
-      if (event.type !== 'COMPLETE_ACT') return {}
-      const now = Date.now()
-      return {
-        acts: context.acts.map((a) =>
-          a.id === event.actId ? { ...a, status: 'completed' as ActStatus, completedAt: now } : a
-        ),
-        timerEndAt: null,
-        timerPausedRemaining: null,
-        beatCheckPending: true,
-      }
-    }),
-
-    skipActContext: assign(({ context, event }) => {
-      if (event.type !== 'SKIP_ACT') return {}
-      const wasActive = context.currentActId === event.actId
-      const newActs = context.acts.map((a) =>
-        a.id === event.actId ? { ...a, status: 'skipped' as ActStatus, completedAt: Date.now() } : a
-      )
-      const nextAct = newActs.find((a) => a.status === 'upcoming')
-      return {
-        acts: newActs,
-        currentActId: wasActive ? (nextAct?.id ?? null) : context.currentActId,
-        timerEndAt: wasActive ? null : context.timerEndAt,
-        timerPausedRemaining: wasActive ? null : context.timerPausedRemaining,
-      }
-    }),
-
-    autoStartNextAct: assign(({ context }) => {
-      const nextAct = findNextUpcoming(context.acts)
-      if (!nextAct) return {}
-      const now = Date.now()
-      return {
-        currentActId: nextAct.id,
-        timerEndAt: now + nextAct.durationMinutes * 60 * 1000,
-        timerPausedRemaining: null,
-        acts: context.acts.map((a) =>
-          a.id === nextAct.id ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
-        ),
-      }
-    }),
-
-    extendActContext: assign(({ context, event }) => {
-      if (event.type !== 'EXTEND_ACT') return {}
-      return {
-        timerEndAt: context.timerEndAt ? context.timerEndAt + event.minutes * 60 * 1000 : null,
-      }
-    }),
-
-    lockBeatContext: assign(({ context }) => ({
-      beatsLocked: context.beatsLocked + 1,
-      celebrationActive: true,
-      acts: context.acts.map((a) =>
-        a.id === context.currentActId ? { ...a, beatLocked: true } : a
-      ),
-    })),
-
-    skipBeatContext: assign({
-      beatCheckPending: false,
-    }),
-
-    clearBeatState: assign({
-      beatCheckPending: false,
-      celebrationActive: false,
-    }),
-
-    celebrationDoneContext: assign({
-      celebrationActive: false,
-      beatCheckPending: false,
-    }),
-
-    enterIntermissionContext: assign(({ context }) => {
-      const remaining = context.timerEndAt ? Math.max(0, context.timerEndAt - Date.now()) : null
-      return {
-        timerEndAt: null,
-        timerPausedRemaining: remaining,
-      }
-    }),
-
-    exitIntermissionResumeTimer: assign(({ context }) => ({
-      timerEndAt: context.timerPausedRemaining ? Date.now() + context.timerPausedRemaining : null,
-      timerPausedRemaining: null,
-      breathingPauseEndAt: null,
-    })),
-
-    exitIntermissionStartNext: assign(({ context }) => {
-      const nextAct = findNextUpcoming(context.acts)
-      if (!nextAct) return {}
-      const now = Date.now()
-      return {
-        currentActId: nextAct.id,
-        timerEndAt: now + nextAct.durationMinutes * 60 * 1000,
-        timerPausedRemaining: null,
-        breathingPauseEndAt: null,
-        acts: context.acts.map((a) =>
-          a.id === nextAct.id ? { ...a, status: 'active' as ActStatus, startedAt: now } : a
-        ),
-      }
-    }),
-
-    callShowEarlyContext: assign(({ context }) => ({
-      acts: context.acts.map((a) =>
-        a.status === 'upcoming' || a.status === 'active'
-          ? { ...a, status: 'skipped' as ActStatus, completedAt: Date.now() }
-          : a
-      ),
-      currentActId: null,
-      timerEndAt: null,
-      timerPausedRemaining: null,
-      showEndedAt: Date.now(),
-      verdict: 'SHOW_CALLED_EARLY' as ShowVerdict,
-      viewTier: 'expanded' as ViewTier,
-      beatCheckPending: false,
-    })),
-
-    strikeContext: assign(({ context }) => {
-      const verdict = computeVerdict(context.beatsLocked, context.beatThreshold)
-      return {
-        verdict,
-        showEndedAt: Date.now(),
-        currentActId: null,
-        timerEndAt: null,
-        timerPausedRemaining: null,
-        viewTier: 'expanded' as ViewTier,
-        beatCheckPending: false,
-      }
-    }),
-
-    resetContext: assign(() => createInitialContext()),
-
-    startBreathingPauseContext: assign(({ context, event }) => {
-      if (event.type !== 'START_BREATHING_PAUSE') return {}
-      const endAt = Date.now() + (event.durationMs ?? 5 * 60 * 1000)
-      const remaining = context.timerEndAt ? Math.max(0, context.timerEndAt - Date.now()) : null
-      return {
-        breathingPauseEndAt: endAt,
-        timerEndAt: null,
-        timerPausedRemaining: remaining,
-      }
-    }),
-
-    endBreathingPauseContext: assign({
-      breathingPauseEndAt: null,
-    }),
-
-    setViewTierContext: assign({
-      viewTier: ({ event }) => {
-        if (event.type !== 'SET_VIEW_TIER') return 'expanded' as ViewTier
-        return event.tier
-      },
-    }),
-
-    reorderActContext: assign(({ context, event }) => {
-      if (event.type !== 'REORDER_ACT') return {}
-      const sorted = [...context.acts].sort((a, b) => a.order - b.order)
-      const idx = sorted.findIndex((a) => a.id === event.actId)
-      if (idx < 0) return {}
-      const swapIdx = event.direction === 'up' ? idx - 1 : idx + 1
-      if (swapIdx < 0 || swapIdx >= sorted.length) return {}
-      const newOrder = [...sorted]
-      ;[newOrder[idx], newOrder[swapIdx]] = [newOrder[swapIdx], newOrder[idx]]
-      return {
-        acts: newOrder.map((a, i) => ({ ...a, order: i })),
-      }
-    }),
-
-    removeActContext: assign(({ context, event }) => {
-      if (event.type !== 'REMOVE_ACT') return {}
-      const newActs = context.acts.filter((a) => a.id !== event.actId).map((a, i) => ({ ...a, order: i }))
-      const removingCurrentAct = context.currentActId === event.actId
-      return {
-        acts: newActs,
-        ...(removingCurrentAct ? {
-          currentActId: null,
-          timerEndAt: null,
-          timerPausedRemaining: null,
-        } : {}),
-      }
-    }),
-
-    addActContext: assign(({ context, event }) => {
-      if (event.type !== 'ADD_ACT') return {}
-      return {
-        acts: [
-          ...context.acts,
-          {
-            id: generateId(),
-            name: event.name,
-            sketch: event.sketch,
-            durationMinutes: event.durationMinutes,
-            status: 'upcoming' as ActStatus,
-            beatLocked: false,
-            order: context.acts.length,
-          },
-        ],
-      }
-    }),
-
-    skipCurrentActContext: assign(({ context }) => {
-      const actId = context.currentActId
-      if (!actId) return {}
-      const newActs = context.acts.map((a) =>
-        a.id === actId ? { ...a, status: 'skipped' as ActStatus, completedAt: Date.now() } : a
-      )
-      const nextAct = newActs.find((a) => a.status === 'upcoming')
-      return {
-        acts: newActs,
-        currentActId: nextAct?.id ?? null,
-        timerEndAt: null,
-        timerPausedRemaining: null,
-      }
-    }),
-
-    updateActContext: assign(({ context, event }) => {
-      if (event.type !== 'UPDATE_ACT') return {}
-      const updatedActs = context.acts.map((a) =>
-        a.id === event.actId
-          ? {
-              ...a,
-              ...(event.name !== undefined ? { name: event.name } : {}),
-              ...(event.durationMinutes !== undefined ? { durationMinutes: event.durationMinutes } : {}),
-            }
-          : a
-      )
-      // If updating the currently active act's duration, recalculate timerEndAt
-      const act = updatedActs.find((a) => a.id === event.actId)
-      const isActiveAct = event.actId === context.currentActId && context.timerEndAt && act?.startedAt
-      const newTimerEndAt =
-        isActiveAct && event.durationMinutes !== undefined
-          ? act.startedAt! + event.durationMinutes * 60 * 1000
-          : context.timerEndAt
-      return {
-        acts: updatedActs,
-        ...(newTimerEndAt !== context.timerEndAt ? { timerEndAt: newTimerEndAt } : {}),
-      }
-    }),
-
-    editLineupContext: assign(({ context }) => {
-      const remaining = context.timerEndAt ? Math.max(0, context.timerEndAt - Date.now()) : null
-      return {
-        timerEndAt: null,
-        timerPausedRemaining: remaining,
-        editingMidShow: true,
-        writersRoomStep: 'conversation' as WritersRoomStep,
-      }
-    }),
-
-    confirmLineupEditContext: assign(({ context, event }) => {
-      if (event.type !== 'CONFIRM_LINEUP_EDIT') return {}
-      // Merge: keep completed/active acts, replace upcoming with new lineup
-      const completedActs = context.acts.filter((a) => a.status === 'completed' || a.status === 'skipped')
-      const activeAct = context.acts.find((a) => a.id === context.currentActId && a.status === 'active')
-      const keptActs = activeAct ? [...completedActs, activeAct] : completedActs
-      // New acts from the edit (upcoming replacements)
-      const newUpcoming = event.acts.filter((a) => a.status === 'upcoming')
-      const mergedActs = [...keptActs, ...newUpcoming].map((a, i) => ({ ...a, order: i }))
-      return {
-        acts: mergedActs,
-        timerEndAt: context.timerPausedRemaining ? Date.now() + context.timerPausedRemaining : null,
-        timerPausedRemaining: null,
-        editingMidShow: false,
-        lineupStatus: 'confirmed' as const,
-      }
-    }),
-
-    restoreShowContext: assign(({ event }) => {
-      if (event.type !== 'RESTORE_SHOW') return {}
-      // Filter out undefined values to avoid overwriting defaults with undefined.
-      // Partial<ShowMachineContext> can have undefined fields from DB rows with NULL.
-      return Object.fromEntries(
-        Object.entries(event.context).filter(([, v]) => v !== undefined)
-      )
-    }),
-
-    logDroppedEvent: ({ event, self }) => {
-      const snap = self.getSnapshot()
-      if (typeof window !== 'undefined' && window.showtime?.logEvent) {
-        window.showtime.logEvent('WARN', 'xstate.event_dropped', {
-          event: event.type,
-          state: JSON.stringify(snap.value),
-        })
-      }
-      if (import.meta.env.DEV) {
-        console.error(`[showMachine] DROPPED: "${event.type}" in state "${JSON.stringify(snap.value)}"`)
-      }
-    },
-  },
+  // Type assertion: actions/guards are identical to the original inline versions.
+  // XState v5 setup() needs inline definitions for full event-type narrowing;
+  // extracting them loses TEvent refinement but doesn't change runtime behavior.
+  guards: showMachineGuards as Record<string, (...args: any[]) => any>,
+  actions: showMachineActions as Record<string, any>,
 }).createMachine({
   id: 'show',
   type: 'parallel',
@@ -973,7 +499,7 @@ export const showMachine = setup({
       },
     },
 
-    // ─���─ Overlay Region (parallel) — history, settings, onboarding ──��
+    // ─── Overlay Region (parallel) — history, settings, onboarding ───
     overlay: {
       initial: 'none',
       on: {
@@ -1036,10 +562,6 @@ export type OverlayState = 'none' | 'history' | 'settings' | 'onboarding'
 export function getOverlayFromState(stateValue: Record<string, unknown>): OverlayState {
   return ((stateValue as { overlay?: string }).overlay ?? 'none') as OverlayState
 }
-
-// ─── Verdict Messages Export ───
-
-export { VERDICT_MESSAGES, computeVerdict }
 
 // ─── Type Exports ───
 
