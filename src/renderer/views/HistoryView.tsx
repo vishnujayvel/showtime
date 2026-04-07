@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { localToday } from '../../shared/date-utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../lib/utils'
+import { Toolbar } from '../components/Toolbar'
 import type { ShowHistoryEntry, ShowDetailEntry, ActSnapshot } from '../../shared/types'
 
 interface HistoryViewProps {
@@ -109,12 +110,7 @@ export function HistoryView({ onBack }: HistoryViewProps) {
         <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
           PAST SHOWS
         </span>
-        <button
-          onClick={onBack}
-          className="text-txt-muted hover:text-txt-secondary text-sm no-drag transition-colors"
-        >
-          Back
-        </button>
+        <Toolbar onBack={onBack} />
       </div>
 
       {/* Content */}
