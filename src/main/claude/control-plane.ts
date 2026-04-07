@@ -1,3 +1,14 @@
+/**
+ * ControlPlane — orchestrates tab lifecycle, request queuing, permission routing,
+ * and run dispatch across both stream-json (RunManager) and PTY (PtyRunManager) transports.
+ *
+ * RunManager is the primary transport: spawns `claude -p --output-format stream-json`
+ * and parses NDJSON events. Stable, used for all regular messages.
+ *
+ * PtyRunManager is the experimental transport: spawns `claude` (interactive mode) via
+ * node-pty and parses terminal output using heuristics. Reserved for future interactive
+ * permission handling (currently disabled — usePty is always false).
+ */
 import { EventEmitter } from 'events'
 import { homedir } from 'os'
 import { RunManager } from './run-manager'
