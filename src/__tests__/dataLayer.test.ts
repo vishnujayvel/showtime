@@ -102,6 +102,17 @@ describe('ShowRepository', () => {
     expect(show2.actCount).toBe(3)
     expect(show2.completedActCount).toBe(2)
   })
+
+  it('getRecentShows includes shows in all phases (live, intermission, no_show)', () => {
+    data.shows.upsertShow({ id: '2026-04-01', phase: 'no_show' })
+    data.shows.upsertShow({ id: '2026-04-02', phase: 'live', energy: 'medium' })
+    data.shows.upsertShow({ id: '2026-04-03', phase: 'intermission', energy: 'high' })
+    data.shows.upsertShow({ id: '2026-04-04', phase: 'strike', verdict: 'SOLID_SHOW' })
+
+    const recent = data.shows.getRecentShows(10)
+    expect(recent).toHaveLength(4)
+    expect(recent.map(s => s.phase)).toEqual(['strike', 'intermission', 'live', 'no_show'])
+  })
 })
 
 describe('ActRepository', () => {

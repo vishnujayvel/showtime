@@ -187,23 +187,13 @@ export function registerShowtimeIpc(): void {
   })
 
   ipcMain.handle(IPC.SHOW_HISTORY, (_event, limit?: number) => {
-    try {
-      const data = DataService.getInstance()
-      return data.shows.getRecentShows(limit ?? 30)
-    } catch (err: unknown) {
-      log(`SHOW_HISTORY error: ${err instanceof Error ? err.message : String(err)}`)
-      return []
-    }
+    const data = DataService.getInstance()
+    return data.shows.getRecentShows(limit ?? 30)
   })
 
   ipcMain.handle(IPC.SHOW_DETAIL, (_event, showId: string) => {
-    try {
-      const data = DataService.getInstance()
-      return data.shows.getShowDetail(showId)
-    } catch (err: unknown) {
-      log(`SHOW_DETAIL error: ${err instanceof Error ? err.message : String(err)}`)
-      return null
-    }
+    const data = DataService.getInstance()
+    return data.shows.getShowDetail(showId)
   })
 
   ipcMain.on(IPC.METRICS_RECORD, (_event, name: string, durationMs: number, metadata?: Record<string, string>) => {
