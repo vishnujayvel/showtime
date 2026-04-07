@@ -9,6 +9,7 @@ import { EnergyPicker } from '../components/EnergyPicker'
 import { LineupDraftPreview, LineupConfirmation } from '../components/LineupPreview'
 import { ChatInput } from '../components/ChatInput'
 import { ViewMenu } from '../components/ViewMenu'
+import { MuteToggle } from '../components/MuteToggle'
 import { ProgressiveLoader } from '../components/ProgressiveLoader'
 import { motion } from 'framer-motion'
 import { formatDateLabel } from '../lib/utils'
@@ -257,6 +258,8 @@ export function WritersRoomView() {
               setEnergyPickerOpen(false)
             }}
           />
+
+          <MuteToggle />
 
           <ViewMenu view="writers_room" />
 

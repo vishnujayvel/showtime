@@ -6,6 +6,8 @@ import { OnAirIndicator } from '../components/OnAirIndicator'
 import { BeatCounter } from '../components/BeatCounter'
 import { Button } from '../ui/button'
 import { motion } from 'framer-motion'
+import { MuteToggle } from '../components/MuteToggle'
+import { ViewMenu } from '../components/ViewMenu'
 import { cn } from '../lib/utils'
 import { playAudioCue } from '../hooks/useAudio'
 
@@ -60,6 +62,8 @@ export function StrikeView() {
         </span>
         <div className="flex items-center gap-1">
           <OnAirIndicator isLive={false} />
+          <MuteToggle />
+          <ViewMenu view="strike" />
           <button
             onClick={() => setViewTier('micro')}
             className="px-2 py-1.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag"
