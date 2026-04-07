@@ -9,6 +9,7 @@ import { OnAirIndicator } from '../components/OnAirIndicator'
 import { RundownBar } from '../components/RundownBar'
 import { ClapperboardBadge } from '../components/ClapperboardBadge'
 import { MuteToggle } from '../components/MuteToggle'
+import { ViewMenu } from '../components/ViewMenu'
 import { cn } from '../lib/utils'
 import { formatDateLabel } from '../lib/utils'
 import { getCategoryClasses } from '../lib/category-colors'
@@ -80,6 +81,7 @@ export function DashboardView() {
         >
           Director
         </button>
+        <ViewMenu view="dashboard" />
         <button
           onClick={collapseViewTier}
           className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
