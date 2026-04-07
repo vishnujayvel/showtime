@@ -2,6 +2,7 @@
 // Maps sketch categories to Tailwind token classes.
 // Single source of truth — replaces duplicated SKETCH_COLORS objects.
 
+/** Union of all recognized act sketch categories. */
 export type SketchCategory = 'Deep Work' | 'Exercise' | 'Admin' | 'Creative' | 'Social' | 'Personal'
 
 interface CategoryClasses {
@@ -106,12 +107,12 @@ const CATEGORY_MAP: Record<SketchCategory, CategoryConfig> = {
 
 // ─── Public API ───
 
-/** Returns Tailwind utility classes for the given sketch category. */
+/** Returns Tailwind utility classes for the given sketch category, falling back to neutral gray. */
 export function getCategoryClasses(sketch: string): CategoryClasses {
   return (CATEGORY_MAP[sketch as SketchCategory] ?? DEFAULT_CONFIG).classes
 }
 
-/** All known sketch category names. */
+/** Ordered list of all known sketch category names. */
 export const SKETCH_CATEGORIES: SketchCategory[] = [
   'Deep Work',
   'Exercise',

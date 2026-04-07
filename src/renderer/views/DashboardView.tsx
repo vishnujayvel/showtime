@@ -21,6 +21,7 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
+/** Mid-tier dashboard showing the current act timer, upcoming acts, and show status. */
 export function DashboardView() {
   const phase = useShowPhase()
   const acts = useShowContext((ctx) => ctx.acts)

@@ -11,6 +11,7 @@ interface SettingsViewProps {
 
 import { springGentle as springTransition } from '../constants/animations'
 
+/** Preferences panel for theme, sound, calendar sync, and show reset. */
 export function SettingsView({ onBack }: SettingsViewProps) {
   const themeMode = useThemeStore((s) => s.themeMode)
   const setThemeMode = useThemeStore((s) => s.setThemeMode)

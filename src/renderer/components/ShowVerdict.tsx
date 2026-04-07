@@ -42,6 +42,7 @@ interface ShowVerdictProps {
   beatThreshold: number
 }
 
+/** Animated end-of-show verdict headline with a compassionate message and beat star summary. */
 export function ShowVerdict({ verdict, beatsLocked, beatThreshold }: ShowVerdictProps) {
   const config = VERDICT_CONFIG[verdict]
 

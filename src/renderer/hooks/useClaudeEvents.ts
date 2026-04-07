@@ -2,13 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useSessionStore } from '../stores/sessionStore'
 import type { NormalizedEvent } from '../../shared/types'
 
-/**
- * Subscribes to all ControlPlane events via IPC and routes them
- * to the Zustand store.
- *
- * text_chunk events are batched per animation frame to avoid
- * flooding React with one state update per chunk during streaming.
- */
+/** Subscribes to ControlPlane IPC events and routes them to the session store with RAF-batched text chunks. */
 export function useClaudeEvents() {
   const handleNormalizedEvent = useSessionStore((s) => s.handleNormalizedEvent)
   const handleStatusChange = useSessionStore((s) => s.handleStatusChange)

@@ -18,6 +18,7 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
+/** Condensed single-row view showing the current act name, timer, and rundown bar. */
 export function CompactView() {
   const phase = useShowPhase()
   const verdict = useShowContext((ctx) => ctx.verdict)

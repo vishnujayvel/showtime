@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 
+/** Schema definition for the shows table tracking daily show state. */
 export const shows = sqliteTable('shows', {
   id: text('id').primaryKey(), // ISO date string: "2026-03-21"
   phase: text('phase').notNull(), // no_show, writers_room, live, intermission, director, strike
@@ -12,6 +13,7 @@ export const shows = sqliteTable('shows', {
   planText: text('plan_text'),
 })
 
+/** Schema definition for the acts table storing individual tasks within a show. */
 export const acts = sqliteTable('acts', {
   id: text('id').primaryKey(), // 8-char random alphanumeric
   showId: text('show_id').notNull().references(() => shows.id, { onDelete: 'cascade' }),
@@ -28,6 +30,7 @@ export const acts = sqliteTable('acts', {
   actualEndAt: integer('actual_end_at'),
 })
 
+/** Schema definition for the timeline_events table recording schedule drift and phase transitions. */
 export const timelineEvents = sqliteTable('timeline_events', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   showId: text('show_id').notNull().references(() => shows.id, { onDelete: 'cascade' }),
@@ -42,6 +45,7 @@ export const timelineEvents = sqliteTable('timeline_events', {
   createdAt: integer('created_at').notNull(),
 })
 
+/** Schema definition for the claude_contexts table storing Claude conversation snapshots. */
 export const claudeContexts = sqliteTable('claude_contexts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   showId: text('show_id').notNull().references(() => shows.id, { onDelete: 'cascade' }),
@@ -52,6 +56,7 @@ export const claudeContexts = sqliteTable('claude_contexts', {
   createdAt: integer('created_at').notNull(),
 })
 
+/** Schema definition for the metrics table storing performance timing measurements. */
 export const metrics = sqliteTable('metrics', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
@@ -60,6 +65,7 @@ export const metrics = sqliteTable('metrics', {
   createdAt: integer('created_at').notNull(),
 })
 
+/** Schema definition for the calendar_cache table caching macOS calendar events. */
 export const calendarCache = sqliteTable('calendar_cache', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
@@ -70,6 +76,7 @@ export const calendarCache = sqliteTable('calendar_cache', {
   lastSynced: integer('last_synced').notNull(),
 })
 
+/** Schema definition for the _migrations table tracking applied database migrations. */
 export const migrations = sqliteTable('_migrations', {
   version: integer('version').primaryKey(),
   name: text('name').notNull(),

@@ -6,6 +6,7 @@ import notificationSrc from '../../../resources/notification.mp3'
 
 // ─── Known models ───
 
+/** List of Claude models available for selection in the session settings. */
 export const AVAILABLE_MODELS = [
   { id: 'claude-opus-4-6', label: 'Opus 4.6' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
@@ -101,6 +102,7 @@ function updateTab(set: (fn: (s: State) => Partial<State>) => void, get: () => S
 
 const initialTab = makeLocalTab()
 
+/** Zustand store managing the Claude subprocess session, message history, and permission flow. */
 export const useSessionStore = create<State>((set, get) => ({
   tabs: [initialTab],
   activeTabId: initialTab.id,

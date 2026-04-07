@@ -20,6 +20,7 @@ import type {
 
 // ─── Context ───
 
+/** Full context shape for the show machine including acts, timer, energy, and view state. */
 export interface ShowMachineContext {
   energy: EnergyLevel | null
   acts: Act[]
@@ -44,6 +45,7 @@ export interface ShowMachineContext {
 
 // ─── Events ───
 
+/** Union of all events the show machine can receive. */
 export type ShowMachineEvent =
   | { type: 'ENTER_WRITERS_ROOM' }
   | { type: 'SET_ENERGY'; level: EnergyLevel }
@@ -99,6 +101,7 @@ function generateId(): string {
   return Math.random().toString(36).slice(2, 10)
 }
 
+/** Human-readable verdict messages keyed by ShowVerdict enum value. */
 const VERDICT_MESSAGES: Record<ShowVerdict, string> = {
   DAY_WON: 'You showed up and you were present.',
   SOLID_SHOW: 'Not every sketch lands. The show was still great.',
@@ -106,6 +109,7 @@ const VERDICT_MESSAGES: Record<ShowVerdict, string> = {
   SHOW_CALLED_EARLY: 'Sometimes the show is short. The audience still came.',
 }
 
+/** Determine the show verdict based on how many beats were locked vs the threshold. */
 function computeVerdict(beatsLocked: number, beatThreshold: number): ShowVerdict {
   if (beatsLocked >= beatThreshold) return 'DAY_WON'
   if (beatsLocked === beatThreshold - 1) return 'SOLID_SHOW'
@@ -119,6 +123,7 @@ function findNextUpcoming(acts: Act[]): Act | undefined {
 
 // ─── Initial Context ───
 
+/** Create a fresh default context for a new show (no energy, no acts, today's date). */
 export function createInitialContext(): ShowMachineContext {
   return {
     energy: null,
@@ -145,6 +150,7 @@ export function createInitialContext(): ShowMachineContext {
 
 // ─── Machine Definition ───
 
+/** XState v5 machine defining the show phase lifecycle with parallel animation and overlay regions. */
 export const showMachine = setup({
   types: {
     context: {} as ShowMachineContext,
@@ -989,6 +995,7 @@ export const showMachine = setup({
 
 // ─── Actor Factory ───
 
+/** Create a new show machine actor, optionally seeded with partial context. */
 export function createShowActor(context?: Partial<ShowMachineContext>) {
   return createActor(showMachine, {
     input: context,
@@ -1023,8 +1030,9 @@ export function isAnimationActive(stateValue: Record<string, unknown>, animation
   return (stateValue as { animation: string }).animation === animation
 }
 
-/** Extract the current overlay state */
+/** Possible overlay view states (none means no overlay is showing). */
 export type OverlayState = 'none' | 'history' | 'settings' | 'onboarding'
+/** Extracts the current overlay view state from an XState state value. */
 export function getOverlayFromState(stateValue: Record<string, unknown>): OverlayState {
   return ((stateValue as { overlay?: string }).overlay ?? 'none') as OverlayState
 }
@@ -1035,5 +1043,7 @@ export { VERDICT_MESSAGES, computeVerdict }
 
 // ─── Type Exports ───
 
+/** Snapshot type returned by the show machine's transition function. */
 export type ShowMachineState = ReturnType<typeof showMachine.transition>
+/** Actor type for the show machine, used for typed refs in React context. */
 export type ShowMachineActor = ReturnType<typeof createShowActor>

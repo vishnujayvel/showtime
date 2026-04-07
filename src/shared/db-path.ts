@@ -7,12 +7,7 @@
 import { join } from 'path'
 import { homedir } from 'os'
 
-/**
- * Resolve the path to showtime.db.
- *
- * - Electron main: uses app.getPath('userData')
- * - Node.js/CLI: uses ~/Library/Application Support/showtime/ (macOS)
- */
+/** Resolves the showtime.db file path for both Electron and standalone Node.js contexts. */
 export function resolveDbPath(): string {
   // Try Electron's app module first
   try {

@@ -13,7 +13,7 @@ interface PersistedShowInfo {
   isStrike: boolean
 }
 
-/** Check localStorage for today's persisted show state */
+/** Check localStorage for today's persisted show state to determine resume eligibility. */
 export function getTodayPersistedShow(): PersistedShowInfo | null {
   try {
     const raw = localStorage.getItem(PERSIST_KEY)
@@ -77,6 +77,7 @@ function getTemporalGreeting(todayShow: PersistedShowInfo | null): { heading: st
   }
 }
 
+/** Full-screen empty stage view shown before the show starts, with resume or new show options. */
 export function DarkStudioView() {
   const send = useShowSend()
   const triggerColdOpen = useCallback(() => send({ type: 'TRIGGER_COLD_OPEN' }), [send])

@@ -8,6 +8,7 @@ interface GoingLiveTransitionProps {
   onComplete: () => void;
 }
 
+/** Cinematic transition screen with ON AIR indicator shown when the show goes live. */
 export function GoingLiveTransition({ onComplete }: GoingLiveTransitionProps) {
   const [showButton, setShowButton] = useState(false);
 

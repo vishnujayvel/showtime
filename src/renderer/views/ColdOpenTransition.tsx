@@ -6,6 +6,7 @@ interface ColdOpenTransitionProps {
   onComplete: () => void
 }
 
+/** Brief animated splash announcing the day before entering the Writer's Room. */
 export function ColdOpenTransition({ onComplete }: ColdOpenTransitionProps) {
   const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' })
 

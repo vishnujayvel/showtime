@@ -42,6 +42,7 @@ interface ShowMachineProviderProps {
   children: React.ReactNode
 }
 
+/** React context provider that wraps the app with the singleton show machine actor. */
 export function ShowMachineProvider({ children }: ShowMachineProviderProps) {
   return (
     <ShowActorContext.Provider value={showActor as unknown as ShowMachineActor}>
@@ -98,11 +99,12 @@ export function useOverlay(): OverlayState {
 
 // ─── Context Value Selectors (read from machine context) ───
 
+/** Select a value from the show machine's context with automatic re-rendering. */
 export function useShowContext<T>(selector: (ctx: ShowMachineContext) => T): T {
   return useShowSelector((state) => selector(state.context))
 }
 
-/** All convenience selectors as a namespace for easy import */
+/** Namespace of pre-built selectors for common show machine state reads. */
 export const showSelectors = {
   phase: (state: ReturnType<ShowMachineActor['getSnapshot']>): ShowPhase =>
     getPhaseFromState(state.value as Record<string, unknown>),

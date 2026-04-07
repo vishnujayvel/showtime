@@ -20,6 +20,7 @@ const PHASE_INFO: Record<string, { label: string; description: string }> = {
   no_show: { label: 'Dark Studio', description: 'No show running yet.' },
 }
 
+/** Minimal always-on-top floating pill showing the current act, timer, and phase status. */
 export function PillView() {
   const phase = useShowPhase()
   const viewTier = useShowContext((ctx) => ctx.viewTier)

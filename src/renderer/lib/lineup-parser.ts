@@ -15,6 +15,7 @@ function isValidLineup(obj: unknown): obj is ShowLineup {
   return Array.isArray(o.acts) && typeof o.beatThreshold === 'number'
 }
 
+/** Extracts a ShowLineup from Claude's response text, trying fenced blocks then bare JSON fallbacks. */
 export function tryParseLineup(text: string): ShowLineup | null {
   // Strip tool call blocks that may confuse the regex
   const cleaned = stripToolBlocks(text)

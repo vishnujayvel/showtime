@@ -1,5 +1,6 @@
 // ─── Claude Code Stream Event Types (verified from v2.1.63) ───
 
+/** Initialization event emitted when a Claude Code session starts. */
 export interface InitEvent {
   type: 'system'
   subtype: 'init'
@@ -17,6 +18,7 @@ export interface InitEvent {
   uuid: string
 }
 
+/** Wrapper for streaming sub-events from the Claude API response. */
 export interface StreamEvent {
   type: 'stream_event'
   event: StreamSubEvent
@@ -25,6 +27,7 @@ export interface StreamEvent {
   uuid: string
 }
 
+/** Discriminated union of all possible streaming sub-event types from the Claude API. */
 export type StreamSubEvent =
   | { type: 'message_start'; message: AssistantMessagePayload }
   | { type: 'content_block_start'; index: number; content_block: ContentBlock }
@@ -33,6 +36,7 @@ export type StreamSubEvent =
   | { type: 'message_delta'; delta: { stop_reason: string | null }; usage: UsageData; context_management?: unknown }
   | { type: 'message_stop' }
 
+/** A content block within an assistant message, either text or a tool use invocation. */
 export interface ContentBlock {
   type: 'text' | 'tool_use'
   text?: string
@@ -41,10 +45,12 @@ export interface ContentBlock {
   input?: Record<string, unknown>
 }
 
+/** Incremental delta for a streaming content block, either text or partial tool input JSON. */
 export type ContentDelta =
   | { type: 'text_delta'; text: string }
   | { type: 'input_json_delta'; partial_json: string }
 
+/** Complete assistant message event emitted after all streaming is done. */
 export interface AssistantEvent {
   type: 'assistant'
   message: AssistantMessagePayload
@@ -53,6 +59,7 @@ export interface AssistantEvent {
   uuid: string
 }
 
+/** Payload of an assistant message including content blocks and usage data. */
 export interface AssistantMessagePayload {
   model: string
   id: string
@@ -62,6 +69,7 @@ export interface AssistantMessagePayload {
   usage: UsageData
 }
 
+/** Event indicating the session has been rate-limited by the API. */
 export interface RateLimitEvent {
   type: 'rate_limit_event'
   rate_limit_info: {
@@ -73,6 +81,7 @@ export interface RateLimitEvent {
   uuid: string
 }
 
+/** Final result event emitted when a Claude run completes or errors. */
 export interface ResultEvent {
   type: 'result'
   subtype: 'success' | 'error'
@@ -92,6 +101,7 @@ export interface ResultEvent {
   uuid: string
 }
 
+/** Token usage counters for a Claude API call. */
 export interface UsageData {
   input_tokens?: number
   output_tokens?: number
@@ -100,6 +110,7 @@ export interface UsageData {
   service_tier?: string
 }
 
+/** Event requesting user approval for a tool invocation. */
 export interface PermissionEvent {
   type: 'permission_request'
   tool: { name: string; description?: string; input?: Record<string, unknown> }
@@ -109,9 +120,10 @@ export interface PermissionEvent {
   uuid: string
 }
 
-// Union of all possible top-level events
+/** Union of all possible top-level Claude Code stream events. */
 export type ClaudeEvent = InitEvent | StreamEvent | AssistantEvent | RateLimitEvent | ResultEvent | PermissionEvent | UnknownEvent
 
+/** Catch-all for unrecognized event types from the Claude stream. */
 export interface UnknownEvent {
   type: string
   [key: string]: unknown
@@ -119,8 +131,10 @@ export interface UnknownEvent {
 
 // ─── Tab State Machine (v2 — from execution plan) ───
 
+/** Lifecycle status of a Claude subprocess tab. */
 export type TabStatus = 'connecting' | 'idle' | 'running' | 'completed' | 'failed' | 'dead'
 
+/** A pending permission request awaiting user approval in the UI. */
 export interface PermissionRequest {
   questionId: string
   toolTitle: string
@@ -129,6 +143,7 @@ export interface PermissionRequest {
   options: Array<{ optionId: string; kind?: string; label: string }>
 }
 
+/** An image or file attachment associated with a tab message. */
 export interface Attachment {
   id: string
   type: 'image' | 'file'
@@ -141,6 +156,7 @@ export interface Attachment {
   size?: number
 }
 
+/** Complete UI state for a single Claude subprocess tab. */
 export interface TabState {
   id: string
   claudeSessionId: string | null
@@ -172,6 +188,7 @@ export interface TabState {
   additionalDirs: string[]
 }
 
+/** A single conversation message displayed in the tab UI. */
 export interface Message {
   id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
@@ -182,6 +199,7 @@ export interface Message {
   timestamp: number
 }
 
+/** Summary of a completed Claude run including cost, duration, and token usage. */
 export interface RunResult {
   totalCostUsd: number
   durationMs: number
@@ -192,6 +210,7 @@ export interface RunResult {
 
 // ─── Canonical Events (normalized from raw stream) ───
 
+/** Discriminated union of all normalized events emitted by the ControlPlane to the renderer. */
 export type NormalizedEvent =
   | { type: 'session_init'; sessionId: string; tools: string[]; model: string; mcpServers: Array<{ name: string; status: string }>; skills: string[]; version: string; isWarmup?: boolean }
   | { type: 'text_chunk'; text: string }
@@ -208,6 +227,7 @@ export type NormalizedEvent =
 
 // ─── Run Options ───
 
+/** Configuration options for launching a Claude subprocess run. */
 export interface RunOptions {
   prompt: string
   projectPath: string
@@ -227,6 +247,7 @@ export interface RunOptions {
 
 // ─── Control Plane Types ───
 
+/** Registry entry tracking a tab's subprocess metadata in the ControlPlane. */
 export interface TabRegistryEntry {
   tabId: string
   claudeSessionId: string | null
@@ -238,6 +259,7 @@ export interface TabRegistryEntry {
   promptCount: number
 }
 
+/** Health check report containing status of all tabs and the queue depth. */
 export interface HealthReport {
   tabs: Array<{
     tabId: string
@@ -249,6 +271,7 @@ export interface HealthReport {
   queueDepth: number
 }
 
+/** An error enriched with subprocess diagnostics like stderr tail and exit code. */
 export interface EnrichedError {
   message: string
   stderrTail: string[]
@@ -262,6 +285,7 @@ export interface EnrichedError {
 
 // ─── Session History ───
 
+/** Metadata for a stored Claude session used in history browsing. */
 export interface SessionMeta {
   sessionId: string
   slug: string | null
@@ -270,6 +294,7 @@ export interface SessionMeta {
   size: number
 }
 
+/** A message loaded from a persisted Claude session transcript. */
 export interface SessionLoadMessage {
   role: string
   content: string
@@ -279,8 +304,10 @@ export interface SessionLoadMessage {
 
 // ─── Marketplace / Plugin Types ───
 
+/** Installation lifecycle status of a marketplace plugin. */
 export type PluginStatus = 'not_installed' | 'checking' | 'installing' | 'installed' | 'failed'
 
+/** A plugin entry from the marketplace catalog with install and source metadata. */
 export interface CatalogPlugin {
   id: string              // unique: `${repo}/${skillPath}` e.g. 'anthropics/skills/skills/xlsx'
   name: string            // from SKILL.md or plugin.json
@@ -298,31 +325,42 @@ export interface CatalogPlugin {
 
 // ─── Showtime SNL Types ───
 
+/** Top-level phases of the SNL Day show lifecycle. */
 export type ShowPhase = 'no_show' | 'writers_room' | 'live' | 'intermission' | 'director' | 'strike'
+/** User's self-reported energy level at the start of a show. */
 export type EnergyLevel = 'high' | 'medium' | 'low' | 'recovery'
+/** Lifecycle status of an individual act within a show. */
 export type ActStatus = 'upcoming' | 'active' | 'completed' | 'skipped'
+/** End-of-show verdict reflecting overall performance. */
 export type ShowVerdict = 'DAY_WON' | 'SOLID_SHOW' | 'GOOD_EFFORT' | 'SHOW_CALLED_EARLY'
+/** Steps within the Writer's Room phase for show planning. */
 export type WritersRoomStep = 'energy' | 'plan' | 'conversation' | 'lineup_ready'
+/** Ordered window size tiers from smallest to largest. */
 export type ViewTier = 'micro' | 'compact' | 'dashboard' | 'expanded'
+/** Named view modes used for window sizing and layout selection. */
 export type ViewMode = 'pill' | 'compact' | 'dashboard' | 'expanded' | 'full'
 
 const VIEW_TIER_ORDER: ViewTier[] = ['micro', 'compact', 'dashboard', 'expanded']
 
+/** Cycles to the next view tier, wrapping from expanded back to micro. */
 export function nextViewTier(current: ViewTier): ViewTier {
   const idx = VIEW_TIER_ORDER.indexOf(current)
   return VIEW_TIER_ORDER[(idx + 1) % VIEW_TIER_ORDER.length]
 }
 
+/** Returns the next larger view tier, clamping at expanded. */
 export function expandTier(current: ViewTier): ViewTier {
   const idx = VIEW_TIER_ORDER.indexOf(current)
   return idx < VIEW_TIER_ORDER.length - 1 ? VIEW_TIER_ORDER[idx + 1] : current
 }
 
+/** Returns the next smaller view tier, clamping at micro. */
 export function collapseTier(current: ViewTier): ViewTier {
   const idx = VIEW_TIER_ORDER.indexOf(current)
   return idx > 0 ? VIEW_TIER_ORDER[idx - 1] : current
 }
 
+/** A parsed calendar event with start/end times in HH:MM format. */
 export interface CalendarEvent {
   title: string
   start: string  // "HH:MM"
@@ -330,8 +368,10 @@ export interface CalendarEvent {
   allDay: boolean
 }
 
+/** Status of the calendar data fetch lifecycle. */
 export type CalendarFetchStatus = 'idle' | 'fetching' | 'ready' | 'unavailable' | 'error'
 
+/** An act within a live show, with timing, status, and optional calendar pin. */
 export interface Act {
   id: string
   name: string
@@ -348,6 +388,7 @@ export interface Act {
   calendarEventId?: string | null
 }
 
+/** The full lineup payload generated by Claude during the Writer's Room phase. */
 export interface ShowLineup {
   acts: Array<{
     name: string
@@ -363,6 +404,7 @@ export interface ShowLineup {
   openingNote: string
 }
 
+/** A calendar event stored in the local SQLite cache with sync metadata. */
 export interface CachedCalendarEvent {
   id: string
   title: string
@@ -373,6 +415,7 @@ export interface CachedCalendarEvent {
   lastSynced: number
 }
 
+/** Snapshot of show state sent to the macOS tray for menu and title rendering. */
 export interface TrayShowState {
   phase: ShowPhase
   currentActName: string | null
@@ -391,6 +434,7 @@ export interface TrayShowState {
 
 // ─── IPC Channel Names ───
 
+/** Centralized map of all IPC channel names used between main, preload, and renderer. */
 export const IPC = {
   // Request-response (renderer → main)
   START: 'showtime:start',
@@ -504,7 +548,7 @@ export const IPC = {
 
 // ─── Data Persistence Types (shared across main/preload/renderer) ───
 
-/** Snapshot of show state sent from renderer to main for persistence */
+/** Snapshot of show state sent from renderer to main for SQLite persistence. */
 export interface ShowStateSnapshot {
   showId: string
   phase: string
@@ -518,6 +562,7 @@ export interface ShowStateSnapshot {
   acts?: ActSnapshot[]
 }
 
+/** Snapshot of a single act's state for persistence. */
 export interface ActSnapshot {
   id: string
   name: string
@@ -533,6 +578,7 @@ export interface ActSnapshot {
   actualEndAt?: number | null
 }
 
+/** Input payload for recording a timeline event with planned vs actual timing. */
 export interface TimelineEventInput {
   showId: string
   actId?: string | null
@@ -545,6 +591,7 @@ export interface TimelineEventInput {
   metadata?: Record<string, unknown> | null
 }
 
+/** Payload for persisting Claude session context tied to a specific show. */
 export interface ClaudeContextPayload {
   showId: string
   energy?: string | null
@@ -553,6 +600,7 @@ export interface ClaudeContextPayload {
   sessionId?: string | null
 }
 
+/** Schedule drift result for a single act comparing planned vs actual duration. */
 export interface ActDriftResult {
   actId: string | null
   actName: string | null
@@ -561,6 +609,7 @@ export interface ActDriftResult {
   actualMs: number
 }
 
+/** Summary row for a past show displayed in the history view. */
 export interface ShowHistoryEntry {
   showId: string
   phase: string
@@ -574,6 +623,7 @@ export interface ShowHistoryEntry {
   completedActCount: number
 }
 
+/** Aggregated statistics for a named performance metric over a time window. */
 export interface MetricsSummary {
   avg: number
   p95: number
@@ -582,6 +632,7 @@ export interface MetricsSummary {
   count: number
 }
 
+/** Full detail of a show including plan text, lineup JSON, and all act snapshots. */
 export interface ShowDetailEntry {
   showId: string
   phase: string

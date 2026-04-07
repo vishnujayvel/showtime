@@ -231,6 +231,7 @@ function ActRow({
   )
 }
 
+/** Editable draft lineup card displaying all acts with inline name, duration, and category editing. */
 export function LineupCard({ lineup, onEdit }: LineupCardProps) {
   const totalMinutes = lineup.acts.reduce((sum, a) => sum + a.durationMinutes, 0)
   const hours = Math.floor(totalMinutes / 60)

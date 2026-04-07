@@ -17,6 +17,7 @@ interface HelpButtonProps {
   className?: string
 }
 
+/** Small circular "?" button that opens the phase-specific documentation page in the user's browser. */
 export function HelpButton({ phase, className = '' }: HelpButtonProps) {
   const page = HELP_LINKS[phase] ?? '/guide/getting-started'
 

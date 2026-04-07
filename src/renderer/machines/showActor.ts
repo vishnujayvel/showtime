@@ -120,6 +120,7 @@ function persistState(stateValue: unknown, ctx: ShowMachineContext) {
   } catch { /* ignore storage errors */ }
 }
 
+/** Remove persisted show state from localStorage. */
 export function clearPersistedState() {
   try { localStorage.removeItem(PERSIST_KEY) } catch { /* ignore */ }
 }
@@ -168,6 +169,7 @@ function inspectCallback(inspectionEvent: InspectionEvent): void {
   forwardToDevInspector(inspectionEvent)
 }
 
+/** Singleton XState actor for the show machine, alive for the entire app lifecycle. */
 export const showActor = createActor(showMachine, {
   ...(persistedSnapshot ? { snapshot: persistedSnapshot } : {}),
   inspect: inspectCallback,
@@ -236,6 +238,7 @@ function scheduleCelebration() {
   }, 1800)
 }
 
+/** Cancel any pending celebration-done timer. */
 export function clearCelebrationTimeout() {
   if (celebrationTimeout) {
     clearTimeout(celebrationTimeout)
