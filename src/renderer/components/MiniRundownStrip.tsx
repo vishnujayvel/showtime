@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useShowPhase, useShowContext } from '../machines/ShowMachineProvider'
 import { getCategoryClasses } from '../lib/category-colors'
 
+/** Thin color-coded timeline bar showing act segments and a live NOW marker for the pill view. */
 export function MiniRundownStrip() {
   const phase = useShowPhase()
   const acts = useShowContext((ctx) => ctx.acts)

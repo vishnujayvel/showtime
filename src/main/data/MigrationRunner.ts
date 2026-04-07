@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { readFileSync, readdirSync } from 'fs'
 import { join } from 'path'
 
+/** Applies versioned SQL migration files to the database in order. */
 export class MigrationRunner {
   constructor(private db: Database.Database) {}
 

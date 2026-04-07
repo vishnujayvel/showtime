@@ -23,6 +23,7 @@ function formatDriftBadge(currentActIndex: number, totalActs: number, driftSecon
   return `Act ${actNum} of ${totalActs} \u2014 ${absDrift}m ahead of schedule`
 }
 
+/** Segmented timeline bar showing act progress, overrun hatching, a NOW marker, and schedule drift. */
 export function RundownBar({ variant = 'full' }: RundownBarProps) {
   const phase = useShowPhase()
   const acts = useShowContext((ctx) => ctx.acts)

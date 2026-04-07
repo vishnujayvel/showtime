@@ -14,6 +14,7 @@ interface ViewMenuProps {
   view: 'pill' | 'compact' | 'expanded' | 'writers_room'
 }
 
+/** Dropdown menu providing quick access to show controls, navigation, and view switching. */
 export function ViewMenu({ view }: ViewMenuProps) {
   const phase = useShowPhase()
   const send = useShowSend()

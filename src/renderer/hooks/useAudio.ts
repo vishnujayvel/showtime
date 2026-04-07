@@ -1,5 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react'
 
+/** Union of all audio cue identifiers that can be played during a show. */
 export type AudioCue =
   | 'going-live'
   | 'beat-check'
@@ -99,6 +100,7 @@ const CUE_PLAYERS: Record<AudioCue, (ctx: AudioContext) => void> = {
   },
 }
 
+/** Checks whether audio cues are muted via localStorage. */
 export function isMuted(): boolean {
   try {
     return localStorage.getItem(MUTE_KEY) === 'true'
@@ -107,12 +109,14 @@ export function isMuted(): boolean {
   }
 }
 
+/** Persists the audio mute preference to localStorage. */
 export function setMuted(muted: boolean): void {
   try {
     localStorage.setItem(MUTE_KEY, String(muted))
   } catch { /* ignore */ }
 }
 
+/** Plays a synthesized audio cue unless audio is muted. */
 export function playAudioCue(cue: AudioCue): void {
   if (isMuted()) return
   try {
@@ -121,6 +125,7 @@ export function playAudioCue(cue: AudioCue): void {
   } catch { /* audio is non-critical */ }
 }
 
+/** React hook providing audio cue playback with a one-shot timer warning guard. */
 export function useAudio() {
   const timerWarningFired = useRef(false)
 

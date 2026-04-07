@@ -3,6 +3,7 @@ import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import { calendarCache } from './schema'
 import type { CachedCalendarEvent } from '../../shared/types'
 
+/** Caches and retrieves macOS calendar events in SQLite for offline access. */
 export class CalendarCacheRepository {
   constructor(private db: BetterSQLite3Database) {}
 

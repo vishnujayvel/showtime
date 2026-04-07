@@ -12,6 +12,7 @@ import { CalendarCacheRepository } from './CalendarCacheRepository'
 
 let instance: DataService | null = null
 
+/** Singleton facade providing access to all SQLite repositories and the raw database connection. */
 export class DataService {
   readonly raw: Database.Database
   readonly db: BetterSQLite3Database

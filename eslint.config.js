@@ -1,5 +1,6 @@
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
+import jsdoc from 'eslint-plugin-jsdoc'
 import noShadowState from './eslint-rules/no-shadow-state.js'
 
 export default [
@@ -16,8 +17,32 @@ export default [
     plugins: {
       '@typescript-eslint': tseslint,
       'custom': { rules: { 'no-shadow-state': noShadowState } },
+      'jsdoc': jsdoc,
     },
     rules: {
+      'jsdoc/require-jsdoc': ['warn', {
+        require: {
+          FunctionDeclaration: false,
+          ClassDeclaration: false,
+        },
+        contexts: [
+          'ExportNamedDeclaration > FunctionDeclaration',
+          'ExportNamedDeclaration > ClassDeclaration',
+          'ExportNamedDeclaration > TSInterfaceDeclaration',
+          'ExportNamedDeclaration > TSTypeAliasDeclaration',
+          'ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > ArrowFunctionExpression',
+        ],
+        checkConstructors: false,
+      }],
+      'jsdoc/require-description': ['warn', {
+        contexts: [
+          'ExportNamedDeclaration > FunctionDeclaration',
+          'ExportNamedDeclaration > ClassDeclaration',
+          'ExportNamedDeclaration > TSInterfaceDeclaration',
+          'ExportNamedDeclaration > TSTypeAliasDeclaration',
+          'ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > ArrowFunctionExpression',
+        ],
+      }],
       // Layer 2: Warn when useState is used in views/panels (prefer XState).
       // Local UI state (modal open, animation flag) is acceptable — this is
       // guidance, not a hard block. View-routing state MUST be in XState.

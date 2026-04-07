@@ -242,6 +242,7 @@ interface ChatMessageProps {
   message: Message
 }
 
+/** Renders a single chat message bubble dispatched by role (user, assistant, tool, or system). */
 export function ChatMessage({ message }: ChatMessageProps) {
   switch (message.role) {
     case 'user':

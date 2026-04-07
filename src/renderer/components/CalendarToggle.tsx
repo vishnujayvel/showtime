@@ -37,6 +37,7 @@ function StatusLabel({ fetchStatus, eventCount }: { fetchStatus: CalendarFetchSt
   }
 }
 
+/** Checkbox toggle for importing today's calendar events into the Writer's Room planning flow. */
 export function CalendarToggle({ checked, onChange, fetchStatus = 'idle', eventCount = 0, disabled = false }: CalendarToggleProps) {
   const isDisabled = disabled || fetchStatus === 'unavailable' || fetchStatus === 'error'
 

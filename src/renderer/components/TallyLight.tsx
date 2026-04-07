@@ -11,6 +11,7 @@ interface TallyLightProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
+/** Pulsing red dot indicating the show is currently live. */
 export function TallyLight({ isLive, size = 'lg' }: TallyLightProps) {
   return (
     <div

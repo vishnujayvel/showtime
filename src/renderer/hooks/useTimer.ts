@@ -11,6 +11,7 @@ interface TimerState {
   progress: number // 0-1, how much time has elapsed
 }
 
+/** React hook that tracks the current act's countdown timer and auto-completes when time expires. */
 export function useTimer(): TimerState {
   const timerEndAt = useShowContext((ctx) => ctx.timerEndAt)
   const currentActId = useShowContext((ctx) => ctx.currentActId)

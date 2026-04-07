@@ -4,15 +4,7 @@ import { getPhaseFromState } from '../machines/showMachine'
 import { useUIStore } from '../stores/uiStore'
 import type { TrayShowState } from '../../shared/types'
 
-/**
- * Subscribes to the XState show actor and sends tray state to the main process.
- * Timer-only updates (every 1s during live/director phase) use a lightweight
- * IPC channel that only sets tray title + icon — no menu rebuild.
- * Full state updates (with menu rebuild) are sent only on phase/act/beat changes.
- *
- * When timerDisplay === 'pill', tray title is cleared (no timer in menu bar).
- * When timerDisplay === 'menubar', tray title shows countdown.
- */
+/** Syncs XState show actor state to the macOS tray with lightweight timer-only updates during live phases. */
 export function useTraySync(): void {
   const actor = useShowActor()
   const timerDisplay = useUIStore((s) => s.timerDisplay)

@@ -4,6 +4,7 @@ interface OnAirIndicatorProps {
   isLive: boolean
 }
 
+/** Bordered "ON AIR" badge with a pulsing glow when the show is live. */
 export function OnAirIndicator({ isLive }: OnAirIndicatorProps) {
   return (
     <span

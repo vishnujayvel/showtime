@@ -41,23 +41,7 @@ interface InflightRequest {
   reject: (reason: Error) => void
 }
 
-/**
- * ControlPlane: the single backend authority for tab/session lifecycle.
- *
- * Responsibilities:
- *  1. Tab/session registry
- *  2. Request queue + backpressure
- *  3. RequestId idempotency
- *  4. Target session guard
- *  5. Run lifecycle state transitions
- *  6. Health reporting for renderer reconciliation
- *  7. Diagnostic data (delegated to RunManager ring buffers)
- *
- * Events emitted (forwarded from RunManager, tagged with tabId):
- *  - 'event' (tabId, NormalizedEvent)
- *  - 'tab-status-change' (tabId, newStatus, oldStatus)
- *  - 'error' (tabId, EnrichedError)
- */
+/** Manages tab/session lifecycle, request queuing, permission routing, and run dispatch across both stream-json and PTY transports. */
 export class ControlPlane extends EventEmitter {
   private tabs = new Map<string, TabRegistryEntry>()
   private inflightRequests = new Map<string, InflightRequest>()

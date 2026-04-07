@@ -13,6 +13,7 @@ interface ProgressiveLoaderProps {
   active: boolean
 }
 
+/** Animated three-dot loader that cycles through contextual status messages while the lineup is being built. */
 export function ProgressiveLoader({ active }: ProgressiveLoaderProps) {
   const [messageIndex, setMessageIndex] = useState(0)
 

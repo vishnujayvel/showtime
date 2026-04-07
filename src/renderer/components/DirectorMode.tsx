@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from '../ui/dialog'
 
+/** Full-screen overlay presenting compassionate show control options like skip, break, edit lineup, or call early. */
 export function DirectorMode() {
   const send = useShowSend()
   const currentActId = useShowContext((ctx) => ctx.currentActId)

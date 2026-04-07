@@ -20,12 +20,14 @@ import { springDefault as springTransition } from '../constants/animations'
 
 // ─── Time-of-day contextual prompts ───
 
+/** Greeting and sub-text tailored to the current time of day. */
 export interface TimeOfDayPrompt {
   greeting: string
   sub: string
   period: 'morning' | 'midday' | 'late' | 'evening'
 }
 
+/** Return a contextual greeting and subtitle based on the current hour of the day. */
 export function getTimeOfDayPrompt(hour?: number): TimeOfDayPrompt {
   const h = hour ?? new Date().getHours()
   if (h < 10) {
@@ -42,6 +44,7 @@ export function getTimeOfDayPrompt(hour?: number): TimeOfDayPrompt {
 
 // ─── Quick-start template definitions ───
 
+/** Definition for a quick-start template button in the Writer's Room empty state. */
 export interface QuickStartTemplate {
   id: string
   label: string
@@ -49,6 +52,7 @@ export interface QuickStartTemplate {
   available: boolean
 }
 
+/** Build the list of quick-start template options based on existing show and lineup state. */
 export function getQuickStartTemplates(opts: {
   hasTodayShow: boolean
   hasYesterdayLineup: boolean
@@ -88,6 +92,7 @@ const ENERGY_OPTIONS: { level: EnergyLevel; emoji: string; label: string }[] = [
   { level: 'recovery', emoji: '🛋️', label: 'Recovery' },
 ]
 
+/** Chat-driven planning view where the user collaborates with Claude to build the day's lineup. */
 export function WritersRoomView() {
   const energy = useShowContext((ctx) => ctx.energy)
   const acts = useShowContext((ctx) => ctx.acts)

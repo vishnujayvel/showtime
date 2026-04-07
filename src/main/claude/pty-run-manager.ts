@@ -228,6 +228,7 @@ function parseToolCallLine(line: string): { toolName: string; input: string } | 
 
 // ─── Run Handle ───
 
+/** Represents an active or recently-finished PTY-based Claude run with parser state and permission tracking. */
 export interface PtyRunHandle {
   runId: string
   sessionId: string | null
@@ -272,6 +273,7 @@ export interface PtyRunHandle {
 
 // ─── PtyRunManager ───
 
+/** Spawns Claude in interactive PTY mode, parses terminal output for text/tool/permission events, and emits normalized events. */
 export class PtyRunManager extends EventEmitter {
   private activeRuns = new Map<string, PtyRunHandle>()
   private _finishedRuns = new Map<string, PtyRunHandle>()

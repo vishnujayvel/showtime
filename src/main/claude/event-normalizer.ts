@@ -10,13 +10,7 @@ import type {
   ContentDelta,
 } from '../../shared/types'
 
-/**
- * Maps raw Claude stream-json events to canonical CLUI events.
- *
- * The normalizer is stateless — it takes one raw event and returns
- * zero or more normalized events. The caller (RunManager) is responsible
- * for sequencing and routing.
- */
+/** Statelessly maps a raw Claude stream-json event to zero or more canonical normalized events. */
 export function normalize(raw: ClaudeEvent): NormalizedEvent[] {
   switch (raw.type) {
     case 'system':

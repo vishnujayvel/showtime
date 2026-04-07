@@ -21,6 +21,7 @@ function formatStartTime(timestamp: number): string {
   })
 }
 
+/** Full-size live view with hero timer panel, lineup sidebar, and director mode overlay. */
 export function ExpandedView() {
   const phase = useShowPhase()
   const acts = useShowContext((ctx) => ctx.acts)
