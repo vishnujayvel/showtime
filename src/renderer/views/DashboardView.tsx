@@ -1,15 +1,14 @@
 import { useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
-import { expandTier, collapseTier } from '../../shared/types'
+import { expandTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { RundownBar } from '../components/RundownBar'
 import { ClapperboardBadge } from '../components/ClapperboardBadge'
-import { MuteToggle } from '../components/MuteToggle'
-import { ViewMenu } from '../components/ViewMenu'
+import { Toolbar } from '../components/Toolbar'
 import { cn } from '../lib/utils'
 import { formatDateLabel } from '../lib/utils'
 import { getCategoryClasses } from '../lib/category-colors'
@@ -29,9 +28,7 @@ export function DashboardView() {
   const currentAct = useShowSelector(showSelectors.currentAct)
   const viewTier = useShowContext((ctx) => ctx.viewTier)
   const send = useShowSend()
-  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
   const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
-  const enterDirector = useCallback(() => send({ type: 'ENTER_DIRECTOR' }), [send])
   const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
   const { minutes, seconds, isRunning, progress } = useTimer()
 
@@ -74,27 +71,7 @@ export function DashboardView() {
           {dateLabel}
         </span>
         <div className="flex-1" />
-        <MuteToggle />
-        <button
-          onClick={enterDirector}
-          className="px-2 py-1 rounded-md bg-surface-hover text-txt-secondary text-[11px] font-medium hover:text-txt-primary transition-colors no-drag"
-        >
-          Director
-        </button>
-        <ViewMenu view="dashboard" />
-        <button
-          onClick={collapseViewTier}
-          className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
-        >
-          ▼
-        </button>
-        <button
-          onClick={() => window.showtime.quit()}
-          className="px-1 py-0.5 text-txt-muted hover:text-onair transition-colors text-xs no-drag"
-          title="Quit Showtime"
-        >
-          ✕
-        </button>
+        <Toolbar />
       </div>
 
       {/* RundownBar section */}

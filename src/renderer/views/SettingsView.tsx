@@ -4,6 +4,7 @@ import { useThemeStore, type ThemeMode } from '../theme'
 import { useShowSend } from '../machines/ShowMachineProvider'
 import { useUIStore } from '../stores/uiStore'
 import { Button } from '../ui/button'
+import { Toolbar } from '../components/Toolbar'
 
 interface SettingsViewProps {
   onBack: () => void
@@ -47,12 +48,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
         <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted">
           PREFERENCES
         </span>
-        <button
-          onClick={onBack}
-          className="text-txt-muted hover:text-txt-secondary text-sm no-drag transition-colors"
-        >
-          Back
-        </button>
+        <Toolbar onBack={onBack} />
       </div>
 
       {/* Settings content */}

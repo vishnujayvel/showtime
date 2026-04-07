@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useShowPhase, useShowContext, useShowSend, useShowSelector, showSelectors } from '../machines/ShowMachineProvider'
-import { expandTier, collapseTier } from '../../shared/types'
+import { expandTier } from '../../shared/types'
 import { useTimer } from '../hooks/useTimer'
 import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { RundownBar } from '../components/RundownBar'
-import { ViewMenu } from '../components/ViewMenu'
-import { MuteToggle } from '../components/MuteToggle'
+import { Toolbar } from '../components/Toolbar'
 import { cn } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
@@ -26,7 +25,6 @@ export function CompactView() {
   const currentAct = useShowSelector(showSelectors.currentAct)
   const viewTier = useShowContext((ctx) => ctx.viewTier)
   const send = useShowSend()
-  const collapseViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: collapseTier(viewTier) }), [send, viewTier])
   const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
   const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
   const { minutes, seconds, isRunning } = useTimer()
@@ -90,23 +88,7 @@ export function CompactView() {
             </>
           )}
         </div>
-        <MuteToggle />
-        <ViewMenu
-          view="compact"
-        />
-        <button
-          onClick={collapseViewTier}
-          className="px-1 py-0.5 text-txt-muted hover:text-txt-secondary transition-colors no-drag text-xs"
-        >
-          ▼
-        </button>
-        <button
-          onClick={() => window.showtime.quit()}
-          className="px-1 py-0.5 text-txt-muted hover:text-onair transition-colors text-xs no-drag"
-          title="Quit Showtime"
-        >
-          ✕
-        </button>
+        <Toolbar />
       </div>
 
       {/* RundownBar section */}
