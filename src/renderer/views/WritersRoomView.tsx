@@ -4,16 +4,14 @@ import { useUIStore } from '../stores/uiStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { tryParseLineup } from '../lib/lineup-parser'
 import { buildRefinementPrompt } from '../lib/refinement-prompt'
-import { tryParseCalendarEvents } from '../lib/calendar-parser'
 import { ChatMessage } from '../components/ChatMessage'
-import { ActCard } from '../components/ActCard'
-import { CalendarToggle } from '../components/CalendarToggle'
+import { EnergyPicker } from '../components/EnergyPicker'
+import { LineupDraftPreview, LineupConfirmation } from '../components/LineupPreview'
+import { ChatInput } from '../components/ChatInput'
 import { ViewMenu } from '../components/ViewMenu'
 import { ProgressiveLoader } from '../components/ProgressiveLoader'
-import { Button } from '../ui/button'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { formatDateLabel } from '../lib/utils'
-import { cn } from '../lib/utils'
 import type { Act, EnergyLevel, ShowLineup } from '../../shared/types'
 
 import { springDefault as springTransition } from '../constants/animations'
@@ -85,13 +83,6 @@ export function getQuickStartTemplates(opts: {
   ]
 }
 
-const ENERGY_OPTIONS: { level: EnergyLevel; emoji: string; label: string }[] = [
-  { level: 'high', emoji: '⚡', label: 'High' },
-  { level: 'medium', emoji: '☀️', label: 'Medium' },
-  { level: 'low', emoji: '🌙', label: 'Low' },
-  { level: 'recovery', emoji: '🛋️', label: 'Recovery' },
-]
-
 /** Chat-driven planning view where the user collaborates with Claude to build the day's lineup. */
 export function WritersRoomView() {
   const energy = useShowContext((ctx) => ctx.energy)
@@ -107,13 +98,8 @@ export function WritersRoomView() {
   const triggerGoingLive = useCallback(() => send({ type: 'TRIGGER_GOING_LIVE' }), [send])
   const refineLineup = useCallback(() => send({ type: 'SET_WRITERS_ROOM_STEP', step: 'conversation' }), [send])
   const confirmLineupEdit = useCallback(() => send({ type: 'CONFIRM_LINEUP_EDIT', acts }), [send, acts])
-  const calendarAvailable = useUIStore((s) => s.calendarAvailable)
   const calendarEnabled = useUIStore((s) => s.calendarEnabled)
-  const setCalendarEnabled = useUIStore((s) => s.setCalendarEnabled)
   const calendarEvents = useUIStore((s) => s.calendarEvents)
-  const calendarFetchStatus = useUIStore((s) => s.calendarFetchStatus)
-  const setCalendarEvents = useUIStore((s) => s.setCalendarEvents)
-  const setCalendarFetchStatus = useUIStore((s) => s.setCalendarFetchStatus)
 
   const sendMessage = useSessionStore((s) => s.sendMessage)
   const tabs = useSessionStore((s) => s.tabs)
@@ -123,7 +109,6 @@ export function WritersRoomView() {
   const [energyPickerOpen, setEnergyPickerOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const calendarFetchMsgCountRef = useRef<number | null>(null)
   const lineupStartRef = useRef<number | null>(null)
   const lastLineupHashRef = useRef<string | null>(null)
 
@@ -131,7 +116,6 @@ export function WritersRoomView() {
   const tab = tabs.find((t) => t.id === activeTabId)
   const messages = tab?.messages ?? []
   const isRunning = tab?.status === 'running' || tab?.status === 'connecting'
-  const currentActivity = tab?.currentActivity ?? ''
   const timePrompt = useMemo(() => getTimeOfDayPrompt(), [])
 
   // Auto-scroll: scroll to bottom when near bottom (<60px threshold)
@@ -158,11 +142,6 @@ export function WritersRoomView() {
   useEffect(() => {
     window.showtime.prewarmSubprocess()
   }, [])
-
-  const tabReady = useSessionStore((s) => s.tabReady)
-
-  // Calendar prefetch DISABLED in chat-first mode.
-  // Claude fetches calendar directly via MCP tools when the user asks.
 
   // ─── Watch for lineup in assistant messages ───
   useEffect(() => {
@@ -269,49 +248,15 @@ export function WritersRoomView() {
         </div>
 
         <div className="flex items-center gap-3 no-drag">
-          {/* Energy chip */}
-          <div className="relative">
-            <button
-              onClick={() => setEnergyPickerOpen(!energyPickerOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-hover/60 border border-card-border text-xs text-txt-secondary hover:text-txt-primary transition-colors"
-              data-testid="energy-chip"
-            >
-              <span>{ENERGY_OPTIONS.find((o) => o.level === energy)?.emoji ?? '☀️'}</span>
-              <span className="font-mono uppercase tracking-wider text-[10px]">
-                {energy ?? 'medium'}
-              </span>
-            </button>
-            <AnimatePresence>
-              {energyPickerOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={springTransition}
-                  className="absolute z-20 top-full right-0 mt-1 bg-surface border border-card-border rounded-lg shadow-lg py-1 min-w-[120px]"
-                >
-                  {ENERGY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.level}
-                      onClick={() => {
-                        setEnergy(opt.level)
-                        setEnergyPickerOpen(false)
-                      }}
-                      className={cn(
-                        'w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-surface-hover transition-colors',
-                        energy === opt.level && 'bg-surface-hover',
-                      )}
-                    >
-                      <span>{opt.emoji}</span>
-                      <span className="text-txt-primary">{opt.label}</span>
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Calendar toggle hidden in chat-first mode — Claude handles calendar via MCP */}
+          <EnergyPicker
+            energy={energy}
+            open={energyPickerOpen}
+            onToggle={() => setEnergyPickerOpen(!energyPickerOpen)}
+            onSelect={(level) => {
+              setEnergy(level)
+              setEnergyPickerOpen(false)
+            }}
+          />
 
           <ViewMenu view="writers_room" />
 
@@ -401,214 +346,52 @@ export function WritersRoomView() {
 
       {/* Lineup preview — visible when acts parsed but not yet in lineup_ready */}
       {hasLineup && writersRoomStep !== 'lineup_ready' && (
-        <div className="px-6 py-3 border-t border-surface-hover shrink-0" data-testid="lineup-preview">
-          <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-txt-muted mb-2 block">
-            LINEUP
-          </span>
-          <div className="flex flex-col gap-2">
-            {[...acts].sort((a, b) => a.order - b.order).map((act, index) => (
-              <ActCard
-                key={act.id}
-                act={act}
-                variant="full"
-                actNumber={index + 1}
-                onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
-                onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
-                onUpdateName={(name) => send({ type: 'UPDATE_ACT', actId: act.id, name })}
-                onUpdateDuration={(durationMinutes) => send({ type: 'UPDATE_ACT', actId: act.id, durationMinutes })}
-              />
-            ))}
-          </div>
-        </div>
+        <LineupDraftPreview
+          acts={acts}
+          onReorder={(actId, direction) => send({ type: 'REORDER_ACT', actId, direction })}
+          onRemove={(actId) => send({ type: 'REMOVE_ACT', actId })}
+          onUpdateName={(actId, name) => send({ type: 'UPDATE_ACT', actId, name })}
+          onUpdateDuration={(actId, durationMinutes) => send({ type: 'UPDATE_ACT', actId, durationMinutes })}
+        />
       )}
 
       {/* Lineup confirmation panel — distinct UX when in lineup_ready step */}
       {hasLineup && writersRoomStep === 'lineup_ready' && (
-        <div className="px-6 py-4 border-t border-accent/20 bg-surface shrink-0" data-testid="lineup-confirmation">
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-mono text-[10px] tracking-[0.12em] uppercase text-accent">
-              CONFIRM LINEUP
-            </span>
-            <span className="text-[10px] text-txt-muted">
-              {acts.length} act{acts.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-          <div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto">
-            {[...acts].sort((a, b) => a.order - b.order).map((act, index) => (
-              <ActCard
-                key={act.id}
-                act={act}
-                variant="full"
-                actNumber={index + 1}
-                onReorder={(direction) => send({ type: 'REORDER_ACT', actId: act.id, direction })}
-                onRemove={() => send({ type: 'REMOVE_ACT', actId: act.id })}
-                onUpdateName={(name) => send({ type: 'UPDATE_ACT', actId: act.id, name })}
-                onUpdateDuration={(durationMinutes) => send({ type: 'UPDATE_ACT', actId: act.id, durationMinutes })}
-              />
-            ))}
-            {/* Add Act button */}
-            <button
-              onClick={() => send({ type: 'ADD_ACT', name: 'New Act', sketch: 'deep-work', durationMinutes: 25 })}
-              className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-surface-hover text-xs text-txt-muted hover:text-txt-secondary hover:border-txt-muted transition-colors"
-              data-testid="add-act-btn"
-            >
-              + Add Act
-            </button>
-          </div>
-          {/* Chat input for Claude refinement in lineup_ready */}
-          <div className="flex items-end gap-2 mt-3">
-            <textarea
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Tell the writers to change something..."
-              rows={1}
-              className="flex-1 resize-none rounded-lg bg-titlebar border border-surface-hover px-3 py-2 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50"
-              data-testid="lineup-chat-input"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!chatInput.trim()}
-              className={cn(
-                'rounded-lg px-3 py-2 text-sm font-medium transition-colors shrink-0',
-                chatInput.trim()
-                  ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
-                  : 'bg-surface-hover text-txt-muted border border-surface-hover',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              data-testid="lineup-chat-send"
-            >
-              Send
-            </button>
-          </div>
-          <div className="flex items-center gap-3 mt-3">
-            <button
-              onClick={refineLineup}
-              className="px-4 py-2.5 rounded-lg border border-surface-hover text-sm text-txt-secondary hover:text-txt-primary hover:border-txt-muted transition-colors"
-              data-testid="refine-lineup-btn"
-            >
-              Refine
-            </button>
-            {editingMidShow ? (
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  window.showtime.logEvent('INFO', 'confirm_lineup_edit_clicked', { actCount: acts.length })
-                  confirmLineupEdit()
-                }}
-                data-testid="confirm-lineup-edit-btn"
-              >
-                Confirm & Resume Show
-              </Button>
-            ) : lineupStatus === 'confirmed' ? (
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  window.showtime.logEvent('INFO', 'go_live_clicked', { actCount: acts.length })
-                  triggerGoingLive()
-                }}
-                data-testid="confirm-go-live-btn"
-              >
-                Confirm & Go Live
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  window.showtime.logEvent('INFO', 'finalize_lineup_clicked', { actCount: acts.length })
-                  finalizeLineup()
-                }}
-                data-testid="finalize-lineup-btn"
-              >
-                Finalize Lineup
-              </Button>
-            )}
-          </div>
-        </div>
+        <LineupConfirmation
+          acts={acts}
+          writersRoomStep={writersRoomStep}
+          lineupStatus={lineupStatus}
+          editingMidShow={editingMidShow}
+          chatInput={chatInput}
+          onChatInputChange={setChatInput}
+          onKeyDown={handleKeyDown}
+          onSend={handleSend}
+          onReorder={(actId, direction) => send({ type: 'REORDER_ACT', actId, direction })}
+          onRemove={(actId) => send({ type: 'REMOVE_ACT', actId })}
+          onUpdateName={(actId, name) => send({ type: 'UPDATE_ACT', actId, name })}
+          onUpdateDuration={(actId, durationMinutes) => send({ type: 'UPDATE_ACT', actId, durationMinutes })}
+          onAddAct={() => send({ type: 'ADD_ACT', name: 'New Act', sketch: 'deep-work', durationMinutes: 25 })}
+          onRefine={refineLineup}
+          onFinalize={finalizeLineup}
+          onGoLive={triggerGoingLive}
+          onConfirmEdit={confirmLineupEdit}
+        />
       )}
 
       {/* Footer: input + action buttons (hidden during lineup confirmation) */}
       {writersRoomStep !== 'lineup_ready' && (
-        <div className="px-6 py-4 border-t border-surface-hover shrink-0">
-          {/* Chat input */}
-          <div className="flex items-end gap-2">
-            <textarea
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                hasLineup
-                  ? 'Tell the writers to change something...'
-                  : 'What do you want to accomplish today?'
-              }
-              rows={1}
-              className="flex-1 resize-none rounded-lg bg-titlebar border border-surface-hover px-3 py-2.5 text-sm text-txt-primary placeholder:text-txt-muted focus:outline-none focus:border-accent/50 disabled:opacity-50"
-              data-testid="chat-input"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!chatInput.trim()}
-              className={cn(
-                'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors shrink-0',
-                chatInput.trim()
-                  ? 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
-                  : 'bg-surface-hover text-txt-muted border border-surface-hover',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              data-testid="chat-send"
-            >
-              Send
-            </button>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-3 mt-3">
-            {/* Mid-show editing: always show confirm & resume */}
-            {editingMidShow && hasLineup && (
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  window.showtime.logEvent('INFO', 'confirm_lineup_edit_clicked', { actCount: acts.length })
-                  confirmLineupEdit()
-                }}
-                data-testid="confirm-lineup-edit-btn"
-              >
-                Confirm & Resume Show
-              </Button>
-            )}
-
-            {/* BUILD MY LINEUP — visible when no lineup and not mid-show editing */}
-            {!hasLineup && !editingMidShow && (
-              <button
-                onClick={handleBuildLineup}
-                disabled={false}
-                className="flex-1 py-2.5 rounded-lg border-2 border-dashed border-accent/30 text-sm text-accent font-medium hover:border-accent/50 hover:bg-accent/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                data-testid="build-lineup-btn"
-              >
-                BUILD MY LINEUP
-              </button>
-            )}
-
-            {/* Finalize Lineup — visible when lineup exists but not in confirmation step and not mid-show */}
-            {hasLineup && !editingMidShow && (
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  window.showtime.logEvent('INFO', 'finalize_lineup_clicked', { actCount: acts.length })
-                  finalizeLineup()
-                }}
-                data-testid="finalize-lineup-btn"
-              >
-                Finalize Lineup
-              </Button>
-            )}
-          </div>
-        </div>
+        <ChatInput
+          chatInput={chatInput}
+          hasLineup={hasLineup}
+          editingMidShow={editingMidShow}
+          actCount={acts.length}
+          onChatInputChange={setChatInput}
+          onKeyDown={handleKeyDown}
+          onSend={handleSend}
+          onBuildLineup={handleBuildLineup}
+          onFinalize={finalizeLineup}
+          onConfirmEdit={confirmLineupEdit}
+        />
       )}
     </div>
   )
