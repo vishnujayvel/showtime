@@ -23,9 +23,9 @@ export function ViewMenu({ view }: ViewMenuProps) {
   const enterDirector = useCallback(() => send({ type: 'ENTER_DIRECTOR' }), [send])
   const enterIntermission = useCallback(() => send({ type: 'ENTER_INTERMISSION' }), [send])
 
-  const canEditLineup = phase === 'live' || phase === 'intermission'
+  const canEditLineup = phase === 'live' || phase === 'intermission' || phase === 'director'
   const canDirector = phase === 'live' || phase === 'intermission'
-  const canBreak = phase === 'live'
+  const canBreak = phase === 'live' || phase === 'director'
 
   const isPill = view === 'pill'
 
