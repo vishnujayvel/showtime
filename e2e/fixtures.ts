@@ -61,7 +61,7 @@ export const test = base.extend<{}, ElectronFixtures>({
   }, { scope: 'worker' }],
 })
 
-export { expect } from '@playwright/test'
+export { expect } from './matchers'
 
 // ─── Standard Act Sets ───
 
