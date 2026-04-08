@@ -34,7 +34,6 @@
 .golden-glow,
 .slide-up,
 .spotlight-sweep,
-.animate-confetti,
 .writers-dot-1,
 .writers-dot-2,
 .writers-dot-3 {
@@ -144,8 +143,10 @@
   display: none !important;
 }
 
-/* Confetti particles in StrikeView — random positions per render */
+/* Confetti particles in StrikeView — random positions per render.
+   Also kills animation (consolidated from named animation list above). */
 .animate-confetti {
+  animation: none !important;
   display: none !important;
 }
 

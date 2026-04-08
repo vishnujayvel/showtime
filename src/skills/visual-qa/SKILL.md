@@ -55,7 +55,7 @@ For each screenshot, evaluate against the spec entry's checklist:
 
 For each view, output a structured result:
 
-```
+```text
 ## [ViewName] — PASS / FAIL
 
 | Check | Status | Notes |

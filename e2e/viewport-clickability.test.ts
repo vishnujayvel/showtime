@@ -16,8 +16,8 @@ test.describe('Viewport Clickability', () => {
 
   test('DarkStudio — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.darkStudio)
-    // Wait for the primary CTA to render (Framer Motion delayed entrance at 1.2s)
-    await page.waitForTimeout(2000)
+    // Wait for the primary CTA to render (Framer Motion delayed entrance)
+    await page.waitForSelector('[data-testid="enter-writers-room"], [data-testid="resume-show-btn"]', { state: 'visible' })
 
     // "Enter the Writer's Room" button (or "Resume Today's Show" if there's a persisted show)
     const enterBtn = page.locator('[data-testid="enter-writers-room"]')
@@ -48,7 +48,7 @@ test.describe('Viewport Clickability', () => {
 
   test('WritersRoom (chat, empty) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.writersRoom_chat)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="chat-input"]', { state: 'visible' })
 
     // Energy picker chip (in title bar)
     const energyChip = page.locator('[data-testid="energy-chip"]')
@@ -101,7 +101,7 @@ test.describe('Viewport Clickability', () => {
 
   test('WritersRoom (lineup ready) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.writersRoom_lineup)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Energy picker chip
     const energyChip = page.locator('[data-testid="energy-chip"]')
@@ -132,7 +132,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Expanded (live) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_expanded)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Toolbar: Director button
     const directorBtn = page.locator('[data-testid="toolbar-director-btn"]')
@@ -171,7 +171,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Expanded (intermission) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.intermission)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // IntermissionView: "Back to the show" button
     const backToShowBtn = page.getByRole('button', { name: /back to the show/i })
@@ -202,7 +202,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Compact (live) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_compact)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Toolbar: Collapse button
     const collapseBtn = page.locator('[data-testid="toolbar-collapse-btn"]')
@@ -235,7 +235,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Dashboard (live) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_dashboard)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Toolbar: Director button (dashboard tier has director)
     const directorBtn = page.locator('[data-testid="toolbar-director-btn"]')
@@ -274,7 +274,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Pill (live) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_micro)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Pill minimize button
     const minimizeBtn = page.locator('[data-testid="pill-minimize-btn"]')
@@ -295,7 +295,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Strike (DAY_WON) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.strike_dayWon)
-    await page.waitForTimeout(1500)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // "Add an Encore" button
     const encoreBtn = page.locator('[data-testid="encore-btn"]')
@@ -352,7 +352,7 @@ test.describe('Viewport Clickability', () => {
 
   test('Strike (GOOD_EFFORT) — all interactive elements clickable', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.strike_goodEffort)
-    await page.waitForTimeout(1500)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Same footer buttons as DAY_WON
     const encoreBtn = page.locator('[data-testid="encore-btn"]')
@@ -382,7 +382,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in DarkStudio', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.darkStudio)
-    await page.waitForTimeout(2000)
+    await page.waitForSelector('[data-testid="enter-writers-room"], [data-testid="resume-show-btn"]', { state: 'visible' })
 
     const interactives = page.locator('button:visible, a:visible, [role="button"]:visible')
     const count = await interactives.count()
@@ -393,7 +393,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in Expanded (live)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_expanded)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     const interactives = page.locator('button:visible, a:visible, [role="button"]:visible')
     const count = await interactives.count()
@@ -404,7 +404,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in Compact (live)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_compact)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     const interactives = page.locator('button:visible, a:visible, [role="button"]:visible')
     const count = await interactives.count()
@@ -415,7 +415,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in Dashboard (live)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_dashboard)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     const interactives = page.locator('button:visible, a:visible, [role="button"]:visible')
     const count = await interactives.count()
@@ -426,7 +426,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in Pill (live)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.live_micro)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     const interactives = page.locator('button:visible, a:visible, [role="button"]:visible')
     const count = await interactives.count()
@@ -437,7 +437,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in Strike (DAY_WON)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.strike_dayWon)
-    await page.waitForTimeout(1500)
+    await page.waitForSelector('[data-testid="showtime-app"]', { state: 'visible' })
 
     // Exclude confetti elements (pointer-events: none overlay, intentionally not clickable)
     const interactives = page.locator(
@@ -446,12 +446,16 @@ test.describe('Viewport Clickability', () => {
     const count = await interactives.count()
     for (let i = 0; i < count; i++) {
       const el = interactives.nth(i)
-      // Skip elements inside the confetti overlay (they have pointer-events: none by design)
-      const isConfetti = await el.evaluate((node) => {
-        return node.closest('.animate-confetti') !== null ||
-               node.closest('[class*="pointer-events-none"]') !== null
+      // Skip elements inside a pointer-events: none ancestor (e.g. confetti overlay)
+      const isNonInteractive = await el.evaluate((node) => {
+        let current: Element | null = node
+        while (current) {
+          if (window.getComputedStyle(current).pointerEvents === 'none') return true
+          current = current.parentElement
+        }
+        return false
       })
-      if (!isConfetti) {
+      if (!isNonInteractive) {
         await expect(el).toBeUserClickable()
       }
     }
@@ -459,7 +463,7 @@ test.describe('Viewport Clickability', () => {
 
   test('sweep: no visible button/link is outside viewport in WritersRoom (chat)', async ({ mainPage: page }) => {
     await seedFixture(page, FIXTURES.writersRoom_chat)
-    await page.waitForTimeout(1000)
+    await page.waitForSelector('[data-testid="chat-input"]', { state: 'visible' })
 
     const interactives = page.locator('button:visible, a:visible, [role="button"]:visible')
     const count = await interactives.count()

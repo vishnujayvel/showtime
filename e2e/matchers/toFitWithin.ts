@@ -73,18 +73,21 @@ export async function toFitWithin(
     height: containerBox.height,
   }
 
+  // Sub-pixel tolerance to prevent flakiness from floating-point rounding
+  const EPSILON = 0.5
+
   const overflows: string[] = []
 
-  if (childRect.top < containerRect.top) {
+  if (childRect.top < containerRect.top - EPSILON) {
     overflows.push(`top overflows by ${(containerRect.top - childRect.top).toFixed(1)}px`)
   }
-  if (childRect.left < containerRect.left) {
+  if (childRect.left < containerRect.left - EPSILON) {
     overflows.push(`left overflows by ${(containerRect.left - childRect.left).toFixed(1)}px`)
   }
-  if (childRect.bottom > containerRect.bottom) {
+  if (childRect.bottom > containerRect.bottom + EPSILON) {
     overflows.push(`bottom overflows by ${(childRect.bottom - containerRect.bottom).toFixed(1)}px`)
   }
-  if (childRect.right > containerRect.right) {
+  if (childRect.right > containerRect.right + EPSILON) {
     overflows.push(`right overflows by ${(childRect.right - containerRect.right).toFixed(1)}px`)
   }
 

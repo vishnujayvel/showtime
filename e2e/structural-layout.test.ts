@@ -7,10 +7,12 @@ const ALL_FIXTURES = Object.entries(FIXTURES) as [string, Readonly<Record<string
 
 /** Key views for bounding box containment (3.3) */
 const CONTAINMENT_FIXTURES: [string, Readonly<Record<string, unknown>>][] = [
+  ['darkStudio', FIXTURES.darkStudio],
   ['live_expanded', FIXTURES.live_expanded],
   ['live_compact', FIXTURES.live_compact],
   ['live_dashboard', FIXTURES.live_dashboard],
   ['live_micro', FIXTURES.live_micro],
+  ['strike_dayWon', FIXTURES.strike_dayWon],
 ]
 
 // ─── 3.1 Overflow Detection ───

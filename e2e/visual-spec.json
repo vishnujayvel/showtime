@@ -591,7 +591,7 @@
           "id": "pill-container",
           "description": "Pill-shaped floating container with backdrop blur",
           "region": "full",
-          "css_class": "min-w-[320px] w-auto max-w-[320px] min-h-12 rounded-full",
+          "css_class": "w-80 min-h-12 rounded-full",
           "backdrop_filter": "blur(20px)",
           "border": "1px solid rgba(255,255,255,0.06)",
           "shadow": "0 8px 32px rgba(0,0,0,0.4)"
@@ -1734,10 +1734,10 @@
         },
         {
           "id": "beat-stars-hero",
-          "description": "Three empty stars (no beats locked)",
+          "description": "One locked star and two empty stars (1 beat locked from SHOW_CALLED_EARLY)",
           "region": "center",
           "font_size": "24px (text-2xl in mockup)",
-          "pattern": "empty-empty-empty",
+          "pattern": "locked-empty-empty",
           "letter_spacing": "widest"
         },
         {

@@ -7,6 +7,7 @@
  * 2. Element is within the viewport (no scroll needed)
  * 3. Element is not obscured by another element (elementFromPoint at center)
  * 4. Element does not have pointer-events: none
+ * 5. Element is not disabled (disabled attribute, aria-disabled)
  *
  * Usage:
  *   await expect(page.locator('#my-button')).toBeUserClickable()
@@ -22,6 +23,7 @@ interface ClickabilityResult {
   topElementClass: string
   isNotObscured: boolean
   pointerEvents: string
+  isDisabled: boolean
 }
 
 export async function toBeUserClickable(
@@ -64,6 +66,12 @@ export async function toBeUserClickable(
       const computed = window.getComputedStyle(el)
       const pointerEvents = computed.pointerEvents
 
+      // 5. Disabled control check
+      const isDisabled =
+        (el as HTMLButtonElement | HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).disabled === true ||
+        el.getAttribute('disabled') !== null ||
+        el.getAttribute('aria-disabled') === 'true'
+
       return {
         rect: {
           top: rect.top,
@@ -80,6 +88,7 @@ export async function toBeUserClickable(
         topElementClass: (topEl as HTMLElement)?.className ?? '',
         isNotObscured,
         pointerEvents,
+        isDisabled,
       }
     })
 
@@ -103,6 +112,10 @@ export async function toBeUserClickable(
 
     if (result.pointerEvents === 'none') {
       errors.push('Element has pointer-events: none')
+    }
+
+    if (result.isDisabled) {
+      errors.push('Element is disabled (disabled attribute or aria-disabled="true")')
     }
   }
 
