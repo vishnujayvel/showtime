@@ -8,6 +8,7 @@ import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { ClapperboardBadge } from '../components/ClapperboardBadge'
 import { Toolbar } from '../components/Toolbar'
+import { BurningFuse } from '../components/BurningFuse'
 import { cn } from '../lib/utils'
 import { formatDateLabel } from '../lib/utils'
 import { getCategoryClasses } from '../lib/category-colors'
@@ -72,6 +73,13 @@ export function DashboardView() {
         <div className="flex-1" />
         <Toolbar />
       </div>
+
+      {/* Burning Fuse progress */}
+      {phase === 'live' && (
+        <div className="px-4 py-1">
+          <BurningFuse size="expanded" progress={progress} />
+        </div>
+      )}
 
       {/* Timer Section — the hero area */}
       <div
