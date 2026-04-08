@@ -8,7 +8,7 @@
  * Usage:
  *   await expect(childLocator).toFitWithin(containerLocator)
  */
-import type { Locator } from '@playwright/test'
+import type { Locator, ExpectMatcherState } from '@playwright/test'
 
 interface BBox {
   top: number
@@ -28,7 +28,7 @@ function formatBox(label: string, box: BBox): string {
 }
 
 export async function toFitWithin(
-  this: ReturnType<import('@playwright/test').Expect['getState']>,
+  this: ExpectMatcherState,
   child: Locator,
   container: Locator,
 ) {

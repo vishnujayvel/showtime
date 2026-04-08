@@ -11,7 +11,7 @@
  * Usage:
  *   await expect(page.locator('#my-button')).toBeUserClickable()
  */
-import type { Locator } from '@playwright/test'
+import type { Locator, ExpectMatcherState } from '@playwright/test'
 
 interface ClickabilityResult {
   rect: { top: number; left: number; bottom: number; right: number; width: number; height: number }
@@ -25,7 +25,7 @@ interface ClickabilityResult {
 }
 
 export async function toBeUserClickable(
-  this: ReturnType<import('@playwright/test').Expect['getState']>,
+  this: ExpectMatcherState,
   locator: Locator,
 ) {
   const isNot = this.isNot
