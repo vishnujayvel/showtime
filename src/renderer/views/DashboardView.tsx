@@ -114,6 +114,14 @@ export function DashboardView() {
             </div>
           </>
         )}
+        {phase === 'live' && !currentAct && (
+          <>
+            <p className="font-body text-base font-medium text-txt-secondary mt-2">
+              No active act
+            </p>
+            <BurningFuse size="expanded" progress={0} />
+          </>
+        )}
         {phase === 'intermission' && (
           <p className="font-body text-lg text-txt-secondary font-medium">
             WE&apos;LL BE RIGHT BACK

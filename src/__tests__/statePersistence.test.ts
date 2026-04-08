@@ -19,7 +19,7 @@ import { localToday } from '../shared/date-utils'
 // ─── Constants (mirror showActor.ts) ───
 
 const PERSIST_KEY = 'showtime-show-state'
-const PERSIST_VERSION = 1
+const PERSIST_VERSION = 4
 const TRANSIENT_KEYS = new Set(['beatCheckPending', 'celebrationActive'])
 
 const VALID_PHASES = new Set([
@@ -225,6 +225,7 @@ describe('state persistence', () => {
         JSON.stringify({
           stateValue: snap.value,
           context: persisted,
+          version: PERSIST_VERSION,
           savedAt: Date.now() - 86400000,
         })
       )
@@ -235,6 +236,51 @@ describe('state persistence', () => {
       expect(localStorage.getItem(PERSIST_KEY)).toBeNull()
 
       actor.stop()
+    })
+
+    it('rejects stale live-phase state where currentActId would not resolve (#250)', () => {
+      // Simulate: yesterday's show persisted in 'live' phase with a currentActId
+      // that exists in acts array but the showDate is stale — rehydration must reject.
+      const actor = createTestActor()
+      actor.send({ type: 'ENTER_WRITERS_ROOM' })
+      actor.send({ type: 'SET_ENERGY', level: 'high' })
+      actor.send({ type: 'SET_LINEUP', lineup: sampleLineup })
+      actor.send({ type: 'FINALIZE_LINEUP' })
+      actor.send({ type: 'START_SHOW' })
+
+      const snap = actor.getSnapshot()
+      expect(getPhaseFromState(snap.value as Record<string, unknown>)).toBe('live')
+      expect(snap.context.currentActId).not.toBeNull()
+
+      // Persist with yesterday's date
+      const persisted = Object.fromEntries(
+        Object.entries(snap.context).filter(([k]) => !TRANSIENT_KEYS.has(k))
+      )
+      const d = new Date(); d.setDate(d.getDate() - 1)
+      const yesterday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      ;(persisted as Record<string, unknown>).showDate = yesterday
+
+      localStorage.setItem(
+        PERSIST_KEY,
+        JSON.stringify({
+          stateValue: snap.value,
+          context: persisted,
+          version: PERSIST_VERSION,
+          savedAt: Date.now() - 86400000,
+        })
+      )
+
+      // Rehydration must reject — stale date
+      const restoredSnapshot = getPersistedSnapshot()
+      expect(restoredSnapshot).toBeUndefined()
+      expect(localStorage.getItem(PERSIST_KEY)).toBeNull()
+
+      // Fresh actor starts at no_show, not stale live
+      const actor2 = createTestActor(restoredSnapshot)
+      expect(getPhase(actor2)).toBe('no_show')
+
+      actor.stop()
+      actor2.stop()
     })
   })
 

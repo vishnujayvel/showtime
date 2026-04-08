@@ -18,6 +18,7 @@ import {
   getPhaseFromState,
 } from '../renderer/machines/showActor'
 import type { ShowStateSnapshot, ActSnapshot } from '../shared/types'
+import { localToday } from '../shared/date-utils'
 
 // ─── Helpers ───
 
@@ -31,7 +32,7 @@ function getContext() {
   return showActor.getSnapshot().context
 }
 
-const TODAY = new Date().toISOString().slice(0, 10)
+const TODAY = localToday()
 
 function makeActSnapshots(count: number): ActSnapshot[] {
   return Array.from({ length: count }, (_, i) => ({
