@@ -59,7 +59,7 @@ export function CompactView() {
           {phase === 'live' && (
             <>
               <span className="font-body text-[13px] font-semibold text-txt-primary truncate flex-1">
-                {currentAct?.name}
+                {currentAct?.name ?? 'No active act'}
               </span>
               <span
                 className={cn(
