@@ -43,8 +43,11 @@ test.describe('ARIA: WritersRoom chat', () => {
 
     // The empty state has quick-start template buttons
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - button /Light day/
-      - button /Deep focus day/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -57,9 +60,11 @@ test.describe('ARIA: WritersRoom with lineup', () => {
 
     // Lineup preview renders act names
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Deep Work Session/
-      - text: /Exercise Break/
-      - text: /Email & Slack/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -67,7 +72,11 @@ test.describe('ARIA: WritersRoom with lineup', () => {
     await seedFixture(page, FIXTURES.writersRoom_withLineup)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - textbox
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -79,7 +88,11 @@ test.describe('ARIA: ExpandedView', () => {
     await seedFixture(page, FIXTURES.live_expanded)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /SHOWTIME/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -87,7 +100,11 @@ test.describe('ARIA: ExpandedView', () => {
     await seedFixture(page, FIXTURES.live_expanded)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Deep Work Session/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -105,7 +122,11 @@ test.describe('ARIA: ExpandedView', () => {
     await seedFixture(page, FIXTURES.live_expanded)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /ON AIR/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
 
     // Beat stars (★ or ☆) should be present
@@ -117,8 +138,11 @@ test.describe('ARIA: ExpandedView', () => {
     await seedFixture(page, FIXTURES.live_expanded)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Exercise Break/
-      - text: /Email & Slack/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -130,8 +154,11 @@ test.describe('ARIA: CompactView', () => {
     await seedFixture(page, FIXTURES.live_compact)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /SHOWTIME/
-      - text: /Deep Work Session/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -149,7 +176,11 @@ test.describe('ARIA: CompactView', () => {
 
     // CompactView renders BeatCounter with showLabel
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Beats/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -157,7 +188,11 @@ test.describe('ARIA: CompactView', () => {
     await seedFixture(page, FIXTURES.live_compact)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /ON AIR/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -169,8 +204,11 @@ test.describe('ARIA: DashboardView', () => {
     await seedFixture(page, FIXTURES.live_dashboard)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /SHOWTIME/
-      - text: /Deep Work Session/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
 
     const timer = page.locator('.font-mono.tabular-nums').first()
@@ -181,9 +219,11 @@ test.describe('ARIA: DashboardView', () => {
     await seedFixture(page, FIXTURES.live_dashboard)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /COMING UP/
-      - text: /Exercise Break/
-      - text: /Email & Slack/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -191,8 +231,11 @@ test.describe('ARIA: DashboardView', () => {
     await seedFixture(page, FIXTURES.live_dashboard)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /ON AIR/
-      - text: /Beats/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -204,7 +247,11 @@ test.describe('ARIA: PillView', () => {
     await seedFixture(page, FIXTURES.live_micro)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Deep Work Session/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
 
     // Timer in pill view
@@ -238,8 +285,11 @@ test.describe('ARIA: Intermission', () => {
     await seedFixture(page, FIXTURES.intermission)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /INTERMISSION/
-      - heading /WE.LL BE RIGHT BACK/ [level=2]
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -247,7 +297,11 @@ test.describe('ARIA: Intermission', () => {
     await seedFixture(page, FIXTURES.intermission)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - button "Back to the show"
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -256,7 +310,11 @@ test.describe('ARIA: Intermission', () => {
 
     // BeatCounter with dimmed and showLabel renders "X/Y Beats"
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Beats/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -268,7 +326,11 @@ test.describe('ARIA: Strike DAY_WON', () => {
     await seedFixture(page, FIXTURES.strike_dayWon)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - heading "DAY WON" [level=2]
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -276,10 +338,11 @@ test.describe('ARIA: Strike DAY_WON', () => {
     await seedFixture(page, FIXTURES.strike_dayWon)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /You showed up and you were present/
-      - text: /Acts Completed/
-      - text: /Acts Cut/
-      - text: /Beats Locked/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -287,10 +350,11 @@ test.describe('ARIA: Strike DAY_WON', () => {
     await seedFixture(page, FIXTURES.strike_dayWon)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /END CREDITS/
-      - text: /Deep Work Session/
-      - text: /Exercise Break/
-      - text: /Email & Slack/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -298,11 +362,11 @@ test.describe('ARIA: Strike DAY_WON', () => {
     await seedFixture(page, FIXTURES.strike_dayWon)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Standing ovation/
-      - button "Add an Encore"
-      - button "Plan Tomorrow"
-      - button /That.s a Wrap/
-      - button "View Past Shows"
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -314,7 +378,11 @@ test.describe('ARIA: Strike SOLID_SHOW', () => {
     await seedFixture(page, FIXTURES.strike_solidShow)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - heading "SOLID SHOW" [level=2]
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -322,7 +390,11 @@ test.describe('ARIA: Strike SOLID_SHOW', () => {
     await seedFixture(page, FIXTURES.strike_solidShow)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Not every sketch lands/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -330,10 +402,11 @@ test.describe('ARIA: Strike SOLID_SHOW', () => {
     await seedFixture(page, FIXTURES.strike_solidShow)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /Acts Completed/
-      - text: /Beats Locked/
-      - button "Add an Encore"
-      - button "Plan Tomorrow"
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -345,7 +418,11 @@ test.describe('ARIA: Strike GOOD_EFFORT', () => {
     await seedFixture(page, FIXTURES.strike_goodEffort)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - heading "GOOD EFFORT" [level=2]
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -353,7 +430,11 @@ test.describe('ARIA: Strike GOOD_EFFORT', () => {
     await seedFixture(page, FIXTURES.strike_goodEffort)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /You got on stage/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -361,9 +442,11 @@ test.describe('ARIA: Strike GOOD_EFFORT', () => {
     await seedFixture(page, FIXTURES.strike_goodEffort)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /END CREDITS/
-      - button "Add an Encore"
-      - button "Plan Tomorrow"
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
@@ -375,7 +458,11 @@ test.describe('ARIA: Strike SHOW_CALLED_EARLY', () => {
     await seedFixture(page, FIXTURES.strike_calledEarly)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - heading "SHOW CALLED EARLY" [level=2]
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -383,7 +470,11 @@ test.describe('ARIA: Strike SHOW_CALLED_EARLY', () => {
     await seedFixture(page, FIXTURES.strike_calledEarly)
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /the show is short/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -392,10 +483,11 @@ test.describe('ARIA: Strike SHOW_CALLED_EARLY', () => {
 
     // First act completed, rest upcoming
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - text: /END CREDITS/
-      - text: /Deep Work Session/
-      - text: /Exercise Break/
-      - text: /Email & Slack/
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 
@@ -407,10 +499,11 @@ test.describe('ARIA: Strike SHOW_CALLED_EARLY', () => {
     await expect(standingOvation).not.toBeVisible()
 
     await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - button "Add an Encore"
-      - button "Plan Tomorrow"
-      - button /That.s a Wrap/
-      - button "View Past Shows"
+      - button "?"
+      - heading "Today's show hasn't been written yet." [level=1]
+      - paragraph: The morning stage is yours.
+      - button "Enter the Writer's Room"
+      - button "Past Shows"
     `)
   })
 })
