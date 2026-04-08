@@ -81,9 +81,10 @@ function getPersistedSnapshot() {
       return undefined
     }
 
-    // Only hydrate if same day
+    // Only hydrate if same day — reject stale shows from previous days (#250)
     const today = localToday()
     if (context.showDate !== today) {
+      console.warn('[showtime] Rejecting stale persisted state: showDate', context.showDate, '!== today', today)
       localStorage.removeItem(PERSIST_KEY)
       return undefined
     }
@@ -413,6 +414,12 @@ export async function hydrateFromDB(): Promise<boolean> {
 
     const snapshot: ShowStateSnapshot | null = await window.showtime.dataHydrate()
     if (!snapshot || !snapshot.acts?.length) return false
+
+    // Reject stale shows from previous days (#250)
+    if (snapshot.showId !== localToday()) {
+      console.warn('[showtime] Rejecting stale DB snapshot: showId', snapshot.showId, '!== today', localToday())
+      return false
+    }
 
     const targetPhase = snapshot.phase as ShowPhase
     // Don't restore no_show or strike (SyncEngine.hydrate already filters these, but double-check)
