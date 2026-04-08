@@ -7,6 +7,7 @@ import { TallyLight } from '../components/TallyLight'
 import { BeatCounter } from '../components/BeatCounter'
 import { OnAirIndicator } from '../components/OnAirIndicator'
 import { Toolbar } from '../components/Toolbar'
+import { BurningFuse } from '../components/BurningFuse'
 import { cn } from '../lib/utils'
 
 function formatStartTime(timestamp: number): string {
@@ -26,7 +27,7 @@ export function CompactView() {
   const send = useShowSend()
   const expandViewTier = useCallback(() => send({ type: 'SET_VIEW_TIER', tier: expandTier(viewTier) }), [send, viewTier])
   const showStartedAt = useShowContext((ctx) => ctx.showStartedAt)
-  const { minutes, seconds, isRunning } = useTimer()
+  const { minutes, seconds, isRunning, progress } = useTimer()
 
   const isUrgent = minutes < 5 && isRunning
   const timerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
@@ -89,6 +90,13 @@ export function CompactView() {
         </div>
         <Toolbar />
       </div>
+
+      {/* Burning Fuse progress */}
+      {phase === 'live' && (
+        <div className="px-3 py-1">
+          <BurningFuse size="pill" progress={progress} />
+        </div>
+      )}
 
       {/* Status Bar (bottom) */}
       <div className="flex items-center justify-between px-3 py-1.5 mt-auto">
