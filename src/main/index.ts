@@ -38,6 +38,11 @@ if (process.env.SHOWTIME_USER_DATA) {
   app.setPath('userData', process.env.SHOWTIME_USER_DATA)
 }
 
+// ─── Visual QA: Pin device scale factor in test mode for consistent screenshots ───
+if (process.env.NODE_ENV === 'test') {
+  app.commandLine.appendSwitch('force-device-scale-factor', '1')
+}
+
 // ─── App Lifecycle ───
 
 const appStartTime = Date.now()

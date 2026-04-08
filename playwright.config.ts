@@ -21,7 +21,19 @@ export default defineConfig({
     { name: 'smoke', testMatch: /app-launch|onboarding/, metadata: { durationBudgetMs: 10_000 } },
     { name: 'core-flow', testMatch: /writers-room|live-show|strike-reset|cold-open|burning-fuse/, metadata: { durationBudgetMs: 15_000 } },
     { name: 'data-views', testMatch: /data-layer|temporal|temporal-copy|view-tiers|history|settings/, metadata: { durationBudgetMs: 15_000 } },
-    { name: 'visual', testMatch: /visual-regression|visual-validation|consistency/, use: { deviceScaleFactor: 1 }, metadata: { durationBudgetMs: 20_000 } },
+    {
+      name: 'visual',
+      testMatch: /visual-regression|visual-validation|consistency|viewport-clickability|structural-layout|aria-snapshots/,
+      use: { deviceScaleFactor: 1 },
+      expect: {
+        toHaveScreenshot: {
+          animations: 'disabled',
+          caret: 'hide',
+          stylePath: './e2e/screenshot-overrides.css',
+        },
+      },
+      metadata: { durationBudgetMs: 20_000 },
+    },
     {
       name: 'claude-real',
       testMatch: /claude-real/,
