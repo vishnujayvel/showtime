@@ -1,0 +1,1989 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Showtime Visual QA Specification — derived from design-system.md, CLAUDE.md, direction-4-the-show.html mockup, and index.css @theme tokens. Source of truth for automated visual QA.",
+  "version": "1.0.0",
+  "global": {
+    "design_tokens": {
+      "backgrounds": {
+        "body-bg": "#0a0a0c",
+        "studio-bg": "#0d0d0f",
+        "titlebar": "#151517",
+        "surface": "#1a1a1e",
+        "surface-hover": "#242428",
+        "notepad-bg": "#13130f",
+        "notepad-header": "#1a1a14",
+        "notepad-border": "#2a2a24",
+        "intermission-warm": "#1e1c1a"
+      },
+      "text": {
+        "txt-primary": "#e8e6e0",
+        "txt-secondary": "#9a9890",
+        "txt-muted": "#5a5855",
+        "notepad-text": "#c8c6b8"
+      },
+      "accents": {
+        "accent": "#d97757",
+        "accent-dark": "#c4613e",
+        "onair": "#ef4444",
+        "beat": "#f59e0b",
+        "beat-light": "#fbbf24"
+      },
+      "status": {
+        "off": "#3a3a3e",
+        "border-default": "#333333",
+        "divider": "#242428",
+        "card-border": "#2a2a2e"
+      },
+      "categories": {
+        "deep": "#8b5cf6",
+        "exercise": "#22c55e",
+        "admin": "#60a5fa",
+        "creative": "#f59e0b",
+        "social": "#ec4899",
+        "personal": "#14b8a6"
+      },
+      "fonts": {
+        "mono": "'JetBrains Mono', monospace",
+        "body": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+      },
+      "animations": {
+        "tallyPulse": "2s ease-in-out infinite",
+        "onairGlow": "2s ease-in-out infinite",
+        "breathe": "4s ease-in-out infinite",
+        "beatIgnite": "0.6s ease-out forwards",
+        "warmPulse": "2s ease-in-out infinite",
+        "goldenGlow": "3s ease-in-out infinite",
+        "slideUp": "0.5s ease-out forwards",
+        "spotlightFadeIn": "2s ease-out forwards"
+      }
+    },
+    "constraints": [
+      "No inline styles (style={{}}). All styling via Tailwind utility classes.",
+      "All views must use w-full h-full to fill window edge-to-edge.",
+      "html, body, #root background must be transparent.",
+      "All animations must use spring physics (Framer Motion) or CSS keyframes — never linear transitions.",
+      "No Electron vibrancy — use CSS backgrounds instead.",
+      "Drag regions use .drag-region CSS class, never inline WebkitAppRegion.",
+      "Font rendering: -webkit-font-smoothing: antialiased.",
+      "user-select: none globally.",
+      "overflow: hidden on html, body, #root.",
+      "Scrollbar: 6px wide, transparent track, #333 thumb with 3px border-radius."
+    ]
+  },
+  "views": {
+    "DarkStudioView": {
+      "dimensions": { "width": "full", "height": "full", "notes": "Full-screen view, ~520px in mockup" },
+      "background": "#0d0d0f",
+      "required_elements": [
+        {
+          "id": "drag-region",
+          "description": "Invisible draggable area at top of window",
+          "region": "top",
+          "css_class": "absolute top-0 left-0 right-0 h-8 drag-region"
+        },
+        {
+          "id": "spotlight-overlay",
+          "description": "Radial gradient spotlight overlay for stage lighting atmosphere",
+          "region": "full",
+          "css_class": "absolute inset-0 pointer-events-none spotlight-accent",
+          "gradient": "radial-gradient(ellipse 400px 350px at 50% 35%, rgba(217,119,87,0.06) 0%, transparent 70%)"
+        },
+        {
+          "id": "app-name",
+          "description": "SHOWTIME label in monospaced uppercase (only in mockup, actual view uses greeting)",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "12px",
+          "font_weight": "400",
+          "color": "#5a5855",
+          "text_transform": "uppercase",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "greeting-heading",
+          "description": "Temporal greeting heading like 'Tonight's show hasn't been written yet.'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "24px (text-2xl)",
+          "font_weight": "300 (light)",
+          "color": "#e8e6e0"
+        },
+        {
+          "id": "greeting-sub",
+          "description": "Subtitle like 'What will you put on stage?'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px (text-sm)",
+          "color": "#5a5855"
+        },
+        {
+          "id": "enter-writers-room-btn",
+          "description": "Primary CTA to enter the Writer's Room (accent-tinted button)",
+          "region": "center",
+          "data_testid": "enter-writers-room",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#d97757",
+          "border": "1px solid rgba(217,119,87,0.3)",
+          "background": "rgba(217,119,87,0.1)",
+          "border_radius": "8px (rounded-lg)"
+        },
+        {
+          "id": "past-shows-btn",
+          "description": "Ghost button to view past shows",
+          "region": "center",
+          "data_testid": "past-shows-btn",
+          "font": "Inter",
+          "color": "#5a5855"
+        },
+        {
+          "id": "resume-summary",
+          "description": "Show summary when a today's show can be resumed (e.g., '3/5 acts done — show in progress')",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "12px (text-xs)",
+          "color": "#9a9890",
+          "conditional": "Only visible when todayShow exists and is not completed",
+          "data_testid": "resume-summary"
+        },
+        {
+          "id": "resume-show-btn",
+          "description": "Resume button shown when today's show exists",
+          "region": "center",
+          "conditional": "Only visible when todayShow exists and is not strike",
+          "data_testid": "resume-show-btn"
+        }
+      ],
+      "constraints": [
+        "Uses w-full h-full bg-studio-bg as container.",
+        "Content centered vertically and horizontally with flex.",
+        "Spotlight overlay must have pointer-events-none.",
+        "Entry animation: spotlightFadeIn (blur(8px) to blur(0)) via Framer Motion spring.",
+        "Buttons appear with staggered spring animation (delay 1.2s)."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "studio-bg": "#0d0d0f",
+          "txt-primary": "#e8e6e0",
+          "txt-muted": "#5a5855",
+          "accent": "#d97757"
+        },
+        "fonts": {
+          "heading": "Inter (font-body), light weight",
+          "subtitle": "Inter (font-body)",
+          "labels": "JetBrains Mono (font-mono)"
+        }
+      }
+    },
+
+    "WritersRoomView_energy": {
+      "dimensions": { "width": 560, "height": 680 },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Window title bar with SHOWTIME label and date",
+          "region": "top",
+          "background": "#151517",
+          "border_bottom": "1px solid #242428",
+          "css_class": "drag-region"
+        },
+        {
+          "id": "title-bar-label",
+          "description": "SHOWTIME text in title bar",
+          "region": "top",
+          "font": "JetBrains Mono",
+          "font_size": "12px",
+          "font_weight": "400",
+          "color": "#5a5855",
+          "text_transform": "uppercase",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "title-bar-date",
+          "description": "Date label next to SHOWTIME in title bar",
+          "region": "top",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "color": "rgba(90,88,85,0.6)",
+          "data_testid": "date-label"
+        },
+        {
+          "id": "energy-picker",
+          "description": "Energy level selector dropdown in title bar",
+          "region": "top-right"
+        },
+        {
+          "id": "toolbar",
+          "description": "Toolbar with view tier and settings controls",
+          "region": "top-right"
+        },
+        {
+          "id": "spotlight-warm",
+          "description": "Warm overhead spotlight gradient",
+          "region": "full",
+          "gradient": "radial-gradient(ellipse at 50% 0%, rgba(217,119,87,0.05) 0%, transparent 70%)",
+          "css_class": "spotlight-warm"
+        },
+        {
+          "id": "time-of-day-greeting",
+          "description": "Contextual greeting based on time of day (e.g., 'Fresh start! Let's build today's show.')",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#9a9890",
+          "data_testid": "time-of-day-greeting"
+        },
+        {
+          "id": "quick-start-templates",
+          "description": "Template buttons (Light day, Deep focus day) for quick show planning",
+          "region": "center",
+          "data_testid": "quick-start-templates"
+        }
+      ],
+      "constraints": [
+        "w-full h-full bg-surface overflow-hidden flex flex-col.",
+        "Title bar uses bg-titlebar with border-b border-surface-hover.",
+        "Chat area is flex-1 overflow-y-auto.",
+        "Empty state is centered with spotlight-warm gradient."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "#1a1a1e",
+          "titlebar": "#151517",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855",
+          "accent": "#d97757"
+        },
+        "fonts": {
+          "title-bar": "JetBrains Mono",
+          "greeting": "Inter",
+          "templates": "Inter"
+        },
+        "energy_colors": {
+          "high": "#f59e0b",
+          "medium": "#22c55e",
+          "low": "#60a5fa",
+          "recovery": "#8b5cf6"
+        }
+      }
+    },
+
+    "WritersRoomView_chat": {
+      "dimensions": { "width": 560, "height": 680 },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Window title bar with SHOWTIME label, date, energy picker, and toolbar",
+          "region": "top",
+          "background": "#151517"
+        },
+        {
+          "id": "chat-messages",
+          "description": "Scrollable chat message area with user and assistant messages",
+          "region": "center",
+          "data_testid": "chat-messages",
+          "css_class": "flex-1 overflow-y-auto px-6 py-4 space-y-3"
+        },
+        {
+          "id": "user-message",
+          "description": "User chat bubble (right-aligned)",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px"
+        },
+        {
+          "id": "assistant-message",
+          "description": "Assistant chat bubble (left-aligned) with parsed lineup extraction",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px"
+        },
+        {
+          "id": "progressive-loader",
+          "description": "Timed loading messages while Claude generates lineup (e.g., 'Thinking about your day...')",
+          "region": "center",
+          "conditional": "Visible only when isRunning && !hasLineup"
+        },
+        {
+          "id": "chat-input",
+          "description": "Text input area at bottom for user messages",
+          "region": "bottom",
+          "font": "Inter"
+        },
+        {
+          "id": "build-lineup-btn",
+          "description": "Button to trigger lineup generation from chat context",
+          "region": "bottom"
+        }
+      ],
+      "constraints": [
+        "Chat messages auto-scroll when near bottom (<60px threshold).",
+        "Chat messages area uses space-y-3 spacing.",
+        "User messages and assistant messages have distinct styling.",
+        "Progressive loader animates with writers-dot CSS animation."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "#1a1a1e",
+          "titlebar": "#151517",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "accent": "#d97757"
+        },
+        "fonts": {
+          "messages": "Inter",
+          "input": "Inter"
+        }
+      }
+    },
+
+    "WritersRoomView_lineup": {
+      "dimensions": { "width": 560, "height": 680 },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Window title bar with SHOWTIME label, date, energy picker, and toolbar",
+          "region": "top",
+          "background": "#151517"
+        },
+        {
+          "id": "lineup-heading",
+          "description": "Tonight's Lineup heading with act count and total duration",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "20px (text-xl)",
+          "font_weight": "600",
+          "color": "#e8e6e0"
+        },
+        {
+          "id": "lineup-summary",
+          "description": "Summary like '5 ACTS . ~3h 15m' in monospaced text",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "12px",
+          "color": "#5a5855"
+        },
+        {
+          "id": "act-cards",
+          "description": "Draggable act cards in lineup order with category stripe, clapperboard badge, name, duration, and reorder controls",
+          "region": "center",
+          "background": "#242428",
+          "padding": "14px (p-3.5)",
+          "border_radius": "8px (rounded-lg)",
+          "animation": "slideUp with staggered delay (0s, 0.08s, 0.16s, ...)"
+        },
+        {
+          "id": "act-card-drag-handle",
+          "description": "Drag handle character (double vertical dots)",
+          "region": "center",
+          "color": "#5a5855",
+          "cursor": "grab"
+        },
+        {
+          "id": "act-card-category-stripe",
+          "description": "4px wide colored stripe indicating act category",
+          "region": "center",
+          "css_class": "w-1 h-10 rounded-full",
+          "color_by_category": true
+        },
+        {
+          "id": "act-card-clapperboard",
+          "description": "Clapperboard badge showing CATEGORY | ACT N",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "font_weight": "600",
+          "letter_spacing": "0.08em",
+          "text_transform": "uppercase",
+          "border": "1.5px solid category-color at 40% opacity",
+          "border_radius": "4px"
+        },
+        {
+          "id": "act-card-name",
+          "description": "Act name text, truncated on overflow",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px (text-sm)",
+          "font_weight": "500 (medium)",
+          "color": "#e8e6e0",
+          "truncate": true
+        },
+        {
+          "id": "act-card-timer",
+          "description": "Duration in MM:SS format",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "14px",
+          "color": "#9a9890"
+        },
+        {
+          "id": "act-card-reorder",
+          "description": "Up/down arrow buttons for reordering acts",
+          "region": "center",
+          "color": "#5a5855"
+        },
+        {
+          "id": "we-are-live-btn",
+          "description": "Primary CTA 'WE'RE LIVE!' button with gradient background",
+          "region": "bottom",
+          "font": "Inter",
+          "font_size": "16px (text-base)",
+          "font_weight": "700 (bold)",
+          "color": "#ffffff",
+          "background": "linear-gradient(135deg, #d97757, #c4613e)",
+          "border_radius": "12px (rounded-xl)",
+          "shadow": "0 0 30px rgba(217,119,87,0.3), 0 4px 20px rgba(0,0,0,0.4)",
+          "width": "full",
+          "padding_y": "16px (py-4)"
+        },
+        {
+          "id": "go-live-sublabel",
+          "description": "Encouragement text below Go Live button: 'This starts the show. You've got this.'",
+          "region": "bottom",
+          "font": "Inter",
+          "font_size": "12px",
+          "color": "#5a5855",
+          "text_align": "center"
+        },
+        {
+          "id": "refine-input",
+          "description": "Chat input for refining the lineup via conversation",
+          "region": "bottom"
+        }
+      ],
+      "constraints": [
+        "Act cards use space-y-2.5 vertical spacing.",
+        "Each act card enters with slideUp animation staggered by 0.08s.",
+        "WE'RE LIVE button has glossy overlay gradient.",
+        "Divider above Go Live button: border-top 1px solid #2a2a2e.",
+        "Lineup is scrollable within the view."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "#1a1a1e",
+          "surface-hover": "#242428",
+          "titlebar": "#151517",
+          "accent": "#d97757",
+          "accent-dark": "#c4613e",
+          "card-border": "#2a2a2e"
+        },
+        "category_colors": {
+          "deep": "#8b5cf6",
+          "exercise": "#22c55e",
+          "admin": "#60a5fa",
+          "creative": "#f59e0b",
+          "social": "#ec4899"
+        },
+        "fonts": {
+          "clapperboard": "JetBrains Mono",
+          "act-name": "Inter",
+          "timer": "JetBrains Mono",
+          "cta": "Inter"
+        }
+      }
+    },
+
+    "GoingLiveTransition": {
+      "dimensions": { "width": "full", "height": "full", "notes": "Full-screen, auto-advances after 1.8s button reveal" },
+      "background": "#0d0d0f",
+      "required_elements": [
+        {
+          "id": "spotlight-stage",
+          "description": "Stage spotlight gradient overlay",
+          "region": "full",
+          "css_class": "spotlight-stage pointer-events-none",
+          "gradient": "radial-gradient(ellipse 600px 400px at 50% 50%, rgba(217,119,87,0.08) 0%, transparent 70%)"
+        },
+        {
+          "id": "on-air-indicator",
+          "description": "ON AIR light box with pulsing tally light, animated onairGlow",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "font_weight": "700",
+          "letter_spacing": "0.12em",
+          "color": "#ef4444",
+          "border": "1.5px solid #ef4444",
+          "border_radius": "4px",
+          "animation": "onairGlow 2s ease-in-out infinite"
+        },
+        {
+          "id": "tally-light",
+          "description": "Pulsing red dot inside ON AIR box",
+          "region": "center",
+          "size": "6px (w-1.5 h-1.5)",
+          "color": "#ef4444",
+          "animation": "tallyPulse 2s ease-in-out infinite"
+        },
+        {
+          "id": "headline",
+          "description": "Headline: 'Live from your desk, it's [date]!'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "30px (text-3xl)",
+          "font_weight": "800 (extrabold)",
+          "color": "#e8e6e0",
+          "letter_spacing": "-0.01em",
+          "accent_color": "#d97757",
+          "notes": "Date and 'your desk' are accent-colored in mockup"
+        },
+        {
+          "id": "subtitle",
+          "description": "Subtitle: 'The studio lights are on.'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px (text-sm)",
+          "color": "#9a9890"
+        },
+        {
+          "id": "show-summary",
+          "description": "Show summary line: 'N ACTS . 3 BEATS TO LOCK' (mockup only, not in implementation)",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "14px",
+          "color": "#5a5855",
+          "letter_spacing": "wider",
+          "conditional": "Present in mockup, may not be in current implementation"
+        },
+        {
+          "id": "go-live-button",
+          "description": "Go Live button that appears after 1.8s delay",
+          "region": "center",
+          "data_testid": "go-live-button",
+          "font": "Inter",
+          "font_size": "18px (text-lg)",
+          "font_weight": "700 (bold)",
+          "conditional": "Appears after 1.8s timeout"
+        }
+      ],
+      "constraints": [
+        "Fixed inset-0 full-screen overlay at z-50.",
+        "ON AIR indicator animates in with spring (stiffness 200, damping 15, delay 0.3s).",
+        "Headline animates in with spring (stiffness 150, damping 20, delay 0.8s).",
+        "Go Live button appears after 1.8s delay with spring scale animation.",
+        "Plays 'going-live' audio cue on mount."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "studio-bg": "#0d0d0f",
+          "onair": "#ef4444",
+          "accent": "#d97757",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "headline": "Inter (font-body)",
+          "on-air": "JetBrains Mono (font-mono)",
+          "summary": "JetBrains Mono (font-mono)"
+        }
+      }
+    },
+
+    "PillView": {
+      "dimensions": { "width": 320, "height": 48, "notes": "Floating always-on-top, rounded-full pill" },
+      "background": "rgba(26,26,30,0.85)",
+      "required_elements": [
+        {
+          "id": "pill-container",
+          "description": "Pill-shaped floating container with backdrop blur",
+          "region": "full",
+          "css_class": "w-80 min-h-12 rounded-full",
+          "backdrop_filter": "blur(20px)",
+          "border": "1px solid rgba(255,255,255,0.06)",
+          "shadow": "0 8px 32px rgba(0,0,0,0.4)"
+        },
+        {
+          "id": "tally-light",
+          "description": "10px red pulsing dot when live, OFF state when intermission",
+          "region": "left",
+          "size": "10px (w-2.5 h-2.5)",
+          "color_live": "#ef4444",
+          "color_off": "#3a3a3e",
+          "animation": "tallyPulse 2s ease-in-out infinite (live only)",
+          "css_class": "drag-region cursor-grab"
+        },
+        {
+          "id": "act-name",
+          "description": "Current act name, truncated",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px (text-sm)",
+          "font_weight": "500 (medium)",
+          "color": "#e8e6e0",
+          "truncate": true,
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "timer",
+          "description": "Countdown timer in MM:SS format",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "14px (text-sm)",
+          "font_weight": "600 (semibold)",
+          "color_normal": "#e8e6e0",
+          "color_urgent": "#f59e0b",
+          "urgent_threshold": "< 5 minutes remaining",
+          "animation_urgent": "warmPulse 2s ease-in-out infinite",
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat stars showing locked/unlocked progress (e.g., filled-filled-empty)",
+          "region": "right",
+          "font_size": "14px (text-sm)",
+          "letter_spacing": "wider",
+          "color_locked": "#f59e0b",
+          "color_unlocked": "#5a5855",
+          "conditional": "Visible in live and strike phases"
+        },
+        {
+          "id": "burning-fuse",
+          "description": "Progress bar with ember particle effect below the pill content",
+          "region": "bottom",
+          "conditional": "Visible when live and timer is running",
+          "css_class": "mx-3 mb-1.5"
+        },
+        {
+          "id": "intermission-label",
+          "description": "'Intermission' text with 'no rush' sublabel",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#9a9890",
+          "conditional": "Visible in intermission phase"
+        },
+        {
+          "id": "strike-label",
+          "description": "'Show complete!' text with golden glow animation",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#e8e6e0",
+          "animation": "goldenGlow",
+          "conditional": "Visible in strike phase"
+        },
+        {
+          "id": "toolbar",
+          "description": "Toolbar with view tier control",
+          "region": "right"
+        }
+      ],
+      "constraints": [
+        "Pill renders at exactly 320px wide, 48px tall.",
+        "Border radius is 9999px (fully rounded / rounded-full).",
+        "Background is surface at 85% opacity with 20px backdrop blur.",
+        "Tally light area is draggable (drag-region), rest is clickable to expand.",
+        "Stuck pill detection: forces repaint if width/height is 0 after 3s.",
+        "Spring animation on enter: stiffness 400, damping 30.",
+        "Beat stars at 40% opacity during intermission (mockup spec)."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "rgba(26,26,30,0.85)",
+          "onair": "#ef4444",
+          "beat": "#f59e0b",
+          "off": "#3a3a3e",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "act-name": "Inter",
+          "timer": "JetBrains Mono",
+          "phase-label": "Inter"
+        }
+      }
+    },
+
+    "CompactView": {
+      "dimensions": { "width": "full", "height": "full", "notes": "Compact single-row view, typically ~320-400px wide" },
+      "background": "rgba(26,26,30,0.90)",
+      "required_elements": [
+        {
+          "id": "container",
+          "description": "Rounded container with backdrop blur",
+          "region": "full",
+          "css_class": "w-full h-full rounded-2xl flex flex-col overflow-hidden",
+          "backdrop_filter": "blur(20px)",
+          "border": "1px solid rgba(255,255,255,0.06)",
+          "shadow": "0 8px 32px rgba(0,0,0,0.4)"
+        },
+        {
+          "id": "header-row",
+          "description": "Top row with tally light, SHOWTIME label, act name, and timer",
+          "region": "top",
+          "height": "32px",
+          "css_class": "drag-region"
+        },
+        {
+          "id": "tally-light",
+          "description": "Small tally light indicator",
+          "region": "top-left",
+          "size": "small (8px)"
+        },
+        {
+          "id": "showtime-label",
+          "description": "SHOWTIME branding text",
+          "region": "top-left",
+          "font": "JetBrains Mono",
+          "font_size": "9px",
+          "letter_spacing": "0.12em",
+          "text_transform": "uppercase",
+          "color": "#5a5855"
+        },
+        {
+          "id": "act-name",
+          "description": "Current act name, clickable to expand view tier",
+          "region": "top-center",
+          "font": "Inter",
+          "font_size": "13px",
+          "font_weight": "600 (semibold)",
+          "color": "#e8e6e0",
+          "truncate": true,
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "timer",
+          "description": "Countdown timer",
+          "region": "top-right",
+          "font": "JetBrains Mono",
+          "font_size": "14px (text-sm)",
+          "font_weight": "600 (semibold)",
+          "color_normal": "#e8e6e0",
+          "color_urgent": "#f59e0b",
+          "animation_urgent": "warmPulse",
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "burning-fuse",
+          "description": "Progress bar with ember effect",
+          "region": "center",
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "status-bar",
+          "description": "Bottom status bar with beat counter, ON AIR indicator, and start time",
+          "region": "bottom",
+          "css_class": "flex items-center justify-between px-3 py-1.5 mt-auto"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat stars with label",
+          "region": "bottom-left"
+        },
+        {
+          "id": "on-air-indicator",
+          "description": "ON AIR light box",
+          "region": "bottom-right",
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "start-time",
+          "description": "Show start time label",
+          "region": "bottom-right",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "color": "#5a5855"
+        },
+        {
+          "id": "toolbar",
+          "description": "Toolbar controls",
+          "region": "top-right"
+        }
+      ],
+      "constraints": [
+        "rounded-2xl container (16px border radius).",
+        "Background is surface at 90% opacity with 20px backdrop blur.",
+        "Header row is drag-region, inner content is no-drag and clickable.",
+        "Spring animation on enter: stiffness 400, damping 30.",
+        "Intermission shows 'Intermission' label and 'no rush' text.",
+        "Strike phase shows 'Show complete!' text."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "rgba(26,26,30,0.90)",
+          "onair": "#ef4444",
+          "beat": "#f59e0b",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "branding": "JetBrains Mono",
+          "act-name": "Inter",
+          "timer": "JetBrains Mono"
+        }
+      }
+    },
+
+    "DashboardView": {
+      "dimensions": { "width": "full", "height": "full", "notes": "Mid-tier dashboard, typically ~400-560px" },
+      "background": "rgba(26,26,30,0.95)",
+      "required_elements": [
+        {
+          "id": "container",
+          "description": "Rounded container with backdrop blur",
+          "region": "full",
+          "css_class": "w-full h-full rounded-xl flex flex-col overflow-hidden",
+          "backdrop_filter": "blur(16px)",
+          "border": "1px solid rgba(255,255,255,0.06)",
+          "shadow": "0 8px 32px rgba(0,0,0,0.4)"
+        },
+        {
+          "id": "title-bar",
+          "description": "Header with tally light, SHOWTIME label, date, and toolbar",
+          "region": "top",
+          "height": "36px",
+          "css_class": "drag-region border-b border-white/[0.04]"
+        },
+        {
+          "id": "tally-light",
+          "description": "Small tally light indicator",
+          "region": "top-left"
+        },
+        {
+          "id": "showtime-label",
+          "description": "SHOWTIME branding",
+          "region": "top-left",
+          "font": "JetBrains Mono",
+          "font_size": "9px",
+          "letter_spacing": "0.12em",
+          "text_transform": "uppercase",
+          "color": "#5a5855"
+        },
+        {
+          "id": "date-label",
+          "description": "Current date label",
+          "region": "top-left",
+          "font": "JetBrains Mono",
+          "font_size": "9px",
+          "color": "rgba(90,88,85,0.6)"
+        },
+        {
+          "id": "burning-fuse",
+          "description": "Progress bar with ember effect (expanded size)",
+          "region": "top",
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "clapperboard-badge",
+          "description": "Category badge for current act (e.g., 'DEEP WORK | ACT 3')",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "11px (or 10px compact)",
+          "font_weight": "600",
+          "conditional": "Visible in live phase with current act"
+        },
+        {
+          "id": "act-name-hero",
+          "description": "Current act name in large text",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "16px (text-base)",
+          "font_weight": "700 (bold)",
+          "color": "#e8e6e0",
+          "conditional": "Visible in live phase"
+        },
+        {
+          "id": "timer-hero",
+          "description": "Large countdown timer",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "36px (text-4xl)",
+          "font_weight": "700 (bold)",
+          "color_normal": "#e8e6e0",
+          "color_urgent": "#f59e0b",
+          "animation_urgent": "warmPulse",
+          "css_class": "tabular-nums"
+        },
+        {
+          "id": "progress-bar",
+          "description": "Timer progress bar under the countdown",
+          "region": "center",
+          "height": "4px (h-1)",
+          "track_color": "#242428",
+          "fill_color": "#d97757",
+          "max_width": "280px",
+          "border_radius": "full"
+        },
+        {
+          "id": "coming-up-section",
+          "description": "Upcoming acts section showing next 2 acts",
+          "region": "bottom",
+          "conditional": "Visible when upcoming acts exist and phase is not strike"
+        },
+        {
+          "id": "coming-up-label",
+          "description": "'COMING UP' section header",
+          "region": "bottom",
+          "font": "JetBrains Mono",
+          "font_size": "9px",
+          "letter_spacing": "0.12em",
+          "text_transform": "uppercase",
+          "color": "#5a5855"
+        },
+        {
+          "id": "upcoming-act-row",
+          "description": "Row showing upcoming act with category dot, name, duration, and sketch label",
+          "region": "bottom",
+          "font": "Inter",
+          "font_size": "13px",
+          "color": "#9a9890"
+        },
+        {
+          "id": "status-bar",
+          "description": "Bottom bar with ON AIR indicator, beat counter, and start time",
+          "region": "bottom",
+          "css_class": "border-t border-white/[0.04]"
+        },
+        {
+          "id": "on-air-indicator",
+          "description": "ON AIR light box (live/off states)",
+          "region": "bottom-left"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat stars with label",
+          "region": "bottom-center"
+        },
+        {
+          "id": "start-time",
+          "description": "Show start time",
+          "region": "bottom-right",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "color": "#5a5855"
+        },
+        {
+          "id": "intermission-label",
+          "description": "'WE'LL BE RIGHT BACK' text for intermission phase",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "18px (text-lg)",
+          "color": "#9a9890",
+          "conditional": "Visible in intermission phase"
+        },
+        {
+          "id": "strike-label",
+          "description": "'Show complete!' text with golden glow for strike phase",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "18px (text-lg)",
+          "color": "#f59e0b",
+          "animation": "goldenGlow",
+          "conditional": "Visible in strike phase"
+        }
+      ],
+      "constraints": [
+        "rounded-xl container (12px border radius).",
+        "Background is surface at 95% opacity with 16px backdrop blur.",
+        "Hero timer area is clickable (no-drag) to expand to full view.",
+        "Upcoming acts show max 2 items.",
+        "Category dot is 6px (w-1.5 h-1.5) with category color.",
+        "Spring animation on enter: stiffness 400, damping 30."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "rgba(26,26,30,0.95)",
+          "surface-hover": "#242428",
+          "onair": "#ef4444",
+          "beat": "#f59e0b",
+          "accent": "#d97757",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855"
+        },
+        "category_colors": {
+          "deep": "#8b5cf6",
+          "exercise": "#22c55e",
+          "admin": "#60a5fa",
+          "creative": "#f59e0b",
+          "social": "#ec4899"
+        },
+        "fonts": {
+          "branding": "JetBrains Mono",
+          "act-name": "Inter",
+          "timer": "JetBrains Mono",
+          "section-label": "JetBrains Mono"
+        }
+      }
+    },
+
+    "ExpandedView": {
+      "dimensions": { "width": 560, "height": 620, "notes": "~560 x 620px windowed, min-height 540px content area" },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Window chrome title bar with SHOWTIME label, date, and toolbar",
+          "region": "top",
+          "background": "#151517",
+          "border_bottom": "1px solid #242428",
+          "css_class": "drag-region"
+        },
+        {
+          "id": "title-bar-label",
+          "description": "SHOWTIME text in title bar",
+          "region": "top-left",
+          "font": "JetBrains Mono",
+          "font_size": "12px",
+          "font_weight": "400",
+          "color": "#5a5855",
+          "text_transform": "uppercase",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "date-label",
+          "description": "Date label in title bar",
+          "region": "top-left",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "color": "rgba(90,88,85,0.6)",
+          "data_testid": "date-label"
+        },
+        {
+          "id": "toolbar",
+          "description": "Toolbar with Director button and minimize/settings controls",
+          "region": "top-right"
+        },
+        {
+          "id": "main-content",
+          "description": "Flex container with timer panel and lineup sidebar",
+          "region": "center",
+          "css_class": "flex flex-1 overflow-hidden"
+        },
+        {
+          "id": "timer-panel",
+          "description": "Left side: hero timer with clapperboard badge, act name, 64px countdown, progress bar, and action buttons",
+          "region": "center-left",
+          "css_class": "flex-1 px-8 py-8"
+        },
+        {
+          "id": "clapperboard-badge",
+          "description": "Category badge: 'DEEP WORK | ACT 3 | 45:00'",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "11px",
+          "font_weight": "600",
+          "letter_spacing": "0.08em",
+          "text_transform": "uppercase",
+          "border_radius": "4px",
+          "padding": "3px 10px"
+        },
+        {
+          "id": "act-name",
+          "description": "Current act name",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "18px (text-lg)",
+          "font_weight": "700 (bold)",
+          "color": "#e8e6e0"
+        },
+        {
+          "id": "countdown-timer",
+          "description": "Hero countdown display in MM:SS format",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "64px",
+          "font_weight": "700 (bold)",
+          "color": "#e8e6e0",
+          "line_height": "1",
+          "letter_spacing": "-0.02em"
+        },
+        {
+          "id": "progress-bar",
+          "description": "4px tall progress bar below timer showing elapsed percentage",
+          "region": "center",
+          "height": "4px (h-1)",
+          "track_color": "#242428",
+          "fill_gradient": "linear-gradient(90deg, category-color, lighter-category-color)",
+          "border_radius": "full",
+          "width": "full"
+        },
+        {
+          "id": "action-buttons",
+          "description": "Row of action buttons: +15m (neutral), End Act (accent), Rest (category-tinted)",
+          "region": "center",
+          "layout": "flex justify-center gap-2"
+        },
+        {
+          "id": "extend-btn",
+          "description": "+15m button",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "14px",
+          "color": "#9a9890",
+          "background": "#242428",
+          "border": "1px solid #333"
+        },
+        {
+          "id": "end-act-btn",
+          "description": "End Act button",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#d97757",
+          "background": "rgba(217,119,87,0.15)",
+          "border": "1px solid rgba(217,119,87,0.3)"
+        },
+        {
+          "id": "rest-btn",
+          "description": "Rest button (category-tinted purple)",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#8b5cf6",
+          "background": "rgba(139,92,246,0.1)",
+          "border": "1px solid rgba(139,92,246,0.25)"
+        },
+        {
+          "id": "lineup-sidebar",
+          "description": "Right sidebar showing act lineup with completed/active/upcoming states",
+          "region": "right",
+          "width": "200px",
+          "border_left": "1px solid #242428",
+          "css_class": "px-3 py-3 overflow-y-auto"
+        },
+        {
+          "id": "sidebar-label",
+          "description": "'Show Lineup' section label",
+          "region": "right",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "letter_spacing": "0.15em",
+          "text_transform": "uppercase",
+          "color": "#5a5855"
+        },
+        {
+          "id": "sidebar-act-completed",
+          "description": "Completed act row with checkmark, name (secondary text), category bar, duration, and optional beat star",
+          "region": "right",
+          "background": "rgba(34,197,94,0.05)",
+          "border_radius": "6px (rounded-md)",
+          "padding": "8px (p-2)"
+        },
+        {
+          "id": "sidebar-act-active",
+          "description": "Active act row with tally dot, bold name (primary text), category bar, and live timer",
+          "region": "right",
+          "background": "rgba(category,0.08)",
+          "border": "1px solid rgba(category,0.25)",
+          "border_radius": "6px (rounded-md)",
+          "padding": "8px (p-2)"
+        },
+        {
+          "id": "sidebar-act-upcoming",
+          "description": "Upcoming act row with hourglass icon, muted name, category bar, duration",
+          "region": "right",
+          "opacity": "0.6",
+          "border_radius": "6px (rounded-md)",
+          "padding": "8px (p-2)"
+        },
+        {
+          "id": "sidebar-category-bar",
+          "description": "Small horizontal color bar per act in sidebar",
+          "region": "right",
+          "css_class": "w-6 h-0.5 rounded-full",
+          "color_by_category": true
+        },
+        {
+          "id": "bottom-bar",
+          "description": "Bottom status bar with ON AIR indicator, start time, and beat counter",
+          "region": "bottom",
+          "background": "#151517",
+          "border_top": "1px solid #242428"
+        },
+        {
+          "id": "on-air-indicator",
+          "description": "ON AIR light box in bottom bar",
+          "region": "bottom-left",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "font_weight": "700",
+          "letter_spacing": "0.12em"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat stars with count label",
+          "region": "bottom-right"
+        },
+        {
+          "id": "start-time",
+          "description": "Show start time label",
+          "region": "bottom-left",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "color": "#5a5855",
+          "data_testid": "started-at"
+        },
+        {
+          "id": "intermission-overlay",
+          "description": "IntermissionView component shown instead of TimerPanel during intermission phase",
+          "region": "center-left",
+          "conditional": "Visible when phase === 'intermission'"
+        },
+        {
+          "id": "director-mode-overlay",
+          "description": "DirectorMode overlay shown on top of entire view during director phase",
+          "region": "full",
+          "conditional": "Visible when phase === 'director'"
+        }
+      ],
+      "constraints": [
+        "w-full h-full bg-surface overflow-hidden flex flex-col.",
+        "Main content is flex row: timer panel (flex-1) + sidebar (200px).",
+        "Sidebar border-left separates it from main content.",
+        "Title bar and bottom bar use bg-[#151517] with 1px border.",
+        "Timer is centered in the timer panel area.",
+        "Sidebar is scrollable (overflow-y-auto).",
+        "Completed sidebar acts at full opacity; upcoming at 0.6.",
+        "Active sidebar act has colored border matching category.",
+        "Spring animation on enter: stiffness 300, damping 30."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "#1a1a1e",
+          "surface-hover": "#242428",
+          "titlebar": "#151517",
+          "onair": "#ef4444",
+          "beat": "#f59e0b",
+          "accent": "#d97757",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855",
+          "divider": "#242428"
+        },
+        "category_colors": {
+          "deep": "#8b5cf6",
+          "exercise": "#22c55e",
+          "admin": "#60a5fa",
+          "creative": "#f59e0b",
+          "social": "#ec4899"
+        },
+        "fonts": {
+          "title-bar": "JetBrains Mono",
+          "clapperboard": "JetBrains Mono",
+          "countdown": "JetBrains Mono",
+          "act-name": "Inter",
+          "sidebar-name": "Inter",
+          "sidebar-data": "JetBrains Mono",
+          "on-air": "JetBrains Mono",
+          "section-label": "JetBrains Mono"
+        }
+      }
+    },
+
+    "Intermission": {
+      "dimensions": { "width": 560, "height": 500, "notes": "Shown inside ExpandedView's timer panel area, min-height 420px" },
+      "background": "linear-gradient(180deg, #1a1a1e 0%, #1e1c1a 100%)",
+      "required_elements": [
+        {
+          "id": "on-air-off",
+          "description": "ON AIR light box in OFF state (gray, no glow)",
+          "region": "top-center",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "font_weight": "700",
+          "letter_spacing": "0.12em",
+          "color": "#3a3a3e",
+          "border": "1.5px solid #3a3a3e",
+          "notes": "This is in the bottom bar of the ExpandedView wrapper"
+        },
+        {
+          "id": "intermission-card",
+          "description": "Central 'WE'LL BE RIGHT BACK' card",
+          "region": "center",
+          "max_width": "380px",
+          "padding": "32px (p-8)",
+          "border_radius": "12px (rounded-xl)",
+          "background": "#1a1a1e",
+          "border": "1px solid #2a2a2e"
+        },
+        {
+          "id": "intermission-label",
+          "description": "'INTERMISSION' section label at top of card",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "letter_spacing": "0.12em",
+          "text_transform": "uppercase",
+          "color": "#5a5855"
+        },
+        {
+          "id": "headline",
+          "description": "'WE'LL BE RIGHT BACK' headline",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "20px (text-xl)",
+          "font_weight": "700 (bold)",
+          "color": "#e8e6e0",
+          "letter_spacing": "0.04em"
+        },
+        {
+          "id": "affirmation",
+          "description": "Random affirmation quote with breathing animation (e.g., 'Rest is free. Always has been.')",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px (text-sm)",
+          "color": "#9a9890",
+          "animation": "breathe 4s ease-in-out infinite",
+          "css_class": "animate-breathe"
+        },
+        {
+          "id": "dimmed-beat-counter",
+          "description": "Beat stars at reduced opacity showing session progress",
+          "region": "center",
+          "opacity": "dimmed (via component prop)",
+          "notes": "Mockup shows opacity 0.35 on beat counter container"
+        },
+        {
+          "id": "back-to-show-btn",
+          "description": "'Back to the show' button (accent-tinted)",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#d97757",
+          "background": "rgba(217,119,87,0.1)",
+          "border": "1px solid rgba(217,119,87,0.2)"
+        }
+      ],
+      "constraints": [
+        "IntermissionView renders as a card inside the ExpandedView timer panel area.",
+        "Warm gradient background in mockup: linear-gradient(180deg, #1a1a1e 0%, #1e1c1a 100%).",
+        "Affirmation text uses breathe animation (4s ease-in-out infinite).",
+        "Beat counter is dimmed (reduced opacity).",
+        "No timer running — 'no rush' philosophy.",
+        "ON AIR box shows OFF state in the ExpandedView bottom bar.",
+        "Spring animation on card enter: stiffness 300, damping 30."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "#1a1a1e",
+          "intermission-warm": "#1e1c1a",
+          "accent": "#d97757",
+          "off": "#3a3a3e",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855",
+          "card-border": "#2a2a2e"
+        },
+        "fonts": {
+          "headline": "Inter",
+          "label": "JetBrains Mono",
+          "affirmation": "Inter"
+        }
+      }
+    },
+
+    "StrikeView_DAY_WON": {
+      "dimensions": { "width": 560, "height": "variable", "notes": "~560px wide, variable height" },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Window title bar with SHOWTIME label, OFF indicator, and toolbar",
+          "region": "top",
+          "background": "#151517",
+          "border_bottom": "1px solid #242428"
+        },
+        {
+          "id": "on-air-off",
+          "description": "ON AIR box in OFF state showing 'OFF'",
+          "region": "top-right",
+          "color": "#3a3a3e"
+        },
+        {
+          "id": "spotlight-verdict",
+          "description": "Golden spotlight gradient behind verdict",
+          "region": "center",
+          "gradient": "radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)",
+          "css_class": "spotlight-verdict"
+        },
+        {
+          "id": "beat-stars-hero",
+          "description": "Three gold filled stars with golden glow animation",
+          "region": "center",
+          "font_size": "30px (text-3xl in mockup)",
+          "color": "#f59e0b",
+          "text_shadow": "0 0 8px rgba(245,158,11,0.4)",
+          "animation": "goldenGlow 3s ease-in-out infinite",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "verdict-headline",
+          "description": "'DAY WON' in large black weight text with golden glow",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "48px (text-5xl)",
+          "font_weight": "900 (black)",
+          "color": "#f59e0b",
+          "letter_spacing": "0.02em",
+          "animation": "goldenGlow 3s ease-in-out infinite",
+          "css_class": "animate-golden-glow"
+        },
+        {
+          "id": "verdict-message",
+          "description": "'You showed up and you were present.'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px (text-sm)",
+          "color": "#9a9890",
+          "max_width": "300px",
+          "line_height": "1.6"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat counter with label (xl size)",
+          "region": "center"
+        },
+        {
+          "id": "stats-row",
+          "description": "Row of stats: Acts Completed, Acts Cut, Beats Locked, Show Duration",
+          "region": "center",
+          "layout": "flex items-center justify-center gap-8"
+        },
+        {
+          "id": "stat-number",
+          "description": "Individual stat number",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "30px (text-3xl)",
+          "font_weight": "700 (bold)",
+          "color": "#e8e6e0"
+        },
+        {
+          "id": "stat-label",
+          "description": "Individual stat label",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "12px (text-xs)",
+          "color": "#5a5855"
+        },
+        {
+          "id": "end-credits-panel",
+          "description": "Act recap panel with section label 'END CREDITS' and act list",
+          "region": "center",
+          "background": "#151517",
+          "border_radius": "12px (rounded-xl)",
+          "padding": "16px (p-4)"
+        },
+        {
+          "id": "end-credits-label",
+          "description": "'END CREDITS' section header",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "10px",
+          "letter_spacing": "0.12em",
+          "text_transform": "uppercase",
+          "color": "#5a5855"
+        },
+        {
+          "id": "act-recap-row",
+          "description": "Individual act in recap: checkmark/x/dash, name, optional beat star",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "completed_color": "#9a9890",
+          "skipped_color": "#5a5855",
+          "beat_star_color": "#f59e0b"
+        },
+        {
+          "id": "confetti",
+          "description": "24 confetti pieces falling from top (DAY WON celebration)",
+          "region": "full",
+          "css_class": "absolute inset-0 pointer-events-none overflow-hidden z-20",
+          "animation": "confetti-fall 3s ease-in forwards",
+          "colors": ["#f59e0b", "#ef4444", "#8b5cf6", "#22c55e", "#60a5fa", "#ec4899"]
+        },
+        {
+          "id": "standing-ovation-text",
+          "description": "'Standing ovation.' celebration text",
+          "region": "bottom",
+          "font": "Inter",
+          "font_size": "14px",
+          "font_weight": "500 (medium)",
+          "color": "#f59e0b"
+        },
+        {
+          "id": "footer-actions",
+          "description": "Action buttons: Add an Encore, Plan Tomorrow, That's a Wrap, View Past Shows",
+          "region": "bottom",
+          "border_top": "1px solid #242428"
+        },
+        {
+          "id": "encore-btn",
+          "description": "'Add an Encore' button (accent variant)",
+          "region": "bottom",
+          "data_testid": "encore-btn"
+        },
+        {
+          "id": "plan-tomorrow-btn",
+          "description": "'Plan Tomorrow' button (neutral variant)",
+          "region": "bottom",
+          "data_testid": "plan-tomorrow-btn"
+        },
+        {
+          "id": "thats-a-wrap-btn",
+          "description": "'That's a Wrap' button (neutral variant)",
+          "region": "bottom",
+          "data_testid": "thats-a-wrap-btn"
+        },
+        {
+          "id": "view-history-btn",
+          "description": "'View Past Shows' ghost button",
+          "region": "bottom",
+          "data_testid": "view-history-btn"
+        }
+      ],
+      "constraints": [
+        "w-full h-full bg-surface overflow-hidden flex flex-col relative.",
+        "Main content is overflow-y-auto for scrolling.",
+        "Verdict headline animates in with spring (stiffness 200, damping 20).",
+        "Stats animate in with staggered spring delays (0.2, 0.3, 0.4, 0.5s).",
+        "Act recap rows animate in with staggered spring delays (0.5 + i * 0.06s).",
+        "Confetti pieces have random horizontal positions and animation delays.",
+        "Plays 'show-complete' audio cue on mount."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "surface": "#1a1a1e",
+          "titlebar": "#151517",
+          "beat": "#f59e0b",
+          "off": "#3a3a3e",
+          "divider": "#242428",
+          "txt-primary": "#e8e6e0",
+          "txt-secondary": "#9a9890",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "verdict": "Inter",
+          "stats": "JetBrains Mono",
+          "labels": "JetBrains Mono",
+          "recap": "Inter"
+        }
+      }
+    },
+
+    "StrikeView_SOLID_SHOW": {
+      "dimensions": { "width": 560, "height": "variable" },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Same title bar as DAY_WON",
+          "region": "top",
+          "background": "#151517"
+        },
+        {
+          "id": "beat-stars-hero",
+          "description": "Two gold filled stars, one empty star",
+          "region": "center",
+          "font_size": "24px (text-2xl in mockup)",
+          "pattern": "filled-filled-empty",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "verdict-headline",
+          "description": "'SOLID SHOW' in accent color",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "36px (text-4xl in mockup)",
+          "font_weight": "900 (black)",
+          "color": "#d97757",
+          "letter_spacing": "0.02em"
+        },
+        {
+          "id": "verdict-message",
+          "description": "'Not every sketch lands. The show was still great.'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#9a9890",
+          "max_width": "300px"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat counter with label (xl size)",
+          "region": "center"
+        },
+        {
+          "id": "stats-row",
+          "description": "Same stats layout as DAY_WON",
+          "region": "center"
+        },
+        {
+          "id": "end-credits-panel",
+          "description": "Act recap panel",
+          "region": "center"
+        },
+        {
+          "id": "footer-actions",
+          "description": "Same footer actions as DAY_WON (without Standing ovation text)",
+          "region": "bottom"
+        }
+      ],
+      "constraints": [
+        "No confetti animation (DAY WON only).",
+        "No golden glow animation on verdict.",
+        "No standing ovation text.",
+        "Verdict color is accent (#d97757), not beat gold.",
+        "Beat stars: 2 filled, 1 empty."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "verdict_color": "#d97757",
+          "beat": "#f59e0b",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "verdict": "Inter (black weight)"
+        }
+      }
+    },
+
+    "StrikeView_GOOD_EFFORT": {
+      "dimensions": { "width": 560, "height": "variable" },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Same title bar as DAY_WON",
+          "region": "top",
+          "background": "#151517"
+        },
+        {
+          "id": "beat-stars-hero",
+          "description": "One gold filled star, two empty stars",
+          "region": "center",
+          "font_size": "24px (text-2xl in mockup)",
+          "pattern": "filled-empty-empty",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "verdict-headline",
+          "description": "'GOOD EFFORT' in blue color",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "36px (text-4xl in mockup)",
+          "font_weight": "900 (black)",
+          "color": "#60a5fa",
+          "letter_spacing": "0.02em"
+        },
+        {
+          "id": "verdict-message",
+          "description": "'You got on stage. That's the hardest part.'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#9a9890",
+          "max_width": "300px"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat counter with label (xl size)",
+          "region": "center"
+        },
+        {
+          "id": "stats-row",
+          "description": "Same stats layout",
+          "region": "center"
+        },
+        {
+          "id": "end-credits-panel",
+          "description": "Act recap panel",
+          "region": "center"
+        },
+        {
+          "id": "footer-actions",
+          "description": "Same footer actions as DAY_WON (without Standing ovation text)",
+          "region": "bottom"
+        }
+      ],
+      "constraints": [
+        "No confetti animation.",
+        "No golden glow animation.",
+        "Verdict color is blue (#60a5fa), not accent or beat.",
+        "Beat stars: 1 filled, 2 empty.",
+        "Implementation uses text-blue-400 class for GOOD_EFFORT verdict."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "verdict_color": "#60a5fa",
+          "beat": "#f59e0b",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "verdict": "Inter (black weight)"
+        }
+      }
+    },
+
+    "StrikeView_SHOW_CALLED_EARLY": {
+      "dimensions": { "width": 560, "height": "variable" },
+      "background": "#1a1a1e",
+      "required_elements": [
+        {
+          "id": "title-bar",
+          "description": "Same title bar as DAY_WON",
+          "region": "top",
+          "background": "#151517"
+        },
+        {
+          "id": "beat-stars-hero",
+          "description": "One locked star and two empty stars (1 beat locked from SHOW_CALLED_EARLY)",
+          "region": "center",
+          "font_size": "24px (text-2xl in mockup)",
+          "pattern": "locked-empty-empty",
+          "letter_spacing": "widest"
+        },
+        {
+          "id": "verdict-headline",
+          "description": "'SHOW CALLED EARLY' in secondary/muted color",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "36px (text-4xl in mockup)",
+          "font_weight": "900 (black)",
+          "color": "#9a9890",
+          "letter_spacing": "0.02em"
+        },
+        {
+          "id": "verdict-message",
+          "description": "'Sometimes the show is short. The audience still came.'",
+          "region": "center",
+          "font": "Inter",
+          "font_size": "14px",
+          "color": "#9a9890",
+          "max_width": "320px"
+        },
+        {
+          "id": "beat-counter",
+          "description": "Beat counter with label (xl size)",
+          "region": "center"
+        },
+        {
+          "id": "stats-row",
+          "description": "Same stats layout",
+          "region": "center"
+        },
+        {
+          "id": "end-credits-panel",
+          "description": "Act recap panel",
+          "region": "center"
+        },
+        {
+          "id": "footer-actions",
+          "description": "Same footer actions (without Standing ovation text)",
+          "region": "bottom"
+        }
+      ],
+      "constraints": [
+        "No confetti animation.",
+        "No golden glow animation.",
+        "Verdict color is txt-secondary (#9a9890), most subdued of all verdicts.",
+        "Beat stars: all 3 empty (dim).",
+        "Message is compassionate — 'The audience still came.' — no guilt language."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "verdict_color": "#9a9890",
+          "txt-muted": "#5a5855"
+        },
+        "fonts": {
+          "verdict": "Inter (black weight)"
+        }
+      }
+    },
+
+    "ColdOpenTransition": {
+      "dimensions": { "width": "full", "height": "full", "notes": "Full-screen splash, auto-advances after 1.5s" },
+      "background": "#0d0d0f",
+      "required_elements": [
+        {
+          "id": "spotlight-stage",
+          "description": "Stage spotlight gradient overlay",
+          "region": "full",
+          "css_class": "spotlight-stage",
+          "gradient": "radial-gradient(ellipse 600px 400px at 50% 50%, rgba(217,119,87,0.08) 0%, transparent 70%)"
+        },
+        {
+          "id": "headline",
+          "description": "'Live from your desk...' title text",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "30px (text-3xl)",
+          "font_weight": "700 (bold)",
+          "color": "#e8e6e0",
+          "letter_spacing": "tight",
+          "z_index": "10"
+        },
+        {
+          "id": "day-name",
+          "description": "Day of the week in accent color (e.g., 'it's Wednesday!')",
+          "region": "center",
+          "font": "JetBrains Mono",
+          "font_size": "20px (text-xl)",
+          "color": "#d97757",
+          "z_index": "10"
+        }
+      ],
+      "constraints": [
+        "Fixed inset-0 full-screen at z-50.",
+        "Auto-advances to WritersRoomView after 1.5s timeout.",
+        "Headline animates in with spring (stiffness 200, damping 20) and scale 0.9 -> 1.",
+        "Day name animates in with spring (stiffness 200, damping 20, delay 0.3s) and y 12 -> 0.",
+        "Plays 'going-live' audio cue on mount.",
+        "Uses font-mono for both headline and day name (differs from GoingLiveTransition which uses font-body)."
+      ],
+      "design_tokens": {
+        "key_colors": {
+          "studio-bg": "#0d0d0f",
+          "accent": "#d97757",
+          "txt-primary": "#e8e6e0"
+        },
+        "fonts": {
+          "headline": "JetBrains Mono",
+          "day-name": "JetBrains Mono"
+        }
+      }
+    }
+  },
+
+  "verdicts": {
+    "DAY_WON": {
+      "beats_required": 3,
+      "color": "#f59e0b",
+      "headline": "DAY WON",
+      "message": "Standing ovation. You showed up and you were present.",
+      "implementation_message": "You showed up and you were present.",
+      "has_confetti": true,
+      "has_golden_glow": true,
+      "has_standing_ovation_text": true
+    },
+    "SOLID_SHOW": {
+      "beats_required": 2,
+      "color": "#d97757",
+      "headline": "SOLID SHOW",
+      "message": "Not every sketch lands. The show was still great.",
+      "has_confetti": false,
+      "has_golden_glow": false,
+      "has_standing_ovation_text": false
+    },
+    "GOOD_EFFORT": {
+      "beats_required": 1,
+      "color": "#60a5fa",
+      "headline": "GOOD EFFORT",
+      "message": "You got on stage. That's the hardest part.",
+      "has_confetti": false,
+      "has_golden_glow": false,
+      "has_standing_ovation_text": false
+    },
+    "SHOW_CALLED_EARLY": {
+      "beats_required": 0,
+      "color": "#9a9890",
+      "headline": "SHOW CALLED EARLY",
+      "message": "Sometimes the show is short. The audience still came.",
+      "has_confetti": false,
+      "has_golden_glow": false,
+      "has_standing_ovation_text": false
+    }
+  },
+
+  "shared_components": {
+    "OnAirIndicator": {
+      "description": "Broadcast-style ON AIR light box with tally dot",
+      "font": "JetBrains Mono",
+      "font_size": "10px",
+      "font_weight": "700",
+      "letter_spacing": "0.12em",
+      "border_radius": "4px",
+      "padding": "2px 8px",
+      "states": {
+        "live": {
+          "color": "#ef4444",
+          "border": "1.5px solid #ef4444",
+          "animation": "onairGlow 2s ease-in-out infinite",
+          "tally_dot": { "size": "6px", "color": "#ef4444", "animation": "tallyPulse" }
+        },
+        "off": {
+          "color": "#3a3a3e",
+          "border_color": "#3a3a3e",
+          "box_shadow": "none",
+          "text": "ON AIR or OFF"
+        }
+      }
+    },
+    "TallyLight": {
+      "description": "Pulsing red dot indicating live session",
+      "shape": "circle (rounded-full)",
+      "color_live": "#ef4444",
+      "color_off": "#3a3a3e",
+      "animation": "tallyPulse 2s ease-in-out infinite",
+      "sizes": {
+        "lg": "10px (w-2.5 h-2.5) — pill view",
+        "sm": "8px (w-2 h-2) — sidebar, compact header",
+        "xs": "6px (w-1.5 h-1.5) — inside ON AIR box"
+      }
+    },
+    "BeatCounter": {
+      "description": "Star-based progress indicator (filled/empty)",
+      "locked_char": "U+2733 (filled star)",
+      "unlocked_char": "U+2734 (outline star)",
+      "color_locked": "#f59e0b",
+      "color_unlocked": "#5a5855",
+      "text_shadow_locked": "0 0 8px rgba(245,158,11,0.4)",
+      "sizes": {
+        "sm": "14px (text-sm) — pill, bottom bars",
+        "default": "20px (text-xl)",
+        "xl": "24px (text-2xl) — verdict cards",
+        "hero": "30px (text-3xl) — DAY WON view"
+      },
+      "label": {
+        "font": "JetBrains Mono",
+        "font_size": "12px",
+        "color": "#5a5855",
+        "format": "N/3 Beats"
+      }
+    },
+    "ClapperboardBadge": {
+      "description": "Category + act number label styled like a film clapperboard slate",
+      "font": "JetBrains Mono",
+      "font_size": "11px (or 10px compact)",
+      "font_weight": "600",
+      "letter_spacing": "0.08em",
+      "text_transform": "uppercase",
+      "padding": "3px 10px",
+      "border": "1.5px solid category-color at 40-50% opacity",
+      "border_radius": "4px",
+      "text_color": "category color at full saturation",
+      "divider_pipe": "opacity 0.4",
+      "content_pattern": "CATEGORY | ACT N or CATEGORY | ACT N | DURATION"
+    },
+    "BurningFuse": {
+      "description": "Animated progress bar with ember particle effect",
+      "track_height": "4px",
+      "track_color": "#242428",
+      "track_border_radius": "full",
+      "ember_animation": "ember-wobble or ember-wobble-critical",
+      "spark_animation": "spark-fly",
+      "sizes": {
+        "pill": "small, inline within pill",
+        "expanded": "full-width in dashboard/compact views"
+      }
+    },
+    "Toolbar": {
+      "description": "Shared toolbar component with view tier selector, Director mode button, settings, and collapse controls"
+    },
+    "ActCard": {
+      "description": "Act card for Writer's Room lineup",
+      "background": "#242428",
+      "padding": "14px (p-3.5)",
+      "border_radius": "8px (rounded-lg)",
+      "layout": "flex row with gap-3",
+      "sub_elements": ["drag-handle", "category-stripe", "clapperboard-badge", "act-name", "timer", "reorder-arrows"]
+    }
+  }
+}

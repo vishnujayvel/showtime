@@ -1,0 +1,158 @@
+/*
+ * screenshot-overrides.css
+ *
+ * Injected via Playwright's stylePath option during visual regression captures.
+ * Makes screenshots deterministic by freezing animations and hiding dynamic content
+ * that changes between runs (timers, dates, timestamps).
+ *
+ * Rules:
+ * - All overrides use !important to win specificity battles
+ * - Dynamic text is made transparent (not hidden) to preserve layout
+ * - Targets real class names from the Showtime codebase
+ */
+
+/* ═══════════════════════════════════════════════════
+   1. FREEZE ALL CSS ANIMATIONS & TRANSITIONS
+   ═══════════════════════════════════════════════════ */
+
+/* Nuclear option: kill all animations and transitions globally */
+*, *::before, *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+/* Named animation utility classes — force to final frame */
+.tally-live,
+.onair-glow,
+.spotlight-in,
+.breathe,
+.beat-ignite,
+.warm-pulse,
+.golden-glow,
+.slide-up,
+.spotlight-sweep,
+.writers-dot-1,
+.writers-dot-2,
+.writers-dot-3 {
+  animation: none !important;
+}
+
+/* BurningFuse ember wobble (Tailwind arbitrary animation syntax) */
+[class*="animate-[ember-wobble"] {
+  animation: none !important;
+}
+
+/* Tailwind animate-* utilities (catch-all for any Tailwind animation classes) */
+[class*="animate-"] {
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   2. FREEZE FRAMER MOTION INLINE TRANSFORMS
+   ═══════════════════════════════════════════════════ */
+
+/*
+ * Framer Motion applies inline style={{ transform, opacity }} on motion.div etc.
+ * We override these so elements are in their final resting position.
+ * The !important on transform/opacity wins over inline styles.
+ */
+[style*="transform"],
+[style*="opacity"] {
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   3. HIDE DYNAMIC CONTENT (KEEP LAYOUT)
+   ═══════════════════════════════════════════════════ */
+
+/*
+ * Timer displays — font-mono + tabular-nums elements showing MM:SS countdowns.
+ * Found in: TimerPanel (64px hero), PillView, CompactView, DashboardView
+ */
+.font-mono.tabular-nums {
+  color: transparent !important;
+}
+
+/*
+ * Date labels — data-testid markers on date strings like "Mon, Apr 7"
+ * Found in: ExpandedView, WritersRoomView, DashboardView
+ */
+[data-testid="date-label"] {
+  color: transparent !important;
+}
+
+/*
+ * "Started at" timestamp — "Started 9:30 AM" in ExpandedView/CompactView bottom bar
+ */
+[data-testid="started-at"] {
+  color: transparent !important;
+}
+
+/*
+ * Show duration in StrikeView — total elapsed time of the show
+ */
+[data-testid="show-duration"] {
+  color: transparent !important;
+}
+
+/*
+ * Time-of-day greeting — "Good morning" / "Good afternoon" in WritersRoomView
+ */
+[data-testid="time-of-day-greeting"] {
+  color: transparent !important;
+}
+
+/*
+ * History view date strings — show dates in HistoryView entries
+ * These are inside show-entry elements with dynamic date formatting
+ */
+[data-testid^="show-entry-"] .font-mono.text-xs.text-txt-secondary {
+  color: transparent !important;
+}
+
+/*
+ * Drift indicators in history — dynamic "→ 2:45 PM" strings
+ */
+[data-testid="drift-indicator"] {
+  color: transparent !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   4. DISABLE SMOOTH SCROLLING
+   ═══════════════════════════════════════════════════ */
+
+*, html {
+  scroll-behavior: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   5. STABILIZE VARIABLE VISUAL ELEMENTS
+   ═══════════════════════════════════════════════════ */
+
+/* BurningFuse — the ember glow pulses via rAF, freeze its box-shadow */
+.fuse-ember-point {
+  box-shadow: none !important;
+}
+
+/* BurningFuse spark particles — dynamically spawned, hide them */
+.fuse-spark {
+  display: none !important;
+}
+
+/* Confetti particles in StrikeView — random positions per render.
+   Also kills animation (consolidated from named animation list above). */
+.animate-confetti {
+  animation: none !important;
+  display: none !important;
+}
+
+/* Cursor blink in text inputs */
+textarea,
+input,
+[contenteditable] {
+  caret-color: transparent !important;
+}

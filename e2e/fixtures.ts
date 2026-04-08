@@ -17,6 +17,7 @@ export const test = base.extend<{}, ElectronFixtures>({
     const userDataDir = path.join(os.tmpdir(), `showtime-test-${testInfo.workerIndex}`)
     const app = await electron.launch({
       args: [path.join(__dirname, '..', 'dist', 'main', 'index.js')],
+      colorScheme: 'dark',
       env: {
         ...process.env,
         NODE_ENV: 'test',
@@ -60,7 +61,7 @@ export const test = base.extend<{}, ElectronFixtures>({
   }, { scope: 'worker' }],
 })
 
-export { expect } from '@playwright/test'
+export { expect } from './matchers'
 
 // ─── Standard Act Sets ───
 
