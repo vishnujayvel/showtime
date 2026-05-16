@@ -19,7 +19,12 @@ echo "==> Installing Node dependencies..."
 npm install --no-audit --no-fund --ignore-scripts
 
 echo "==> Rebuilding better-sqlite3 for system Node (vitest)..."
-npm rebuild better-sqlite3 --silent || true
+if npm rebuild better-sqlite3 --silent; then
+  echo "    better-sqlite3 rebuilt successfully."
+else
+  rc=$?
+  echo "    ⚠ better-sqlite3 rebuild failed (exit $rc); vitest may fail for sqlite-backed tests. Try: npm rebuild better-sqlite3" >&2
+fi
 
 echo "==> Attempting Electron native rebuild (needed for E2E tests)..."
 if npm run postinstall --silent; then
@@ -39,7 +44,8 @@ fi
 # Playwright's _electron.launch() inherits a working X display when the
 # agent wraps test commands with `xvfb-run -a`.
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
-  echo "export DISPLAY=:99" >> "$CLAUDE_ENV_FILE"
+  grep -qxF "export DISPLAY=:99" "$CLAUDE_ENV_FILE" 2>/dev/null \
+    || echo "export DISPLAY=:99" >> "$CLAUDE_ENV_FILE"
 fi
 
 echo "==> Setup complete."
