@@ -29,6 +29,20 @@ fi
 echo "==> Attempting Electron native rebuild (needed for E2E tests)..."
 if npm run postinstall --silent; then
   echo "    Electron native modules rebuilt successfully."
+
+  # `npm install --ignore-scripts` above skipped the `electron` package's own
+  # postinstall, which downloads the Electron binary into
+  # node_modules/electron/dist. Without that binary, `_electron.launch()` in
+  # Playwright fails with "Electron failed to install correctly". Trigger it
+  # explicitly here (idempotent — the installer no-ops if dist/ already exists).
+  if [ ! -x node_modules/electron/dist/electron ]; then
+    echo "==> Downloading Electron binary..."
+    if node node_modules/electron/install.js; then
+      echo "    Electron binary downloaded."
+    else
+      echo "    ⚠ Electron binary download failed; Playwright E2E tests will not run." >&2
+    fi
+  fi
 else
   cat <<'EOF'
     ⚠ Electron native rebuild skipped (network policy likely blocks
